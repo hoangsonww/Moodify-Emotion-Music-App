@@ -1,0 +1,32 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  color: black;
+}
+
+button {
+  background-color: red;
+  color: white;
+}
+
+button:hover {
+  background-color: darkred;
+}
+
+input, textarea {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  border-color: red;
+}
+
+h2, h4, h6 {
+  color: black;
+}
