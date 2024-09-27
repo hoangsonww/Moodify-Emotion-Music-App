@@ -25,8 +25,8 @@ frontend/
 │   ├── components/             # Contains all React components
 │   │   ├── Home.js             # Home page component
 │   │   ├── Profile.js          # User profile component
-│   │   ├── Recommendations.js   # Recommendations component
-│   │   ├── MoodHistory.js       # Mood history component
+│   │   ├── Recommendations.js  # Recommendations component
+│   │   ├── MoodHistory.js      # Mood history component
 │   │   ├── Login.js            # Login component
 │   │   ├── Register.js         # Registration component
 │   │   └── Modal.js            # Modal component for user input

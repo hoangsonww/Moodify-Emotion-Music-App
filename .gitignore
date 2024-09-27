@@ -1,1 +1,6 @@
 /frontend/node_modules/
+/ai_ml/models/text_emotion_model/checkpoint-965/
+/ai_ml/models/text_emotion_model/checkpoint-1930/
+/ai_ml/models/text_emotion_model/checkpoint-2895/
+/ai_ml/models/text_emotion_model/checkpoint-3860/
+/ai_ml/models/text_emotion_model/model.safetensors

@@ -103,11 +103,11 @@ CONFIG = {
     "batch_size": 16,
     "num_epochs": 4,
     "learning_rate": 2e-5,
-    "train_data_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/data/training.csv",
-    "test_data_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/data/test.csv",
-    "output_dir": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/text_emotion_model",
-    "speech_emotion_model_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/speech_emotion_model",
-    "facial_emotion_model_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/facial_emotion_model",
+    "train_data_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/data/training.csv",  # Replace with your data path
+    "test_data_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/data/test.csv", # Replace with your data path
+    "output_dir": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/text_emotion_model", # Replace with your data path
+    "speech_emotion_model_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/speech_emotion_model", # Replace with your data path
+    "facial_emotion_model_path": "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/facial_emotion_model", # Replace with your data path
     "spotify_client_id": "your_spotify_client_id",  # Replace with your Spotify client ID
     "spotify_client_secret": "your_spotify_client_secret",  # Replace with your Spotify client secret
     "api_port": 5000,
@@ -122,6 +122,9 @@ The `train_text_emotion.py` script trains a BERT-based text emotion model using 
 ```bash
 python ai_ml/src/models/train_text_emotion.py
 ```
+
+Note that, by default, the model will be trained using GPU support if available. If you want to train the model on the CPU, you can modify the script to use the CPU instead.
+Before training by GPU, make sure you have installed the necessary dependencies and set up PyTorch with CUDA support.
 
 ### **Expected Output**
 After training, the model and tokenizer will be saved in the `models/text_emotion_model` directory. Below is an example of the expected training output:
