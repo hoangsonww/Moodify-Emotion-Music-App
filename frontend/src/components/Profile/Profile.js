@@ -41,12 +41,12 @@ const ProfilePage = () => {
             <Typography variant="h6" color="error">{error}</Typography>
         ) : (
             <Paper elevation={4} style={styles.profileContainer}>
-              <Typography variant="h4" style={styles.title}>
+              <Typography variant="h5" style={styles.title}>
                 Welcome, {userData.username}!
               </Typography>
               <Box style={styles.infoSection}>
-                <Typography variant="h6">Your Username: {userData.username}</Typography>
-                <Typography variant="h6">Your Email: {userData.email}</Typography>
+                <Typography variant="h6" style={styles.text}>Your Username: {userData.username}</Typography>
+                <Typography variant="h6" style={styles.text}>Your Email: {userData.email}</Typography>
               </Box>
 
               <Box sx={styles.section}>
@@ -55,7 +55,7 @@ const ProfilePage = () => {
                     userData.listening_history.map((track, index) => (
                         <Card key={index} style={styles.card}>
                           <CardContent>
-                            <Typography variant="body1">{track}</Typography>
+                            <Typography variant="body1" style={styles.text}>{track}</Typography>
                           </CardContent>
                         </Card>
                     ))
@@ -70,7 +70,7 @@ const ProfilePage = () => {
                     userData.mood_history.map((mood, index) => (
                         <Card key={index} style={styles.card}>
                           <CardContent>
-                            <Typography variant="body1">{mood}</Typography>
+                            <Typography variant="body1" style={styles.text}>{mood}</Typography>
                           </CardContent>
                         </Card>
                     ))
@@ -85,7 +85,9 @@ const ProfilePage = () => {
                     userData.recommendations.map((recommendation, index) => (
                         <Card key={index} style={styles.card}>
                           <CardContent>
-                            <Typography variant="body1"><strong>{recommendation.name}</strong> by {recommendation.artist}</Typography>
+                            <Typography variant="body1" style={styles.text}>
+                              <strong>{recommendation.name}</strong> by {recommendation.artist}
+                            </Typography>
                           </CardContent>
                         </Card>
                     ))
@@ -105,48 +107,64 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins, sans-serif',
+    padding: '20px',
   },
   profileContainer: {
     padding: '30px',
-    width: '60%',
-    maxHeight: '80vh',
+    width: '70%',
+    maxHeight: '85vh',
     overflowY: 'auto',
     borderRadius: '10px',
     boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
     backgroundColor: 'white',
     textAlign: 'center',
+    transition: 'all 0.3s ease-in-out',
   },
   title: {
     marginBottom: '20px',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins, sans-serif',
     color: '#333',
   },
   infoSection: {
     marginBottom: '20px',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fafafa',
     padding: '10px',
     borderRadius: '8px',
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.05)',
+    transition: 'all 0.3s ease',
   },
   section: {
     marginTop: '15px',
     textAlign: 'left',
+    padding: '10px',
   },
   sectionTitle: {
     textDecoration: 'underline',
+    font: 'inherit',
     marginBottom: '10px',
     color: '#555',
+    fontWeight: 500,
   },
   card: {
     marginBottom: '10px',
     borderRadius: '8px',
     boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
     padding: '10px',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#ffffff',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    cursor: 'pointer',
+    '&:hover': {
+      transform: 'scale(1.02)',
+      boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+    },
+  },
+  text: {
+    font: 'inherit',
   },
   noData: {
     color: '#999',
+    fontStyle: 'italic',
   },
 };
 
