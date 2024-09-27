@@ -84,7 +84,7 @@ const Register = () => {
               color="primary"
               fullWidth
               onClick={handleRegister}
-              sx={{ mb: 2 }}
+              sx={{ mb: 2, backgroundColor: '#ff4d4d', font: 'inherit' }}
           >
             Register
           </Button>

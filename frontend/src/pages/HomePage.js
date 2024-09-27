@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Box, Button, Typography, Paper, TextField, Modal } from '@mui/material';
+import {Box, Button, Typography, Paper, TextField, Modal, CircularProgress} from '@mui/material';
 import Webcam from 'react-webcam';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ const HomePage = () => {
   const recorderRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -27,13 +28,62 @@ const HomePage = () => {
     setAudioBlob(null);
   };
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const uploadedFile = e.target.files[0];
     if (uploadedFile && uploadedFile.size > 10 * 1024 * 1024) {
       alert('File size must be under 10MB');
       return;
     }
+
     setFile(uploadedFile);
+
+    const formData = new FormData();
+    formData.append('file', uploadedFile);
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert('User is not authenticated. Please log in.');
+      return;
+    }
+
+    setIsLoading(true); // Start loading indicator
+
+    try {
+      if (activeTab === 'text') {
+        const textContent = await uploadedFile.text();
+        const response = await axios.post('http://127.0.0.1:8000/api/text_emotion/', { text: textContent }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
+      } else if (activeTab === 'face') {
+        const response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
+      } else if (activeTab === 'speech') {
+        const response = await axios.post('http://127.0.0.1:8000/api/speech_emotion/', formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
+      }
+    } catch (error) {
+      console.error(`Error uploading ${activeTab} file:`, error);
+      alert(`Failed to upload the ${activeTab} file. Please try again.`);
+    } finally {
+      handleModalClose();
+      setIsLoading(false); // Stop loading indicator
+    }
   };
 
   const handleModalClose = () => {
@@ -55,6 +105,8 @@ const HomePage = () => {
     try {
       const base64Response = await fetch(capturedImage);
       const blob = await base64Response.blob();
+
+      setIsLoading(true);
 
       if (blob.size === 0) {
         alert('Captured image is invalid. Please try again.');
@@ -81,6 +133,9 @@ const HomePage = () => {
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Failed to upload the image. Please try again.');
+    } finally {
+      handleModalClose();
+      setIsLoading(false);
     }
   };
 
@@ -97,10 +152,14 @@ const HomePage = () => {
         },
       });
 
+      setIsLoading(true);
+
       navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
     } catch (error) {
       console.error('Error processing text:', error);
       alert('Failed to process the text. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
 
     setInputValue('');
@@ -141,6 +200,8 @@ const HomePage = () => {
 
       const token = localStorage.getItem('token');
 
+      setIsLoading(true);
+
       if (!token) {
         alert('User is not authenticated. Please log in.');
         return;
@@ -159,11 +220,20 @@ const HomePage = () => {
       alert('Failed to upload the audio. Please try again.');
     } finally {
       handleModalClose();
+      setIsLoading(false);
     }
   };
 
   return (
     <div style={styles.container}>
+      {isLoading && (
+          <Box sx={styles.loadingOverlay}>
+            <CircularProgress sx={{ color: '#ff4d4d' }} />
+            <Typography variant="h6" style={{ marginTop: '10px', color: 'white', font: 'inherit' }}>
+              Processing, please wait...
+            </Typography>
+          </Box>
+      )}
       <Paper elevation={4} style={styles.formContainer}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Button
@@ -212,6 +282,27 @@ const HomePage = () => {
             Upload {activeTab === 'text' ? 'Text File' : activeTab === 'speech' ? 'Audio File' : 'Image'}
           </Button>
         </label>
+
+        {/* Custom message for audio file requirements */}
+        {activeTab === 'speech' && (
+            <Typography variant="body2" align="center" style={{ marginTop: '10px', fontFamily: 'Poppins', color: '#777' }}>
+              Acceptable formats: .wav, .mp4
+            </Typography>
+        )}
+
+        {/* Custom message for image file requirements */}
+        {activeTab === 'face' && (
+            <Typography variant="body2" align="center" style={{ marginTop: '10px', fontFamily: 'Poppins', color: '#777' }}>
+              Acceptable formats: .jpg, .jpeg, .png, .webp
+            </Typography>
+        )}
+
+        {/* Custom message for text file requirements */}
+        {activeTab === 'text' && (
+            <Typography variant="body2" align="center" style={{ marginTop: '10px', fontFamily: 'Poppins', color: '#777' }}>
+              Acceptable formats: .txt
+            </Typography>
+        )}
 
         {/* Modal for Speech Input */}
         {activeTab === 'speech' && (
@@ -291,6 +382,19 @@ const HomePage = () => {
 };
 
 const styles = {
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2000,
+    flexDirection: 'column',
+  },
   container: {
     height: '99vh',
     display: 'flex',

@@ -9,13 +9,13 @@ const ResultsPage = () => {
   return (
       <div style={styles.container}>
         {/* Display the detected emotion above the modal */}
-        <Typography variant="h4" style={styles.emotionText}>
-          Detected Mood: <span style={styles.emotion}>{emotion}</span>
+        <Typography variant="h5" style={styles.emotionText}>
+          <strong>Detected Mood: <span style={styles.emotion}>{emotion}</span></strong>
         </Typography>
 
         <Paper elevation={4} style={styles.resultsContainer}>
           <Typography variant="h6" style={{ fontFamily: 'Poppins', marginBottom: '10px' }}>
-            Recommendations
+            Your Recommendations
           </Typography>
           <Box sx={styles.recommendationsList}>
             {recommendations.map((rec, index) => (
