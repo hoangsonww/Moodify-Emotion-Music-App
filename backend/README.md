@@ -11,7 +11,7 @@ This repository contains the backend for the Emotion-Based Music App named **Moo
   - [User Endpoints](#user-endpoints)
   - [Emotion Detection Endpoints](#emotion-detection-endpoints)
   - [Admin Interface Endpoints](#admin-interface-endpoints)
-- [Testing the API](#testing-the-api)
+- [Testing the APIs](#testing-the-apis)
 - [Using Postman](#using-postman)
 - [API Documentation](#api-documentation)
   - [Swagger UI](#swagger-ui)
@@ -165,7 +165,7 @@ Once you have trained the models, you can run the backend server using the steps
 | `GET`       | `/admin/`                    | Access the Django Admin interface            |
 
 
-## Testing the API
+## Testing the APIs
 
 You can use tools like Postman or CURL to test the API endpoints. **Make sure to register a user first to obtain the Bearer JWT token. This token will be required for accessing most of the other endpoints.**
 

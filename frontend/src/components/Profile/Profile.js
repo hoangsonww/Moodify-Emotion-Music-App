@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Box, CircularProgress, Card, CardContent } from '@mui/material';
 import axios from 'axios';
+import {useNavigate} from "react-router-dom";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     if (!token) {
       alert("You are not authenticated. Please log in.");
+      navigate('/login');
       return;
     }
     fetchUserData();

@@ -80,6 +80,79 @@ frontend/
 - **Material UI (MUI)**: A library for React components that implements Google's Material Design.
 - **Poppins Font**: Custom font for a modern look and feel.
 
+## User Interface
+
+### Home Page
+
+<p align="center">
+  <img src="../images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
+</p>
+
+#### Text Input
+
+<p align="center">
+  <img src="../images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
+</p>
+
+#### Speech Input
+
+<p align="center">
+  <img src="../images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
+</p>
+
+<p align="center">
+  <img src="../images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
+</p>
+
+#### Facial Expression Input
+
+<p align="center">
+  <img src="../images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+</p>
+
+<p align="center">
+  <img src="../images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+
+### Profile Page
+
+<p align="center">
+  <img src="../images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
+</p>
+
+<p align="center">
+  <img src="../images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Results/Recommendations Page
+
+<p align="center">
+  <img src="../images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Login Page
+
+<p align="center">
+  <img src="../images/login.png" alt="Login Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Registration Page
+
+<p align="center">
+  <img src="../images/registration.png" alt="Registration Page" width="100%" style="border-radius: 10px">
+</p>
+
+### 404 Not Found Page
+
+<p align="center">
+  <img src="../images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
+</p>
+
+## Footer
+
+<p align="center">
+  <img src="../images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
+</p>
+
 ## Getting Started
 
 ### Prerequisites
@@ -116,7 +189,7 @@ This will start the React application at `http://localhost:3000`. If this port i
 
 ### Contributing
 
-Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+Contributions are welcome! Feel free to fork the repository and submit a pull request.
 
 ### License
 

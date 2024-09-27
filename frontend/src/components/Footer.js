@@ -23,7 +23,7 @@ const Footer = () => {
             Login
           </Link>
           <Link style={styles.link} onClick={() => navigate('/register')}>
-            Logout
+            Register
           </Link>
         </Box>
 
