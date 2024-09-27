@@ -53,17 +53,11 @@ const HomePage = () => {
 
   const confirmImage = async () => {
     try {
-      if (!capturedImage) {
-        alert('No captured image found.');
-        return;
-      }
-
       const base64Response = await fetch(capturedImage);
       const blob = await base64Response.blob();
 
       if (blob.size === 0) {
-        console.error('Captured image blob is empty');
-        alert('The captured image is invalid. Please try again.');
+        alert('Captured image is invalid. Please try again.');
         return;
       }
 
@@ -79,7 +73,6 @@ const HomePage = () => {
 
       const response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
         }
       });
@@ -88,8 +81,6 @@ const HomePage = () => {
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Failed to upload the image. Please try again.');
-    } finally {
-      handleModalClose();
     }
   };
 

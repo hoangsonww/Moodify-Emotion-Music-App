@@ -1,7 +1,8 @@
 import subprocess
 
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .models import UserProfile
@@ -130,36 +131,44 @@ def speech_emotion(request):
     },
 )
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def facial_emotion(request):
     if 'file' not in request.FILES:
         return Response({"error": "No image file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-    image_file = request.FILES["file"]
-
-    # Create a temporary file to store the uploaded image
+    image_file = request.FILES['file']
     temp_file_path = None
+
     try:
-        # Use NamedTemporaryFile to create a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-            # Write the contents of the uploaded file to the temporary file
             for chunk in image_file.chunks():
                 temp_file.write(chunk)
             temp_file_path = temp_file.name
 
+        if not os.path.exists(temp_file_path):
+            print("Image file was not saved correctly.")
+            return Response({"error": "Failed to save image file."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Debugging: Log the image size
+        print(f"Image saved at {temp_file_path}, size: {os.path.getsize(temp_file_path)} bytes")
+
         # Infer emotion from the facial image file
         emotion = infer_facial_emotion(temp_file_path)
 
-        # Check if emotion was properly inferred
         if emotion is None:
-            return Response({"error": "Could not detect emotion from the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print("Emotion inference failed.")
+            return Response({"error": "Failed to infer emotion from the image."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Get music recommendations based on the detected emotion
         recommendations = get_music_recommendation(emotion)
 
         return Response({"emotion": emotion, "recommendations": recommendations})
 
+    except Exception as e:
+        print(f"Exception occurred during image processing: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     finally:
-        # Clean up the temporary file if it exists
         if temp_file_path and os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
