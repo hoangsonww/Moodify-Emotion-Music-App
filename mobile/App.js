@@ -1,20 +1,33 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import HomePage from './pages/HomePage';
+import ProfilePage from './pages/ProfilePage';
+import ResultsPage from './pages/ResultsPage';
+import RecommendationsPage from './pages/RecommendationsPage';
+import Footer from "./components/Footer";
+import NotFoundPage from "./pages/NotFoundPage";
+import './styles/styles.css';
 
-export default function App() {
+function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/recommendations" element={<RecommendationsPage />} />
+          <Route path="/results" element={<ResultsPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+        <Footer />
+      </Router>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;

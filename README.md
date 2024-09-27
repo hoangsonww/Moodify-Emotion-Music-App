@@ -1,4 +1,4 @@
-# **Moodify - Emotion-Based Music Recommendation System**
+# **Moodify - Emotion-Based Music Recommendation App**
 
 With the rise of personalized music streaming services, there is a growing need for systems that can recommend music based on users' emotional states.
 Realizing this need, **Moodify** was developed by [Son Nguyen](https://github.com/hoangsonww) to provide personalized music recommendations based on users' detected emotions.
@@ -174,9 +174,7 @@ Moodify/
 │   ├── index.js                   # App registry for React Native
 │   ├── components/                # React Native components
 │   │   ├── Auth/                  # Authentication components (e.g., Login, Register)
-│   │   ├── MoodInput/             # Components for facial, text, and speech inputs
-│   │   ├── Profile/               # Profile-related components
-│   │   └── Recommendations/       # Recommendation-related components
+│   │   └── Profile/               # Profile-related components
 │   │
 │   ├── pages/                     # Main pages of the app
 │   │   ├── HomePage.js            # Home page component
