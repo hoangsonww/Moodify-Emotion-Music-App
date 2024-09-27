@@ -194,12 +194,14 @@ You can use tools like Postman or CURL to test the API endpoints. **Make sure to
          "password": "password123"
      }
      ```
-   - **Response**: You will receive a response with a Bearer JWT token:
+   - **Response**: You will receive a response with a Bearer JWT token. For example:
      ```json
      {
-         "token": "your_jwt_token_here"
+       "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcyNzQ5NTM4OCwiaWF0IjoxNzI3NDA4OTg4LCJqdGkiOiIzNWE1MDM2NGZmMWE0MTc3ODI4ZGEwZWQ3YzJlZTdkMyIsInVzZXJfaWQiOjN9.7o-AEBJB1zRuZBstWv7Ou6eCGZHUEs6XpeIQQP8rSlc",
+       "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI3NDEyNTg4LCJpYXQiOjE3Mjc0MDg5ODgsImp0aSI6IjRiMmI4ZGYyYjJlOTQyNWRhODM1ODgyMDEyN2RhMjJkIiwidXNlcl9pZCI6M30.J6lHhff29Tpz8APFlqjmJJHTMco39nxhOzhiqqAv01I"
      }
      ```
+   - **Note**: The `access` token is the Bearer JWT token that you will use for accessing protected endpoints.
 
 ### Using Postman
 

@@ -1,5 +1,6 @@
 # music_recommendation.py
 import requests
+import random
 from ai_ml.src.utils import get_spotify_access_token
 from ai_ml.src.config import CONFIG
 
@@ -30,10 +31,28 @@ def get_music_recommendation(emotion):
         "Authorization": f"Bearer {access_token}"
     }
 
+    # List of markets based on the full list from Spotify
+    available_markets = [
+        "AD", "AE", "AG", "AL", "AM", "AO", "AR", "AT", "AU", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI",
+        "BJ", "BN", "BO", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CD", "CG", "CH", "CI", "CL", "CM", "CO", "CR",
+        "CV", "CW", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "ES", "ET", "FI", "FJ", "FM",
+        "FR", "GA", "GB", "GD", "GE", "GH", "GM", "GN", "GQ", "GR", "GT", "GW", "GY", "HK", "HN", "HR", "HT", "HU",
+        "ID", "IE", "IL", "IN", "IQ", "IS", "IT", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KR", "KW",
+        "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MG", "MH",
+        "MK", "ML", "MN", "MO", "MR", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NE", "NG", "NI", "NL", "NO",
+        "NP", "NR", "NZ", "OM", "PA", "PE", "PG", "PH", "PK", "PL", "PR", "PS", "PT", "PW", "PY", "QA", "RO", "RS",
+        "RW", "SA", "SB", "SC", "SE", "SG", "SI", "SK", "SL", "SM", "SN", "SR", "ST", "SV", "SZ", "TD", "TG", "TH",
+        "TJ", "TL", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US", "UY", "UZ", "VC", "VE", "VN", "VU",
+        "WS", "XK", "ZA", "ZM", "ZW"
+    ]
+
+    # Randomly select one market
+    selected_market = random.choice(available_markets)
+
     params = {
         "seed_genres": genre,
         "limit": 10,
-        "market": "US",  # Adjust as needed, ensures songs are available in your region
+        "market": selected_market,  # Use a single market
     }
 
     # Optionally, customize the energy/valence based on emotion (Spotify-specific attributes)
@@ -60,13 +79,14 @@ def get_music_recommendation(emotion):
 
     tracks = response.json().get("tracks", [])
 
-    # Extracting track details
+    # Extracting track details including image
     recommended_tracks = [
         {
             "name": track["name"],
             "artist": ", ".join([artist["name"] for artist in track["artists"]]),
             "preview_url": track["preview_url"],
-            "external_url": track["external_urls"]["spotify"]  # Spotify link
+            "external_url": track["external_urls"]["spotify"],  # Spotify link
+            "image_url": track["album"]["images"][0]["url"] if track["album"]["images"] else None  # Album image
         }
         for track in tracks
     ]

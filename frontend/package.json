@@ -12,8 +12,10 @@
     "axios": "^1.7.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-media-recorder": "^1.7.1",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "react-webcam": "^7.2.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
