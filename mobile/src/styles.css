@@ -1,0 +1,65 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  color: black;
+}
+
+button {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+button:hover {
+  background-color: #ff1a1a;
+}
+
+input, textarea {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  border-color: #ff4d4d;
+}
+
+h2, h4, h6 {
+  color: black;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Fade-in animation for smoother entrance */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Applying animation styles */
+.pulse-animation {
+  animation: pulse 1.5s infinite;
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
