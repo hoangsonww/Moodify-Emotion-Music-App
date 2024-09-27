@@ -172,7 +172,12 @@ Moodify/
 ├── mobile/                        # React Native mobile application
 │   ├── App.js                     # Main entry point for React Native app
 │   ├── index.js                   # App registry for React Native
+│   ├── package.json               # NPM dependencies and scripts
+│   ├── babel.config.js            # Babel configuration for React Native
+│   ├── 
 │   ├── components/                # React Native components
+│   │   ├── Footer.js              # Footer component
+│   │   ├── Navbar.js              # Header component
 │   │   ├── Auth/                  # Authentication components (e.g., Login, Register)
 │   │   └── Profile/               # Profile-related components
 │   │
@@ -188,8 +193,7 @@ Moodify/
 │   ├── package.json               # Dependencies and scripts
 │   └── README.md                  # Mobile app documentation
 │
-├── images/                        # Images used in the README documentation
-│ 
+├── images/                        # Images used in the README documentation 
 └── README.md                      # Comprehensive README file for the entire project
 ```
 
