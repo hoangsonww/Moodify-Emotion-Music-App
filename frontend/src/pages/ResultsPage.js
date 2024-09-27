@@ -1,4 +1,3 @@
-// src/pages/ResultsPage.js
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Box, Card, CardContent, Typography, Paper, Button } from '@mui/material';

@@ -2,6 +2,7 @@ import numpy as np
 import librosa
 import pickle
 import os
+import soundfile as sf
 from moviepy.editor import AudioFileClip
 from sklearn.preprocessing import StandardScaler
 
@@ -47,9 +48,15 @@ def extract_features(audio_file):
     Extract MFCC features from an audio file using librosa.
     """
     try:
-        speech, sample_rate = librosa.load(audio_file, res_type='kaiser_fast')
-        mfccs = np.mean(librosa.feature.mfcc(y=speech, sr=sample_rate, n_mfcc=40).T, axis=0)
-        return mfccs
+        # Ensure the file is correctly read using soundfile
+        with sf.SoundFile(audio_file) as f:
+            print(f"Audio file sample rate: {f.samplerate}")
+            speech, sample_rate = librosa.load(audio_file, sr=None)
+            mfccs = np.mean(librosa.feature.mfcc(y=speech, sr=sample_rate, n_mfcc=40).T, axis=0)
+            return mfccs
+    except sf.SoundFileError as e:
+        print(f"SoundFileError occurred: {e}")
+        return None
     except Exception as e:
         print(f"Error extracting features from {audio_file}: {e}")
         return None

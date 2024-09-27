@@ -4,7 +4,7 @@ import { Box, Button, Typography, Paper, TextField, Modal } from '@mui/material'
 import Webcam from 'react-webcam';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { ReactMediaRecorder } from 'react-media-recorder';
+import Recorder from 'recorder-js';
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('text');
@@ -14,6 +14,9 @@ const HomePage = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const webcamRef = useRef(null);
   const [audioBlob, setAudioBlob] = useState(null);
+  const audioContextRef = useRef(null);
+  const recorderRef = useRef(null);
+  const [isRecording, setIsRecording] = useState(false);
   const navigate = useNavigate();
 
   const handleTabChange = (tab) => {
@@ -51,23 +54,48 @@ const HomePage = () => {
 
   const confirmImage = async () => {
     try {
-      const blob = await fetch(capturedImage).then(res => res.blob());
+      // Check the base64 image data URL
+      if (!capturedImage) {
+        alert('No captured image found.');
+        return;
+      }
+
+      // Convert the base64 data URL to a Blob
+      const base64Response = await fetch(capturedImage);
+      const blob = await base64Response.blob();
+
+      if (blob.size === 0) {
+        console.error('Captured image blob is empty');
+        alert('The captured image is invalid. Please try again.');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('file', blob, 'captured_image.jpg');
+
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        alert('User is not authenticated. Please log in.');
+        return;
+      }
 
       const response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-        },
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       console.log('API Response:', response.data);
-      alert('Image captured and processed successfully!');
+
+      navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Failed to upload the image. Please try again.');
+    } finally {
+      handleModalClose();
     }
-    handleModalClose();
   };
 
   const handleTextSubmit = async () => {
@@ -97,6 +125,28 @@ const HomePage = () => {
     handleModalClose();
   };
 
+  const startRecording = async () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorderRef.current = new Recorder(audioContextRef.current, {
+      numChannels: 1,
+    });
+
+    recorderRef.current.init(stream);
+    recorderRef.current.start().then(() => setIsRecording(true));
+  };
+
+  const stopRecording = () => {
+    recorderRef.current.stop().then(({ blob }) => {
+      const wavBlob = new Blob([blob], { type: 'audio/wav' });
+      setAudioBlob(wavBlob);
+      setIsRecording(false);
+    });
+  };
+
   const handleAudioUpload = async () => {
     if (!audioBlob) {
       alert('No audio recorded.');
@@ -104,163 +154,169 @@ const HomePage = () => {
     }
 
     try {
+      // Create a FormData object and append the audio Blob
       const formData = new FormData();
       formData.append('file', audioBlob, 'recorded_audio.wav');
 
+      // Retrieve the token from localStorage
+      const token = localStorage.getItem('token');
+
+      // Ensure that the token exists before making the request
+      if (!token) {
+        alert('User is not authenticated. Please log in.');
+        return;
+      }
+
+      // Send the request with the formData and authorization token
       const response = await axios.post('http://127.0.0.1:8000/api/speech_emotion/', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'multipart/form-data', // Explicitly set Content-Type
+          'Authorization': `Bearer ${token}`,
         },
       });
 
-      console.log('API Response:', response.data);
-      alert('Audio processed successfully!');
+      // Navigate to the results page with the emotion and recommendations data
+      navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
     } catch (error) {
       console.error('Error uploading audio:', error);
       alert('Failed to upload the audio. Please try again.');
+    } finally {
+      handleModalClose();
     }
-
-    handleModalClose();
   };
 
+
   return (
-      <div style={styles.container}>
-        <Paper elevation={4} style={styles.formContainer}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Button
-                onClick={() => handleTabChange('text')}
-                sx={{ ...styles.tabButton, borderRadius: '12px 0 0 12px', backgroundColor: activeTab === 'text' ? '#ff4d4d' : 'white', color: activeTab === 'text' ? 'white' : 'black' }}
-            >
-              Text
-            </Button>
-            <Button
-                onClick={() => handleTabChange('face')}
-                sx={{ ...styles.tabButton, borderRadius: '0', backgroundColor: activeTab === 'face' ? '#ff4d4d' : 'white', color: activeTab === 'face' ? 'white' : 'black' }}
-            >
-              Face
-            </Button>
-            <Button
-                onClick={() => handleTabChange('speech')}
-                sx={{ ...styles.tabButton, borderRadius: '0 12px 12px 0', backgroundColor: activeTab === 'speech' ? '#ff4d4d' : 'white', color: activeTab === 'speech' ? 'white' : 'black' }}
-            >
-              Speech
-            </Button>
-          </Box>
-          <Typography variant="h6" align="center" style={{ marginBottom: '20px', fontFamily: 'Poppins', fontSize: '16px' }}>
-            Choose an input mode ({activeTab})
-          </Typography>
-
+    <div style={styles.container}>
+      <Paper elevation={4} style={styles.formContainer}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Button
-              onClick={() => setShowModal(true)}
-              style={styles.captureButton}
+              onClick={() => handleTabChange('text')}
+              sx={{ ...styles.tabButton, borderRadius: '12px 0 0 12px', backgroundColor: activeTab === 'text' ? '#ff4d4d' : 'white', color: activeTab === 'text' ? 'white' : 'black' }}
           >
-            {activeTab === 'text' ? 'Add Text' : activeTab === 'face' ? 'Capture Image' : 'Record Audio'}
+            Text
           </Button>
+          <Button
+              onClick={() => handleTabChange('face')}
+              sx={{ ...styles.tabButton, borderRadius: '0', backgroundColor: activeTab === 'face' ? '#ff4d4d' : 'white', color: activeTab === 'face' ? 'white' : 'black' }}
+          >
+            Face
+          </Button>
+          <Button
+              onClick={() => handleTabChange('speech')}
+              sx={{ ...styles.tabButton, borderRadius: '0 12px 12px 0', backgroundColor: activeTab === 'speech' ? '#ff4d4d' : 'white', color: activeTab === 'speech' ? 'white' : 'black' }}
+          >
+            Speech
+          </Button>
+        </Box>
+        <Typography variant="h6" align="center" style={{ marginBottom: '20px', fontFamily: 'Poppins', fontSize: '16px' }}>
+          Choose an input mode ({activeTab})
+        </Typography>
 
-          <Typography variant="h6" align="center" style={{ marginTop: '20px', fontFamily: 'Poppins', fontSize: '16px' }}>
-            OR
-          </Typography>
+        <Button
+            onClick={() => setShowModal(true)}
+            style={styles.captureButton}
+        >
+          {activeTab === 'text' ? 'Add Text' : activeTab === 'face' ? 'Capture Image' : 'Record Audio'}
+        </Button>
 
-          <input
-              accept={activeTab === 'text' ? '.txt' : activeTab === 'speech' ? '.wav, .mp4' : 'image/*'}
-              style={{ display: 'none' }}
-              id="upload-file"
-              type="file"
-              onChange={handleFileUpload}
-          />
-          <label htmlFor="upload-file">
-            <Button variant="contained" color="secondary" component="span" style={styles.uploadButton}>
-              Upload {activeTab === 'text' ? 'Text File' : activeTab === 'speech' ? 'Audio File' : 'Image'}
-            </Button>
-          </label>
+        <Typography variant="h6" align="center" style={{ marginTop: '20px', fontFamily: 'Poppins', fontSize: '16px' }}>
+          OR
+        </Typography>
 
-          {/* Modal for Speech Input */}
-          {activeTab === 'speech' && (
-              <Modal open={showModal} onClose={handleModalClose}>
-                <Box sx={styles.modal}>
-                  <Typography variant="h6" style={{ marginBottom: '10px' }}>Record Your Audio</Typography>
-                  <ReactMediaRecorder
-                      audio
-                      render={({ status, startRecording, stopRecording, mediaBlobUrl }) => (
-                          <>
-                            <Typography variant="body1" style={{ marginBottom: '10px' }}>Status: {status}</Typography>
-                            <Box style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                              <Button onClick={startRecording} variant="contained" color="primary">Start Recording</Button>
-                              <Button onClick={() => {
-                                stopRecording();
-                                setAudioBlob(new Blob([mediaBlobUrl], { type: 'audio/wav' }));
-                              }} variant="contained" color="secondary">Stop Recording</Button>
-                            </Box>
-                            {mediaBlobUrl && (
-                                <audio controls src={mediaBlobUrl} style={{ marginTop: '10px', width: '100%' }} />
-                            )}
-                            <Box style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
-                              <Button onClick={handleAudioUpload} variant="contained" color="success">Upload Audio</Button>
-                              <Button onClick={handleModalClose} variant="contained" color="error">Close</Button>
-                            </Box>
-                          </>
-                      )}
-                  />
+        <input
+            accept={activeTab === 'text' ? '.txt' : activeTab === 'speech' ? '.wav, .mp4' : 'image/*'}
+            style={{ display: 'none' }}
+            id="upload-file"
+            type="file"
+            onChange={handleFileUpload}
+        />
+        <label htmlFor="upload-file">
+          <Button variant="contained" color="secondary" component="span" style={styles.uploadButton}>
+            Upload {activeTab === 'text' ? 'Text File' : activeTab === 'speech' ? 'Audio File' : 'Image'}
+          </Button>
+        </label>
+
+        {/* Modal for Speech Input */}
+        {activeTab === 'speech' && (
+            <Modal open={showModal} onClose={handleModalClose}>
+              <Box sx={styles.modal}>
+                <Typography variant="h6">Record Your Audio</Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Button onClick={startRecording} variant="contained" color="primary" disabled={isRecording}>
+                    Start Recording
+                  </Button>
+                  <Button onClick={stopRecording} variant="contained" color="secondary" disabled={!isRecording}>
+                    Stop Recording
+                  </Button>
                 </Box>
-              </Modal>
-          )}
-
-          {/* Existing Text and Face Modals */}
-          {activeTab === 'text' && (
-              <Modal open={showModal} onClose={handleModalClose}>
-                <Box sx={styles.modal}>
-                  <Typography variant="h6" style={{ marginBottom: '10px' }}>Enter Your Text</Typography>
-                  <TextField
-                      fullWidth
-                      multiline
-                      rows={4}
-                      variant="outlined"
-                      placeholder="Enter your text..."
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                  />
-                  <Box mt={2}>
-                    <Button onClick={handleTextSubmit} variant="contained" color="primary" style={{ marginRight: '10px' }}>Send Text</Button>
-                    <Button onClick={handleModalClose} variant="contained" color="error">Close</Button>
-                  </Box>
+                {audioBlob && (
+                    <audio controls src={URL.createObjectURL(audioBlob)} style={{ marginTop: '20px', width: '100%' }} />
+                )}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button onClick={handleAudioUpload} variant="contained" color="success">Upload Audio</Button>
+                  <Button onClick={handleModalClose} variant="contained" color="error">Close</Button>
                 </Box>
-              </Modal>
-          )}
+              </Box>
+            </Modal>
+        )}
 
-          {activeTab === 'face' && (
-              <Modal open={showModal} onClose={handleModalClose}>
-                <Box sx={styles.modal}>
-                  {!capturedImage ? (
-                      <>
-                        <Webcam
-                            audio={false}
-                            ref={webcamRef}
-                            screenshotFormat="image/jpeg"
-                            style={styles.webcam}
-                        />
-                        <Button onClick={captureImage} variant="contained" color="error" style={{ marginTop: '20px' }}>Capture</Button>
-                      </>
-                  ) : (
-                      <>
-                        <img src={capturedImage} alt="Captured" style={styles.capturedImage} />
-                        <Box mt={2}>
-                          <Button onClick={confirmImage} variant="contained" color="primary" style={{ marginRight: '10px' }}>Confirm</Button>
-                          <Button onClick={retakeImage} variant="contained" color="secondary">Retake</Button>
-                        </Box>
-                      </>
-                  )}
-                  <Button onClick={handleModalClose} variant="contained" color="error" style={{ marginTop: '20px' }}>Close</Button>
+        {/* Existing Text and Face Modals */}
+        {activeTab === 'text' && (
+            <Modal open={showModal} onClose={handleModalClose}>
+              <Box sx={styles.modal}>
+                <Typography variant="h6" style={{ marginBottom: '10px' }}>Enter Your Text</Typography>
+                <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    variant="outlined"
+                    placeholder="Enter your text..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                />
+                <Box mt={2}>
+                  <Button onClick={handleTextSubmit} variant="contained" color="primary" style={{ marginRight: '10px' }}>Send Text</Button>
+                  <Button onClick={handleModalClose} variant="contained" color="error">Close</Button>
                 </Box>
-              </Modal>
-          )}
-        </Paper>
-      </div>
+              </Box>
+            </Modal>
+        )}
+
+        {activeTab === 'face' && (
+            <Modal open={showModal} onClose={handleModalClose}>
+              <Box sx={styles.modal}>
+                {!capturedImage ? (
+                    <>
+                      <Webcam
+                          audio={false}
+                          ref={webcamRef}
+                          screenshotFormat="image/jpeg"
+                          style={styles.webcam}
+                      />
+                      <Button onClick={captureImage} variant="contained" color="error" style={{ marginTop: '20px' }}>Capture</Button>
+                    </>
+                ) : (
+                    <>
+                      <img src={capturedImage} alt="Captured" style={styles.capturedImage} />
+                      <Box mt={2}>
+                        <Button onClick={confirmImage} variant="contained" color="primary" style={{ marginRight: '10px' }}>Confirm</Button>
+                        <Button onClick={retakeImage} variant="contained" color="secondary">Retake</Button>
+                      </Box>
+                    </>
+                )}
+                <Button onClick={handleModalClose} variant="contained" color="error" style={{ marginTop: '20px' }}>Close</Button>
+              </Box>
+            </Modal>
+        )}
+      </Paper>
+    </div>
   );
 };
 
 const styles = {
   container: {
-    height: '100vh',
+    height: '99vh',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',

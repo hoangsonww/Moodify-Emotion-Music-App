@@ -1,3 +1,5 @@
+import subprocess
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -12,6 +14,8 @@ import os
 import tempfile
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import mimetypes
+import moviepy.editor as mp
 
 
 @swagger_auto_schema(
@@ -63,23 +67,52 @@ def speech_emotion(request):
 
     audio_file = request.FILES["file"]
     temp_file_path = None
+    converted_file_path = None
 
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
-            # Read the content of the uploaded file and write it to the temp file
+        # Determine the file's mimetype
+        mime_type, _ = mimetypes.guess_type(audio_file.name)
+
+        # Save the uploaded audio file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav" if mime_type == "audio/wav" else ".webm") as temp_file:
             for chunk in audio_file.chunks():
                 temp_file.write(chunk)
             temp_file_path = temp_file.name
 
-        # Now you can use temp_file_path for further processing
-        emotion = infer_speech_emotion(temp_file_path)
+        # If the file is in WebM format, convert it to wav using ffmpeg
+        if mime_type == "audio/webm" or mime_type == "video/webm":
+            try:
+                # Convert webm to wav using ffmpeg
+                converted_file_path = temp_file_path.replace(".webm", ".wav")
+                ffmpeg_command = [
+                    "ffmpeg", "-i", temp_file_path, "-acodec", "pcm_s16le", "-ar", "16000", converted_file_path
+                ]
+                result = subprocess.run(ffmpeg_command, capture_output=True, text=True)
+
+                if result.returncode != 0:
+                    print(f"FFmpeg conversion error: {result.stderr}")
+                    return Response({"error": "Failed to convert webm to wav."},
+                                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except Exception as e:
+                print(f"Error converting webm to wav: {e}")
+                return Response({"error": "Failed to convert webm to wav."},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Use the original file path if it's already a wav file, or the converted path
+        file_to_process = converted_file_path if converted_file_path else temp_file_path
+
+        # Process the file
+        emotion = infer_speech_emotion(file_to_process)
         recommendations = get_music_recommendation(emotion)
+
         return Response({"emotion": emotion, "recommendations": recommendations})
 
     finally:
-        # Optional: clean up the temporary file
+        # Clean up the temporary files
         if temp_file_path and os.path.exists(temp_file_path):
             os.remove(temp_file_path)
+        if converted_file_path and os.path.exists(converted_file_path):
+            os.remove(converted_file_path)
 
 
 @swagger_auto_schema(
@@ -115,6 +148,10 @@ def facial_emotion(request):
 
         # Infer emotion from the facial image file
         emotion = infer_facial_emotion(temp_file_path)
+
+        # Check if emotion was properly inferred
+        if emotion is None:
+            return Response({"error": "Could not detect emotion from the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Get music recommendations based on the detected emotion
         recommendations = get_music_recommendation(emotion)
