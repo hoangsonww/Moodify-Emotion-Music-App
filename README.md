@@ -5,7 +5,7 @@ Realizing this need, **Moodify** was developed by [Son Nguyen](https://github.co
 
 The Moodify project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes text, speech, or facial expressions and suggests music that aligns with the detected emotions.
 
-Supporting both desktop and mobile platforms, Moodify offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages React for the frontend, Django for the backend, and AI/ML models for emotion detection. Data analytics scripts are used to visualize emotion trends and model performance.
+Supporting both desktop and mobile platforms, Moodify offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance.
 
 ## **Table of Contents**
 
@@ -17,6 +17,8 @@ Supporting both desktop and mobile platforms, Moodify offers a seamless user exp
 - [Getting Started](#getting-started)
 - [API Endpoints](#api-endpoints)
 - [Backend APIs Documentation](#backend-apis-documentation)
+- [About the AI/ML Models](#about-the-aiml-models)
+- [Mobile App Version](#mobile-app-version)
 - [Analytics Scripts](#analytics-scripts)
 - [Contributing](#contributing)
 - [License](#license)
@@ -37,81 +39,81 @@ Moodify provides personalized music recommendations based on users' emotional st
 
 - **Frontend**: React, Axios, Material UI (MUI), React Router, and more.
 - **Backend**: Django, MongoDB, Redis (for Server-Side Caching), JWT Authentication.
-- **AI/ML Models**: PyTorch, TensorFlow, Keras, HuggingFace Transformers
-- **Data Analytics**: Pandas, Matplotlib, Hadoop, Spark
-- **Mobile**: React Native, Expo
+- **AI/ML Models**: PyTorch, TensorFlow, Keras, HuggingFace Transformers.
+- **Data Analytics**: Pandas, Matplotlib, Hadoop, Spark.
+- **Mobile**: React Native, Expo.
 
 ## User Interface
 
 ### Home Page
 
 <p align="center">
-  <img src="/images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
+  <img src="images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### Text Input
 
 <p align="center">
-  <img src="/images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
+  <img src="images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Speech Input
 
 <p align="center">
-  <img src="/images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
+  <img src="images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
 </p>
 
 <p align="center">
-  <img src="/images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
+  <img src="images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Facial Expression Input
 
 <p align="center">
-  <img src="/images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+  <img src="images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 </p>
 
 <p align="center">
-  <img src="/images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+  <img src="images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 
 ### Profile Page
 
 <p align="center">
-  <img src="/images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
+  <img src="images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
 <p align="center">
-  <img src="/images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
+  <img src="images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
 ### Results/Recommendations Page
 
 <p align="center">
-  <img src="/images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
+  <img src="images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
 </p>
 
 ### Login Page
 
 <p align="center">
-  <img src="/images/login.png" alt="Login Page" width="100%" style="border-radius: 10px">
+  <img src="images/login.png" alt="Login Page" width="100%" style="border-radius: 10px">
 </p>
 
 ### Registration Page
 
 <p align="center">
-  <img src="/images/registration.png" alt="Registration Page" width="100%" style="border-radius: 10px">
+  <img src="images/registration.png" alt="Registration Page" width="100%" style="border-radius: 10px">
 </p>
 
 ### 404 Not Found Page
 
 <p align="center">
-  <img src="/images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
+  <img src="images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
 </p>
 
 ## Footer
 
 <p align="center">
-  <img src="/images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
+  <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
 </p>
 
 ## **Complete File Structure**
@@ -341,7 +343,7 @@ Finally, set up the frontend to interact with the backend.
 3. You should see the following login page:
 
 <p align="center">
-  <img src="/images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
+  <img src="images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
 </p>
 
 ## **Backend APIs Documentation**
@@ -352,17 +354,29 @@ Our backend APIs are all well-documented using Swagger UI and Redoc. You can acc
 
 If you have set up the backend correctly, you should see the following API documentation:
 
-Swagger UI:
+**Swagger UI:**
 
 <p align="center">
-  <img src="/images/swagger-ui.png" alt="Swagger UI" width="100%" style="border-radius: 10px">
+  <img src="images/swagger-ui.png" alt="Swagger UI" width="100%" style="border-radius: 10px">
 </p>
 
-Redoc:
+**Redoc:**
 
 <p align="center">
-  <img src="/images/redoc-ui.png" alt="Redoc" width="100%" style="border-radius: 10px">
+  <img src="images/redoc-ui.png" alt="Redoc" width="100%" style="border-radius: 10px">
 </p>
+
+## **About the AI/ML Models**
+
+The AI/ML models are built using PyTorch, TensorFlow, Keras, and HuggingFace Transformers. These models are trained on various datasets to detect emotions from text, speech, and facial expressions.
+
+The emotion detection models are used to analyze user inputs and provide real-time music recommendations based on the detected emotions. The models are trained on various datasets to capture the nuances of human emotions and provide accurate predictions.
+
+- **Text Emotion Detection**: Detects emotions from text inputs.
+- **Speech Emotion Detection**: Analyzes emotions from speech inputs.
+- **Facial Emotion Detection**: Detects emotions from facial expressions.
+
+The models are integrated into the backend API services to provide real-time emotion detection and music recommendations for users.
 
 ## **Mobile App Version**
 
@@ -388,7 +402,7 @@ There is also a mobile version of the Moodify app built using React Native and E
 If successful, you should see the following home screen:
 
 <p align="center">
-  <img src="/images/mobile-ui.png" alt="Mobile Home" width="50%" style="border-radius: 10px">
+  <img src="images/mobile-ui.png" alt="Mobile Home" width="50%" style="border-radius: 10px">
 </p>
 
 Feel free to explore the mobile app and test its functionalities!
