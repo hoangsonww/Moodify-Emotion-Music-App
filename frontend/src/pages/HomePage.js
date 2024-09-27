@@ -23,6 +23,8 @@ const HomePage = () => {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
+    console.log('useEffect triggered, token:', token);
+
     const fetchUserData = async () => {
       try {
         const response = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
@@ -31,12 +33,16 @@ const HomePage = () => {
           },
         });
 
-        // Extract the MongoDB _id
         const userProfile = response.data;
-        const userId = userProfile._id; // This should be the actual MongoDB _id field
+        const userId = userProfile.id;
 
-        // Save user data along with the userId
-        setUserData({ ...userProfile, id: userId }); // 'id' is now the MongoDB ObjectId
+        if (!userId) {
+          console.error('MongoDB User ID is missing:', userProfile);
+          return;
+        }
+
+        setUserData({ ...userProfile, id: userId });
+        console.log('User data successfully fetched and set:', { ...userProfile, id: userId });
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -44,6 +50,8 @@ const HomePage = () => {
 
     if (token) {
       fetchUserData();
+    } else {
+      console.error('No token available.');
     }
   }, [token]);
 
@@ -397,7 +405,7 @@ const HomePage = () => {
         {activeTab === 'speech' && (
             <Modal open={showModal} onClose={handleModalClose}>
               <Box sx={styles.modal}>
-                <Typography variant="h6">Record Your Audio</Typography>
+                <Typography variant="h6" style={{ font: 'inherit' }}>Record Your Audio</Typography>
                 <Box sx={{ mt: 2 }}>
                   <Button onClick={startRecording} variant="contained" color="primary" disabled={isRecording}>
                     Start Recording
@@ -406,6 +414,12 @@ const HomePage = () => {
                     Stop Recording
                   </Button>
                 </Box>
+                <div style={{ height: '20px' }} />
+                {audioBlob && (
+                    <Typography variant="h6" style={{ marginTop: '10px', font: 'inherit' }}>
+                      Review your recording
+                    </Typography>
+                )}
                 {audioBlob && (
                     <audio controls src={URL.createObjectURL(audioBlob)} style={{ marginTop: '20px', width: '100%' }} />
                 )}
@@ -421,19 +435,25 @@ const HomePage = () => {
         {activeTab === 'text' && (
             <Modal open={showModal} onClose={handleModalClose}>
               <Box sx={styles.modal}>
-                <Typography variant="h6" style={{ marginBottom: '10px' }}>Enter Your Text</Typography>
+                <Typography variant="h6" style={{ marginBottom: '10px', font: 'inherit', fontSize: '16px' }}>Enter Your Text</Typography>
                 <TextField
                     fullWidth
                     multiline
                     rows={4}
                     variant="outlined"
-                    placeholder="Enter your text..."
+                    placeholder="Tell us how you feel right now..."
                     value={inputValue}
+                    InputProps={{
+                      style: { fontFamily: 'Poppins', fontSize: '16px' },
+                    }}
+                    InputLabelProps={{
+                      style: { fontFamily: 'Poppins' },
+                    }}
                     onChange={(e) => setInputValue(e.target.value)}
                 />
                 <Box mt={2}>
-                  <Button onClick={handleTextSubmit} variant="contained" color="primary" style={{ marginRight: '10px' }}>Send Text</Button>
-                  <Button onClick={handleModalClose} variant="contained" color="error">Close</Button>
+                  <Button onClick={handleTextSubmit} variant="contained" style={{ marginRight: '10px', font: 'inherit', backgroundColor: '#ff1a1a' }}>Send Text</Button>
+                  <Button onClick={handleModalClose} variant="contained" color="error" style={{ font: 'inherit', backgroundColor: 'white', color: 'red' }}>Close</Button>
                 </Box>
               </Box>
             </Modal>
@@ -444,24 +464,25 @@ const HomePage = () => {
               <Box sx={styles.modal}>
                 {!capturedImage ? (
                     <>
+                      <Typography variant="h6" style={{ marginBottom: '10px', font: 'inherit' }}>Image Capture</Typography>
                       <Webcam
                           audio={false}
                           ref={webcamRef}
                           screenshotFormat="image/jpeg"
                           style={styles.webcam}
                       />
-                      <Button onClick={captureImage} variant="contained" color="error" style={{ marginTop: '20px' }}>Capture</Button>
+                      <Button onClick={captureImage} variant="contained" color="error" style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#ff1a1a', font: 'inherit' }}>Capture</Button>
                     </>
                 ) : (
                     <>
                       <img src={capturedImage} alt="Captured" style={styles.capturedImage} />
                       <Box mt={2}>
-                        <Button onClick={confirmImage} variant="contained" color="primary" style={{ marginRight: '10px' }}>Confirm</Button>
-                        <Button onClick={retakeImage} variant="contained" color="secondary">Retake</Button>
+                        <Button onClick={confirmImage} variant="contained" color="primary" style={{ marginRight: '10px', font: 'inherit' }}>Confirm</Button>
+                        <Button onClick={retakeImage} variant="contained" color="secondary" style={{ font: 'inherit' }}>Retake</Button>
                       </Box>
                     </>
                 )}
-                <Button onClick={handleModalClose} variant="contained" color="error" style={{ marginTop: '20px' }}>Close</Button>
+                <Button onClick={handleModalClose} variant="contained" color="error" style={{ marginTop: '20px', font: 'inherit', backgroundColor: 'white', color: '#ff1a1a' }}>Close</Button>
               </Box>
             </Modal>
         )}

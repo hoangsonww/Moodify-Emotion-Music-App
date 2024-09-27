@@ -7,12 +7,12 @@ body {
 }
 
 button {
-  background-color: red;
+  background-color: #ff4d4d;
   color: white;
 }
 
 button:hover {
-  background-color: darkred;
+  background-color: #ff1a1a;
 }
 
 input, textarea {
@@ -24,7 +24,7 @@ input, textarea {
 }
 
 input:focus, textarea:focus {
-  border-color: red;
+  border-color: #ff4d4d;
 }
 
 h2, h4, h6 {

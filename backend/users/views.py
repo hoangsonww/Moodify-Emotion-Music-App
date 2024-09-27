@@ -99,6 +99,7 @@ def user_profile(request):
         user_profile = UserProfile.objects.get(username=request.user.username)
 
         return Response({
+            "id": str(user_profile.id),
             "username": user_profile.username,
             "email": request.user.email,
             "listening_history": user_profile.listening_history,
