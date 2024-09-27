@@ -50,15 +50,15 @@ frontend/
 │   ├── styles/                      # Contains global styles and themes
 │   │   └── styles.css               # Main CSS file
 │   │
-│   ├── App.js                  # Main App component
-│   ├── App.css                 # CSS for the main App component
-│   ├── index.js                # Entry point for React
-│   ├── theme.js                # Material UI theme configuration
-│   └── reportWebVitals.js      # For measuring performance
+│   ├── App.js                       # Main App component
+│   ├── App.css                      # CSS for the main App component
+│   ├── index.js                     # Entry point for React
+│   ├── theme.js                     # Material UI theme configuration
+│   └── reportWebVitals.js           # For measuring performance
 │
-├── .gitignore                   # Git ignore file
-├── package.json                 # NPM dependencies and scripts
-└── README.md                    # Project documentation
+├── .gitignore                       # Git ignore file
+├── package.json                     # NPM dependencies and scripts
+└── README.md                        # Project documentation
 ```
 
 ## Features
