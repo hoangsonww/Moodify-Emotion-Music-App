@@ -1,4 +1,4 @@
-import react from 'react';
+import React from 'react';
 import { Box, Typography, Paper, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';

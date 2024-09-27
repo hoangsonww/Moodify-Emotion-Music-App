@@ -1,4 +1,3 @@
-// src/components/ModalComponent.js
 import React, { useState } from 'react';
 import { Box, Button, Modal, Typography } from '@mui/material';
 import FacialInput from './MoodInput/FacialInput';

@@ -1,4 +1,3 @@
-// src/components/MoodInput/FacialInput.js
 import React from 'react';
 import { Button } from '@mui/material';
 
@@ -6,7 +5,6 @@ const FacialInput = () => {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     console.log('Facial Input File:', file);
-    // API call to analyze facial emotion goes here
   };
 
   return (
