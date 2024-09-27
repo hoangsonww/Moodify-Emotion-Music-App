@@ -18,35 +18,42 @@ Moodify is a React-based frontend application that analyzes user input (text, sp
 frontend/
 │
 ├── public/
-│   ├── index.html                # Main HTML file
-│   ├── manifest.json             # Web app manifest
-│   └── favicon.ico               # Favicon for the app
+│   ├── index.html                   # Main HTML file
+│   ├── manifest.json                # Web app manifest
+│   └── favicon.ico                  # Favicon for the app
 │
 ├── src/
-│   ├── components/               # Contains all React components
+│   ├── components/                  # Contains all React components
 │   │   ├── Auth/
-│   │   │   ├── Login.js          # Login component
-│   │   │   └── Register.js       # Registration component
+│   │   │   ├── Login.js             # Login component
+│   │   │   └── Register.js          # Registration component
 │   │   ├── MoodInput/
-│   │   │   ├── FacialInput.js    # Main MoodInput component
-│   │   │   ├── SpeechInput.js    # Speech input component
-│   │   │   ├── TextInput.js      # Text input component
+│   │   │   ├── FacialInput.js       # Main MoodInput component
+│   │   │   ├── SpeechInput.js       # Speech input component
+│   │   │   ├── TextInput.js         # Text input component
 │   │   ├── Profile/
-│   │   ├── MoodHistory.js      # Mood history component
-│   │   ├── Login.js            # Login component
-│   │   ├── Register.js         # Registration component
-│   │   └── Modal.js            # Modal component for user input
+│   │   │   ├── Profile.js           # Profile component
+│   │   │   ├── ListeningHistory.js  # Listening history component
+│   │   │   ├── MoodHistory.js       # Mood history component
+│   │   │   └── Recommendations.js   # Music recommendations component
+│   │   ├── Footer.js                # Footer component
+│   │   ├── Navbar.js                # Header component
+│   │   ├── ModalComponent.js        # Modal component for user input
 │   │
-│   ├── services/               # Contains API service calls
-│   │   ├── auth.js             # Authentication-related API calls
-│   │   └── emotion.js          # Emotion-related API calls
+│   ├── pages/                       # Contains main pages of the app
+│   │   ├── HomePage.js              # Home page component
+│   │   ├── ProfilePage.js           # Profile page component
+│   │   ├── ResultsPage.js           # Results page component
+│   │   ├── NotFoundPage.js          # 404 page component
+│   │   └── RecommendationsPage.js   # Recommendations page component
 │   │
-│   ├── styles/                 # Contains global styles and themes
-│   │   └── styles.css          # Main CSS file
+│   ├── styles/                      # Contains global styles and themes
+│   │   └── styles.css               # Main CSS file
 │   │
 │   ├── App.js                  # Main App component
 │   ├── App.css                 # CSS for the main App component
 │   ├── index.js                # Entry point for React
+│   ├── theme.js                # Material UI theme configuration
 │   └── reportWebVitals.js      # For measuring performance
 │
 ├── .gitignore                   # Git ignore file

@@ -536,7 +536,7 @@ const styles = {
     width: '100px',
     height: '100px',
     borderRadius: '50%',
-    backgroundColor: 'red',
+    backgroundColor: '#ff4d4d',
     color: 'white',
     fontSize: '14px',
     padding: '10px',

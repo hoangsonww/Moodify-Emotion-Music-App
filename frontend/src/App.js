@@ -8,6 +8,7 @@ import ProfilePage from './pages/ProfilePage';
 import ResultsPage from './pages/ResultsPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import Footer from "./components/Footer";
+import NotFoundPage from "./pages/NotFoundPage";
 import './styles/styles.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
       </Router>
