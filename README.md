@@ -1,11 +1,15 @@
 # **Moodify - Emotion-Based Music Recommendation App**
 
 With the rise of personalized music streaming services, there is a growing need for systems that can recommend music based on users' emotional states.
-Realizing this need, **Moodify** was developed by [Son Nguyen](https://github.com/hoangsonww) to provide personalized music recommendations based on users' detected emotions.
+Realizing this need, **Moodify** is being developed by [Son Nguyen](https://github.com/hoangsonww) in 2024 to provide personalized music recommendations based on users' detected emotions.
 
 The Moodify project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes text, speech, or facial expressions and suggests music that aligns with the detected emotions.
 
 Supporting both desktop and mobile platforms, Moodify offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance.
+
+<p align="center">
+  <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 10px">
+</p>
 
 ## **Table of Contents**
 
@@ -37,11 +41,43 @@ Moodify provides personalized music recommendations based on users' emotional st
 
 ## **Technologies**
 
-- **Frontend**: React, Axios, Material UI (MUI), React Router, and more.
-- **Backend**: Django, MongoDB, Redis (for Server-Side Caching), JWT Authentication.
-- **AI/ML Models**: PyTorch, TensorFlow, Keras, HuggingFace Transformers.
-- **Data Analytics**: Pandas, Matplotlib, Hadoop, Spark.
-- **Mobile**: React Native, Expo.
+- **Frontend**: 
+  - React
+  - Axios
+  - Material UI (MUI)
+  - React Router
+  - React Redux
+- **Backend**: 
+  - Django
+  - Django REST Framework
+  - MongoEngine
+  - JWT Authentication.
+  - Spotify APIs
+  - Swagger and Redoc for API documentation
+- **Databases**: 
+  - MongoDB
+  - Redis (for server-side caching)
+  - SQLite
+- **AI/ML Models**: 
+  - PyTorch
+  - TensorFlow
+  - Keras
+  - HuggingFace Transformers
+  - Pandas
+  - Scikit-learn
+  - NumPy
+  - FER (Facial Expression Recognition) Library
+- **Data Analytics**: 
+  - Pandas
+  - Matplotlib
+  - Hadoop
+  - Spark
+- **Mobile**: 
+  - React Native
+  - Expo
+  - Expo Go
+- **PWA**: 
+  - Progressive Web App features for offline support
 
 ## User Interface
 
@@ -435,4 +471,4 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
 
 **Happy Coding and Analyzing! 🎶**
 
-[🔝 Back to Top](#moodify---emotion-based-music-recommendation-system)
+[🔝 Back to Top](#moodify---emotion-based-music-recommendation-app)
