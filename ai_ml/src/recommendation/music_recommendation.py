@@ -11,9 +11,11 @@ def get_music_recommendation(emotion):
         print(f"Error retrieving access token: {e}")
         return []
 
+    available_genre = ["acoustic", "afrobeat", "alt-rock", "alternative", "ambient", "anime", "black-metal", "bluegrass", "blues", "bossanova", "brazil", "breakbeat", "british", "cantopop", "chicago-house", "children", "chill", "classical", "club", "comedy", "country", "dance", "dancehall", "death-metal", "deep-house", "detroit-techno", "disco", "disney", "drum-and-bass", "dub", "dubstep", "edm", "electro", "electronic", "emo", "folk", "forro", "french", "funk", "garage", "german", "gospel", "goth", "grindcore", "groove", "grunge", "guitar", "happy", "hard-rock", "hardcore", "hardstyle", "heavy-metal", "hip-hop", "holidays", "honky-tonk", "house", "idm", "indian", "indie", "indie-pop", "industrial", "iranian", "j-dance", "j-idol", "j-pop", "j-rock", "jazz", "k-pop", "kids", "latin", "latino", "malay", "mandopop", "metal", "metal-misc", "metalcore", "minimal-techno", "movies", "mpb", "new-age", "new-release", "opera", "pagode", "party", "philippines-opm", "piano", "pop", "pop-film", "post-dubstep", "power-pop", "progressive-house", "psych-rock", "punk", "punk-rock", "r-n-b", "rainy-day", "reggae", "reggaeton", "road-trip", "rock", "rock-n-roll", "rockabilly", "romance", "sad", "salsa", "samba", "sertanejo", "show-tunes", "singer-songwriter", "ska", "sleep", "songwriter", "soul", "soundtracks", "spanish", "study", "summer", "swedish", "synth-pop", "tango", "techno", "trance", "trip-hop", "turkish", "work-out", "world-music"]
+
     # Mapping emotion to genre
     emotion_to_genre = {
-        "joy": "happy",
+        "joy": "hip-hop",
         "happy": "happy",
         "sadness": "sad",
         "anger": "metal",
@@ -25,46 +27,28 @@ def get_music_recommendation(emotion):
         "surprised": "party",
         "surprise": "party",
         "excited": "party",
-        "fun": "party",
         "bored": "pop",
         "tired": "chill",
         "relaxed": "chill",
-        "anxious": "sad",
-        "depressed": "sad",
         "stressed": "chill",
+        "anxious": "chill",
+        "depressed": "sad",
         "lonely": "sad",
+        "energetic": "hip-hop",
+        "nostalgic": "pop",
         "confused": "pop",
         "frustrated": "metal",
-        "disappointed": "sad",
         "hopeful": "romance",
-        "nostalgic": "romance",
-        "sentimental": "romance",
-        "proud": "pop",
-        "ashamed": "blues",
+        "proud": "hip-hop",
         "guilty": "blues",
-        "jealous": "blues",
-        "envious": "blues",
-        "bitter": "blues",
-        "sympathetic": "romance",
-        "empathetic": "romance",
-        "caring": "romance",
-        "compassionate": "romance",
-        "friendly": "pop",
-        "kind": "pop",
-        "mean": "metal",
-        "selfish": "blues",
-        "selfless": "romance",
-        "thoughtful": "romance",
-        "neglectful": "sad",
-        "forgetful": "pop",
-        "considerate": "romance",
-        "inconsiderate": "blues",
-        "hurt": "sad",
-        "hateful": "metal",
-        "loving": "romance",
-        "passionate": "romance",
-        "indifferent": "pop",
-        "apathetic": "pop"
+        "jealous": "pop",
+        "ashamed": "blues",
+        "disappointed": "pop",
+        "content": "chill",
+        "insecure": "pop",
+        "embarassed": "blues",
+        "overwhelmed": "chill",
+        "amused": "party"
     }
 
     # Determine the genre for the given emotion

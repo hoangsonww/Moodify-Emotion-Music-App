@@ -153,45 +153,45 @@ def user_profile_delete(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username to save recommendations for'),
             'recommendations': openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'name': openapi.Schema(type=openapi.TYPE_STRING),
-                        'artist': openapi.Schema(type=openapi.TYPE_STRING),
-                        'preview_url': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
-                        'external_url': openapi.Schema(type=openapi.TYPE_STRING),
+                        'name': openapi.Schema(type=openapi.TYPE_STRING, description='Name of the song'),
+                        'artist': openapi.Schema(type=openapi.TYPE_STRING, description='Name of the artist'),
+                        'preview_url': openapi.Schema(type=openapi.TYPE_STRING, nullable=True, description='Preview URL of the song'),
+                        'external_url': openapi.Schema(type=openapi.TYPE_STRING, description='External URL of the song'),
                     },
                 ),
                 description='List of music recommendations'
             ),
         },
-        required=['username', 'recommendations'],
+        required=['recommendations'],
     ),
     responses={
         201: openapi.Response('Recommendations saved successfully.'),
-        400: openapi.Response('Username and recommendations are required.'),
+        400: openapi.Response('Recommendations are required.'),
         404: openapi.Response('User not found.'),
         500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['POST'])
-def save_recommendations(request):
+@permission_classes([IsAuthenticated])
+def save_recommendations(request, user_id):
     try:
-        username = request.data.get("username")
         recommendations = request.data.get("recommendations")
 
-        if not username or not recommendations:
-            return Response({"error": "Username and recommendations are required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not recommendations:
+            return Response({"error": "Recommendations are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_profile = UserProfile.objects(username=username).first()
+        user_profile = UserProfile.objects(id=user_id).first()
         if not user_profile:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        user_profile.recommendations.append(recommendations)
+        user_profile.recommendations.extend(recommendations)
         user_profile.save()
+
         return Response({"message": "Recommendations saved successfully"}, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -206,13 +206,17 @@ def save_recommendations(request):
     },
 )
 @api_view(['GET'])
-def get_recommendations(request, username):
+@permission_classes([IsAuthenticated])
+def get_recommendations(request, user_id):
     try:
-        user_profile = UserProfile.objects(username=username).first()
+        # Retrieve user profile using MongoDB ObjectId
+        user_profile = UserProfile.objects(id=user_id).first()
+
         if not user_profile:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response({"recommendations": user_profile.recommendations}, status=status.HTTP_200_OK)
+
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -220,34 +224,29 @@ def get_recommendations(request, username):
 @swagger_auto_schema(
     method='delete',
     manual_parameters=[
-        openapi.Parameter('username', openapi.IN_PATH, description='Username to delete recommendations for', type=openapi.TYPE_STRING),
-        openapi.Parameter('recommendation_id', openapi.IN_PATH, description='Recommendation ID to delete', type=openapi.TYPE_STRING, required=True),
+        openapi.Parameter('user_id', openapi.IN_PATH, description='User ID to delete recommendations for', type=openapi.TYPE_STRING),
     ],
     responses={
-        200: openapi.Response('Recommendation deleted successfully.'),
+        200: openapi.Response('All recommendations deleted successfully.'),
         404: openapi.Response('User not found.'),
         500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['DELETE'])
-def delete_recommendation(request, username, recommendation_id=None):
+def delete_all_recommendations(request, user_id):
     try:
-        user_profile = UserProfile.objects(username=username).first()
+        # Retrieve user profile by MongoDB ObjectId
+        user_profile = UserProfile.objects(id=user_id).first()
+
         if not user_profile:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if recommendation_id:
-            # Delete a specific recommendation
-            user_profile.recommendations = [
-                rec for rec in user_profile.recommendations if rec['id'] != recommendation_id
-            ]
-            user_profile.save()
-            return Response({"message": "Recommendation deleted"}, status=status.HTTP_200_OK)
-        else:
-            # Delete all recommendations
-            user_profile.recommendations.clear()
-            user_profile.save()
-            return Response({"message": "All recommendations deleted"}, status=status.HTTP_200_OK)
+        # Explicitly set recommendations to an empty list
+        user_profile.recommendations = []
+        user_profile.save()
+
+        return Response({"message": "All recommendations deleted"}, status=status.HTTP_200_OK)
+
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -284,35 +283,43 @@ def user_recommendations(request, user_id):
     if request.method == 'POST':
         data = json.loads(request.body)
         try:
-            user = UserProfile.objects.get(id=user_id)
-            user.recommendations = data.get('recommendations', [])
-            user.save()
-            return JsonResponse({"message": "Recommendations saved successfully."}, status=201)
+            user_profile = UserProfile.objects.get(id=user_id)
+            user_profile.recommendations.extend(data.get('recommendations', []))
+            user_profile.save()
+            return Response({"message": "Recommendations saved successfully."}, status=status.HTTP_201_CREATED)
         except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'GET':
         try:
-            user = UserProfile.objects.get(id=user_id)
-            return JsonResponse({"recommendations": user.recommendations}, status=200)
+            user_profile = UserProfile.objects.get(id=user_id)
+            return Response({"recommendations": user_profile.recommendations}, status=status.HTTP_200_OK)
         except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'DELETE':
         try:
-            user = UserProfile.objects.get(id=user_id)
-            user.recommendations.clear()  # Clear all recommendations
-            user.save()
-            return JsonResponse({"message": "All recommendations deleted."}, status=204)
+            user_profile = UserProfile.objects.get(id=user_id)
+            user_profile.recommendations.clear()  # Clear all recommendations
+            user_profile.save()
+            return Response({"message": "All recommendations deleted."}, status=status.HTTP_204_NO_CONTENT)
         except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 @csrf_exempt
 @swagger_auto_schema(
-    method='get',
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'mood': openapi.Schema(type=openapi.TYPE_STRING, description='Detected mood'),
+        },
+        required=['mood'],
+    ),
     responses={
-        200: openapi.Response('Mood history retrieved successfully.'),
+        201: openapi.Response('Mood history updated successfully.'),
+        400: openapi.Response('Mood is required.'),
         404: openapi.Response('User not found.'),
     },
 )

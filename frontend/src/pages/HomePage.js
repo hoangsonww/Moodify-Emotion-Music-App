@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {Box, Button, Typography, Paper, TextField, Modal, CircularProgress} from '@mui/material';
 import Webcam from 'react-webcam';
 import axios from 'axios';
@@ -18,6 +18,28 @@ const HomePage = () => {
   const [isRecording, setIsRecording] = useState(false);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  const token = localStorage.getItem('token');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        setUserData(response.data); // Set the user data
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (token) {
+      fetchUserData();
+    }
+  }, [token]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -26,6 +48,50 @@ const HomePage = () => {
     setShowModal(false);
     setCapturedImage(null);
     setAudioBlob(null);
+  };
+
+  const saveToHistory = async (mood, recommendations) => {
+    try {
+      // Check if userData is available
+      if (!userData) {
+        console.error('User data is not available.');
+        return;
+      }
+
+      // Save mood history
+      await axios.post(`http://127.0.0.1:8000/users/mood_history/${userData.id}/`, { mood }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Save recommendations history
+      await axios.post(`http://127.0.0.1:8000/users/recommendations/${userData.id}/`, {
+        recommendations: recommendations.map((rec) => ({
+          name: rec.name,
+          artist: rec.artist,
+          preview_url: rec.preview_url,
+          external_url: rec.external_url,
+        })),
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Refresh user data to reflect the updated history
+      const updatedUserData = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      setUserData(updatedUserData.data);
+
+    } catch (error) {
+      console.error('Error saving history:', error);
+    }
   };
 
   const handleFileUpload = async (e) => {
@@ -40,49 +106,49 @@ const HomePage = () => {
     const formData = new FormData();
     formData.append('file', uploadedFile);
 
-    const token = localStorage.getItem('token');
-
     if (!token) {
       alert('User is not authenticated. Please log in.');
       return;
     }
 
-    setIsLoading(true); // Start loading indicator
+    setIsLoading(true);
 
     try {
+      let response;
       if (activeTab === 'text') {
         const textContent = await uploadedFile.text();
-        const response = await axios.post('http://127.0.0.1:8000/api/text_emotion/', { text: textContent }, {
+        response = await axios.post('http://127.0.0.1:8000/api/text_emotion/', { text: textContent }, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
-
-        navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
       } else if (activeTab === 'face') {
-        const response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
+        response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         });
-
-        navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
       } else if (activeTab === 'speech') {
-        const response = await axios.post('http://127.0.0.1:8000/api/speech_emotion/', formData, {
+        response = await axios.post('http://127.0.0.1:8000/api/speech_emotion/', formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         });
-
-        navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
       }
+
+      const { emotion, recommendations } = response.data;
+
+      // Save both mood and recommendations to history
+      await saveToHistory(emotion, recommendations);
+
+      navigate('/results', { state: { emotion, recommendations } });
     } catch (error) {
       console.error(`Error uploading ${activeTab} file:`, error);
       alert(`Failed to upload the ${activeTab} file. Please try again.`);
     } finally {
       handleModalClose();
-      setIsLoading(false); // Stop loading indicator
+      setIsLoading(false);
     }
   };
 
@@ -116,8 +182,6 @@ const HomePage = () => {
       const formData = new FormData();
       formData.append('file', blob, 'captured_image.jpg');
 
-      const token = localStorage.getItem('token');
-
       if (!token) {
         alert('User is not authenticated. Please log in.');
         return;
@@ -125,11 +189,16 @@ const HomePage = () => {
 
       const response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
-      navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
+      const { emotion, recommendations } = response.data;
+
+      // Save both mood and recommendations to history
+      await saveToHistory(emotion, recommendations);
+
+      navigate('/results', { state: { emotion, recommendations } });
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Failed to upload the image. Please try again.');
@@ -145,16 +214,22 @@ const HomePage = () => {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/text_emotion/', { text: inputValue.trim() }, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
 
-      setIsLoading(true);
+      const { emotion, recommendations } = response.data;
 
-      navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
+      // Save both mood and recommendations to history
+      await saveToHistory(emotion, recommendations);
+
+      navigate('/results', { state: { emotion, recommendations } });
     } catch (error) {
       console.error('Error processing text:', error);
       alert('Failed to process the text. Please try again.');
@@ -194,13 +269,11 @@ const HomePage = () => {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       const formData = new FormData();
       formData.append('file', audioBlob, 'recorded_audio.wav');
-
-      const token = localStorage.getItem('token');
-
-      setIsLoading(true);
 
       if (!token) {
         alert('User is not authenticated. Please log in.');
@@ -214,7 +287,12 @@ const HomePage = () => {
         },
       });
 
-      navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
+      const { emotion, recommendations } = response.data;
+
+      // Save both mood and recommendations to history
+      await saveToHistory(emotion, recommendations);
+
+      navigate('/results', { state: { emotion, recommendations } });
     } catch (error) {
       console.error('Error uploading audio:', error);
       alert('Failed to upload the audio. Please try again.');
