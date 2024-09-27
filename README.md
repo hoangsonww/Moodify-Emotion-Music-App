@@ -116,6 +116,7 @@ Moodify provides personalized music recommendations based on users' emotional st
 
 <p align="center">
   <img src="images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+</p>
 
 ### Profile Page
 
