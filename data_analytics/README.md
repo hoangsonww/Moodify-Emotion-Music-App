@@ -7,6 +7,7 @@ This `data_analytics` directory contains scripts for performing data analysis an
 - [Directory Structure](#directory-structure)
 - [Installation](#installation)
 - [How to Use](#how-to-use)
+- [Spark/Hadoop](#sparkhadoop)
 - [Analytics Scripts](#analytics-scripts)
   - [1. emotion_distribution.py](#1-emotion_distributionpy)
   - [2. training_visualization.py](#2-training_visualizationpy)
@@ -21,12 +22,15 @@ The `data_analytics` directory has the following structure:
 ```
 data_analytics
 │
-├── emotion_distribution.py        # Script for visualizing emotion distribution in training data
-├── training_visualization.py      # Script for visualizing training and validation metrics
-├── predictions_analysis.py        # Script for analyzing and visualizing model predictions
-├── recommendation_analysis.py     # Script for visualizing music recommendations based on emotions
-├── main.py                        # Script to execute all analytics scripts sequentially
-└── visualizations/                # Directory to store generated visualizations
+├── emotion_distribution.py          # Script for visualizing emotion distribution in training data
+├── training_visualization.py        # Script for visualizing training and validation metrics
+├── predictions_analysis.py          # Script for analyzing and visualizing model predictions
+├── recommendation_analysis.py       # Script for visualizing music recommendations based on emotions
+├── main.py                          # Script to execute all analytics scripts sequentially
+├── spark-hadoop/                    # Directory containing Spark and Hadoop integration scripts
+├── ├── hadoop_config.py             # Hadoop configuration settings
+│   └── spark_hadoop_integration.py  # Script for data preprocessing using Spark and Hadoop
+└── visualizations/                  # Directory to store generated visualizations
     ├── emotion_distribution.png
     ├── loss_curve.png
     ├── accuracy_curve.png
@@ -61,6 +65,16 @@ python data_analytics/training_visualization.py
 python data_analytics/predictions_analysis.py
 python data_analytics/recommendation_analysis.py
 ```
+
+## Spark/Hadoop
+
+The `data_analytics` directory contains scripts for data preprocessing, analysis, and visualization of the training and test datasets. These scripts must be run before training the model to understand the data distribution, model performance, and music recommendation trends.
+
+```bash
+python data_analytics/spark-hadoop/spark_hadoop_integration.py
+```
+
+This script performs data preprocessing using Spark and Hadoop to clean and transform the dataset for training the emotion detection model. It also generates visualizations to understand the data distribution and trends.
 
 ## Analytics Scripts
 
