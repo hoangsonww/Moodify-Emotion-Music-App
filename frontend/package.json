@@ -1,7 +1,11 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
+  "name": "moodify-app-frontend",
+  "displayName": "Moodify App Frontend",
+  "author": "Son Nguyen",
+  "license": "MIT",
+  "description": "Frontend for Moodify Emotion-Based Music Recommendation App",
+  "version": "1.1.0",
+  "private": false,
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
@@ -11,6 +15,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
+    "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-media-recorder": "^1.7.1",

@@ -19,12 +19,17 @@ frontend/
 │
 ├── public/
 │   ├── index.html              # Main HTML file
+│   ├── manifest.json           # Web app manifest
 │   └── favicon.ico             # Favicon for the app
 │
 ├── src/
 │   ├── components/             # Contains all React components
-│   │   ├── Home.js             # Home page component
-│   │   ├── Profile.js          # User profile component
+│   │   ├── Auth/
+│   │   │   ├── Login.js        # Login component
+│   │   │   └── Register.js     # Registration component
+│   │   ├── MoodInput/
+│   │   │   ├── FacialInput.js    # Main MoodInput component
+
 │   │   ├── Recommendations.js  # Recommendations component
 │   │   ├── MoodHistory.js      # Mood history component
 │   │   ├── Login.js            # Login component
@@ -78,38 +83,18 @@ frontend/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/Moodify.git
+   git clone https://github.com/hoangsonww/Moodify-Emotion-Music-App.git
    ```
 
 2. Navigate to the frontend directory:
    ```bash
-   cd Moodify/frontend
+   cd /Moodify-Emotion-Music-App/frontend
    ```
 
 3. Install the dependencies:
    ```bash
    npm install
    ```
-
-### API Endpoints
-
-The frontend interacts with the following API endpoints:
-
-- **User Endpoints**
-    - `POST /users/register/`: Register a new user.
-    - `POST /users/login/`: Login a user and obtain a JWT token.
-    - `GET /users/user/profile/`: Retrieve the authenticated user's profile.
-    - `PUT /users/user/profile/update/`: Update the authenticated user's profile.
-    - `DELETE /users/user/profile/delete/`: Delete the authenticated user's profile.
-    - `POST /users/recommendations/`: Save recommendations for a user.
-    - `GET /users/recommendations/<username>/`: Retrieve recommendations for a user.
-    - `DELETE /users/recommendations/<username>/<recommendation_id>/`: Delete a specific recommendation for a user.
-
-- **Emotion Detection Endpoints**
-    - `POST /api/text_emotion/`: Analyze text for emotional content.
-    - `POST /api/speech_emotion/`: Analyze speech for emotional content.
-    - `POST /api/facial_emotion/`: Analyze facial expressions for emotions.
-    - `POST /api/music_recommendation/`: Get music recommendations based on emotion.
 
 ### Running the Application
 
