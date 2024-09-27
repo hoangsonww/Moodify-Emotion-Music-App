@@ -77,11 +77,11 @@ Here is the detailed file structure of the backend:
 ```
 Moodify-Emotion-Based-Music-App/
 ├── backend/
-│   ├── manage.py                  # Django's command-line utility for administrative tasks
+│   ├── manage.py                   # Django's command-line utility for administrative tasks
 │   ├── requirements.txt            # Project dependencies
 │   ├── db.sqlite3                  # SQLite database file (if used)
 │   ├── backend/
-│   │   ├── __init__.py            # Empty file to mark the directory as a Python package
+│   │   ├── __init__.py             # Empty file to mark the directory as a Python package
 │   │   ├── settings.py             # Django settings for the project
 │   │   ├── urls.py                 # URL declarations for the project
 │   │   ├── wsgi.py                 # WSGI application for deployment
