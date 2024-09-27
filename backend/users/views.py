@@ -33,7 +33,7 @@ from drf_yasg import openapi
     },
 )
 @api_view(['POST'])
-@permission_classes([AllowAny])  # Allow any user to access this view
+@permission_classes([AllowAny])
 def register(request):
     if request.method == 'POST':
         username = request.data.get('username')
@@ -45,8 +45,7 @@ def register(request):
 
         try:
             user = User.objects.create_user(username=username, password=password, email=email)
-            # Assuming you have UserProfile model for MongoDB, adjust as necessary
-            UserProfile(username=username).save()  # Save user profile in MongoDB
+            UserProfile(username=username).save()
             user.save()
             return Response({"message": "User created successfully."}, status=status.HTTP_201_CREATED)
         except Exception as e:

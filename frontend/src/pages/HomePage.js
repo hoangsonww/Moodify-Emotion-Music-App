@@ -1,4 +1,3 @@
-// src/pages/HomePage.js
 import React, { useState, useRef, useCallback } from 'react';
 import { Box, Button, Typography, Paper, TextField, Modal } from '@mui/material';
 import Webcam from 'react-webcam';
@@ -54,13 +53,11 @@ const HomePage = () => {
 
   const confirmImage = async () => {
     try {
-      // Check the base64 image data URL
       if (!capturedImage) {
         alert('No captured image found.');
         return;
       }
 
-      // Convert the base64 data URL to a Blob
       const base64Response = await fetch(capturedImage);
       const blob = await base64Response.blob();
 
@@ -114,7 +111,6 @@ const HomePage = () => {
       console.log('API Response:', response.data);
       alert('Text processed successfully!');
 
-      // Redirect to Results page with recommendations data
       navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
     } catch (error) {
       console.error('Error processing text:', error);
@@ -154,28 +150,23 @@ const HomePage = () => {
     }
 
     try {
-      // Create a FormData object and append the audio Blob
       const formData = new FormData();
       formData.append('file', audioBlob, 'recorded_audio.wav');
 
-      // Retrieve the token from localStorage
       const token = localStorage.getItem('token');
 
-      // Ensure that the token exists before making the request
       if (!token) {
         alert('User is not authenticated. Please log in.');
         return;
       }
 
-      // Send the request with the formData and authorization token
       const response = await axios.post('http://127.0.0.1:8000/api/speech_emotion/', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Explicitly set Content-Type
+          'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      // Navigate to the results page with the emotion and recommendations data
       navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
     } catch (error) {
       console.error('Error uploading audio:', error);
@@ -184,7 +175,6 @@ const HomePage = () => {
       handleModalClose();
     }
   };
-
 
   return (
     <div style={styles.container}>
