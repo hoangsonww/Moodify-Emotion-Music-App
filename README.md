@@ -37,6 +37,11 @@ Moodify provides personalized music recommendations based on users' emotional st
 - Input analysis through text, speech, and facial expressions.
 - Real-time music recommendations based on emotion detection.
 - Visualization of emotion detection results and user history.
+- Data analytics scripts for emotion trends and model performance.
+- AI/ML models for text, speech, and facial emotion detection.
+- User profile management and customization.
+- Mobile app version for seamless user experience.
+- Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
 
 ## **Technologies**
