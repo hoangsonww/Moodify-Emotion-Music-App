@@ -137,3 +137,5 @@ If you have any questions or need further assistance, feel free to reach out to 
 ---
 
 **Happy Analyzing! 🎶**
+
+[🔝 Back to Top](#data-analytics-and-visualizations-for-emotion-based-music-app)

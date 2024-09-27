@@ -286,3 +286,5 @@ If you have any questions or need further assistance, feel free to reach out to 
 ---
 
 Happy training and testing! 🚀
+
+[🔝 Back to Top](#emotion-based-music-recommendation---aiml-directory)
