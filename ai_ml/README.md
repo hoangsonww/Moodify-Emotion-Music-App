@@ -151,6 +151,16 @@ A simple REST API is provided using Flask to test the models and receive music r
 python ai_ml/src/api/emotion_api.py
 ```
 
+### **7. Music Recommendation Model**
+
+The `music_recommendation.py` script contains the logic to fetch music recommendations based on the detected emotions. The script uses the Spotify API to fetch music recommendations for the detected emotion.
+
+To test the music recommendation model, run the following command:
+
+```bash
+python ai_ml/src/recommendation/music_recommendation.py
+```
+
 ### **Endpoints:**
 
 - `/text_emotion`: Detects emotion from text input

@@ -72,8 +72,8 @@ const Navbar = () => {
                 sx={{
                   marginRight: isMobile ? '0' : '10px',
                   fontFamily: 'Poppins',
-                  backgroundColor: isActive('/home') ? '#ff4d4d' : 'transparent',
-                  color: isActive('/home') ? 'white' : 'black',
+                  backgroundColor: isActive('/home') ? '#ff4d4d' : isActive('/') ? '#ff4d4d' : 'transparent',
+                  color: isActive('/home') ? 'white' : isActive('/') ? 'white' : 'black',
                   width: isMobile ? '100%' : 'auto',
                   '&:hover': {
                     backgroundColor: '#ff4d4d',
