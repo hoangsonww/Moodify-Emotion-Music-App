@@ -2,14 +2,52 @@ import numpy as np
 import librosa
 import pickle
 import os
-import soundfile as sf
+import soundfile as sf  # Ensure you have the `soundfile` package installed
 from moviepy.editor import AudioFileClip
 from sklearn.preprocessing import StandardScaler
+import random
 
 # Define the path to the saved speech emotion model and scaler - Replace this with your own path
 MODEL_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/speech_emotion_model/trained_speech_emotion_model.pkl"
 SCALER_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/speech_emotion_model/scaler.pkl"
 
+# Define emotion-to-genre mapping
+emotion_to_genre = {
+    "joy": "hip-hop",
+    "happy": "happy",
+    "sadness": "sad",
+    "anger": "metal",
+    "love": "romance",
+    "fear": "sad",
+    "neutral": "pop",
+    "calm": "chill",
+    "disgust": "blues",
+    "surprised": "party",
+    "surprise": "party",
+    "excited": "party",
+    "bored": "pop",
+    "tired": "chill",
+    "relaxed": "chill",
+    "stressed": "chill",
+    "anxious": "chill",
+    "depressed": "sad",
+    "lonely": "sad",
+    "energetic": "hip-hop",
+    "nostalgic": "pop",
+    "confused": "pop",
+    "frustrated": "metal",
+    "hopeful": "romance",
+    "proud": "hip-hop",
+    "guilty": "blues",
+    "jealous": "pop",
+    "ashamed": "blues",
+    "disappointed": "pop",
+    "content": "chill",
+    "insecure": "pop",
+    "embarrassed": "blues",
+    "overwhelmed": "chill",
+    "amused": "party"
+}
 
 def load_speech_emotion_model():
     """
@@ -18,12 +56,9 @@ def load_speech_emotion_model():
     """
     with open(MODEL_PATH, 'rb') as file:
         model = pickle.load(file)
-
     with open(SCALER_PATH, 'rb') as file:
         scaler = pickle.load(file)
-
     return model, scaler
-
 
 def convert_mp4_to_wav(mp4_file):
     """
@@ -37,14 +72,13 @@ def convert_mp4_to_wav(mp4_file):
 
         # Load the mp4 file and extract audio
         audio_clip = AudioFileClip(mp4_file)
-        audio_clip.write_audiofile(wav_file)
+        audio_clip.write_audiofile(wav_file, codec='pcm_s16le', fps=44100)
         audio_clip.close()
 
         return wav_file
     except Exception as e:
         print(f"Error converting mp4 to wav: {e}")
         return None
-
 
 def extract_features(audio_file):
     """
@@ -53,18 +87,12 @@ def extract_features(audio_file):
     :return: The extracted MFCC features
     """
     try:
-        with sf.SoundFile(audio_file) as f:
-            print(f"Audio file sample rate: {f.samplerate}")
-            speech, sample_rate = librosa.load(audio_file, sr=None)
-            mfccs = np.mean(librosa.feature.mfcc(y=speech, sr=sample_rate, n_mfcc=40).T, axis=0)
-            return mfccs
-    except sf.SoundFileError as e:
-        print(f"SoundFileError occurred: {e}")
-        return None
+        speech, sample_rate = librosa.load(audio_file, sr=None)
+        mfccs = np.mean(librosa.feature.mfcc(y=speech, sr=sample_rate, n_mfcc=40).T, axis=0)
+        return mfccs
     except Exception as e:
         print(f"Error extracting features from {audio_file}: {e}")
         return None
-
 
 def infer_speech_emotion(audio_file):
     """
@@ -72,22 +100,40 @@ def infer_speech_emotion(audio_file):
     :param audio_file:
     :return: The predicted emotion
     """
+    emotion = None  # Initialize emotion to None
+    temp_wav_file = None
+
+    # Convert mp4 to wav if the input file is in mp4 format
     if audio_file.endswith('.mp4'):
-        audio_file = convert_mp4_to_wav(audio_file)
-        if not audio_file:
-            return None
+        temp_wav_file = convert_mp4_to_wav(audio_file)
+        if temp_wav_file is None:
+            print("Error in converting mp4 to wav, falling back to a random emotion.")
+        else:
+            audio_file = temp_wav_file
 
     model, scaler = load_speech_emotion_model()
 
+    # Extract features from the audio file
     features = extract_features(audio_file)
-    if features is None:
-        return None
+    if features is not None:
+        # Scale features
+        features_scaled = scaler.transform(features.reshape(1, -1))
 
-    features_scaled = scaler.transform(features.reshape(1, -1))
+        try:
+            # Predict emotion
+            emotion_prediction = model.predict(features_scaled)
+            if emotion_prediction and emotion_prediction[0]:
+                emotion = emotion_prediction[0]
+        except Exception as e:
+            print(f"Error during model prediction: {e}")
 
-    emotion_prediction = model.predict(features_scaled)
+    # Clean up temporary wav file
+    if temp_wav_file and os.path.exists(temp_wav_file):
+        os.remove(temp_wav_file)
 
-    if audio_file == "temp_audio.wav" and os.path.exists(audio_file):
-        os.remove(audio_file)
+    # Check if emotion is still None and pick a random one if needed
+    if emotion is None:
+        emotion = random.choice(list(emotion_to_genre.keys()))
+        print(f"No valid emotion detected, randomly selected emotion: {emotion}")
 
-    return emotion_prediction[0]
+    return emotion

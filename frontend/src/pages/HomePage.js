@@ -30,7 +30,13 @@ const HomePage = () => {
             'Authorization': `Bearer ${token}`,
           },
         });
-        setUserData(response.data); // Set the user data
+
+        // Extract the MongoDB _id
+        const userProfile = response.data;
+        const userId = userProfile._id; // This should be the actual MongoDB _id field
+
+        // Save user data along with the userId
+        setUserData({ ...userProfile, id: userId }); // 'id' is now the MongoDB ObjectId
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -52,34 +58,39 @@ const HomePage = () => {
 
   const saveToHistory = async (mood, recommendations) => {
     try {
-      // Check if userData is available
-      if (!userData) {
-        console.error('User data is not available.');
+      // Check if userData is available and has a valid id
+      if (!userData || !userData.id) {
+        console.error('User data or user ID is not available.');
         return;
       }
 
       // Save mood history
-      await axios.post(`http://127.0.0.1:8000/users/mood_history/${userData.id}/`, { mood }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      if (mood) {
+        await axios.post(`http://127.0.0.1:8000/users/mood_history/${userData.id}/`, { mood }, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
 
       // Save recommendations history
-      await axios.post(`http://127.0.0.1:8000/users/recommendations/${userData.id}/`, {
-        recommendations: recommendations.map((rec) => ({
-          name: rec.name,
-          artist: rec.artist,
-          preview_url: rec.preview_url,
-          external_url: rec.external_url,
-        })),
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      if (recommendations && recommendations.length > 0) {
+        await axios.post(`http://127.0.0.1:8000/users/recommendations/${userData.id}/`, {
+          recommendations: recommendations.map((rec) => ({
+            name: rec.name,
+            artist: rec.artist,
+            preview_url: rec.preview_url,
+            external_url: rec.external_url,
+            image_url: rec.image_url
+          })),
+        }, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
 
       // Refresh user data to reflect the updated history
       const updatedUserData = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
