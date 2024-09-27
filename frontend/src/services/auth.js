@@ -1,4 +1,3 @@
-// src/services/auth.js
 import axios from 'axios';
 
 const API_URL = 'http://127.0.0.1:8000';
@@ -10,5 +9,3 @@ export const register = async (username, password, email) => {
     console.error('Registration error:', error);
   }
 };
-
-// Other endpoints follow the same pattern
