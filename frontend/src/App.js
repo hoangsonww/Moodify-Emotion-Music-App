@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import ResultsPage from './pages/ResultsPage';
 import RecommendationsPage from './pages/RecommendationsPage';
+import Footer from "./components/Footer";
 import './styles/styles.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
+        <Footer />
       </Router>
   );
 }
