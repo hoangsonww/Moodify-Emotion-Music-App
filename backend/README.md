@@ -6,6 +6,7 @@ This repository contains the backend for the Emotion-Based Music App named **Moo
 
 - [Getting Started](#getting-started)
 - [File Structure](#file-structure)
+- [Before Running the Backend](#before-running-the-backend)
 - [API Endpoints](#api-endpoints)
   - [User Endpoints](#user-endpoints)
   - [Emotion Detection Endpoints](#emotion-detection-endpoints)
@@ -95,6 +96,33 @@ Moodify-Emotion-Based-Music-App/
 │   │       └── urls.py             # URL declarations for emotion-related endpoints
 └── README.md                       # This README file
 ```
+
+## Before Running the Backend
+
+Before running the backend, ensure that you have trained all the emotion detection models and saved them in the `models` directory (they should be automatically saved in their respective directories). 
+
+Refer to the [README](../ai_ml/README.md) in the `ai_ml` directory for more information on training the models.
+
+If you'd prefer quickstart, you can run the following command to train all the models:
+
+1. **Train the Speech Emotion Detection Model**:
+   ```bash
+   python ai_ml/src/models/train_speech_emotion.py
+   ```
+   
+2. **Train the Facial Emotion Detection Model**:
+   ```bash
+    python ai_ml/src/models/train_facial_emotion.py
+    ```
+   
+3. **Train the Text Emotion Detection Model**:
+    ```bash
+    python ai_ml/src/models/train_text_emotion.py
+    ```
+
+Ensure that you have configured the paths, especially those to the data sets for training, properly in the `config.py`, `train_speech_emotion.py`, `train_facial_emotion.py`, and `train_text_emotion.py` files.
+
+Once you have trained the models, you can run the backend server using the steps mentioned in the [Getting Started](#getting-started) section.
 
 ## API Endpoints
 
