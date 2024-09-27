@@ -84,8 +84,6 @@ const HomePage = () => {
         }
       });
 
-      console.log('API Response:', response.data);
-
       navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -107,9 +105,6 @@ const HomePage = () => {
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('API Response:', response.data);
-      alert('Text processed successfully!');
 
       navigate('/results', { state: { emotion: response.data.emotion, recommendations: response.data.recommendations } });
     } catch (error) {

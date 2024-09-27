@@ -15,15 +15,20 @@ const Login = () => {
     }
 
     try {
+      // Make the login request
       const response = await axios.post('http://127.0.0.1:8000/users/login/', { username, password });
-      const { token } = response.data;
+      const { access } = response.data; // Extract the access token from the response
 
-      // Store token in localStorage
-      localStorage.setItem('token', token);
-      alert('Login successful!');
+      if (access) {
+        // Store the access token in localStorage
+        localStorage.setItem('token', access);
+        alert('Login successful!');
 
-      // Redirect to the home page
-      navigate('/home');
+        // Redirect to the home page
+        navigate('/home');
+      } else {
+        alert('Login failed. No access token received.');
+      }
     } catch (error) {
       console.error('Login failed:', error);
       alert('Login failed. Please check your credentials.');
