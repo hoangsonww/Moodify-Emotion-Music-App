@@ -89,6 +89,8 @@ Moodify provides personalized music recommendations based on users' emotional st
   - Expo Go
 - **PWA**: 
   - Progressive Web App features for offline support
+- **Containerization**:
+  - Docker
 
 ## User Interface
 
