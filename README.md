@@ -450,6 +450,13 @@ The emotion detection models are used to analyze user inputs and provide real-ti
 
 The models are integrated into the backend API services to provide real-time emotion detection and music recommendations for users.
 
+**Note**: The models must be trained first before using them in the backend services. Ensure that the models are trained and placed in the `models` directory before running the backend server. Refer to the (Getting Started)[#getting-started] section for more details.
+
+<p align="center">
+  <img src="images/train_text_model.png" alt="AI/ML Models" width="100%" style="border-radius: 10px">
+  Examples of training the text emotion model.
+</p>
+
 ## **Mobile App Version**
 
 There is also a mobile version of the Moodify app built using React Native and Expo. You can find the mobile app in the `mobile` directory.
