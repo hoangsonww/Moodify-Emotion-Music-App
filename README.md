@@ -28,6 +28,7 @@ Supporting both desktop and mobile platforms, Moodify offers a seamless user exp
 - [About the AI/ML Models](#about-the-aiml-models)
 - [Mobile App Version](#mobile-app-version)
 - [Analytics Scripts](#analytics-scripts)
+- [Containerization](#containerization)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -292,6 +293,10 @@ Start with setting up and training the AI/ML models, as they will be required fo
 
 7. **Ensure all trained models are placed in the `models` directory, and that you have trained all necessary models before moving to the next step!**
 
+8. **Test the trained AI/ML models as needed**: 
+   - Run the `src/models/test_emotion_models.py` script to test the trained models.
+   - Ensure the models are providing accurate predictions before moving to the next step.
+
 ### **2. Set Up the Backend**
 
 Once the AI/ML models are ready, proceed with setting up the backend.
@@ -484,13 +489,32 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
    ```
 2. View generated visualizations in the `visualizations` folder.
 
+## **Containerization**
+
+The project can be containerized using Docker for easy deployment and scaling. You can create Docker images for the frontend, backend, and AI/ML models.
+
+1. **Build the Docker images:**
+   ```bash
+   docker compose up --build
+   ```
+   
+2. The Docker images will be built for the frontend, backend, and AI/ML models. Verify the images using:
+   ```bash
+   docker images
+   ```
+   
+If you encounter any errors, try to rebuild your image without using the cache since Docker's cache may cause issues.
+   ```bash
+   docker-compose build --no-cache
+   ```
+
 ## **Contributing**
 
 - Contributions are welcome! Feel free to fork the repository and submit a pull request.
 
 ## **License**
 
-- This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+- This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ## **Contact**
 
