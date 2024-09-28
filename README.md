@@ -30,6 +30,7 @@ Supporting both desktop and mobile platforms, Moodify offers a seamless user exp
 - [Analytics Scripts](#analytics-scripts)
 - [Contributing](#contributing)
 - [License](#license)
+- [Contact](#contact)
 
 ## **Overview**
 
