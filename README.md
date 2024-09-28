@@ -264,7 +264,7 @@ Start with setting up and training the AI/ML models, as they will be required fo
 
 2. **Navigate to the AI/ML directory:**
    ```bash
-   cd Moodify/ai_ml
+   cd Moodify-Emotion-Music-App/ai_ml
    ```
 
 3. **Create and activate a virtual environment:**
@@ -278,14 +278,18 @@ Start with setting up and training the AI/ML models, as they will be required fo
    ```bash
    pip install -r requirements.txt
    ```
+   
+5. **Edit the configurations in the `src/config.py` file:**
+   - Visit the `src/config.py` file and update the configurations as needed, especially your Spotify API keys and configure ALL the paths.
+   - Visit the individual model training scripts in the `src/models` directory and update the paths to the datasets and output paths as needed.
 
-5. **Train the text emotion model:**
+6. **Train the text emotion model:**
    ```bash
    python src/models/train_text_emotion.py
    ```
    *Repeat similar commands for other models as needed (e.g., facial and speech emotion models).*
 
-6. **Ensure all trained models are placed in the `models` directory, and that you have trained all necessary models before moving to the next step!**
+7. **Ensure all trained models are placed in the `models` directory, and that you have trained all necessary models before moving to the next step!**
 
 ### **2. Set Up the Backend**
 
@@ -308,7 +312,18 @@ Once the AI/ML models are ready, proceed with setting up the backend.
    pip install -r requirements.txt
    ```
 
-4. **Configure MongoDB settings in `settings.py` or your environment variables.**
+4. **Configure your secrets and environment:**
+
+    - Create a `.env` file in the `backend` directory.
+    - Add the following environment variables to the `.env` file:
+      ```plaintext
+      SECRET_KEY=your_secret_key
+      DEBUG=True
+      ALLOWED_HOSTS=<your_hosts>
+      MONGODB_URI=<your_mongodb_uri>
+      ```
+    - Visit `backend/settings.py` and add `SECRET_KEY` & set `DEBUG` to `True`.
+    - **Important**: Ensure these steps are completed before running the backend server.
 
 5. **Run database migrations:**
    ```bash
@@ -340,6 +355,8 @@ Finally, set up the frontend to interact with the backend.
    npm start
    ```
    The frontend will start at `http://localhost:3000`.
+
+**Note:** If you encounter any problems or need my `.env` file, feel free to [contact me](#contact).
 
 ## API Endpoints
 
