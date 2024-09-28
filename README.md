@@ -282,6 +282,7 @@ Start with setting up and training the AI/ML models, as they will be required fo
 5. **Edit the configurations in the `src/config.py` file:**
    - Visit the `src/config.py` file and update the configurations as needed, especially your Spotify API keys and configure ALL the paths.
    - Visit the individual model training scripts in the `src/models` directory and update the paths to the datasets and output paths as needed.
+   - Ensure all paths are correctly set before training the models!
 
 6. **Train the text emotion model:**
    ```bash
