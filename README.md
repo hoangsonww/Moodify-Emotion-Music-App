@@ -152,7 +152,7 @@ Moodify provides personalized music recommendations based on users' emotional st
   <img src="images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
 </p>
 
-## Footer
+### Footer
 
 <p align="center">
   <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
