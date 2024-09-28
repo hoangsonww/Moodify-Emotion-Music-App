@@ -92,6 +92,12 @@ Moodify provides personalized music recommendations based on users' emotional st
 
 ## User Interface
 
+### Landing Page
+
+<p align="center">
+  <img src="images/landingpage.png" alt="Landing Page" width="100%" style="border-radius: 10px">
+</p>
+
 ### Home Page
 
 <p align="center">

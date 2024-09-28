@@ -9,6 +9,7 @@ import ResultsPage from './pages/ResultsPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import Footer from "./components/Footer";
 import NotFoundPage from "./pages/NotFoundPage";
+import LandingPage from "./pages/LandingPage";
 import './styles/styles.css';
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
       <Router>
         <Navbar />
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />

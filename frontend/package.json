@@ -18,11 +18,14 @@
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-material-ui-carousel": "^3.4.2",
     "react-media-recorder": "^1.7.1",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "react-slick": "^0.30.2",
     "react-webcam": "^7.2.0",
     "recorder-js": "^1.0.7",
+    "slick-carousel": "^1.8.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

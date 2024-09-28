@@ -10,13 +10,13 @@ const Footer = () => {
       <Box style={styles.footer}>
         {/* Navigation Links */}
         <Box style={styles.navLinks}>
-          <Link style={styles.link} onClick={() => navigate('/')}>
+          <Link style={styles.link} onClick={() => navigate('/home')}>
             Home
           </Link>
           <Link style={styles.link} onClick={() => navigate('/results')}>
             Results
           </Link>
-          <Link style={styles.link} onClick={() => navigate('/recommendations')}>
+          <Link style={styles.link} onClick={() => navigate('/profile')}>
             Profile
           </Link>
           <Link style={styles.link} onClick={() => navigate('/login')}>
@@ -24,6 +24,9 @@ const Footer = () => {
           </Link>
           <Link style={styles.link} onClick={() => navigate('/register')}>
             Register
+          </Link>
+          <Link style={styles.link} onClick={() => navigate('/')}>
+            Landing Page
           </Link>
         </Box>
 
