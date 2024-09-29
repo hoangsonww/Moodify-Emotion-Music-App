@@ -1,6 +1,6 @@
 # **Moodify Mobile - Emotion-Based Music Recommendation App**
 
-The **Moodify Mobile** application is a React Native-based version of the Moodify project, allowing users to access emotion-based music recommendations directly from their mobile devices. It integrates with the backend API to analyze user inputs such as text, speech, or facial expressions to provide personalized music recommendations based on the detected emotions.
+The **Moodify Mobile** application is a **React Native-based** version of the Moodify project, allowing users to access emotion-based music recommendations directly from their mobile devices. It integrates with the backend API to analyze user inputs such as text, speech, or facial expressions to provide personalized music recommendations based on the detected emotions.
 
 ## **Table of Contents**
 
