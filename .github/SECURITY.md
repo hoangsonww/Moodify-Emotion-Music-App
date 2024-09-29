@@ -65,7 +65,7 @@ We encourage responsible disclosure of any security vulnerabilities. Please repo
 Security is an ongoing process. Moodify App is committed to continuously improving the security posture of the application by staying up-to-date with the latest security trends, threats, and mitigation techniques.
 
 ## Contact Information
-For any queries or concerns regarding security, please contact me at [hoangson091104@gmail.com](mailto:info@movie-verse.com).
+For any queries or concerns regarding security, please contact me at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com).
 
 ---
 
