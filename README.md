@@ -511,7 +511,7 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
    
 2. View generated visualizations in the `visualizations` folder.
 
-3. Some example visualizations:
+3. Here some example visualizations:
 
 <p align="center">
   <img src="data_analytics/visualizations/emotion_distribution.png" alt="Emotion Distribution" width="100%" style="border-radius: 10px">
