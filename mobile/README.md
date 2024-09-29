@@ -30,6 +30,7 @@ The Moodify Mobile app brings the emotion-based music recommendation experience 
 - **User Profile Management:** Access listening history, mood history, and personalized music recommendations.
 - **Offline Mode:** Cached recommendations are stored locally for offline access.
 - **Responsive and Interactive UI:** Intuitive design for seamless user experience on both Android and iOS devices.
+- And all the features available in the web version of Moodify!
 
 ## **Technologies**
 
