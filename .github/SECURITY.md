@@ -68,3 +68,5 @@ Security is an ongoing process. Moodify App is committed to continuously improvi
 For any queries or concerns regarding security, please contact us at [info@movie-verse.com](mailto:info@movie-verse.com).
 
 ---
+
+Thank you for visiting us today!
