@@ -560,6 +560,10 @@ If you encounter any errors, try to rebuild your image without using the cache s
 
 ---
 
-**Happy Coding and Analyzing! 🎶**
+**Happy Coding and Analyzing! 🎶** 
+
+**Created with ❤️ by [Son Nguyen](https://github.com/hoangsonww) in 2024.**
+
+---
 
 [🔝 Back to Top](#moodify---emotion-based-music-recommendation-app)
