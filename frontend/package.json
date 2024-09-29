@@ -4,6 +4,14 @@
   "author": "Son Nguyen",
   "license": "MIT",
   "description": "Frontend for Moodify Emotion-Based Music Recommendation App",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoangsonww/Moodify-Emotion-Music-App.git",
+    "directory": "frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues"
+  },
   "version": "1.1.0",
   "private": false,
   "dependencies": {

@@ -3,9 +3,9 @@
 With the rise of personalized music streaming services, there is a growing need for systems that can recommend music based on users' emotional states.
 Realizing this need, **Moodify** is being developed by [Son Nguyen](https://github.com/hoangsonww) in 2024 to provide personalized music recommendations based on users' detected emotions.
 
-The Moodify project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes text, speech, or facial expressions and suggests music that aligns with the detected emotions.
+The **Moodify** project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes text, speech, or facial expressions and suggests music that aligns with the detected emotions.
 
-Supporting both desktop and mobile platforms, Moodify offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance.
+Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance.
 
 <p align="center">
   <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
@@ -13,31 +13,35 @@ Supporting both desktop and mobile platforms, Moodify offers a seamless user exp
 
 ## **Table of Contents**
 
-- [Overview](#overview)
-- [Features](#features)
-- [Technologies](#technologies)
-- [User Interface](#user-interface)
-- [Complete File Structure](#complete-file-structure)
-- [Getting Started](#getting-started)
-- [API Endpoints](#api-endpoints)
+- [🎵 Overview](#-overview)
+- [🌟 Features](#-features)
+- [🛠️ Technologies](#-technologies)
+- [🖼️ User Interface](#-user-interface)
+- [📂 Complete File Structure](#-complete-file-structure)
+- [🛠️ Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Setup and Train AI/ML Models](#1-setup-and-train-aiml-models)
+  - [Set Up the Backend](#2-set-up-the-backend)
+  - [Install and Run the Frontend](#3-install-and-run-the-frontend)
+- [📋 API Endpoints](#-api-endpoints)
   - [User Endpoints](#user-endpoints)
   - [Emotion Detection Endpoints](#emotion-detection-endpoints)
   - [Admin Interface Endpoints](#admin-interface-endpoints)
   - [Admin Interface](#admin-interface)
-- [Backend APIs Documentation](#backend-apis-documentation)
-- [About the AI/ML Models](#about-the-aiml-models)
-- [Mobile App Version](#mobile-app-version)
-- [Analytics Scripts](#analytics-scripts)
-- [Containerization](#containerization)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+- [🚀 Backend APIs Documentation](#-backend-apis-documentation)
+- [🤖 About the AI/ML Models](#-about-the-aiml-models)
+- [📱 Mobile App Version](#-mobile-app-version)
+- [📊 Analytics Scripts](#-analytics-scripts)
+- [🐳 Containerization](#-containerization)
+- [🔧 Contributing](#-contributing)
+- [📝 License](#-license)
+- [📧 Contact](#-contact)
 
-## **Overview**
+## 🎵 **Overview**
 
 Moodify provides personalized music recommendations based on users' emotional states detected through text, speech, and facial expressions. It interacts with a Django-based backend, AI/ML models for emotion detection, and utilizes data analytics for visual insights into emotion trends and model performance.
 
-## **Features**
+## 🌟 **Features**
 
 - User registration and login functionality.
 - Input analysis through text, speech, and facial expressions.
@@ -50,7 +54,7 @@ Moodify provides personalized music recommendations based on users' emotional st
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
 
-## **Technologies**
+## 🛠️ **Technologies**
 
 - **Frontend**: 
   - React
@@ -58,11 +62,12 @@ Moodify provides personalized music recommendations based on users' emotional st
   - Material UI (MUI)
   - React Router
   - React Redux
+  - Jest and React Testing Library
 - **Backend**: 
   - Django
   - Django REST Framework
   - MongoEngine
-  - JWT Authentication.
+  - JWT Authentication
   - Spotify APIs
   - Swagger and Redoc for API documentation
 - **Databases**: 
@@ -91,8 +96,9 @@ Moodify provides personalized music recommendations based on users' emotional st
   - Progressive Web App features for offline support
 - **Containerization**:
   - Docker
+  - Docker Desktop
 
-## User Interface
+## 🖼️ User Interface
 
 ### Landing Page
 
@@ -172,7 +178,7 @@ Moodify provides personalized music recommendations based on users' emotional st
   <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
 </p>
 
-## **Complete File Structure**
+## 📂 **Complete File Structure**
 
 The project has a comprehensive file structure combining frontend, backend, AI/ML models, and data analytics components:
 
@@ -253,7 +259,7 @@ Moodify/
 └── README.md                      # Comprehensive README file for the entire project
 ```
 
-## **Getting Started**
+## 🛠️ **Getting Started**
 
 ### **Prerequisites**
 
@@ -372,7 +378,7 @@ Finally, set up the frontend to interact with the backend.
 
 **Note:** If you encounter any problems or need my `.env` file, feel free to [contact me](#contact).
 
-## API Endpoints
+## 📋 API Endpoints
 
 ### User Endpoints
 
@@ -426,7 +432,7 @@ Finally, set up the frontend to interact with the backend.
   <img src="images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
 </p>
 
-## **Backend APIs Documentation**
+## 🚀 **Backend APIs Documentation**
 
 Our backend APIs are all well-documented using Swagger UI and Redoc. You can access the API documentation at the following endpoints:
 - **Swagger UI**: `http://127.0.0.1:8000/swagger`.
@@ -446,7 +452,7 @@ If you have set up the backend correctly, you should see the following API docum
   <img src="images/redoc-ui.png" alt="Redoc" width="100%" style="border-radius: 10px">
 </p>
 
-## **About the AI/ML Models**
+## 🤖 **About the AI/ML Models**
 
 The AI/ML models are built using PyTorch, TensorFlow, Keras, and HuggingFace Transformers. These models are trained on various datasets to detect emotions from text, speech, and facial expressions.
 
@@ -465,7 +471,7 @@ The models are integrated into the backend API services to provide real-time emo
   Examples of training the text emotion model.
 </p>
 
-## **Mobile App Version**
+## 📱 **Mobile App Version**
 
 There is also a mobile version of the Moodify app built using React Native and Expo. You can find the mobile app in the `mobile` directory.
 
@@ -494,7 +500,7 @@ If successful, you should see the following home screen:
 
 Feel free to explore the mobile app and test its functionalities!
 
-## **Analytics Scripts**
+## 📊 **Analytics Scripts**
 
 The `data_analytics` folder provides data analysis and visualization scripts to gain insights into the emotion detection model's performance.
 
@@ -502,9 +508,22 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
    ```bash
    python data_analytics/main.py
    ```
+   
 2. View generated visualizations in the `visualizations` folder.
 
-## **Containerization**
+3. Some example visualizations:
+
+<p align="center">
+  <img src="data_analytics/visualizations/emotion_distribution.png" alt="Emotion Distribution" width="100%" style="border-radius: 10px">
+  Emotion Distribution Visualization
+</p>
+
+<p align="center">
+  <img src="data_analytics/visualizations/loss_curve.png" alt="Training Loss Curve Visualization" width="100%" style="border-radius: 10px">
+  Training Loss Curve Visualization
+</p>
+
+## 🐳 **Containerization**
 
 The project can be containerized using Docker for easy deployment and scaling. You can create Docker images for the frontend, backend, and AI/ML models.
 
@@ -523,15 +542,19 @@ If you encounter any errors, try to rebuild your image without using the cache s
    docker-compose build --no-cache
    ```
 
-## **Contributing**
+## 🔧 **Contributing**
 
 - Contributions are welcome! Feel free to fork the repository and submit a pull request.
 
-## **License**
+- Note that this project is still under active development, and any contributions are appreciated.
+
+- If you have any suggestions, feature requests, or bug reports, feel free to open an issue [here](https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues).
+
+## 📝 **License**
 
 - This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
-## **Contact**
+## 📧 **Contact**
 
 - Feel free to contact me at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com) for any questions or feedback.
 
