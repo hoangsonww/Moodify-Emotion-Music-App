@@ -552,7 +552,7 @@ If you encounter any errors, try to rebuild your image without using the cache s
 
 ## 📝 **License**
 
-- This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+- This project is licensed under the **MIT License**. Please see the [LICENSE](LICENSE) file for details.
 
 ## 📧 **Contact**
 
