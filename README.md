@@ -13,29 +13,29 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 
 ## **Table of Contents**
 
-- [🎵 Overview](#-overview)
-- [🌟 Features](#-features)
-- [🛠️ Technologies](#-technologies)
-- [🖼️ User Interface](#-user-interface)
-- [📂 Complete File Structure](#-complete-file-structure)
-- [🛠️ Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Setup and Train AI/ML Models](#1-setup-and-train-aiml-models)
-  - [Set Up the Backend](#2-set-up-the-backend)
-  - [Install and Run the Frontend](#3-install-and-run-the-frontend)
-- [📋 API Endpoints](#-api-endpoints)
-  - [User Endpoints](#user-endpoints)
-  - [Emotion Detection Endpoints](#emotion-detection-endpoints)
-  - [Admin Interface Endpoints](#admin-interface-endpoints)
-  - [Admin Interface](#admin-interface)
-- [🚀 Backend APIs Documentation](#-backend-apis-documentation)
-- [🤖 About the AI/ML Models](#-about-the-aiml-models)
-- [📱 Mobile App Version](#-mobile-app-version)
-- [📊 Analytics Scripts](#-analytics-scripts)
-- [🐳 Containerization](#-containerization)
-- [🔧 Contributing](#-contributing)
-- [📝 License](#-license)
-- [📧 Contact](#-contact)
+- [**🎵 Overview**](#-overview)
+- [**🌟 Features**](#-features)
+- [**🛠️ Technologies**](#-technologies)
+- [**🖼️ User Interface**](#-user-interface)
+- [**📂 Complete File Structure**](#-complete-file-structure)
+- [**🛠️ Getting Started**](#-getting-started)
+  - [**Prerequisites**](#prerequisites)
+  - [**Setup and Train AI/ML Models**](#1-setup-and-train-aiml-models)
+  - [**Set Up the Backend**](#2-set-up-the-backend)
+  - [**Install and Run the Frontend**](#3-install-and-run-the-frontend)
+- [**📋 API Endpoints**](#-api-endpoints)
+  - [**User Endpoints**](#user-endpoints)
+  - [**Emotion Detection Endpoints**](#emotion-detection-endpoints)
+  - [**Admin Interface Endpoints**](#admin-interface-endpoints)
+  - [**Admin Interface**](#admin-interface)
+- [**🚀 Backend APIs Documentation**](#-backend-apis-documentation)
+- [**🤖 About the AI/ML Models**](#-about-the-aiml-models)
+- [**📊 Analytics Scripts**](#-analytics-scripts)
+- [**📱 Mobile App Version**](#-mobile-app-version)
+- [**🐳 Containerization**](#-containerization)
+- [**🔧 Contributing**](#-contributing)
+- [**📝 License**](#-license)
+- [**📧 Contact**](#-contact)
 
 ## 🎵 **Overview**
 
@@ -98,7 +98,7 @@ Moodify provides personalized music recommendations based on users' emotional st
   - Docker
   - Docker Desktop
 
-## 🖼️ User Interface
+## 🖼️ **User Interface**
 
 ### Landing Page
 
@@ -177,6 +177,12 @@ Moodify provides personalized music recommendations based on users' emotional st
 <p align="center">
   <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
 </p>
+
+## 🌐 **Live Frontend Demo**
+
+The frontend of the Moodify app is deployed on Vercel. You can access the live demo using the following link: [Moodify - Live Demo](https://moodify-emotion-music-app.vercel.app/).
+
+**Note:** The backend APIs are not hosted and therefore not functional in the live demo. You can set up the backend locally to interact with the frontend, or you can explore the frontend features in the live demo.
 
 ## 📂 **Complete File Structure**
 
@@ -378,9 +384,9 @@ Finally, set up the frontend to interact with the backend.
 
 **Note:** If you encounter any problems or need my `.env` file, feel free to [contact me](#contact).
 
-## 📋 API Endpoints
+## 📋 **API Endpoints**
 
-### User Endpoints
+### **User Endpoints**
 
 | HTTP Method | Endpoint                                                         | Description                                     |
 |-------------|------------------------------------------------------------------|-------------------------------------------------|
@@ -403,7 +409,7 @@ Finally, set up the frontend to interact with the backend.
 | `GET`       | `/users/user_recommendations/<str:user_id>/`                     | Retrieve a user's recommendations               |
 | `DELETE`    | `/users/user_recommendations/<str:user_id>/`                     | Delete all recommendations for a user           |
 
-### Emotion Detection Endpoints
+### **Emotion Detection Endpoints**
 
 | HTTP Method | Endpoint                     | Description                                |
 |-------------|------------------------------|--------------------------------------------|
@@ -412,7 +418,7 @@ Finally, set up the frontend to interact with the backend.
 | `POST`      | `/api/facial_emotion/`       | Analyze facial expressions for emotions    |
 | `POST`      | `/api/music_recommendation/` | Get music recommendations based on emotion |
 
-### Admin Interface Endpoints
+### **Admin Interface Endpoints**
 
 | HTTP Method | Endpoint                     | Description                                  |
 |-------------|------------------------------|----------------------------------------------|
@@ -471,6 +477,29 @@ The models are integrated into the backend API services to provide real-time emo
   Examples of training the text emotion model.
 </p>
 
+## 📊 **Analytics Scripts**
+
+The `data_analytics` folder provides data analysis and visualization scripts to gain insights into the emotion detection model's performance.
+
+1. **Run All Analytics Scripts:**
+   ```bash
+   python data_analytics/main.py
+   ```
+
+2. View generated visualizations in the `visualizations` folder.
+
+3. Here are some example visualizations:
+
+<p align="center">
+  <img src="data_analytics/visualizations/emotion_distribution.png" alt="Emotion Distribution" width="100%" style="border-radius: 10px">
+  Emotion Distribution Visualization
+</p>
+
+<p align="center">
+  <img src="data_analytics/visualizations/loss_curve.png" alt="Training Loss Curve Visualization" width="100%" style="border-radius: 10px">
+  Training Loss Curve Visualization
+</p>
+
 ## 📱 **Mobile App Version**
 
 There is also a mobile version of the Moodify app built using React Native and Expo. You can find the mobile app in the `mobile` directory.
@@ -499,29 +528,6 @@ If successful, you should see the following home screen:
 </p>
 
 Feel free to explore the mobile app and test its functionalities!
-
-## 📊 **Analytics Scripts**
-
-The `data_analytics` folder provides data analysis and visualization scripts to gain insights into the emotion detection model's performance.
-
-1. **Run All Analytics Scripts:**
-   ```bash
-   python data_analytics/main.py
-   ```
-   
-2. View generated visualizations in the `visualizations` folder.
-
-3. Here are some example visualizations:
-
-<p align="center">
-  <img src="data_analytics/visualizations/emotion_distribution.png" alt="Emotion Distribution" width="100%" style="border-radius: 10px">
-  Emotion Distribution Visualization
-</p>
-
-<p align="center">
-  <img src="data_analytics/visualizations/loss_curve.png" alt="Training Loss Curve Visualization" width="100%" style="border-radius: 10px">
-  Training Loss Curve Visualization
-</p>
 
 ## 🐳 **Containerization**
 
