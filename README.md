@@ -17,17 +17,29 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 - [**🌟 Features**](#-features)
 - [**🛠️ Technologies**](#-technologies)
 - [**🖼️ User Interface**](#-user-interface)
+    - [**Landing Page**](#landing-page)
+    - [**Home Page**](#home-page)
+    - [**Text Input**](#text-input)
+    - [**Speech Input**](#speech-input)
+    - [**Facial Expression Input**](#facial-expression-input)
+    - [**Profile Page**](#profile-page)
+    - [**Results/Recommendations Page**](#results---recommendations-page)
+    - [**Login Page**](#login-page)
+    - [**Registration Page**](#registration-page)
+    - [**404 Not Found Page**](#404-not-found-page)
+    - [**Footer**](#footer)
+- [**🌐 Live Frontend Demo**](#-live-frontend-demo)
 - [**📂 Complete File Structure**](#-complete-file-structure)
 - [**🛠️ Getting Started**](#-getting-started)
-  - [**Prerequisites**](#prerequisites)
-  - [**Setup and Train AI/ML Models**](#1-setup-and-train-aiml-models)
-  - [**Set Up the Backend**](#2-set-up-the-backend)
-  - [**Install and Run the Frontend**](#3-install-and-run-the-frontend)
+    - [**Prerequisites**](#prerequisites)
+    - [**Setup and Train AI/ML Models**](#1-setup-and-train-aiml-models)
+    - [**Set Up the Backend**](#2-set-up-the-backend)
+    - [**Install and Run the Frontend**](#3-install-and-run-the-frontend)
 - [**📋 API Endpoints**](#-api-endpoints)
-  - [**User Endpoints**](#user-endpoints)
-  - [**Emotion Detection Endpoints**](#emotion-detection-endpoints)
-  - [**Admin Interface Endpoints**](#admin-interface-endpoints)
-  - [**Admin Interface**](#admin-interface)
+    - [**User Endpoints**](#user-endpoints)
+    - [**Emotion Detection Endpoints**](#emotion-detection-endpoints)
+    - [**Admin Interface Endpoints**](#admin-interface-endpoints)
+    - [**Admin Interface**](#admin-interface)
 - [**🚀 Backend APIs Documentation**](#-backend-apis-documentation)
 - [**🤖 About the AI/ML Models**](#-about-the-aiml-models)
 - [**📊 Analytics Scripts**](#-analytics-scripts)
@@ -37,11 +49,11 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 - [**📝 License**](#-license)
 - [**📧 Contact**](#-contact)
 
-## 🎵 **Overview**
+<h2 id="-overview">🎵 Overview</h2>
 
 Moodify provides personalized music recommendations based on users' emotional states detected through text, speech, and facial expressions. It interacts with a Django-based backend, AI/ML models for emotion detection, and utilizes data analytics for visual insights into emotion trends and model performance.
 
-## 🌟 **Features**
+<h2 id="-features">🌟 Features</h2>
 
 - User registration and login functionality.
 - Input analysis through text, speech, and facial expressions.
@@ -54,51 +66,51 @@ Moodify provides personalized music recommendations based on users' emotional st
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
 
-## 🛠️ **Technologies**
+<h2 id="-technologies">🛠️ Technologies</h2>
 
-- **Frontend**: 
-  - React
-  - Axios
-  - Material UI (MUI)
-  - React Router
-  - React Redux
-  - Jest and React Testing Library
-- **Backend**: 
-  - Django
-  - Django REST Framework
-  - MongoEngine
-  - JWT Authentication
-  - Spotify APIs
-  - Swagger and Redoc for API documentation
-- **Databases**: 
-  - MongoDB
-  - Redis (for server-side caching)
-  - SQLite
-- **AI/ML Models**: 
-  - PyTorch
-  - TensorFlow
-  - Keras
-  - HuggingFace Transformers
-  - Pandas
-  - Scikit-learn
-  - NumPy
-  - FER (Facial Expression Recognition) Library
-- **Data Analytics**: 
-  - Pandas
-  - Matplotlib
-  - Hadoop
-  - Spark
-- **Mobile**: 
-  - React Native
-  - Expo
-  - Expo Go
-- **PWA**: 
-  - Progressive Web App features for offline support
+- **Frontend**:
+    - React
+    - Axios
+    - Material UI (MUI)
+    - React Router
+    - React Redux
+    - Jest and React Testing Library
+- **Backend**:
+    - Django
+    - Django REST Framework
+    - MongoEngine
+    - JWT Authentication
+    - Spotify APIs
+    - Swagger and Redoc for API documentation
+- **Databases**:
+    - MongoDB
+    - Redis (for server-side caching)
+    - SQLite
+- **AI/ML Models**:
+    - PyTorch
+    - TensorFlow
+    - Keras
+    - HuggingFace Transformers
+    - Pandas
+    - Scikit-learn
+    - NumPy
+    - FER (Facial Expression Recognition) Library
+- **Data Analytics**:
+    - Pandas
+    - Matplotlib
+    - Hadoop
+    - Spark
+- **Mobile**:
+    - React Native
+    - Expo
+    - Expo Go
+- **PWA**:
+    - Progressive Web App features for offline support
 - **Containerization**:
-  - Docker
-  - Docker Desktop
+    - Docker
+    - Docker Desktop
 
-## 🖼️ **User Interface**
+<h2 id="-user-interface">🖼️ User Interface</h2>
 
 ### Landing Page
 
@@ -148,7 +160,7 @@ Moodify provides personalized music recommendations based on users' emotional st
   <img src="images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
-### Results/Recommendations Page
+### Results - Recommendations Page
 
 <p align="center">
   <img src="images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
@@ -178,13 +190,13 @@ Moodify provides personalized music recommendations based on users' emotional st
   <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
 </p>
 
-## 🌐 **Live Frontend Demo**
+<h2 id="-live-frontend-demo">🌐 Live Frontend Demo</h2>
 
 The frontend of the Moodify app is deployed on Vercel. You can access the live demo using the following link: [Moodify - Live Demo](https://moodify-emotion-music-app.vercel.app/).
 
 **Note:** The backend APIs are not hosted and therefore not functional in the live demo. You can set up the backend locally to interact with the frontend, or you can explore the frontend features in the live demo.
 
-## 📂 **Complete File Structure**
+<h2 id="-complete-file-structure">📂 Complete File Structure</h2>
 
 The project has a comprehensive file structure combining frontend, backend, AI/ML models, and data analytics components:
 
@@ -265,7 +277,7 @@ Moodify/
 └── README.md                      # Comprehensive README file for the entire project
 ```
 
-## 🛠️ **Getting Started**
+<h2 id="-getting-started">🛠️ Getting Started</h2>
 
 ### **Prerequisites**
 
@@ -299,11 +311,11 @@ Start with setting up and training the AI/ML models, as they will be required fo
    ```bash
    pip install -r requirements.txt
    ```
-   
+
 5. **Edit the configurations in the `src/config.py` file:**
-   - Visit the `src/config.py` file and update the configurations as needed, especially your Spotify API keys and configure ALL the paths.
-   - Visit the individual model training scripts in the `src/models` directory and update the paths to the datasets and output paths as needed.
-   - Ensure all paths are correctly set before training the models!
+    - Visit the `src/config.py` file and update the configurations as needed, especially your Spotify API keys and configure ALL the paths.
+    - Visit the individual model training scripts in the `src/models` directory and update the paths to the datasets and output paths as needed.
+    - Ensure all paths are correctly set before training the models!
 
 6. **Train the text emotion model:**
    ```bash
@@ -313,9 +325,9 @@ Start with setting up and training the AI/ML models, as they will be required fo
 
 7. **Ensure all trained models are placed in the `models` directory, and that you have trained all necessary models before moving to the next step!**
 
-8. **Test the trained AI/ML models as needed**: 
-   - Run the `src/models/test_emotion_models.py` script to test the trained models.
-   - Ensure the models are providing accurate predictions before moving to the next step.
+8. **Test the trained AI/ML models as needed**:
+    - Run the `src/models/test_emotion_models.py` script to test the trained models.
+    - Ensure the models are providing accurate predictions before moving to the next step.
 
 ### **2. Set Up the Backend**
 
@@ -384,7 +396,7 @@ Finally, set up the frontend to interact with the backend.
 
 **Note:** If you encounter any problems or need my `.env` file, feel free to [contact me](#contact).
 
-## 📋 **API Endpoints**
+<h2 id="-api-endpoints">📋 API Endpoints</h2>
 
 ### **User Endpoints**
 
@@ -438,7 +450,7 @@ Finally, set up the frontend to interact with the backend.
   <img src="images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
 </p>
 
-## 🚀 **Backend APIs Documentation**
+<h2 id="-backend-apis-documentation">🚀 Backend APIs Documentation</h2>
 
 Our backend APIs are all well-documented using Swagger UI and Redoc. You can access the API documentation at the following endpoints:
 - **Swagger UI**: `http://127.0.0.1:8000/swagger`.
@@ -458,7 +470,7 @@ If you have set up the backend correctly, you should see the following API docum
   <img src="images/redoc-ui.png" alt="Redoc" width="100%" style="border-radius: 10px">
 </p>
 
-## 🤖 **About the AI/ML Models**
+<h2 id="-about-the-aiml-models">🤖 About the AI/ML Models</h2>
 
 The AI/ML models are built using PyTorch, TensorFlow, Keras, and HuggingFace Transformers. These models are trained on various datasets to detect emotions from text, speech, and facial expressions.
 
@@ -477,7 +489,7 @@ The models are integrated into the backend API services to provide real-time emo
   Examples of training the text emotion model.
 </p>
 
-## 📊 **Analytics Scripts**
+<h2 id="-analytics-scripts">📊 Analytics Scripts</h2>
 
 The `data_analytics` folder provides data analysis and visualization scripts to gain insights into the emotion detection model's performance.
 
@@ -500,7 +512,7 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
   Training Loss Curve Visualization
 </p>
 
-## 📱 **Mobile App Version**
+<h2 id="-mobile-app-version">📱 Mobile App Version</h2>
 
 There is also a mobile version of the Moodify app built using React Native and Expo. You can find the mobile app in the `mobile` directory.
 
@@ -508,17 +520,17 @@ There is also a mobile version of the Moodify app built using React Native and E
    ```bash
    cd ../mobile
    ```
-   
+
 2. **Install dependencies using Yarn:**
    ```bash
     yarn install
     ```
-   
+
 3. **Start the Expo development server:**
     ```bash
     yarn start
     ```
-   
+
 4. **Scan the QR code using the Expo Go app on your mobile device to run the app.**
 
 If successful, you should see the following home screen:
@@ -529,7 +541,7 @@ If successful, you should see the following home screen:
 
 Feel free to explore the mobile app and test its functionalities!
 
-## 🐳 **Containerization**
+<h2 id="-containerization">🐳 Containerization</h2>
 
 The project can be containerized using Docker for easy deployment and scaling. You can create Docker images for the frontend, backend, and AI/ML models.
 
@@ -537,18 +549,18 @@ The project can be containerized using Docker for easy deployment and scaling. Y
    ```bash
    docker compose up --build
    ```
-   
+
 2. The Docker images will be built for the frontend, backend, and AI/ML models. Verify the images using:
    ```bash
    docker images
    ```
-   
+
 If you encounter any errors, try to rebuild your image without using the cache since Docker's cache may cause issues.
    ```bash
    docker-compose build --no-cache
    ```
 
-## 🔧 **Contributing**
+<h2 id="-contributing">🔧 Contributing</h2>
 
 - Contributions are welcome! Feel free to fork the repository and submit a pull request.
 
@@ -556,17 +568,17 @@ If you encounter any errors, try to rebuild your image without using the cache s
 
 - If you have any suggestions, feature requests, or bug reports, feel free to open an issue [here](https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues).
 
-## 📝 **License**
+<h2 id="-license">📝 License</h2>
 
 - This project is licensed under the **MIT License**. Please see the [LICENSE](LICENSE) file for details.
 
-## 📧 **Contact**
+<h2 id="-contact">📧 Contact</h2>
 
 - Feel free to contact me at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com) for any questions or feedback.
 
 ---
 
-**Happy Coding and Analyzing! 🎶** 
+**Happy Coding and Analyzing! 🎶**
 
 **Created with ❤️ by [Son Nguyen](https://github.com/hoangsonww) in 2024.**
 
