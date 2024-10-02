@@ -194,7 +194,7 @@ Moodify provides personalized music recommendations based on users' emotional st
 
 The frontend of the Moodify app is deployed on Vercel. You can access the live demo using the following link: [Moodify - Live Demo](https://moodify-emotion-music-app.vercel.app/).
 
-**Note:** The backend APIs are not hosted and therefore not functional in the live demo. You can set up the backend locally to interact with the frontend, or you can explore the frontend features in the live demo.
+**Note:** The backend APIs are not hosted and therefore not functional in the live demo. You can set up the backend locally to interact with the frontend, or you can explore the frontend features in the live demo. Note that features like emotion detection, user registration, login, and music recommendations will not work in the live demo without the backend services.
 
 <h2 id="-complete-file-structure">📂 Complete File Structure</h2>
 
