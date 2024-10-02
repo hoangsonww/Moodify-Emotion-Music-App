@@ -1,6 +1,9 @@
 {
   "short_name": "Moodify",
   "name": "Moodify Emotion-Based Music App",
+  "description": "Moodify is an emotion-based music recommendation app that uses facial recognition to recommend music based on the user's mood.",
+  "author": "Son Nguyen",
+  "version": "1.0.0",
   "icons": [
     {
       "src": "favicon.ico",
