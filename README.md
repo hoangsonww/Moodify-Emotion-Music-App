@@ -239,7 +239,7 @@ Moodify/
 │   │   ├── recommendation/        # Music recommendation logic
 │   │   └── data_processing/       # Data preprocessing scripts
 │   │
-│   └── README.md                 # AI/ML documentation
+│   └── README.md                  # AI/ML documentation
 │
 ├── data_analytics/                # Data analytics scripts and visualizations
 │   ├── emotion_distribution.py    # Script for visualizing emotion distribution
