@@ -505,6 +505,12 @@ The models are integrated into the backend API services to provide real-time emo
   Examples of training the text emotion model.
 </p>
 
+However, if training the model is too resource-intensive for you, you can use the following Google Drive links to download the pre-trained models:
+
+- [Text Emotion Detection Model](https://drive.google.com/file/d/1EjGqjYBmGclL1t8aF6tV2eWCfBSnOMot/view?usp=sharing). Please download this `model.safetensors` file and place it into the `ai_ml/models/text_emotion_model` directory.
+- [Speech Emotion Detection Model - `scaler.pkl`](https://drive.google.com/file/d/1cd2m7NIsWfgIPs8jU7C2cB7M0QQY_u_l/view?usp=sharing). Please download this and place this into the `ai_ml/models/speech_emotion_model` directory.
+
+
 <h2 id="-analytics-scripts">📊 Analytics Scripts</h2>
 
 The `data_analytics` folder provides data analysis and visualization scripts to gain insights into the emotion detection model's performance.
