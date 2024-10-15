@@ -8,8 +8,8 @@ from sklearn.preprocessing import StandardScaler
 import random
 
 # Define the path to the saved speech emotion model and scaler - Replace this with your own path
-MODEL_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/speech_emotion_model/trained_speech_emotion_model.pkl"
-SCALER_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/speech_emotion_model/scaler.pkl"
+MODEL_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/speech_emotion_model/trained_speech_emotion_model.pkl"
+SCALER_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/speech_emotion_model/scaler.pkl"
 
 # Define emotion-to-genre mapping
 emotion_to_genre = {

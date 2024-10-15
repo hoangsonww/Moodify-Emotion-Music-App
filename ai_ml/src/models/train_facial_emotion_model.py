@@ -4,7 +4,7 @@ from fer import FER
 import torch
 
 # Define the directory where the model will be saved
-MODEL_SAVE_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/facial_emotion_model"
+MODEL_SAVE_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/facial_emotion_model"
 
 # Create the save directory if it doesn't exist
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)

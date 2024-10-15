@@ -9,10 +9,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report
 
 # Define the path to your dataset
-DATASET_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/data"  # Update this path as needed
+DATASET_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/data"  # Update this path as needed
 
 # Define the directory where the model will be saved
-MODEL_SAVE_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/speech_emotion_model"
+MODEL_SAVE_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/speech_emotion_model"
 
 # Create the save directory if it doesn't exist
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)

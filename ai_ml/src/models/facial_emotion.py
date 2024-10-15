@@ -5,7 +5,7 @@ import os
 import random
 
 # Define the path where the facial emotion model is saved
-MODEL_PATH = "C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/models/facial_emotion_model/trained_facial_emotion_model.pt"
+MODEL_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/facial_emotion_model/trained_facial_emotion_model.pt"
 
 # Emotion to genre mapping
 emotion_to_genre = {
