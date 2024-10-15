@@ -488,6 +488,8 @@ If you have set up the backend correctly, you should see the following API docum
 
 <h2 id="-about-the-aiml-models">🤖 About the AI/ML Models</h2>
 
+### **AI/ML Models Overview**
+
 The AI/ML models are built using PyTorch, TensorFlow, Keras, and HuggingFace Transformers. These models are trained on various datasets to detect emotions from text, speech, and facial expressions.
 
 The emotion detection models are used to analyze user inputs and provide real-time music recommendations based on the detected emotions. The models are trained on various datasets to capture the nuances of human emotions and provide accurate predictions.
@@ -498,12 +500,20 @@ The emotion detection models are used to analyze user inputs and provide real-ti
 
 The models are integrated into the backend API services to provide real-time emotion detection and music recommendations for users.
 
-**Note**: The models must be trained first before using them in the backend services. Ensure that the models are trained and placed in the `models` directory before running the backend server. Refer to the (Getting Started)[#getting-started] section for more details.
+### **Training the AI/ML Models**
+
+The models must be trained first before using them in the backend services. Ensure that the models are trained and placed in the `models` directory before running the backend server. Refer to the (Getting Started)[#getting-started] section for more details.
 
 <p align="center">
   <img src="images/train_text_model.png" alt="AI/ML Models" width="100%" style="border-radius: 10px">
   Examples of training the text emotion model.
 </p>
+
+To train the models, you can run the provided scripts in the `ai_ml/src/models` directory. These scripts are used to preprocess the data, train the models, and save the trained models for later use. These scripts include:
+
+
+
+### **Pre-Trained Models**
 
 However, if training the model is too resource-intensive for you, you can use the following Google Drive links to download the pre-trained models:
 
