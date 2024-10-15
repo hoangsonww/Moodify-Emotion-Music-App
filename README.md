@@ -519,7 +519,15 @@ To train the models, you can run the provided scripts in the `ai_ml/src/models` 
 - `train_speech_emotion.py`: Trains the speech emotion detection model.
 - `train_facial_emotion.py`: Trains the facial emotion detection model.
 
-Ensure that you have the necessary datasets and configurations set up before training the models. Specifically, make sure to visit the `config.py` file and update the paths to the datasets and output directories to the correct ones on your system.
+Ensure that you have the necessary dependencies, datasets, and configurations set up before training the models. Specifically, make sure to visit the `config.py` file and update the paths to the datasets and output directories to the correct ones on your system.
+
+**Note:** By default, these scripts will prioritize using your GPU with CUDA (if available) for faster training.
+However, if that is not available on your machine, the scripts will automatically fall back to using the CPU for training.
+To ensure that you have the necessary dependencies for GPU training, install PyTorch with CUDA support using the following command:
+
+```bash
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
 
 ### **Testing the AI/ML Models**
 
@@ -542,7 +550,7 @@ The endpoints are as follows:
 - `/facial_emotion`: Detects emotion from an image
 - `/music_recommendation`: Provides music recommendations based on the detected emotion
 
-For more information about training and using the models, please refer to the [AI/ML documentation](ai_ml/README.md) in the `ai_ml` directory.
+**_Important_: For more information about training and using the models, please refer to the [AI/ML documentation](ai_ml/README.md) in the `ai_ml` directory.**
 
 ### **Pre-Trained Models**
 
