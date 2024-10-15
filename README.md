@@ -45,6 +45,8 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 - [**📊 Analytics Scripts**](#-analytics-scripts)
 - [**📱 Mobile App Version**](#-mobile-app-version)
 - [**🐳 Containerization**](#-containerization)
+- [**☸️ Kubernetes**](#-kubernetes)
+- [**🔗 Jenkins**](#-jenkins)
 - [**🔧 Contributing**](#-contributing)
 - [**📝 License**](#-license)
 - [**📧 Contact**](#-contact)
@@ -106,9 +108,12 @@ Moodify provides personalized music recommendations based on users' emotional st
     - Expo Go
 - **PWA**:
     - Progressive Web App features for offline support
-- **Containerization**:
+- **Containerization, Deployment, and CI/CD**:
     - Docker
-    - Docker Desktop
+    - Kubernetes
+    - Jenkins
+    - Heroku
+    - Vercel
 
 <h2 id="-user-interface">🖼️ User Interface</h2>
 
@@ -201,7 +206,7 @@ The frontend of the Moodify app is deployed on Vercel. You can access the live d
 The project has a comprehensive file structure combining frontend, backend, AI/ML models, and data analytics components:
 
 ```plaintext
-Moodify/
+Moodify-Emotion-Music-App/
 ├── frontend/                      # React frontend for the web application
 │   ├── public/
 │   │   ├── index.html             # Main HTML file
@@ -217,6 +222,7 @@ Moodify/
 │   │   └── theme.js               # Material UI theme configuration
 │   │ 
 │   ├── .gitignore                 # Git ignore file
+│   ├── Dockerfile                 # Dockerfile for containerization
 │   ├── package.json               # NPM dependencies and scripts
 │   └── README.md                  # Project documentation
 │ 
@@ -229,6 +235,8 @@ Moodify/
 │   │   ├── users/                 # User management components
 │   │   └── api/                   # Emotion detection and recommendation APIs
 │   │
+│   ├── .gitignore                 # Git ignore file
+│   ├── Dockerfile                 # Dockerfile for containerization
 │   └── db.sqlite3                 # SQLite database (if used)
 │
 ├── ai_ml/                         # AI/ML models for emotion detection
@@ -248,6 +256,13 @@ Moodify/
 │   ├── recommendation_analysis.py # Script for visualizing music recommendations
 │   ├── spark-hadoop/              # Spark and Hadoop integration scripts
 │   └── visualizations/            # Generated visualizations
+│
+├── kubernetes/                    # Kubernetes deployment files
+│   ├── backend-deployment.yaml    # Deployment file for the backend service
+│   ├── backend-service.yaml       # Deployment file for the backend service
+│   ├── frontend-deployment.yaml   # Deployment file for the frontend service
+│   ├── frontend-service.yaml      # Deployment file for the frontend service
+│   └── configmap.yaml             # ConfigMap for environment variables
 │
 ├── mobile/                        # React Native mobile application
 │   ├── App.js                     # Main entry point for React Native app
@@ -274,6 +289,7 @@ Moodify/
 │   └── README.md                  # Mobile app documentation
 │
 ├── images/                        # Images used in the README documentation 
+├── docker-compose.yml             # Docker Compose file for containerization
 └── README.md                      # Comprehensive README file for the entire project
 ```
 
@@ -559,6 +575,48 @@ If you encounter any errors, try to rebuild your image without using the cache s
    ```bash
    docker-compose build --no-cache
    ```
+
+<h2 id="-kubernetes">☸️ Kubernetes</h2>
+
+We also added Kubernetes deployment files for the backend and frontend services. You can deploy the services on a Kubernetes cluster using the provided YAML files.
+
+1. **Deploy the backend service:**
+   ```bash
+   kubectl apply -f kubernetes/backend-deployment.yaml
+   ```
+   
+2. **Deploy the frontend service:**
+   ```bash
+    kubectl apply -f kubernetes/frontend-deployment.yaml
+    ```
+   
+3. **Expose the services:**
+    ```bash
+    kubectl expose deployment moodify-backend --type=LoadBalancer --port=8000
+    kubectl expose deployment moodify-frontend --type=LoadBalancer --port=3000
+    ```
+   
+4. **Access the services using the LoadBalancer IP:**
+    - You can access the backend service at `http://<backend_loadbalancer_ip>:8000`.
+    - You can access the frontend service at `http://<frontend_loadbalancer_ip>:3000`.
+
+Feel free to visit the `kubernetes` directory for more information about the deployment files and configurations.
+
+<h2 id="-jenkins">🔗 Jenkins</h2>
+
+We have also included Jenkins pipeline script for automating the build and deployment process. You can use Jenkins to automate the CI/CD process for the Moodify app.
+
+1. **Install Jenkins on your server or local machine.**
+
+2. **Create a new Jenkins pipeline job:**
+    - Create a new pipeline job in Jenkins.
+    - Configure the pipeline to use the `Jenkinsfile` in the `jenkins` directory.
+
+3. **Run the Jenkins pipeline:**
+    - Run the Jenkins pipeline to build and deploy the Moodify app.
+    - The pipeline will automate the build, test, and deployment process for the app.
+
+Feel free to explore the Jenkins pipeline script in the `Jenkinsfile` and customize it as needed for your deployment process.
 
 <h2 id="-contributing">🔧 Contributing</h2>
 
