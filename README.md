@@ -42,6 +42,10 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
     - [**Admin Interface**](#admin-interface)
 - [**🚀 Backend APIs Documentation**](#-backend-apis-documentation)
 - [**🤖 About the AI/ML Models**](#-about-the-aiml-models)
+    - [**AI/ML Models Overview**](#aiml-models-overview)
+    - [**Training the AI/ML Models**](#training-the-aiml-models)
+    - [**Testing the AI/ML Models**](#testing-the-aiml-models)
+    - [**Pre-Trained Models**](#pre-trained-models)
 - [**📊 Analytics Scripts**](#-analytics-scripts)
 - [**📱 Mobile App Version**](#-mobile-app-version)
 - [**🐳 Containerization**](#-containerization)
@@ -515,7 +519,30 @@ To train the models, you can run the provided scripts in the `ai_ml/src/models` 
 - `train_speech_emotion.py`: Trains the speech emotion detection model.
 - `train_facial_emotion.py`: Trains the facial emotion detection model.
 
-For more information about training the models, please refer to the [AI/ML documentation](ai_ml/README.md) in the `ai_ml` directory.
+Ensure that you have the necessary datasets and configurations set up before training the models. Specifically, make sure to visit the `config.py` file and update the paths to the datasets and output directories to the correct ones on your system.
+
+### **Testing the AI/ML Models**
+
+After that, you can run the `test_emotion_models.py` script to test the trained models and ensure they are providing accurate predictions:
+
+```bash
+python src/models/test_emotion_models.py
+```
+
+Alternatively, you can run the simple Flask API to test the models via RESTful API endpoints:
+
+```bash
+python ai_ml/src/api/emotion_api.py
+```
+
+The endpoints are as follows:
+
+- `/text_emotion`: Detects emotion from text input
+- `/speech_emotion`: Detects emotion from speech audio
+- `/facial_emotion`: Detects emotion from an image
+- `/music_recommendation`: Provides music recommendations based on the detected emotion
+
+For more information about training and using the models, please refer to the [AI/ML documentation](ai_ml/README.md) in the `ai_ml` directory.
 
 ### **Pre-Trained Models**
 
@@ -526,7 +553,7 @@ However, if training the model is too resource-intensive for you, you can use th
 - [Speech Emotion Detection Model - `trained_speech_emotion_model.pkl`](https://drive.google.com/file/d/1MPfkTkWjmjsVVs-cjkav48Mn8NUmVCG9/view?usp=sharing). Please download this and place this into the `ai_ml/models/speech_emotion_model` directory.
 - [Facial Emotion Detection Model - `trained_facial_emotion_model.pt`](https://drive.google.com/file/d/1GuW8wQ7KLfeX4pr2f8CAlORIP4YqJvgv/view?usp=sharing). Please download this and place this into the `ai_ml/models/facial_emotion_model` directory.
 
-These have been pre-trained on the datasets for you and are ready to use in the backend services or for testing purposes.
+These have been pre-trained on the datasets for you and are ready to use in the backend services or for testing purposes once downloaded and correctly placed in the `models` directory.
 
 Feel free to [contect me](#-contact) if you encounter any issues or need further assistance with the AI/ML models.
 
