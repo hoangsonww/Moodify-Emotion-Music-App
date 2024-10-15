@@ -511,7 +511,11 @@ The models must be trained first before using them in the backend services. Ensu
 
 To train the models, you can run the provided scripts in the `ai_ml/src/models` directory. These scripts are used to preprocess the data, train the models, and save the trained models for later use. These scripts include:
 
+- `train_text_emotion.py`: Trains the text emotion detection model.
+- `train_speech_emotion.py`: Trains the speech emotion detection model.
+- `train_facial_emotion.py`: Trains the facial emotion detection model.
 
+For more information about training the models, please refer to the [AI/ML documentation](ai_ml/README.md) in the `ai_ml` directory.
 
 ### **Pre-Trained Models**
 
@@ -523,6 +527,8 @@ However, if training the model is too resource-intensive for you, you can use th
 - [Facial Emotion Detection Model - `trained_facial_emotion_model.pt`](https://drive.google.com/file/d/1GuW8wQ7KLfeX4pr2f8CAlORIP4YqJvgv/view?usp=sharing). Please download this and place this into the `ai_ml/models/facial_emotion_model` directory.
 
 These have been pre-trained on the datasets for you and are ready to use in the backend services or for testing purposes.
+
+Feel free to [contect me](#-contact) if you encounter any issues or need further assistance with the AI/ML models.
 
 <h2 id="-analytics-scripts">📊 Analytics Scripts</h2>
 
