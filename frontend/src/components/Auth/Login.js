@@ -16,7 +16,7 @@ const Login = () => {
 
     try {
       // Make the login request
-      const response = await axios.post('http://127.0.0.1:8000/users/login/', { username, password });
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/users/login/', { username, password });
       const { access } = response.data; // Extract the access token from the response
 
       if (access) {

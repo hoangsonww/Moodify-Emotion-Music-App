@@ -2,7 +2,7 @@ import {Box, Button, TextField} from "@mui/material";
 
 const TextInput = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       <TextField
         id="text-input"
         label="Enter Text"

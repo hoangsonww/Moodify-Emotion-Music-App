@@ -32,7 +32,7 @@ const ResultsPage = () => {
 
     try {
       // Call the API with the selected mood
-      const response = await axios.post('http://127.0.0.1:8000/api/music_recommendation/', {
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
         "emotion": newMood.toLowerCase(),
       });
 
@@ -70,7 +70,7 @@ const ResultsPage = () => {
               style={{ fontFamily: 'Poppins' }}
           >
             {Object.keys(emotionToGenre).map((mood, index) => (
-                <MenuItem key={index} value={mood}>
+                <MenuItem key={index} value={mood} style={{ fontFamily: 'Poppins' }}>
                   {mood.charAt(0).toUpperCase() + mood.slice(1)}
                 </MenuItem>
             ))}

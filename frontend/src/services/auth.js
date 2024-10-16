@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = 'https://moodify-emotion-music-app.onrender.com';
 
 export const register = async (username, password, email) => {
   try {

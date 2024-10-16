@@ -23,7 +23,7 @@ const Register = () => {
 
     try {
       // Sending username, email, and password to the backend
-      const response = await axios.post('http://127.0.0.1:8000/users/register/', {
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/users/register/', {
         username,
         email,
         password

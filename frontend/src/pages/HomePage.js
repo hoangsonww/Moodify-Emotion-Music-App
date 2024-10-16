@@ -27,7 +27,7 @@ const HomePage = () => {
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+        const response = await axios.get('https://moodify-emotion-music-app.onrender.com/users/user/profile/', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -74,7 +74,7 @@ const HomePage = () => {
 
       // Save mood history
       if (mood) {
-        await axios.post(`http://127.0.0.1:8000/users/mood_history/${userData.id}/`, { mood }, {
+        await axios.post(`https://moodify-emotion-music-app.onrender.com/users/mood_history/${userData.id}/`, { mood }, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ const HomePage = () => {
 
       // Save recommendations history
       if (recommendations && recommendations.length > 0) {
-        await axios.post(`http://127.0.0.1:8000/users/recommendations/${userData.id}/`, {
+        await axios.post(`https://moodify-emotion-music-app.onrender.com/users/recommendations/${userData.id}/`, {
           recommendations: recommendations.map((rec) => ({
             name: rec.name,
             artist: rec.artist,
@@ -101,7 +101,7 @@ const HomePage = () => {
       }
 
       // Refresh user data to reflect the updated history
-      const updatedUserData = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+      const updatedUserData = await axios.get('https://moodify-emotion-music-app.onrender.com/users/user/profile/', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -136,20 +136,20 @@ const HomePage = () => {
       let response;
       if (activeTab === 'text') {
         const textContent = await uploadedFile.text();
-        response = await axios.post('http://127.0.0.1:8000/api/text_emotion/', { text: textContent }, {
+        response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/text_emotion/', { text: textContent }, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
         });
       } else if (activeTab === 'face') {
-        response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
+        response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/facial_emotion/', formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         });
       } else if (activeTab === 'speech') {
-        response = await axios.post('http://127.0.0.1:8000/api/speech_emotion/', formData, {
+        response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -206,7 +206,7 @@ const HomePage = () => {
         return;
       }
 
-      const response = await axios.post('http://127.0.0.1:8000/api/facial_emotion/', formData, {
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/facial_emotion/', formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -236,7 +236,7 @@ const HomePage = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/text_emotion/', { text: inputValue.trim() }, {
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/text_emotion/', { text: inputValue.trim() }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -299,7 +299,7 @@ const HomePage = () => {
         return;
       }
 
-      const response = await axios.post('http://127.0.0.1:8000/api/speech_emotion/', formData, {
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,

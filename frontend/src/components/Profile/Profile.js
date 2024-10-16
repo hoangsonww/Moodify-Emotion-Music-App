@@ -22,7 +22,7 @@ const ProfilePage = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+      const response = await axios.get('https://moodify-emotion-music-app.onrender.com/users/user/profile/', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -168,7 +168,6 @@ const styles = {
   noData: {
     color: '#999',
     font: 'inherit',
-    fontStyle: 'italic',
   },
 };
 

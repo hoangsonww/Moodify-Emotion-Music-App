@@ -22,7 +22,7 @@ const Navbar = () => {
 
     try {
       // Make an authenticated request to check the token validity
-      const response = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+      const response = await axios.get('https://moodify-emotion-music-app.onrender.com/users/user/profile/', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -81,6 +81,7 @@ const Navbar = () => {
                   fontSize: '24px',
                   textAlign: isMobile ? 'center' : 'left',
                   marginTop: isMobile ? '10px' : '0',
+                  fontWeight: 'bold',
                 }}
                 onClick={() => navigate('/home')}
             >
