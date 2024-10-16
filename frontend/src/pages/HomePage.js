@@ -42,7 +42,6 @@ const HomePage = () => {
         }
 
         setUserData({ ...userProfile, id: userId });
-        console.log('User data successfully fetched and set:', { ...userProfile, id: userId });
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -321,13 +320,30 @@ const HomePage = () => {
     }
   };
 
+  const [dotCount, setDotCount] = useState(0); // State to track number of dots
+
+  useEffect(() => {
+    // Create an interval that updates the dot count every 500ms
+    const intervalId = setInterval(() => {
+      setDotCount((prevCount) => (prevCount + 1) % 4); // Cycle through 0, 1, 2, 3 (for ".", "..", "...")
+    }, 500);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const loadingText = `Processing, please wait${'.'.repeat(dotCount)}`;
+
   return (
     <div style={styles.container}>
       {isLoading && (
           <Box sx={styles.loadingOverlay}>
             <CircularProgress sx={{ color: '#ff4d4d' }} />
             <Typography variant="h6" style={{ marginTop: '10px', color: 'white', font: 'inherit' }}>
-              Processing, please wait...
+              {loadingText}
+            </Typography>
+            <Typography variant="h6" style={{ marginTop: '10px', color: 'white', font: 'inherit', textAlign: 'center', fontSize: '14px' , padding: '0 2rem' }}>
+              Note that our servers might be slow or experience downtime due to high traffic, or they may spin down after periods of inactivity. It may take up to 2 minutes to process during these times. We appreciate your patience, and apologize for any inconvenience.
             </Typography>
           </Box>
       )}

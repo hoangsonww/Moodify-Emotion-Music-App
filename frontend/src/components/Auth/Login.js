@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Paper } from '@mui/material';
+import { Box, Button, TextField, Typography, Paper, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Add loading state
   const navigate = useNavigate();
 
   const handleLogin = async () => {
@@ -13,6 +14,8 @@ const Login = () => {
       alert('Please fill in all fields');
       return;
     }
+
+    setLoading(true); // Set loading to true when login starts
 
     try {
       // Make the login request
@@ -32,51 +35,54 @@ const Login = () => {
     } catch (error) {
       console.error('Login failed:', error);
       alert('Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false); // Reset loading state when login process finishes
     }
   };
 
   return (
-      <div style={styles.container}>
-        <Paper elevation={4} style={styles.formContainer}>
-          <Typography variant="h4" align="center" sx={{ mb: 3, fontFamily: 'Poppins' }}>
-            Login
-          </Typography>
-          <TextField
-              label="Username"
-              variant="outlined"
-              fullWidth
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              sx={{ mb: 2 }}
-          />
-          <TextField
-              label="Password"
-              type="password"
-              variant="outlined"
-              fullWidth
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              sx={{ mb: 2 }}
-          />
-          <Button
-              variant="contained"
-              color="secondary"
-              fullWidth
-              onClick={handleLogin}
-              sx={{ mb: 2, backgroundColor: '#ff4d4d', font: 'inherit' }}
-          >
-            Login
-          </Button>
-          <Typography
-              variant="body2"
-              align="center"
-              sx={{ cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Poppins' }}
-              onClick={() => navigate('/register')}
-          >
-            Don't have an account? Register
-          </Typography>
-        </Paper>
-      </div>
+    <div style={styles.container}>
+      <Paper elevation={4} style={styles.formContainer}>
+        <Typography variant="h4" align="center" sx={{ mb: 3, fontFamily: 'Poppins' }}>
+          Login
+        </Typography>
+        <TextField
+          label="Username"
+          variant="outlined"
+          fullWidth
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label="Password"
+          type="password"
+          variant="outlined"
+          fullWidth
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          sx={{ mb: 2 }}
+        />
+        <Button
+          variant="contained"
+          color="secondary"
+          fullWidth
+          onClick={handleLogin}
+          sx={{ mb: 2, backgroundColor: '#ff4d4d', font: 'inherit' }}
+          disabled={loading} // Disable the button while loading
+        >
+          {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'} {/* Show spinner or "Login" */}
+        </Button>
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ cursor: 'pointer', textDecoration: 'underline', fontFamily: 'Poppins' }}
+          onClick={() => navigate('/register')}
+        >
+          Don't have an account? Register
+        </Typography>
+      </Paper>
+    </div>
   );
 };
 

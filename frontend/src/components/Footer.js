@@ -5,52 +5,73 @@ import { GitHub, Instagram, LinkedIn, Mail } from '@mui/icons-material';
 
 const Footer = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
 
   return (
-      <Box style={styles.footer}>
-        {/* Navigation Links */}
-        <Box style={styles.navLinks}>
-          <Link style={styles.link} onClick={() => navigate('/home')}>
-            Home
-          </Link>
-          <Link style={styles.link} onClick={() => navigate('/results')}>
-            Results
-          </Link>
-          <Link style={styles.link} onClick={() => navigate('/profile')}>
-            Profile
-          </Link>
-          <Link style={styles.link} onClick={() => navigate('/login')}>
-            Login
-          </Link>
-          <Link style={styles.link} onClick={() => navigate('/register')}>
-            Register
-          </Link>
-          <Link style={styles.link} onClick={() => navigate('/')}>
-            Landing Page
-          </Link>
-        </Box>
-
-        {/* Icon Links */}
-        <Box style={styles.iconContainer}>
-          <Link href="https://github.com/hoangsonww" target="_blank" rel="noopener noreferrer" style={styles.iconLink}>
-            <GitHub style={styles.icon} />
-          </Link>
-          <Link href="https://www.instagram.com/hoangsonw_" target="_blank" rel="noopener noreferrer" style={styles.iconLink}>
-            <Instagram style={styles.icon} />
-          </Link>
-          <Link href="https://www.linkedin.com/in/hoangsonw" target="_blank" rel="noopener noreferrer" style={styles.iconLink}>
-            <LinkedIn style={styles.icon} />
-          </Link>
-          <Link href="mailto:hoangson091104@gmail.com" style={styles.iconLink}>
-            <Mail style={styles.icon} />
-          </Link>
-        </Box>
-
-        {/* Copyright Text */}
-        <Typography variant="body2" style={styles.copyright}>
-          &copy; {new Date().getFullYear()} Moodify. All rights reserved.
-        </Typography>
+    <Box sx={styles.footer}>
+      {/* Navigation Links */}
+      <Box sx={styles.navLinks}>
+        <Link
+          sx={isActive('/home') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/home')}
+        >
+          Home
+        </Link>
+        <Link
+          sx={isActive('/results') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/results')}
+        >
+          Results
+        </Link>
+        <Link
+          sx={isActive('/profile') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/profile')}
+        >
+          Profile
+        </Link>
+        <Link
+          sx={isActive('/login') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/login')}
+        >
+          Login
+        </Link>
+        <Link
+          sx={isActive('/register') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/register')}
+        >
+          Register
+        </Link>
+        <Link
+          sx={isActive('/') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/')}
+        >
+          Landing Page
+        </Link>
       </Box>
+
+      {/* Icon Links */}
+      <Box sx={styles.iconContainer}>
+        <Link href="https://github.com/hoangsonww" target="_blank" rel="noopener noreferrer" sx={styles.iconLink}>
+          <GitHub sx={styles.icon} />
+        </Link>
+        <Link href="https://www.instagram.com/hoangsonw_" target="_blank" rel="noopener noreferrer" sx={styles.iconLink}>
+          <Instagram sx={styles.icon} />
+        </Link>
+        <Link href="https://www.linkedin.com/in/hoangsonw" target="_blank" rel="noopener noreferrer" sx={styles.iconLink}>
+          <LinkedIn sx={styles.icon} />
+        </Link>
+        <Link href="mailto:hoangson091104@gmail.com" sx={styles.iconLink}>
+          <Mail sx={styles.icon} />
+        </Link>
+      </Box>
+
+      {/* Copyright Text */}
+      <Typography variant="body2" sx={styles.copyright}>
+        &copy; {new Date().getFullYear()} Moodify. All rights reserved.
+      </Typography>
+    </Box>
   );
 };
 
@@ -61,12 +82,17 @@ const styles = {
     padding: '20px 0',
     textAlign: 'center',
     marginTop: '20px',
+    width: '100%',
+    '@media (max-width: 600px)': {
+      padding: '15px 0',
+    },
   },
   navLinks: {
     display: 'flex',
     justifyContent: 'center',
     gap: '20px',
     marginBottom: '10px',
+    flexWrap: 'wrap', // Makes it responsive
   },
   link: {
     cursor: 'pointer',
@@ -74,15 +100,24 @@ const styles = {
     textDecoration: 'none',
     fontSize: '14px',
     fontWeight: 500,
+    position: 'relative',
+    paddingBottom: '5px',
     '&:hover': {
       textDecoration: 'underline',
+      transform: 'scale(1.05)',
+      transition: 'transform 0.2s',
     },
+  },
+  activeLink: {
+    borderBottom: '2px solid white', // Active link bottom border
+    borderRadius: 0, // Ensure no border radius
   },
   iconContainer: {
     display: 'flex',
     justifyContent: 'center',
     gap: '20px',
     marginBottom: '10px',
+    flexWrap: 'wrap', // Makes the icons responsive
   },
   iconLink: {
     color: 'white',
