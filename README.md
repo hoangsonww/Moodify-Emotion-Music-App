@@ -703,7 +703,7 @@ Feel free to explore the Jenkins pipeline script in the `Jenkinsfile` and custom
 
 ---
 
-**Happy Coding and Analyzing! 🎶**
+**Happy Coding and Vibin'! 🎶**
 
 **Created with ❤️ by [Son Nguyen](https://github.com/hoangsonww) in 2024.**
 
