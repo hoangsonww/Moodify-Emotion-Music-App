@@ -9,15 +9,20 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from datetime import timedelta
 from pathlib import Path
 from mongoengine import connect
+from decouple import config
 
 # Connect to MongoDB
 connect(
-    db="emotion_based_music_db",  # Your MongoDB database name
-    host="mongodb://localhost:27017/",  # MongoDB host and port
+    db="emotion_based_music_db",
+    host=config('MONGO_DB_URI'),  # MongoDB Atlas URI from .env file
+    username=config('MONGO_DB_USERNAME'),
+    password=config('MONGO_DB_PASSWORD'),
+    authentication_source='admin',
+    ssl=True
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,7 +33,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # TODO: Define SECRET_KEY and set Debug to True here
 
-ALLOWED_HOSTS = []
+SECRET_KEY = config('SECRET_KEY')
+
+DEBUG = True
+
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -172,7 +181,8 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
