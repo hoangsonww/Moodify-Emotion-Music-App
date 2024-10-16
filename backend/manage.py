@@ -3,10 +3,15 @@
 import os
 import sys
 
+
 def main():
     """Run administrative tasks."""
-    # Add the project root (parent directory of the current file) to the Python path
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    # Add the project root (Moodify-Emotion-Music-App) to the Python path
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.append(project_root)
+
+    # Add the 'ai_ml' directory to the Python path
+    sys.path.append(os.path.join(project_root, 'ai_ml'))
 
     # Set the default settings module for the 'backend' project
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
@@ -20,6 +25,7 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
+
 
 if __name__ == '__main__':
     main()
