@@ -4,8 +4,11 @@ import cv2
 import os
 import random
 
-# Define the path where the facial emotion model is saved
-MODEL_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/facial_emotion_model/trained_facial_emotion_model.pt"
+# Dynamically define the base directory (two levels up from the current file)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Define the correct relative model path (from BASE_DIR)
+MODEL_PATH = os.path.join(BASE_DIR, 'models', 'facial_emotion_model', 'trained_facial_emotion_model.pt')
 
 # Emotion to genre mapping
 emotion_to_genre = {

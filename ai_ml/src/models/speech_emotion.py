@@ -2,14 +2,17 @@ import numpy as np
 import librosa
 import pickle
 import os
-import soundfile as sf  # Ensure you have the `soundfile` package installed
+import soundfile as sf
 from moviepy.editor import AudioFileClip
 from sklearn.preprocessing import StandardScaler
 import random
 
-# Define the path to the saved speech emotion model and scaler - Replace this with your own path
-MODEL_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/speech_emotion_model/trained_speech_emotion_model.pkl"
-SCALER_PATH = "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/speech_emotion_model/scaler.pkl"
+# Define the base directory two levels up from the current file
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Define the correct relative paths for the model and scaler
+MODEL_PATH = os.path.join(BASE_DIR, 'models', 'speech_emotion_model', 'trained_speech_emotion_model.pkl')
+SCALER_PATH = os.path.join(BASE_DIR, 'models', 'speech_emotion_model', 'scaler.pkl')
 
 # Define emotion-to-genre mapping
 emotion_to_genre = {

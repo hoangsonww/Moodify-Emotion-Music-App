@@ -1,19 +1,34 @@
-# Configuration with direct string paths
-# BE VERY SURE TO UPDATE THE PATHS TO YOUR OWN PATHS
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Define the base directory at the level of the 'ai_ml' directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Configuration with dynamically generated paths
 CONFIG = {
     "model_name": "bert-base-uncased",
     "num_labels": 6,
     "batch_size": 16,
     "num_epochs": 4,
     "learning_rate": 2e-5,
-    "train_data_path": "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/data/training.csv",
-    "test_data_path": "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/data/test.csv",
-    "spotify_client_id": "15bbb2d04cc8434cb478688897605501",  # Replace with your own client ID
-    "spotify_client_secret": "8655b91da2414a4c8f42b12c7cc0a191",  # Replace with your own client secret
-    "output_dir": "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/text_emotion_model",
-    "speech_emotion_model_path": "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/pre_trained_models/speech_emotion_model",
-    "facial_emotion_model_path": "/Users/davidnguyen/PycharmProjects/Moodify-Emotion-Music-App/ai_ml/models/pre_trained_models/facial_emotion_model",
+
+    # Paths are dynamically constructed relative to the base directory (ai_ml)
+    "train_data_path": os.path.join(BASE_DIR, 'data', 'training.csv'),
+    "test_data_path": os.path.join(BASE_DIR, 'data', 'test.csv'),
+    "output_dir": os.path.join(BASE_DIR, 'models', 'text_emotion_model'),
+
+    # Pre-trained models paths
+    "speech_emotion_model_path": os.path.join(BASE_DIR, 'models', 'pre_trained_models', 'speech_emotion_model'),
+    "facial_emotion_model_path": os.path.join(BASE_DIR, 'models', 'pre_trained_models', 'facial_emotion_model'),
+
+    # Spotify API credentials (loaded from environment variables)
+    "spotify_client_id": os.getenv('SPOTIFY_CLIENT_ID'),
+    "spotify_client_secret": os.getenv('SPOTIFY_CLIENT_SECRET'),
+
+    # API and model settings
     "api_port": 5000,
     "max_length": 128
 }
