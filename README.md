@@ -456,6 +456,13 @@ Finally, set up the frontend to interact with the backend.
 |-------------|------------------------------|----------------------------------------------|
 | `GET`       | `/admin/`                    | Access the Django Admin interface            |
 
+### **Documentation Endpoints**
+
+| HTTP Method | Endpoint                     | Description                                  |
+|-------------|------------------------------|----------------------------------------------|
+| `GET`       | `/swagger/`                  | Access the Swagger UI API documentation      |
+| `GET`       | `/redoc/`                    | Access the Redoc API documentation           |
+
 ### **Admin Interface**
 
 1. Create a superuser:
