@@ -41,7 +41,7 @@ const ProfilePage = () => {
         {isLoading ? (
             <CircularProgress />
         ) : error ? (
-            <Typography variant="h6" color="error">{error}</Typography>
+            <Typography variant="h6" color="error" style={{ font: 'inherit' }}>{error}</Typography>
         ) : (
             <Paper elevation={4} style={styles.profileContainer}>
               <Typography variant="h5" style={styles.title}>
@@ -167,6 +167,7 @@ const styles = {
   },
   noData: {
     color: '#999',
+    font: 'inherit',
     fontStyle: 'italic',
   },
 };
