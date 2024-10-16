@@ -251,6 +251,7 @@ Moodify-Emotion-Music-App/
 │   │   ├── recommendation/        # Music recommendation logic
 │   │   └── data_processing/       # Data preprocessing scripts
 │   │
+│   ├── Dockerfile                 # Dockerfile for containerization
 │   └── README.md                  # AI/ML documentation
 │
 ├── data_analytics/                # Data analytics scripts and visualizations
@@ -272,8 +273,6 @@ Moodify-Emotion-Music-App/
 │   ├── App.js                     # Main entry point for React Native app
 │   ├── index.js                   # App registry for React Native
 │   ├── package.json               # NPM dependencies and scripts
-│   ├── babel.config.js            # Babel configuration for React Native
-│   ├── 
 │   ├── components/                # React Native components
 │   │   ├── Footer.js              # Footer component
 │   │   ├── Navbar.js              # Header component
