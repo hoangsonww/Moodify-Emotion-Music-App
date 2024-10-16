@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
-import sys
 import os
-
-# Add the root directory to the system path
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-
+import sys
 
 def main():
     """Run administrative tasks."""
+    # Add the project root (parent directory of the current file) to the Python path
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    # Set the default settings module for the 'backend' project
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -19,7 +20,6 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-
 
 if __name__ == '__main__':
     main()
