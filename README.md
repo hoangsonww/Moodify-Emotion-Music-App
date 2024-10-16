@@ -304,10 +304,13 @@ Moodify-Emotion-Music-App/
 - **Python 3.8** or later
 - **MongoDB**
 - **Virtual Environment** (`venv`)
+- **`.env` File** (for environment variables - you create your own credentials following the [example file](.env.example) or contact me for mine.)
 
 ### **1. Setup and Train AI/ML Models**
 
 Start with setting up and training the AI/ML models, as they will be required for the backend to function properly.
+
+Or, you can download the pre-trained models from the Google Drive links provided in the [Pre-Trained Models](#pre-trained-models) section.
 
 1. **Clone the repository:**
    ```bash
