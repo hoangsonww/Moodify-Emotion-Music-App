@@ -115,7 +115,7 @@ const HomePage = () => {
   const handleFileUpload = async (e) => {
     const uploadedFile = e.target.files[0];
     if (uploadedFile && uploadedFile.size > 10 * 1024 * 1024) {
-      alert('File size must be under 10MB');
+      console.log('File size must be under 10MB');
       return;
     }
 
@@ -125,7 +125,7 @@ const HomePage = () => {
     formData.append('file', uploadedFile);
 
     if (!token) {
-      alert('User is not authenticated. Please log in.');
+      console.log('User is not authenticated. Please log in.');
       return;
     }
 
@@ -161,9 +161,32 @@ const HomePage = () => {
       await saveToHistory(emotion, recommendations);
 
       navigate('/results', { state: { emotion, recommendations } });
+
     } catch (error) {
       console.error(`Error uploading ${activeTab} file:`, error);
-      alert(`Failed to upload the ${activeTab} file. Please try again.`);
+
+      // Fallback to a random mood in case of an error
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the randomly selected mood
+        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
+          emotion: newMood.toLowerCase(),
+        });
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate('/results', { state: { emotion: randomMood, recommendations: newRecommendations } });
+
+      } catch (recommendationError) {
+        console.error('Error fetching recommendations:', recommendationError);
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
+        navigate('/results', { state: { emotion: randomMood, recommendations: [] } });
+      }
     } finally {
       handleModalClose();
       setIsLoading(false);
@@ -193,7 +216,7 @@ const HomePage = () => {
       setIsLoading(true);
 
       if (blob.size === 0) {
-        alert('Captured image is invalid. Please try again.');
+        console.log('Captured image is invalid.');
         return;
       }
 
@@ -201,10 +224,12 @@ const HomePage = () => {
       formData.append('file', blob, 'captured_image.jpg');
 
       if (!token) {
-        alert('User is not authenticated. Please log in.');
+        console.log('User is not authenticated. Please log in.');
+        setIsLoading(false);
         return;
       }
 
+      // Try uploading the image and getting the emotion and recommendations
       const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/facial_emotion/', formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -217,9 +242,32 @@ const HomePage = () => {
       await saveToHistory(emotion, recommendations);
 
       navigate('/results', { state: { emotion, recommendations } });
+
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Failed to upload the image. Please try again.');
+
+      // Fallback to a random mood in case of an error
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the randomly selected mood
+        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
+          emotion: newMood.toLowerCase(),
+        });
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate('/results', { state: { emotion: randomMood, recommendations: newRecommendations } });
+
+      } catch (recommendationError) {
+        console.error('Error fetching recommendations:', recommendationError);
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
+        navigate('/results', { state: { emotion: randomMood, recommendations: [] } });
+      }
     } finally {
       handleModalClose();
       setIsLoading(false);
@@ -228,13 +276,14 @@ const HomePage = () => {
 
   const handleTextSubmit = async () => {
     if (!inputValue.trim()) {
-      alert("Please enter some text.");
+      console.log("Please enter some text.");
       return;
     }
 
     setIsLoading(true);
 
     try {
+      // Attempt to submit the text to the text emotion API
       const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/text_emotion/', { text: inputValue.trim() }, {
         headers: {
           'Content-Type': 'application/json',
@@ -247,16 +296,39 @@ const HomePage = () => {
       // Save both mood and recommendations to history
       await saveToHistory(emotion, recommendations);
 
+      // Navigate to the results page with the response data
       navigate('/results', { state: { emotion, recommendations } });
+
     } catch (error) {
       console.error('Error processing text:', error);
-      alert('Failed to process the text. Please try again.');
+
+      // Fallback to a random mood in case of an error
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the randomly selected mood
+        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
+          emotion: newMood.toLowerCase(),
+        });
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate('/results', { state: { emotion: randomMood, recommendations: newRecommendations } });
+
+      } catch (recommendationError) {
+        console.error('Error fetching recommendations:', recommendationError);
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
+        navigate('/results', { state: { emotion: randomMood, recommendations: [] } });
+      }
     } finally {
       setIsLoading(false);
+      setInputValue('');
+      handleModalClose();
     }
-
-    setInputValue('');
-    handleModalClose();
   };
 
   const [audioUrl, setAudioUrl] = useState(null);
@@ -329,9 +401,51 @@ const HomePage = () => {
     }
   };
 
+  const moodMap = {
+    "joy": "hip-hop",
+    "happy": "happy",
+    "sadness": "sad",
+    "anger": "metal",
+    "love": "romance",
+    "fear": "sad",
+    "neutral": "pop",
+    "calm": "chill",
+    "disgust": "blues",
+    "surprised": "party",
+    "surprise": "party",
+    "excited": "party",
+    "bored": "pop",
+    "tired": "chill",
+    "relaxed": "chill",
+    "stressed": "chill",
+    "anxious": "chill",
+    "depressed": "sad",
+    "lonely": "sad",
+    "energetic": "hip-hop",
+    "nostalgic": "pop",
+    "confused": "pop",
+    "frustrated": "metal",
+    "hopeful": "romance",
+    "proud": "hip-hop",
+    "guilty": "blues",
+    "jealous": "pop",
+    "ashamed": "blues",
+    "disappointed": "pop",
+    "content": "chill",
+    "insecure": "pop",
+    "embarrassed": "blues",
+    "overwhelmed": "chill",
+    "amused": "party",
+  };
+
+  const getRandomMood = () => {
+    const moods = Object.keys(moodMap);
+    const randomIndex = Math.floor(Math.random() * moods.length);
+    return moods[randomIndex];
+  };
+
   const handleAudioUpload = async () => {
     if (!audioBlob) {
-      alert('No audio recorded.');
       console.log('No audio blob available for upload.');
       return;
     }
@@ -343,12 +457,13 @@ const HomePage = () => {
     formData.append('file', audioBlob, 'recorded_audio.wav');
 
     if (!token) {
-      alert('User is not authenticated. Please log in.');
+      console.log('User is not authenticated. Please log in.');
       setIsLoading(false);
       return;
     }
 
     try {
+      // Try uploading the audio and processing the response
       const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -356,12 +471,33 @@ const HomePage = () => {
         },
       });
 
-
       const { emotion, recommendations } = response.data;
       navigate('/results', { state: { emotion, recommendations } });
+
     } catch (error) {
       console.error('Error uploading audio:', error);
-      alert('Failed to upload the audio. Please try again.');
+
+      // Fallback to randomly selecting a mood if the upload fails
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the selected random mood
+        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
+          emotion: newMood.toLowerCase(),
+        });
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate('/results', { state: { emotion: randomMood, recommendations: newRecommendations } });
+
+      } catch (recommendationError) {
+        console.error('Error fetching recommendations:', recommendationError);
+        // You could handle this case by navigating with empty recommendations if desired
+        navigate('/results', { state: { emotion: randomMood, recommendations: [] } });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -503,7 +639,7 @@ const HomePage = () => {
                   disabled={isRecording}
                   sx={{
                     width: { xs: '100%', sm: 'auto' }, // Full width on small screens
-                    fontSize: { xs: '12px', sm: '14px' },
+                    font: 'inherit',
                   }}
                 >
                   Start Recording
@@ -515,7 +651,7 @@ const HomePage = () => {
                   disabled={!isRecording}
                   sx={{
                     width: { xs: '100%', sm: 'auto' }, // Full width on small screens
-                    fontSize: { xs: '12px', sm: '14px' },
+                    font: 'inherit',
                   }}
                 >
                   Stop Recording
@@ -546,7 +682,6 @@ const HomePage = () => {
                     sx={{
                       marginTop: '10px',
                       font: 'inherit',
-                      fontSize: { xs: '14px', sm: '16px', md: '18px' }, // Responsive font size
                       textAlign: 'center',
                     }}
                   >
@@ -579,7 +714,7 @@ const HomePage = () => {
                   color="success"
                   sx={{
                     width: { xs: '100%', sm: 'auto' }, // Full width on small screens
-                    fontSize: { xs: '12px', sm: '14px' },
+                    font: 'inherit',
                   }}
                 >
                   Upload Audio
@@ -590,7 +725,7 @@ const HomePage = () => {
                   color="error"
                   sx={{
                     width: { xs: '100%', sm: 'auto' },
-                    fontSize: { xs: '12px', sm: '14px' },
+                    font: 'inherit',
                   }}
                 >
                   Close
@@ -617,7 +752,6 @@ const HomePage = () => {
                 sx={{
                   marginBottom: '10px',
                   font: 'inherit',
-                  fontSize: { xs: '14px', sm: '16px', md: '18px' },
                   textAlign: 'center',
                 }}
               >
@@ -656,7 +790,6 @@ const HomePage = () => {
                     marginRight: { sm: '10px' },
                     font: 'inherit',
                     backgroundColor: '#ff1a1a',
-                    fontSize: { xs: '12px', sm: '14px' },
                   }}
                 >
                   Send Text
@@ -670,7 +803,6 @@ const HomePage = () => {
                     font: 'inherit',
                     backgroundColor: 'white',
                     color: 'red',
-                    fontSize: { xs: '12px', sm: '14px' },
                     '&:hover': {
                       backgroundColor: '#ff1a1a',
                       color: 'white',
@@ -702,7 +834,6 @@ const HomePage = () => {
                   sx={{
                     marginBottom: '10px',
                     font: 'inherit',
-                    fontSize: { xs: '14px', sm: '16px', md: '18px' },
                     textAlign: 'center',
                   }}
                 >
@@ -731,7 +862,6 @@ const HomePage = () => {
                     width: { xs: '100%', sm: 'auto' }, // Full width on small screens
                     backgroundColor: '#ff1a1a',
                     font: 'inherit',
-                    fontSize: { xs: '12px', sm: '14px' },
                     marginRight: { md: '10px', lg: '10px' },
                   }}
                 >
@@ -775,7 +905,6 @@ const HomePage = () => {
                     sx={{
                       width: { xs: '100%', sm: 'auto' }, // Full width on small screens
                       font: 'inherit',
-                      fontSize: { xs: '12px', sm: '14px' },
                     }}
                   >
                     Confirm
@@ -787,7 +916,6 @@ const HomePage = () => {
                     sx={{
                       width: { xs: '100%', sm: 'auto' }, // Full width on small screens
                       font: 'inherit',
-                      fontSize: { xs: '12px', sm: '14px' },
                       marginRight: { md: '10px', lg: '10px' },
                     }}
                   >
@@ -806,7 +934,6 @@ const HomePage = () => {
                 font: 'inherit',
                 backgroundColor: 'white',
                 color: '#ff1a1a',
-                fontSize: { xs: '12px', sm: '14px' },
                 '&:hover': {
                   backgroundColor: '#ff1a1a',
                   color: 'white',

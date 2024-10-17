@@ -150,7 +150,7 @@ const ResultsPage = () => {
                 ))
             ) : (
                 <Typography variant="body2" style={{ color: '#999', marginTop: '20px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
-                  No recommendations available. Try inputting a new image, changing the mood, entering some texts, or recording something...
+                  No recommendations available. Try inputting a new image, changing the mood, entering some texts, or recording something. If the error persists, it may be that our servers are down and it may take up to 3 minutes to restart.
                 </Typography>
             )}
           </Box>

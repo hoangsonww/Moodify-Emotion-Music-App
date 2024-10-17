@@ -67,6 +67,7 @@ DATABASES = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,7 +75,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
@@ -82,9 +82,26 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'backend.urls'
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False  # Disable allow all origins
 
-CORS_ALLOW_CREDENTIALS = True
+# Explicitly allow specific origins
+CORS_ALLOWED_ORIGINS = [
+    'https://moodify-emotion-music-app.vercel.app',  # Frontend hosted on Vercel
+    'http://localhost:3000/', # Local development
+]
+
+CORS_ALLOW_CREDENTIALS = True  # Allow sending credentials like cookies and auth headers
+
+# Allow specific HTTP methods
+CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+
+# Allow specific headers in requests
+CORS_ALLOW_HEADERS = [
+    'Authorization',
+    'Content-Type',
+    'X-CSRFToken',
+    'Access-Control-Allow-Origin',
+]
 
 TEMPLATES = [
     {
