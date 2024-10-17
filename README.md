@@ -28,7 +28,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
     - [**Registration Page**](#registration-page)
     - [**404 Not Found Page**](#404-not-found-page)
     - [**Footer**](#footer)
-- [**🌐 Live Frontend Demo**](#-live-frontend-demo)
+- [**🌐 Live Deployment**](#-live-frontend-demo)
 - [**📂 Complete File Structure**](#-complete-file-structure)
 - [**🛠️ Getting Started**](#-getting-started)
     - [**Prerequisites**](#prerequisites)
@@ -48,6 +48,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
     - [**Pre-Trained Models**](#pre-trained-models)
 - [**📊 Analytics Scripts**](#-analytics-scripts)
 - [**📱 Mobile App Version**](#-mobile-app-version)
+- [**🔗 Load Balancing**](#-load-balancing)
 - [**🐳 Containerization**](#-containerization)
 - [**☸️ Kubernetes**](#-kubernetes)
 - [**🔗 Jenkins**](#-jenkins)
@@ -72,6 +73,15 @@ Moodify provides personalized music recommendations based on users' emotional st
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
 
+<h2 id="-live-frontend-demo">🌐 Live Deployment</h2>
+
+The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: [Moodify](https://moodify-emotion-music-app.vercel.app/).
+
+Feel free to also visit the backend at [Moodify Backend API](https://moodify-emotion-music-app.onrender.com/).
+
+**Note:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
+Also, the amount of memory allocated by Render is only 512MB with 0.5CPU, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart.
+
 <h2 id="-technologies">🛠️ Technologies</h2>
 
 - **Frontend**:
@@ -89,7 +99,7 @@ Moodify provides personalized music recommendations based on users' emotional st
     - Spotify APIs
     - Swagger and Redoc for API documentation
 - **Databases**:
-    - MongoDB
+    - MongoDB (with MongoDB Atlas)
     - Redis (for server-side caching)
     - SQLite
 - **AI/ML Models**:
@@ -101,6 +111,9 @@ Moodify provides personalized music recommendations based on users' emotional st
     - Scikit-learn
     - NumPy
     - FER (Facial Expression Recognition) Library
+- **Load Balancing**:
+    - NGINX
+    - Gunicorn
 - **Data Analytics**:
     - Pandas
     - Matplotlib
@@ -116,7 +129,7 @@ Moodify provides personalized music recommendations based on users' emotional st
     - Docker
     - Kubernetes
     - Jenkins
-    - Heroku
+    - Render
     - Vercel
 
 <h2 id="-user-interface">🖼️ User Interface</h2>
@@ -198,12 +211,6 @@ Moodify provides personalized music recommendations based on users' emotional st
 <p align="center">
   <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
 </p>
-
-<h2 id="-live-frontend-demo">🌐 Live Frontend Demo</h2>
-
-The frontend of the Moodify app is deployed on Vercel. You can access the live demo using the following link: [Moodify - Live Demo](https://moodify-emotion-music-app.vercel.app/).
-
-**Note:** The backend APIs are not hosted and therefore not functional in the live demo. You can set up the backend locally to interact with the frontend, or you can explore the frontend features in the live demo. Note that features like emotion detection, user registration, login, and music recommendations will not work in the live demo without the backend services.
 
 <h2 id="-complete-file-structure">📂 Complete File Structure</h2>
 
@@ -310,7 +317,7 @@ Moodify-Emotion-Music-App/
 
 Start with setting up and training the AI/ML models, as they will be required for the backend to function properly.
 
-Or, you can download the pre-trained models from the Google Drive links provided in the [Pre-Trained Models](#pre-trained-models) section.
+Or, you can download the pre-trained models from the Google Drive links provided in the [Pre-Trained Models](#pre-trained-models) section. If you choose to do so, you can skip this section for now.
 
 1. **Clone the repository:**
    ```bash
@@ -625,6 +632,38 @@ If successful, you should see the following home screen:
 </p>
 
 Feel free to explore the mobile app and test its functionalities!
+
+<h2 id="-load-balancing">🔗 Load Balancing</h2>
+
+The project uses NGINX and Gunicorn for load balancing and serving the Django backend. NGINX acts as a reverse proxy server, while Gunicorn serves the Django application.
+
+1. **Install NGINX:**
+   ```bash
+   sudo apt-get update
+   sudo apt-get install nginx
+   ```
+   
+2. **Install Gunicorn:**
+   ```bash
+    pip install gunicorn
+    ```
+   
+3. **Configure NGINX:**
+    - Update the NGINX configuration file (if needed) at `/nginx/nginx.conf` with your configuration.
+
+4. **Start NGINX and Gunicorn:**
+    - Start NGINX:
+      ```bash
+      sudo systemctl start nginx
+      ```
+    - Start Gunicorn:
+      ```bash
+      gunicorn backend.wsgi:application
+      ```
+      
+5. **Access the backend at `http://<server_ip>:8000/`**.
+
+Feel free to customize the NGINX configuration and Gunicorn settings as needed for your deployment.
 
 <h2 id="-containerization">🐳 Containerization</h2>
 

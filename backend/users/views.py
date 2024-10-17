@@ -29,6 +29,8 @@ from drf_yasg import openapi
     responses={
         201: openapi.Response('User created successfully.'),
         400: openapi.Response('All fields are required.'),
+        401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
         500: openapi.Response('Internal server error.'),
     },
 )
@@ -64,7 +66,9 @@ def register(request):
     ),
     responses={
         200: openapi.Response('Tokens generated successfully.'),
-        401: openapi.Response('Invalid credentials.'),
+        401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['POST'])
@@ -89,6 +93,7 @@ def login(request):
         200: openapi.Response('User profile retrieved successfully.'),
         401: openapi.Response('Unauthorized.'),
         404: openapi.Response('User profile not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['GET'])
@@ -120,6 +125,8 @@ def user_profile(request):
     responses={
         200: openapi.Response('Profile updated successfully.'),
         401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['PUT'])
@@ -138,6 +145,8 @@ def user_profile_update(request):
     responses={
         200: openapi.Response('Profile deleted successfully.'),
         401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['DELETE'])
@@ -229,6 +238,7 @@ def get_recommendations(request, user_id):
     ],
     responses={
         200: openapi.Response('All recommendations deleted successfully.'),
+        401: openapi.Response('Unauthorized.'),
         404: openapi.Response('User not found.'),
         500: openapi.Response('Internal server error.'),
     },
@@ -275,6 +285,8 @@ def delete_all_recommendations(request, user_id):
     ),
     responses={
         201: openapi.Response('Recommendations saved successfully.'),
+        400: openapi.Response('Recommendations are required.'),
+        401: openapi.Response('Unauthorized.'),
         404: openapi.Response('User not found.'),
         500: openapi.Response('Internal server error.'),
     },
@@ -321,7 +333,9 @@ def user_recommendations(request, user_id):
     responses={
         201: openapi.Response('Mood history updated successfully.'),
         400: openapi.Response('Mood is required.'),
+        401: openapi.Response('Unauthorized.'),
         404: openapi.Response('User not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['GET', 'POST', 'DELETE'])

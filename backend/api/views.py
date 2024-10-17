@@ -31,6 +31,9 @@ import moviepy.editor as mp
     responses={
         200: openapi.Response('Emotion and recommendations retrieved successfully.'),
         400: openapi.Response('No text provided.'),
+        401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['POST'])
@@ -59,6 +62,9 @@ def text_emotion(request):
     responses={
         200: openapi.Response('Emotion and recommendations retrieved successfully.'),
         400: openapi.Response('No audio file provided.'),
+        401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['POST'])
@@ -128,6 +134,9 @@ def speech_emotion(request):
     responses={
         200: openapi.Response('Emotion and recommendations retrieved successfully.'),
         400: openapi.Response('No image file provided.'),
+        401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['POST'])
@@ -185,6 +194,9 @@ def facial_emotion(request):
     responses={
         200: openapi.Response('Recommendations retrieved successfully.'),
         400: openapi.Response('No emotion provided.'),
+        401: openapi.Response('Unauthorized.'),
+        404: openapi.Response('URL not found.'),
+        500: openapi.Response('Internal server error.'),
     },
 )
 @api_view(['POST'])

@@ -144,6 +144,7 @@ SWAGGER_SETTINGS = {
     'APIS_SORTER': 'alpha',
     'OPERATIONS_SORTER': 'alpha',
     'SHOW_REQUEST_HEADERS': True,
+    'DEFAULT_API_URL': 'https://moodify-emotion-music-app.onrender.com',
 }
 
 # Simple JWT settings
