@@ -279,7 +279,7 @@ const HomePage = () => {
       const wavBlob = new Blob(chunks, { type: 'audio/wav' });
       const newAudioUrl = URL.createObjectURL(wavBlob);
       if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);  // Revoke the old URL
+        URL.revokeObjectURL(audioUrl);
       }
       setAudioBlob(wavBlob);
       setAudioUrl(newAudioUrl);
@@ -301,13 +301,13 @@ const HomePage = () => {
     return;
   }
 
-  console.log('Uploading audio...'); // Confirm function is triggered
+  console.log('Uploading audio...');
   setIsLoading(true);
 
   const formData = new FormData();
   formData.append('file', audioBlob, 'recorded_audio.wav');
 
-  console.log('Audio blob:', audioBlob); // Debug audio blob
+  console.log('Audio blob:', audioBlob);
 
   if (!token) {
     alert('User is not authenticated. Please log in.');
