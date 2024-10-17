@@ -17,6 +17,8 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@ffmpeg/core": "^0.12.6",
+    "@ffmpeg/ffmpeg": "^0.12.10",
     "@mui/icons-material": "^6.1.1",
     "@mui/material": "^6.1.1",
     "@testing-library/jest-dom": "^5.17.0",

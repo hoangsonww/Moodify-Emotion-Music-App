@@ -259,66 +259,82 @@ const HomePage = () => {
     handleModalClose();
   };
 
+  const [audioUrl, setAudioUrl] = useState(null);
+  const mediaRecorderRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);  // Clean up the blob URL when the component unmounts
+      }
+    };
+  }, [audioUrl]);
+
   const startRecording = async () => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    recorderRef.current = new Recorder(audioContextRef.current, {
-      numChannels: 1,
-    });
-
-    recorderRef.current.init(stream);
-    recorderRef.current.start().then(() => setIsRecording(true));
+    const mediaRecorder = new MediaRecorder(stream);
+    let chunks = [];
+    mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const wavBlob = new Blob(chunks, { type: 'audio/wav' });
+      const newAudioUrl = URL.createObjectURL(wavBlob);
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);  // Revoke the old URL
+      }
+      setAudioBlob(wavBlob);
+      setAudioUrl(newAudioUrl);
+    };
+    mediaRecorder.start();
+    setIsRecording(true);
+    mediaRecorderRef.current = mediaRecorder;
   };
 
   const stopRecording = () => {
-    recorderRef.current.stop().then(({ blob }) => {
-      const wavBlob = new Blob([blob], { type: 'audio/wav' });
-      setAudioBlob(wavBlob);
-      setIsRecording(false);
-    });
+    mediaRecorderRef.current.stop();
+    setIsRecording(false);
   };
 
   const handleAudioUpload = async () => {
-    if (!audioBlob) {
-      alert('No audio recorded.');
-      return;
-    }
+  if (!audioBlob) {
+    alert('No audio recorded.');
+    console.log('No audio blob available for upload.'); // Debug log
+    return;
+  }
 
-    setIsLoading(true);
+  console.log('Uploading audio...'); // Confirm function is triggered
+  setIsLoading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append('file', audioBlob, 'recorded_audio.wav');
+  const formData = new FormData();
+  formData.append('file', audioBlob, 'recorded_audio.wav');
 
-      if (!token) {
-        alert('User is not authenticated. Please log in.');
-        return;
-      }
+  console.log('Audio blob:', audioBlob); // Debug audio blob
 
-      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+  if (!token) {
+    alert('User is not authenticated. Please log in.');
+    setIsLoading(false);
+    return;
+  }
 
-      const { emotion, recommendations } = response.data;
+  try {
+    const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
 
-      // Save both mood and recommendations to history
-      await saveToHistory(emotion, recommendations);
+    console.log('Response:', response); // Debug response
 
-      navigate('/results', { state: { emotion, recommendations } });
-    } catch (error) {
-      console.error('Error uploading audio:', error);
-      alert('Failed to upload the audio. Please try again.');
-    } finally {
-      handleModalClose();
-      setIsLoading(false);
-    }
-  };
+    const { emotion, recommendations } = response.data;
+    console.log('Upload successful:', emotion, recommendations); // Debug successful upload
+    navigate('/results', { state: { emotion, recommendations } });
+  } catch (error) {
+    console.error('Error uploading audio:', error);
+    alert('Failed to upload the audio. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const [dotCount, setDotCount] = useState(0); // State to track number of dots
 
@@ -437,7 +453,7 @@ const HomePage = () => {
                     </Typography>
                 )}
                 {audioBlob && (
-                    <audio controls src={URL.createObjectURL(audioBlob)} style={{ marginTop: '20px', width: '100%' }} />
+                    <audio controls src={audioUrl} style={{ marginTop: '20px', width: '100%' }} />
                 )}
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                   <Button onClick={handleAudioUpload} variant="contained" color="success">Upload Audio</Button>
