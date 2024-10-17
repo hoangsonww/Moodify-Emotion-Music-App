@@ -1,8 +1,8 @@
-@import url('https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.css');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.css');
+@import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.css");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.css");
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   margin: 0;
   padding: 0;
   background-color: white;
@@ -18,7 +18,8 @@ button:hover {
   background-color: #ff1a1a;
 }
 
-input, textarea {
+input,
+textarea {
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 10px;
@@ -26,11 +27,14 @@ input, textarea {
   transition: border-color 0.3s ease;
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   border-color: #ff4d4d;
 }
 
-h2, h4, h6 {
+h2,
+h4,
+h6 {
   color: black;
 }
 

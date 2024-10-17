@@ -9,6 +9,6 @@ const ListeningHistory = ({ history }) => {
       </ul>
     </div>
   );
-}
+};
 
 export default ListeningHistory;

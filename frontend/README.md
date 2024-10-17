@@ -163,11 +163,13 @@ frontend/
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/hoangsonww/Moodify-Emotion-Music-App.git
    ```
 
 2. Navigate to the frontend directory:
+
    ```bash
    cd /Moodify-Emotion-Music-App/frontend
    ```

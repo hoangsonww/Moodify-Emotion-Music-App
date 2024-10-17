@@ -1,7 +1,15 @@
-import React from 'react';
-import { Box, Typography, Button, Container, Grid, Card, CardContent } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import Slider from 'react-slick';
+import React from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import Slider from "react-slick";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -41,14 +49,15 @@ const LandingPage = () => {
             Welcome to Moodify
           </Typography>
           <Typography variant="h6" sx={styles.heroSubtitle}>
-            The AI-powered emotion-based music recommendation app that matches your mood with the perfect soundtrack.
+            The AI-powered emotion-based music recommendation app that matches
+            your mood with the perfect soundtrack.
           </Typography>
           <Box sx={styles.buttonContainer}>
             <Button
               variant="contained"
               color="primary"
               sx={styles.heroButton}
-              onClick={() => navigate('/register')}
+              onClick={() => navigate("/register")}
             >
               Get Started
             </Button>
@@ -56,7 +65,7 @@ const LandingPage = () => {
               variant="outlined"
               color="primary"
               sx={styles.heroButton1}
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
             >
               Log In
             </Button>
@@ -94,7 +103,8 @@ const LandingPage = () => {
             Your Emotions. Our Music.
           </Typography>
           <Typography variant="h6" sx={styles.heroSubtitle}>
-            Discover songs that perfectly match every mood. Music that resonates with your feelings.
+            Discover songs that perfectly match every mood. Music that resonates
+            with your feelings.
           </Typography>
         </Container>
       </Box>
@@ -113,7 +123,10 @@ const LandingPage = () => {
                     <Typography variant="body2" sx={styles.testimonialText}>
                       "{testimonial.text}"
                     </Typography>
-                    <Typography variant="subtitle2" sx={styles.testimonialAuthor}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={styles.testimonialAuthor}
+                    >
                       - {testimonial.author}
                     </Typography>
                   </CardContent>
@@ -131,7 +144,8 @@ const LandingPage = () => {
             Your Mood. Your Music.
           </Typography>
           <Typography variant="h6" sx={styles.heroSubtitle}>
-            Simply tell us how you feel, and we'll take care of the rest. Moodify - music that understands you.
+            Simply tell us how you feel, and we'll take care of the rest.
+            Moodify - music that understands you.
           </Typography>
         </Container>
       </Box>
@@ -167,28 +181,32 @@ const LandingPage = () => {
 // Features Data
 const features = [
   {
-    title: 'Emotion-Based Recommendations',
-    description: 'Get personalized music recommendations based on your current mood.',
+    title: "Emotion-Based Recommendations",
+    description:
+      "Get personalized music recommendations based on your current mood.",
   },
   {
-    title: 'Multiple Input Modes',
-    description: 'Analyze your emotions through text, speech, or facial expressions.',
+    title: "Multiple Input Modes",
+    description:
+      "Analyze your emotions through text, speech, or facial expressions.",
   },
   {
-    title: 'Track Your Mood History',
-    description: 'View and manage your mood history and music listening trends over time.',
+    title: "Track Your Mood History",
+    description:
+      "View and manage your mood history and music listening trends over time.",
   },
   {
-    title: 'AI-Powered Insights',
-    description: 'Our AI learns your preferences to provide better recommendations.',
+    title: "AI-Powered Insights",
+    description:
+      "Our AI learns your preferences to provide better recommendations.",
   },
   {
-    title: 'Cross-Platform Support',
-    description: 'Access Moodify from any device, anytime, anywhere.',
+    title: "Cross-Platform Support",
+    description: "Access Moodify from any device, anytime, anywhere.",
   },
   {
-    title: 'Social Sharing',
-    description: 'Share your favorite tracks and moods with friends.',
+    title: "Social Sharing",
+    description: "Share your favorite tracks and moods with friends.",
   },
 ];
 
@@ -196,170 +214,173 @@ const features = [
 const testimonials = [
   {
     text: "Moodify's recommendations are spot on! It really understands my moods.",
-    author: 'Jane Doe',
+    author: "Jane Doe",
   },
   {
-    text: 'I love the different ways to input my mood. The facial analysis is really cool!',
-    author: 'John Smith',
+    text: "I love the different ways to input my mood. The facial analysis is really cool!",
+    author: "John Smith",
   },
   {
-    text: 'The best music app I’ve ever used. It feels like it knows me!',
-    author: 'Sarah Johnson',
+    text: "The best music app I’ve ever used. It feels like it knows me!",
+    author: "Sarah Johnson",
   },
   {
     text: "I've discovered so many great songs through Moodify!",
-    author: 'Emily Davis',
+    author: "Emily Davis",
   },
 ];
 
 // Additional Section Data
 const whyChooseMoodify = [
   {
-    title: 'Personalized Experience',
-    description: 'Moodify tailors music recommendations based on your unique emotional journey.',
+    title: "Personalized Experience",
+    description:
+      "Moodify tailors music recommendations based on your unique emotional journey.",
   },
   {
-    title: 'Advanced AI Technology',
-    description: 'Our cutting-edge AI models ensure you get accurate emotion detection and recommendations.',
+    title: "Advanced AI Technology",
+    description:
+      "Our cutting-edge AI models ensure you get accurate emotion detection and recommendations.",
   },
   {
-    title: 'Seamless Integration',
-    description: 'Moodify integrates effortlessly with your favorite music streaming services.',
+    title: "Seamless Integration",
+    description:
+      "Moodify integrates effortlessly with your favorite music streaming services.",
   },
 ];
 
 // Styles
 const styles = {
   pageContainer: {
-    minHeight: '100vh',
-    backgroundColor: '#f9f9f9',
-    display: 'flex',
-    flexDirection: 'column',
+    minHeight: "100vh",
+    backgroundColor: "#f9f9f9",
+    display: "flex",
+    flexDirection: "column",
   },
   heroSection: {
-    backgroundColor: '#ff4d4d',
-    padding: '80px 0',
-    color: '#fff',
-    textAlign: 'center',
+    backgroundColor: "#ff4d4d",
+    padding: "80px 0",
+    color: "#fff",
+    textAlign: "center",
   },
   additionalHeroSection: {
-    backgroundColor: '#f5f5f5',
-    padding: '50px 0',
-    textAlign: 'center',
+    backgroundColor: "#f5f5f5",
+    padding: "50px 0",
+    textAlign: "center",
   },
   heroTitle: {
-    font: 'inherit',
-    fontWeight: 'bold',
-    fontSize: '2.5rem',
-    marginBottom: '20px',
-    color: '#fff',
+    font: "inherit",
+    fontWeight: "bold",
+    fontSize: "2.5rem",
+    marginBottom: "20px",
+    color: "#fff",
   },
   heroSubtitle: {
-    font: 'inherit',
-    fontSize: '1.2rem',
-    marginBottom: '30px',
-    color: '#fff',
+    font: "inherit",
+    fontSize: "1.2rem",
+    marginBottom: "30px",
+    color: "#fff",
   },
   buttonContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '15px',
+    display: "flex",
+    justifyContent: "center",
+    gap: "15px",
   },
   heroButton: {
-    font: 'inherit',
-    textTransform: 'none',
-    fontWeight: 'bold',
-    padding: '10px 20px',
-    backgroundColor: '#ff4d4d',
-    '&:hover': {
-      backgroundColor: '#ff3333',
+    font: "inherit",
+    textTransform: "none",
+    fontWeight: "bold",
+    padding: "10px 20px",
+    backgroundColor: "#ff4d4d",
+    "&:hover": {
+      backgroundColor: "#ff3333",
     },
   },
   heroButton1: {
-    font: 'inherit',
-    textTransform: 'none',
-    fontWeight: 'bold',
-    padding: '10px 20px',
-    color: '#ff4d4d',
-    borderColor: '#ff4d4d',
-    backgroundColor: '#fff',
-    '&:hover': {
-      backgroundColor: '#ff4d4d',
-      color: '#fff',
+    font: "inherit",
+    textTransform: "none",
+    fontWeight: "bold",
+    padding: "10px 20px",
+    color: "#ff4d4d",
+    borderColor: "#ff4d4d",
+    backgroundColor: "#fff",
+    "&:hover": {
+      backgroundColor: "#ff4d4d",
+      color: "#fff",
     },
   },
   sectionContainer: {
-    padding: '60px 0',
-    textAlign: 'center',
+    padding: "60px 0",
+    textAlign: "center",
   },
   sectionTitle: {
-    font: 'inherit',
-    fontSize: '2rem',
-    textAlign: 'center',
-    marginBottom: '40px',
-    fontWeight: 'bold',
+    font: "inherit",
+    fontSize: "2rem",
+    textAlign: "center",
+    marginBottom: "40px",
+    fontWeight: "bold",
   },
   featureSlide: {
-    padding: '10px',
+    padding: "10px",
   },
   featureCard: {
-    padding: '20px',
-    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-    borderRadius: '8px',
-    margin: '0 10px',
-    height: '200px',
+    padding: "20px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    borderRadius: "8px",
+    margin: "0 10px",
+    height: "200px",
   },
   featureTitle: {
-    font: 'inherit',
-    fontWeight: 'bold',
-    fontSize: '1.2rem',
-    marginBottom: '10px',
+    font: "inherit",
+    fontWeight: "bold",
+    fontSize: "1.2rem",
+    marginBottom: "10px",
   },
   featureDescription: {
-    font: 'inherit',
-    color: '#666',
+    font: "inherit",
+    color: "#666",
   },
   testimonialSection: {
-    backgroundColor: '#fafafa',
-    padding: '60px 0',
+    backgroundColor: "#fafafa",
+    padding: "60px 0",
   },
   testimonialCard: {
-    padding: '20px',
-    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-    borderRadius: '8px',
-    margin: '0 10px',
-    height: '180px',
+    padding: "20px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    borderRadius: "8px",
+    margin: "0 10px",
+    height: "180px",
   },
   testimonialText: {
-    font: 'inherit',
-    fontStyle: 'italic',
-    marginBottom: '10px',
-    color: '#555',
+    font: "inherit",
+    fontStyle: "italic",
+    marginBottom: "10px",
+    color: "#555",
   },
   testimonialAuthor: {
-    font: 'inherit',
-    color: '#333',
-    fontWeight: 'bold',
+    font: "inherit",
+    color: "#333",
+    fontWeight: "bold",
   },
   informativeSection: {
-    font: 'inherit',
-    padding: '60px 0',
-    backgroundColor: '#fff',
+    font: "inherit",
+    padding: "60px 0",
+    backgroundColor: "#fff",
   },
   infoCard: {
-    padding: '20px',
-    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-    borderRadius: '8px',
+    padding: "20px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    borderRadius: "8px",
   },
   infoTitle: {
-    font: 'inherit',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    marginBottom: '10px',
+    font: "inherit",
+    fontSize: "1.2rem",
+    fontWeight: "bold",
+    marginBottom: "10px",
   },
   infoDescription: {
-    font: 'inherit',
-    color: '#666',
+    font: "inherit",
+    color: "#666",
   },
 };
 

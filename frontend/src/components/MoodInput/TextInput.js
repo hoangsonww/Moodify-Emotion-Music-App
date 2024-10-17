@@ -1,8 +1,8 @@
-import {Box, Button, TextField} from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 
 const TextInput = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       <TextField
         id="text-input"
         label="Enter Text"
@@ -14,6 +14,6 @@ const TextInput = () => {
       </Button>
     </Box>
   );
-}
+};
 
 export default TextInput;
