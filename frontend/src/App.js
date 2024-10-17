@@ -10,6 +10,8 @@ import RecommendationsPage from './pages/RecommendationsPage';
 import Footer from "./components/Footer";
 import NotFoundPage from "./pages/NotFoundPage";
 import LandingPage from "./pages/LandingPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
 import './styles/styles.css';
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms-of-service" element={<TermsOfServicePage />} />
         </Routes>
         <Footer />
       </Router>

@@ -44,10 +44,22 @@ const Footer = () => {
           Register
         </Link>
         <Link
+          sx={isActive('/privacy-policy') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/privacy-policy')}
+        >
+          Privacy Policy
+        </Link>
+        <Link
+          sx={isActive('/terms-of-service') ? { ...styles.link, ...styles.activeLink } : styles.link}
+          onClick={() => navigate('/terms-of-service')}
+        >
+          Terms of Service
+        </Link>
+        <Link
           sx={isActive('/') ? { ...styles.link, ...styles.activeLink } : styles.link}
           onClick={() => navigate('/')}
         >
-          Landing Page
+          Landing
         </Link>
       </Box>
 
@@ -103,7 +115,6 @@ const styles = {
     position: 'relative',
     paddingBottom: '5px',
     '&:hover': {
-      textDecoration: 'underline',
       transform: 'scale(1.05)',
       transition: 'transform 0.2s',
     },
