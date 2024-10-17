@@ -16,6 +16,24 @@ from drf_yasg import openapi
 
 
 @swagger_auto_schema(
+    method='get',
+    responses={
+        200: openapi.Response('Token is valid.'),
+        401: openapi.Response('Unauthorized. Token is invalid or expired.'),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])  # Only authenticated users can access this
+def validate_token(request):
+    """
+    Validates if the token provided is still valid. If valid, returns a 200 response.
+    """
+    # If the token is valid, this view will automatically be called.
+    # No additional checks are necessary because IsAuthenticated handles token validation.
+    return Response({"message": "Token is valid."}, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
     method='post',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,

@@ -22,7 +22,7 @@ const Navbar = () => {
 
     try {
       // Make an authenticated request to check the token validity
-      const response = await axios.get('https://moodify-emotion-music-app.onrender.com/users/user/profile/', {
+      const response = await axios.get('https://moodify-emotion-music-app.onrender.com/users/validate_token/', {
         headers: {
           Authorization: `Bearer ${token}`,
         },

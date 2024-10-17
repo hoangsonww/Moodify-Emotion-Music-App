@@ -16,8 +16,6 @@ import {
 import axios from 'axios';
 
 const CACHE_KEY = 'moodCache';
-const CACHE_TIMESTAMP_KEY = 'moodCacheTimestamp';
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -27,17 +25,16 @@ const ResultsPage = () => {
   const [displayRecommendations, setDisplayRecommendations] = useState(recommendations || []);
 
   // Helper function to fetch all mood recommendations and store them in localStorage
-  const cacheAllRecommendations = async () => {
-    const currentTime = new Date().getTime();
-    const cacheTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+  const cacheAllRecommendationsOnce = async () => {
+    const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
 
-    // Check if the cache is older than 24 hours
-    if (cacheTimestamp && currentTime - cacheTimestamp < CACHE_DURATION) {
+    // If cache already exists, do nothing
+    if (cachedData) {
       console.log('Using cached data');
-      return; // Data is already cached and still valid
+      return;
     }
 
-    console.log('Fetching new data and updating cache...');
+    console.log('Fetching new data and caching...');
     try {
       const allMoods = Object.keys(emotionToGenre);
       const cacheData = {};
@@ -49,16 +46,15 @@ const ResultsPage = () => {
         cacheData[mood] = response.data.recommendations || [];
       }
 
-      // Store the entire cache and timestamp
+      // Store the entire cache in localStorage
       localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-      localStorage.setItem(CACHE_TIMESTAMP_KEY, currentTime.toString());
 
     } catch (error) {
       console.error('Error caching mood recommendations:', error);
     }
   };
 
-  // Load cached data or fallback to API
+  // Load cached data or fetch if not cached
   useEffect(() => {
     if (emotion && recommendations) {
       // Save the new data to localStorage if available
@@ -72,8 +68,8 @@ const ResultsPage = () => {
       setDisplayRecommendations(storedRecommendations);
     }
 
-    // Cache all mood recommendations once per day
-    cacheAllRecommendations();
+    // Cache all mood recommendations only once when the page first loads
+    cacheAllRecommendationsOnce();
   }, [emotion, recommendations]);
 
   // Function to handle mood change
@@ -89,7 +85,7 @@ const ResultsPage = () => {
         // Use cached recommendations if available
         setDisplayRecommendations(cachedData[newMood]);
       } else {
-        // Fetch from API if not cached
+        // Fetch from API if not cached (this shouldn't happen with the one-time caching)
         const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
           emotion: newMood.toLowerCase(),
         });

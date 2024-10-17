@@ -3,7 +3,6 @@ import {Box, Button, Typography, Paper, TextField, Modal, CircularProgress} from
 import Webcam from 'react-webcam';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Recorder from 'recorder-js';
 
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState('text');
@@ -13,8 +12,6 @@ const HomePage = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const webcamRef = useRef(null);
   const [audioBlob, setAudioBlob] = useState(null);
-  const audioContextRef = useRef(null);
-  const recorderRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -120,6 +117,8 @@ const HomePage = () => {
     }
 
     setFile(uploadedFile);
+
+    console.log(file);
 
     const formData = new FormData();
     formData.append('file', uploadedFile);
@@ -372,7 +371,8 @@ const HomePage = () => {
         }
         setAudioBlob(wavBlob);
         setAudioUrl(newAudioUrl);
-        setIsRecordingReady(true); // Set recording as ready when processed
+        setIsRecordingReady(true);
+        console.log(isRecordingReady);
       };
 
       mediaRecorder.start();
