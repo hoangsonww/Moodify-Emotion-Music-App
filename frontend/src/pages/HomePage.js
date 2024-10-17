@@ -928,7 +928,7 @@ const HomePage = () => {
               >
                 Enter Your Text
               </Typography>
-             <TextField
+              <TextField
                 fullWidth
                 multiline
                 rows={4}
@@ -937,23 +937,23 @@ const HomePage = () => {
                 value={inputValue}
                 inputProps={{
                   style: {
-                    padding: '8px 12px',
+                    padding: "8px 12px",
                     fontFamily: "Poppins",
-                    fontSize: "16px"
-                  }
+                    fontSize: "16px",
+                  },
                 }}
                 InputProps={{
                   style: {
                     fontFamily: "Poppins",
                     fontSize: "16px",
-                    padding: '0',
-                    boxShadow: 'none'
-                  }
+                    padding: "0",
+                    boxShadow: "none",
+                  },
                 }}
                 InputLabelProps={{
                   style: {
                     fontFamily: "Poppins",
-                  }
+                  },
                 }}
                 onChange={(e) => setInputValue(e.target.value)}
               />
