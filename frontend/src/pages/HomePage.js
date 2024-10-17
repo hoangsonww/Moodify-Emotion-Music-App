@@ -270,78 +270,109 @@ const HomePage = () => {
     };
   }, [audioUrl]);
 
+  const [isShowingRecordingDots, setIsShowingRecordingDots] = useState(false);
+  const [dotAnimation, setDotAnimation] = useState("");
+  const [micStream, setMicStream] = useState(null);
+  const [isRecordingReady, setIsRecordingReady] = useState(false);
+
+  // Animated "Recording..." effect (adds dots at regular intervals)
+  useEffect(() => {
+    if (isShowingRecordingDots) {
+      const interval = setInterval(() => {
+        setDotAnimation((prev) => (prev.length < 3 ? prev + "." : ""));
+      }, 500); // Update every 500ms
+      return () => clearInterval(interval);
+    }
+  }, [isShowingRecordingDots]);
+
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    let chunks = [];
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-    mediaRecorder.onstop = () => {
-      const wavBlob = new Blob(chunks, { type: 'audio/wav' });
-      const newAudioUrl = URL.createObjectURL(wavBlob);
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
-      setAudioBlob(wavBlob);
-      setAudioUrl(newAudioUrl);
-    };
-    mediaRecorder.start();
-    setIsRecording(true);
-    mediaRecorderRef.current = mediaRecorder;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      let chunks = [];
+
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const wavBlob = new Blob(chunks, { type: 'audio/wav' });
+        const newAudioUrl = URL.createObjectURL(wavBlob);
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl); // Clean up old object URL
+        }
+        setAudioBlob(wavBlob);
+        setAudioUrl(newAudioUrl);
+        setIsRecordingReady(true); // Set recording as ready when processed
+      };
+
+      mediaRecorder.start();
+      setMicStream(stream); // Store the stream to stop the mic later
+      setIsRecording(true);
+      setIsShowingRecordingDots(true);
+      setIsRecordingReady(false);
+      mediaRecorderRef.current = mediaRecorder;
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      alert("Could not access the microphone. Please try again.");
+    }
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current.stop();
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
     setIsRecording(false);
+    setIsShowingRecordingDots(false);
+
+    // Stop the microphone stream
+    if (micStream) {
+      micStream.getTracks().forEach((track) => track.stop());
+      setMicStream(null); // Clear the stream
+    }
   };
 
   const handleAudioUpload = async () => {
-  if (!audioBlob) {
-    alert('No audio recorded.');
-    console.log('No audio blob available for upload.'); // Debug log
-    return;
-  }
+    if (!audioBlob) {
+      alert('No audio recorded.');
+      console.log('No audio blob available for upload.');
+      return;
+    }
 
-  console.log('Uploading audio...');
-  setIsLoading(true);
+    console.log('Uploading audio...');
+    setIsLoading(true);
 
-  const formData = new FormData();
-  formData.append('file', audioBlob, 'recorded_audio.wav');
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recorded_audio.wav');
 
-  console.log('Audio blob:', audioBlob);
+    if (!token) {
+      alert('User is not authenticated. Please log in.');
+      setIsLoading(false);
+      return;
+    }
 
-  if (!token) {
-    alert('User is not authenticated. Please log in.');
-    setIsLoading(false);
-    return;
-  }
+    try {
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-  try {
-    const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
 
-    console.log('Response:', response); // Debug response
-
-    const { emotion, recommendations } = response.data;
-    console.log('Upload successful:', emotion, recommendations); // Debug successful upload
-    navigate('/results', { state: { emotion, recommendations } });
-  } catch (error) {
-    console.error('Error uploading audio:', error);
-    alert('Failed to upload the audio. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+      const { emotion, recommendations } = response.data;
+      navigate('/results', { state: { emotion, recommendations } });
+    } catch (error) {
+      console.error('Error uploading audio:', error);
+      alert('Failed to upload the audio. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const [dotCount, setDotCount] = useState(0); // State to track number of dots
 
   useEffect(() => {
     // Create an interval that updates the dot count every 500ms
     const intervalId = setInterval(() => {
-      setDotCount((prevCount) => (prevCount + 1) % 4); // Cycle through 0, 1, 2, 3 (for ".", "..", "...")
+      setDotCount((prevCount) => (prevCount + 1) % 4);
     }, 500);
 
     // Clean up the interval when the component unmounts
@@ -435,89 +466,358 @@ const HomePage = () => {
 
         {/* Modal for Speech Input */}
         {activeTab === 'speech' && (
-            <Modal open={showModal} onClose={handleModalClose}>
-              <Box sx={styles.modal}>
-                <Typography variant="h6" style={{ font: 'inherit' }}>Record Your Audio</Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Button onClick={startRecording} variant="contained" color="primary" disabled={isRecording}>
-                    Start Recording
-                  </Button>
-                  <Button onClick={stopRecording} variant="contained" color="secondary" disabled={!isRecording}>
-                    Stop Recording
-                  </Button>
-                </Box>
-                <div style={{ height: '20px' }} />
-                {audioBlob && (
-                    <Typography variant="h6" style={{ marginTop: '10px', font: 'inherit' }}>
-                      Review your recording
-                    </Typography>
-                )}
-                {audioBlob && (
-                    <audio controls src={audioUrl} style={{ marginTop: '20px', width: '100%' }} />
-                )}
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <Button onClick={handleAudioUpload} variant="contained" color="success">Upload Audio</Button>
-                  <Button onClick={handleModalClose} variant="contained" color="error">Close</Button>
-                </Box>
+          <Modal open={showModal} onClose={handleModalClose}>
+            <Box
+              sx={{
+                ...styles.modal,
+                width: { xs: '90%', sm: '80%', md: '60%', lg: '40%' }, // Responsive width
+                maxWidth: '600px',
+                padding: { xs: '16px', sm: '24px', md: '32px' }, // Responsive padding
+                margin: 'auto',
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  font: 'inherit',
+                  fontSize: { xs: '14px', sm: '16px', md: '18px' }, // Responsive font size
+                  textAlign: 'center',
+                }}
+              >
+                Record Your Audio
+              </Typography>
+
+              <Box
+                sx={{
+                  mt: 2,
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons vertically on small screens
+                  justifyContent: 'center',
+                  gap: { xs: '10px', sm: '20px' }, // Spacing between buttons
+                }}
+              >
+                <Button
+                  onClick={startRecording}
+                  variant="contained"
+                  color="primary"
+                  disabled={isRecording}
+                  sx={{
+                    width: { xs: '100%', sm: 'auto' }, // Full width on small screens
+                    fontSize: { xs: '12px', sm: '14px' },
+                  }}
+                >
+                  Start Recording
+                </Button>
+                <Button
+                  onClick={stopRecording}
+                  variant="contained"
+                  color="secondary"
+                  disabled={!isRecording}
+                  sx={{
+                    width: { xs: '100%', sm: 'auto' }, // Full width on small screens
+                    fontSize: { xs: '12px', sm: '14px' },
+                  }}
+                >
+                  Stop Recording
+                </Button>
               </Box>
-            </Modal>
+
+              {/* Animated "Recording..." message */}
+              {isShowingRecordingDots && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    textAlign: 'center',
+                    mt: 2,
+                    font: 'inherit',
+                  }}
+                >
+                  Recording{dotAnimation}
+                </Typography>
+              )}
+
+              {/* Spacer */}
+              <div style={{ height: '20px' }} />
+
+              {audioBlob && (
+                <>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      marginTop: '10px',
+                      font: 'inherit',
+                      fontSize: { xs: '14px', sm: '16px', md: '18px' }, // Responsive font size
+                      textAlign: 'center',
+                    }}
+                  >
+                    Review your recording
+                  </Typography>
+
+                  <audio
+                    controls
+                    src={audioUrl}
+                    style={{
+                      marginTop: '20px',
+                      width: '100%', // Full width for responsiveness
+                    }}
+                  />
+                </>
+              )}
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons vertically on small screens
+                  justifyContent: 'center',
+                  mt: 2,
+                  gap: { xs: '10px', sm: '20px' }, // Spacing between buttons
+                }}
+              >
+                <Button
+                  onClick={handleAudioUpload}
+                  variant="contained"
+                  color="success"
+                  sx={{
+                    width: { xs: '100%', sm: 'auto' }, // Full width on small screens
+                    fontSize: { xs: '12px', sm: '14px' },
+                  }}
+                >
+                  Upload Audio
+                </Button>
+                <Button
+                  onClick={handleModalClose}
+                  variant="contained"
+                  color="error"
+                  sx={{
+                    width: { xs: '100%', sm: 'auto' },
+                    fontSize: { xs: '12px', sm: '14px' },
+                  }}
+                >
+                  Close
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
         )}
 
         {/* Existing Text and Face Modals */}
         {activeTab === 'text' && (
-            <Modal open={showModal} onClose={handleModalClose}>
-              <Box sx={styles.modal}>
-                <Typography variant="h6" style={{ marginBottom: '10px', font: 'inherit', fontSize: '16px' }}>Enter Your Text</Typography>
-                <TextField
-                    fullWidth
-                    multiline
-                    rows={4}
-                    variant="outlined"
-                    placeholder="Tell us how you feel right now..."
-                    value={inputValue}
-                    InputProps={{
-                      style: { fontFamily: 'Poppins', fontSize: '16px' },
-                    }}
-                    InputLabelProps={{
-                      style: { fontFamily: 'Poppins' },
-                    }}
-                    onChange={(e) => setInputValue(e.target.value)}
-                />
-                <Box mt={2}>
-                  <Button onClick={handleTextSubmit} variant="contained" style={{ marginRight: '10px', font: 'inherit', backgroundColor: '#ff1a1a' }}>Send Text</Button>
-                  <Button onClick={handleModalClose} variant="contained" color="error" style={{ font: 'inherit', backgroundColor: 'white', color: 'red' }}>Close</Button>
-                </Box>
+          <Modal open={showModal} onClose={handleModalClose}>
+            <Box
+              sx={{
+                ...styles.modal,
+                width: { xs: '90%', sm: '80%', md: '60%', lg: '40%' },
+                maxWidth: '600px',
+                padding: { xs: '16px', sm: '24px', md: '32px' },
+                margin: 'auto',
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  marginBottom: '10px',
+                  font: 'inherit',
+                  fontSize: { xs: '14px', sm: '16px', md: '18px' },
+                  textAlign: 'center',
+                }}
+              >
+                Enter Your Text
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                variant="outlined"
+                placeholder="Tell us how you feel right now..."
+                value={inputValue}
+                InputProps={{
+                  style: { fontFamily: 'Poppins', fontSize: '16px' },
+                }}
+                InputLabelProps={{
+                  style: { fontFamily: 'Poppins' },
+                }}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
+              <Box
+                mt={2}
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  justifyContent: 'center',
+                  gap: { xs: '10px', sm: '10px' },
+                  alignItems: 'center',
+                }}
+              >
+                <Button
+                  onClick={handleTextSubmit}
+                  variant="contained"
+                  sx={{
+                    width: { xs: '100%', sm: 'auto' },
+                    marginRight: { sm: '10px' },
+                    font: 'inherit',
+                    backgroundColor: '#ff1a1a',
+                    fontSize: { xs: '12px', sm: '14px' },
+                  }}
+                >
+                  Send Text
+                </Button>
+                <Button
+                  onClick={handleModalClose}
+                  variant="contained"
+                  color="error"
+                  sx={{
+                    width: { xs: '100%', sm: 'auto' },
+                    font: 'inherit',
+                    backgroundColor: 'white',
+                    color: 'red',
+                    fontSize: { xs: '12px', sm: '14px' },
+                    '&:hover': {
+                      backgroundColor: '#ff1a1a',
+                      color: 'white',
+                    },
+                  }}
+                >
+                  Close
+                </Button>
               </Box>
-            </Modal>
+            </Box>
+          </Modal>
         )}
 
         {activeTab === 'face' && (
-            <Modal open={showModal} onClose={handleModalClose}>
-              <Box sx={styles.modal}>
-                {!capturedImage ? (
-                    <>
-                      <Typography variant="h6" style={{ marginBottom: '10px', font: 'inherit' }}>Image Capture</Typography>
-                      <Webcam
-                          audio={false}
-                          ref={webcamRef}
-                          screenshotFormat="image/jpeg"
-                          style={styles.webcam}
-                      />
-                      <Button onClick={captureImage} variant="contained" color="error" style={{ marginTop: '20px', marginRight: '10px', backgroundColor: '#ff1a1a', font: 'inherit' }}>Capture</Button>
-                    </>
-                ) : (
-                    <>
-                      <img src={capturedImage} alt="Captured" style={styles.capturedImage} />
-                      <Box mt={2}>
-                        <Button onClick={confirmImage} variant="contained" color="primary" style={{ marginRight: '10px', font: 'inherit' }}>Confirm</Button>
-                        <Button onClick={retakeImage} variant="contained" color="secondary" style={{ font: 'inherit' }}>Retake</Button>
-                      </Box>
-                    </>
-                )}
-                <Button onClick={handleModalClose} variant="contained" color="error" style={{ marginTop: '20px', font: 'inherit', backgroundColor: 'white', color: '#ff1a1a' }}>Close</Button>
-              </Box>
-            </Modal>
-        )}
+        <Modal open={showModal} onClose={handleModalClose}>
+          <Box
+            sx={{
+              ...styles.modal,
+              width: { xs: '90%', sm: '80%', md: '60%', lg: '40%' },
+              maxWidth: '600px',
+              padding: { xs: '16px', sm: '24px', md: '32px' },
+              margin: 'auto',
+            }}
+          >
+            {!capturedImage ? (
+              <>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    marginBottom: '10px',
+                    font: 'inherit',
+                    fontSize: { xs: '14px', sm: '16px', md: '18px' },
+                    textAlign: 'center',
+                  }}
+                >
+                  Image Capture
+                </Typography>
+                <Box
+                  sx={{
+                    width: { xs: '100%', sm: '80%', md: '100%' },
+                    maxWidth: '100%',
+                    margin: 'auto',
+                  }}
+                >
+                  <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    style={{ width: '100%', borderRadius: '8px' }}
+                  />
+                </Box>
+                <Button
+                  onClick={captureImage}
+                  variant="contained"
+                  color="error"
+                  sx={{
+                    marginTop: '20px',
+                    width: { xs: '100%', sm: 'auto' }, // Full width on small screens
+                    backgroundColor: '#ff1a1a',
+                    font: 'inherit',
+                    fontSize: { xs: '12px', sm: '14px' },
+                    marginRight: { md: '10px', lg: '10px' },
+                  }}
+                >
+                  Capture
+                </Button>
+              </>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    width: '100%',
+                    textAlign: 'center',
+                    display: 'flex',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <img
+                    src={capturedImage}
+                    alt="Captured"
+                    style={{
+                      width: '100%',
+                      maxWidth: '400px', // Ensure it doesn't exceed this width
+                      borderRadius: '8px',
+                    }}
+                  />
+                </Box>
+                <Box
+                  mt={2}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' }, // Stack buttons vertically on smaller screens
+                    justifyContent: 'center',
+                    gap: { xs: '10px', sm: '10px' }, // Spacing between buttons
+                    alignItems: 'center',
+                  }}
+                >
+                  <Button
+                    onClick={confirmImage}
+                    variant="contained"
+                    color="primary"
+                    sx={{
+                      width: { xs: '100%', sm: 'auto' }, // Full width on small screens
+                      font: 'inherit',
+                      fontSize: { xs: '12px', sm: '14px' },
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    onClick={retakeImage}
+                    variant="contained"
+                    color="secondary"
+                    sx={{
+                      width: { xs: '100%', sm: 'auto' }, // Full width on small screens
+                      font: 'inherit',
+                      fontSize: { xs: '12px', sm: '14px' },
+                      marginRight: { md: '10px', lg: '10px' },
+                    }}
+                  >
+                    Retake
+                  </Button>
+                </Box>
+              </>
+            )}
+            <Button
+              onClick={handleModalClose}
+              variant="contained"
+              color="error"
+              sx={{
+                marginTop: '20px',
+                width: { xs: '100%', sm: 'auto' }, // Full width on small screens
+                font: 'inherit',
+                backgroundColor: 'white',
+                color: '#ff1a1a',
+                fontSize: { xs: '12px', sm: '14px' },
+                '&:hover': {
+                  backgroundColor: '#ff1a1a',
+                  color: 'white',
+                },
+              }}
+            >
+              Close
+            </Button>
+          </Box>
+        </Modal>
+      )}
       </Paper>
     </div>
   );

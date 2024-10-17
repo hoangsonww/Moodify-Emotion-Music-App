@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Box, Card, CardContent, Typography, Paper, Button, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Paper,
+  Button,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  CircularProgress
+} from '@mui/material';
 import axios from 'axios';
 
 const ResultsPage = () => {
   const location = useLocation();
   const { emotion, recommendations } = location.state || { emotion: "None", recommendations: [] };
-
+  const [loading, setLoading] = useState(false);
   const [selectedMood, setSelectedMood] = useState(emotion || "None");
   const [displayRecommendations, setDisplayRecommendations] = useState(recommendations || []);
 
@@ -29,6 +41,7 @@ const ResultsPage = () => {
   const handleMoodChange = async (event) => {
     const newMood = event.target.value;
     setSelectedMood(newMood);
+    setLoading(true);
 
     try {
       // Call the API with the selected mood
@@ -44,8 +57,11 @@ const ResultsPage = () => {
       // Store the new mood and recommendations in localStorage
       localStorage.setItem('storedEmotion', newMood);
       localStorage.setItem('storedRecommendations', JSON.stringify(newRecommendations));
+
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
+      setLoading(false);
     }
   };
 
@@ -82,6 +98,16 @@ const ResultsPage = () => {
             Your Recommendations
           </Typography>
           <Box sx={styles.recommendationsList}>
+            {loading && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginTop: '20px' }}>
+                {/* Loading Spinner */}
+                <CircularProgress style={{ color: '#ff4d4d' }} />
+                {/* Loading Message */}
+                <Typography variant="body2" style={{ color: '#999', marginTop: '10px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
+                  Loading recommendations...
+                </Typography>
+              </Box>
+            )}
             {displayRecommendations.length > 0 ? (
                 displayRecommendations.map((rec, index) => (
                     <Card key={index} sx={styles.recommendationCard}>
