@@ -87,7 +87,7 @@ CORS_ALLOW_ALL_ORIGINS = False  # Disable allow all origins
 # Explicitly allow specific origins
 CORS_ALLOWED_ORIGINS = [
     'https://moodify-emotion-music-app.vercel.app',  # Frontend hosted on Vercel
-    'http://localhost:3000/', # Local development
+    'http://localhost:3000', # Local development
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # Allow sending credentials like cookies and auth headers

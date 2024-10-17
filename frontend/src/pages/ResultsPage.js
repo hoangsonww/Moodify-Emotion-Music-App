@@ -15,6 +15,10 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
+const CACHE_KEY = 'moodCache';
+const CACHE_TIMESTAMP_KEY = 'moodCacheTimestamp';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
 const ResultsPage = () => {
   const location = useLocation();
   const { emotion, recommendations } = location.state || { emotion: "None", recommendations: [] };
@@ -22,7 +26,39 @@ const ResultsPage = () => {
   const [selectedMood, setSelectedMood] = useState(emotion || "None");
   const [displayRecommendations, setDisplayRecommendations] = useState(recommendations || []);
 
-  // Load stored data from localStorage
+  // Helper function to fetch all mood recommendations and store them in localStorage
+  const cacheAllRecommendations = async () => {
+    const currentTime = new Date().getTime();
+    const cacheTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+
+    // Check if the cache is older than 24 hours
+    if (cacheTimestamp && currentTime - cacheTimestamp < CACHE_DURATION) {
+      console.log('Using cached data');
+      return; // Data is already cached and still valid
+    }
+
+    console.log('Fetching new data and updating cache...');
+    try {
+      const allMoods = Object.keys(emotionToGenre);
+      const cacheData = {};
+
+      for (let mood of allMoods) {
+        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
+          emotion: mood.toLowerCase(),
+        });
+        cacheData[mood] = response.data.recommendations || [];
+      }
+
+      // Store the entire cache and timestamp
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+      localStorage.setItem(CACHE_TIMESTAMP_KEY, currentTime.toString());
+
+    } catch (error) {
+      console.error('Error caching mood recommendations:', error);
+    }
+  };
+
+  // Load cached data or fallback to API
   useEffect(() => {
     if (emotion && recommendations) {
       // Save the new data to localStorage if available
@@ -35,6 +71,9 @@ const ResultsPage = () => {
       setSelectedMood(storedEmotion);
       setDisplayRecommendations(storedRecommendations);
     }
+
+    // Cache all mood recommendations once per day
+    cacheAllRecommendations();
   }, [emotion, recommendations]);
 
   // Function to handle mood change
@@ -44,118 +83,128 @@ const ResultsPage = () => {
     setLoading(true);
 
     try {
-      // Call the API with the selected mood
-      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
-        "emotion": newMood.toLowerCase(),
-      });
+      // Check if the mood exists in localStorage
+      const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+      if (cachedData[newMood]) {
+        // Use cached recommendations if available
+        setDisplayRecommendations(cachedData[newMood]);
+      } else {
+        // Fetch from API if not cached
+        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
+          emotion: newMood.toLowerCase(),
+        });
 
-      const newRecommendations = response.data.recommendations || [];
+        const newRecommendations = response.data.recommendations || [];
 
-      // Update the displayed recommendations
-      setDisplayRecommendations(newRecommendations);
+        // Update the displayed recommendations
+        setDisplayRecommendations(newRecommendations);
 
-      // Store the new mood and recommendations in localStorage
-      localStorage.setItem('storedEmotion', newMood);
-      localStorage.setItem('storedRecommendations', JSON.stringify(newRecommendations));
+        // Store the new mood and recommendations in localStorage
+        localStorage.setItem('storedEmotion', newMood);
+        localStorage.setItem('storedRecommendations', JSON.stringify(newRecommendations));
+      }
 
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching recommendations:', error);
+      // Fallback to stored recommendations if API fails
+      const fallbackRecommendations = JSON.parse(localStorage.getItem('storedRecommendations')) || [];
+      setDisplayRecommendations(fallbackRecommendations);
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-      <div style={styles.container}>
-        <Typography variant="h5" style={styles.emotionText}>
-          <strong>Detected Mood: <span style={styles.emotion}>{selectedMood.charAt(0).toUpperCase() + selectedMood.slice(1)}</span></strong>
+    <div style={styles.container}>
+      <Typography variant="h5" style={styles.emotionText}>
+        <strong>Detected Mood: <span style={styles.emotion}>{selectedMood.charAt(0).toUpperCase() + selectedMood.slice(1)}</span></strong>
+      </Typography>
+
+      <Typography variant="body2" style={{ color: '#999', marginBottom: '20px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
+        Or select a mood from the dropdown below to get recommendations based on that mood:
+      </Typography>
+
+      {/* Dropdown to select mood */}
+      <FormControl fullWidth style={{ marginBottom: '20px', maxWidth: '300px' }}>
+        <InputLabel>Select Mood</InputLabel>
+        <Select
+          value={selectedMood}
+          onChange={handleMoodChange}
+          variant={'outlined'}
+          label="Select Mood"
+          style={{ fontFamily: 'Poppins' }}
+        >
+          {Object.keys(emotionToGenre).map((mood, index) => (
+            <MenuItem key={index} value={mood} style={{ fontFamily: 'Poppins' }}>
+              {mood.charAt(0).toUpperCase() + mood.slice(1)}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Paper elevation={4} style={styles.resultsContainer}>
+        <Typography variant="h6" style={{ fontFamily: 'Poppins', marginBottom: '10px' }}>
+          Your Recommendations
         </Typography>
+        <Box sx={styles.recommendationsList}>
+          {loading && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginTop: '20px' }}>
+              {/* Loading Spinner */}
+              <CircularProgress style={{ color: '#ff4d4d' }} />
+              {/* Loading Message */}
+              <Typography variant="body2" style={{ color: '#999', marginTop: '10px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
+                Loading recommendations...
+              </Typography>
+            </Box>
+          )}
+          {displayRecommendations.length > 0 ? (
+            displayRecommendations.map((rec, index) => (
+              <Card key={index} sx={styles.recommendationCard}>
+                <Box sx={styles.cardContentContainer}>
+                  {/* Left Half: Image */}
+                  <Box sx={styles.imageContainer}>
+                    <img
+                      src={rec.image_url}
+                      alt={`${rec.name} album cover`}
+                      style={styles.albumImage}
+                    />
+                  </Box>
 
-        <Typography variant="body2" style={{ color: '#999', marginBottom: '20px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
-          Or select a mood from the dropdown below to get recommendations based on that mood:
-        </Typography>
-
-        {/* Dropdown to select mood */}
-        <FormControl fullWidth style={{ marginBottom: '20px', maxWidth: '300px' }}>
-          <InputLabel>Select Mood</InputLabel>
-          <Select
-              value={selectedMood}
-              onChange={handleMoodChange}
-              variant={'outlined'}
-              label="Select Mood"
-              style={{ fontFamily: 'Poppins' }}
-          >
-            {Object.keys(emotionToGenre).map((mood, index) => (
-                <MenuItem key={index} value={mood} style={{ fontFamily: 'Poppins' }}>
-                  {mood.charAt(0).toUpperCase() + mood.slice(1)}
-                </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Paper elevation={4} style={styles.resultsContainer}>
-          <Typography variant="h6" style={{ fontFamily: 'Poppins', marginBottom: '10px' }}>
-            Your Recommendations
-          </Typography>
-          <Box sx={styles.recommendationsList}>
-            {loading && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginTop: '20px' }}>
-                {/* Loading Spinner */}
-                <CircularProgress style={{ color: '#ff4d4d' }} />
-                {/* Loading Message */}
-                <Typography variant="body2" style={{ color: '#999', marginTop: '10px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
-                  Loading recommendations...
-                </Typography>
-              </Box>
-            )}
-            {displayRecommendations.length > 0 ? (
-                displayRecommendations.map((rec, index) => (
-                    <Card key={index} sx={styles.recommendationCard}>
-                      <Box sx={styles.cardContentContainer}>
-                        {/* Left Half: Image */}
-                        <Box sx={styles.imageContainer}>
-                          <img
-                              src={rec.image_url}
-                              alt={`${rec.name} album cover`}
-                              style={styles.albumImage}
-                          />
-                        </Box>
-
-                        {/* Right Half: Song Details */}
-                        <CardContent sx={styles.cardDetails}>
-                          <Typography variant="subtitle1" style={styles.songTitle}>
-                            {rec.name}
-                          </Typography>
-                          <Typography variant="body2" style={styles.artistName}>
-                            {rec.artist}
-                          </Typography>
-                          {rec.preview_url && (
-                              <audio controls style={styles.audioPlayer}>
-                                <source src={rec.preview_url} type="audio/mpeg" />
-                                Your browser does not support the audio element.
-                              </audio>
-                          )}
-                          <Button
-                              href={rec.external_url}
-                              target="_blank"
-                              variant="contained"
-                              color="primary"
-                              style={styles.spotifyButton}
-                          >
-                            Listen on Spotify
-                          </Button>
-                        </CardContent>
-                      </Box>
-                    </Card>
-                ))
-            ) : (
-                <Typography variant="body2" style={{ color: '#999', marginTop: '20px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
-                  No recommendations available. Try inputting a new image, changing the mood, entering some texts, or recording something. If the error persists, it may be that our servers are down and it may take up to 3 minutes to restart.
-                </Typography>
-            )}
-          </Box>
-        </Paper>
-      </div>
+                  {/* Right Half: Song Details */}
+                  <CardContent sx={styles.cardDetails}>
+                    <Typography variant="subtitle1" style={styles.songTitle}>
+                      {rec.name}
+                    </Typography>
+                    <Typography variant="body2" style={styles.artistName}>
+                      {rec.artist}
+                    </Typography>
+                    {rec.preview_url && (
+                      <audio controls style={styles.audioPlayer}>
+                        <source src={rec.preview_url} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    )}
+                    <Button
+                      href={rec.external_url}
+                      target="_blank"
+                      variant="contained"
+                      color="primary"
+                      style={styles.spotifyButton}
+                    >
+                      Listen on Spotify
+                    </Button>
+                  </CardContent>
+                </Box>
+              </Card>
+            ))
+          ) : (
+            <Typography variant="body2" style={{ color: '#999', marginTop: '20px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
+              No recommendations available. Try inputting a new image, changing the mood, entering some texts, or recording something. If the error persists, it may be that our servers are down and it may take up to 3 minutes to restart.
+            </Typography>
+          )}
+        </Box>
+      </Paper>
+    </div>
   );
 };
 

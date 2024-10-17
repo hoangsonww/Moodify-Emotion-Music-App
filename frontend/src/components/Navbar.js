@@ -53,6 +53,13 @@ const Navbar = () => {
     return () => clearInterval(intervalId);
   }, [location]);
 
+  // Validate token once every 5 seconds
+  useEffect(() => {
+    validateToken();
+    const intervalId = setInterval(validateToken, 5000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   // Function to determine if the current route is active
   const isActive = (path) => location.pathname === path;
 
