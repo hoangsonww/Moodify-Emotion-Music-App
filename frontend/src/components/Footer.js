@@ -113,7 +113,6 @@ const styles = {
     fontSize: '14px',
     fontWeight: 500,
     position: 'relative',
-    paddingBottom: '5px',
     '&:hover': {
       transform: 'scale(1.05)',
       transition: 'transform 0.2s',
@@ -127,6 +126,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     gap: '20px',
+    marginTop: '20px',
     marginBottom: '10px',
     flexWrap: 'wrap', // Makes the icons responsive
   },

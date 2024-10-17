@@ -76,129 +76,150 @@ const Navbar = () => {
   };
 
   return (
-      <AppBar position="static" sx={{ bgcolor: 'white', color: 'black', boxShadow: 3 }}>
-        <Toolbar sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', gap: isMobile ? '10px' : '0' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-            <Typography
-                variant="h6"
-                sx={{
-                  flexGrow: 1,
-                  cursor: 'pointer',
-                  fontFamily: 'Poppins',
-                  fontSize: '24px',
-                  textAlign: isMobile ? 'center' : 'left',
-                  marginTop: isMobile ? '10px' : '0',
-                  fontWeight: 'bold',
-                }}
-                onClick={() => navigate('/home')}
-            >
-              Moodify
-            </Typography>
-            {isMobile && (
-                <IconButton onClick={toggleMenu} style={{ position: 'absolute', right: '10px', top: '10px', backgroundColor: 'white' }}>
-                  <MenuIcon />
-                </IconButton>
-            )}
-          </Box>
-
-          {/* Desktop or Mobile Menu Display */}
-          <Box
-              sx={{
-                display: isMobile ? (showMenu ? 'flex' : 'none') : 'flex',
-                flexDirection: isMobile ? 'column' : 'row',
-                alignItems: 'center',
-                gap: '10px',
-                width: isMobile ? '100%' : 'auto',
-              }}
+    <AppBar position="static" sx={{ bgcolor: 'white', color: 'black', boxShadow: 3 }}>
+      <Toolbar sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', gap: isMobile ? '10px' : '0' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <Typography
+            variant="h6"
+            sx={{
+              flexGrow: 1,
+              cursor: 'pointer',
+              fontFamily: 'Poppins',
+              fontSize: '24px',
+              textAlign: isMobile ? 'center' : 'left',
+              marginTop: isMobile ? '10px' : '0',
+              fontWeight: 'bold',
+            }}
+            onClick={() => navigate('/home')}
           >
+            Moodify
+          </Typography>
+          {isMobile && (
+            <IconButton onClick={toggleMenu} style={{ position: 'absolute', right: '10px', top: '10px', backgroundColor: 'white' }}>
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Box>
+
+        {/* Mobile Menu Animation */}
+        <Box
+          sx={{
+            display: isMobile ? 'flex' : 'none',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
+            width: '100%',
+            maxHeight: showMenu ? '500px' : '0px',  // animate maxHeight
+            opacity: showMenu ? 1 : 0,  // animate opacity
+            overflow: 'hidden',
+            transition: 'max-height 0.4s ease, opacity 0.4s ease',  // smooth animation
+          }}
+        >
+          <Button
+            color="inherit"
+            sx={buttonStyle(isActive('/home'), isMobile)}
+            onClick={() => navigate('/home')}
+          >
+            Home
+          </Button>
+          <Button
+            color="inherit"
+            sx={buttonStyle(isActive('/profile'), isMobile)}
+            onClick={() => navigate('/profile')}
+          >
+            Profile
+          </Button>
+          <Button
+            color="inherit"
+            sx={buttonStyle(isActive('/results'), isMobile)}
+            onClick={() => navigate('/results')}
+          >
+            Recommendations
+          </Button>
+          {isLoggedIn ? (
             <Button
-                color="inherit"
-                sx={{
-                  marginRight: isMobile ? '0' : '10px',
-                  fontFamily: 'Poppins',
-                  backgroundColor: isActive('/home') ? '#ff4d4d' : 'transparent',
-                  color: isActive('/home') ? 'white' : 'black',
-                  width: isMobile ? '100%' : 'auto',
-                  '&:hover': {
-                    backgroundColor: '#ff4d4d',
-                    color: 'white',
-                  },
-                }}
-                onClick={() => navigate('/home')}
+              color="error"
+              sx={buttonStyle(false, isMobile)}
+              onClick={handleLogout}
             >
-              Home
+              Logout
             </Button>
+          ) : (
             <Button
-                color="inherit"
-                sx={{
-                  marginRight: isMobile ? '0' : '10px',
-                  fontFamily: 'Poppins',
-                  backgroundColor: isActive('/profile') ? '#ff4d4d' : 'transparent',
-                  color: isActive('/profile') ? 'white' : 'black',
-                  width: isMobile ? '100%' : 'auto',
-                  '&:hover': {
-                    backgroundColor: '#ff4d4d',
-                    color: 'white',
-                  },
-                }}
-                onClick={() => navigate('/profile')}
+              color="primary"
+              sx={buttonStyle(false, isMobile)}
+              onClick={() => navigate('/login')}
             >
-              Profile
+              Login
             </Button>
+          )}
+        </Box>
+
+        {/* Desktop Menu */}
+        <Box
+          sx={{
+            display: isMobile ? 'none' : 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '10px',
+            width: 'auto',
+          }}
+        >
+          <Button
+            color="inherit"
+            sx={buttonStyle(isActive('/home'), false)}
+            onClick={() => navigate('/home')}
+          >
+            Home
+          </Button>
+          <Button
+            color="inherit"
+            sx={buttonStyle(isActive('/profile'), false)}
+            onClick={() => navigate('/profile')}
+          >
+            Profile
+          </Button>
+          <Button
+            color="inherit"
+            sx={buttonStyle(isActive('/results'), false)}
+            onClick={() => navigate('/results')}
+          >
+            Recommendations
+          </Button>
+          {isLoggedIn ? (
             <Button
-                color="inherit"
-                sx={{
-                  marginRight: isMobile ? '0' : '10px',
-                  fontFamily: 'Poppins',
-                  backgroundColor: isActive('/results') ? '#ff4d4d' : 'transparent',
-                  color: isActive('/results') ? 'white' : 'black',
-                  width: isMobile ? '100%' : 'auto',
-                  '&:hover': {
-                    backgroundColor: '#ff4d4d',
-                    color: 'white',
-                  },
-                }}
-                onClick={() => navigate('/results')}
+              color="error"
+              sx={buttonStyle(false, false)}
+              onClick={handleLogout}
             >
-              Recommendations
+              Logout
             </Button>
-            {isLoggedIn ? (
-                <Button
-                    color="error"
-                    sx={{
-                      marginRight: isMobile ? '0' : '10px',
-                      fontFamily: 'Poppins',
-                      width: isMobile ? '100%' : 'auto',
-                      '&:hover': {
-                        backgroundColor: '#ff4d4d',
-                        color: 'white',
-                      },
-                    }}
-                    onClick={handleLogout}
-                >
-                  Logout
-                </Button>
-            ) : (
-                <Button
-                    color="primary"
-                    sx={{
-                      marginRight: isMobile ? '0' : '10px',
-                      fontFamily: 'Poppins',
-                      width: isMobile ? '100%' : 'auto',
-                      '&:hover': {
-                        backgroundColor: '#ff4d4d',
-                        color: 'white',
-                      },
-                    }}
-                    onClick={() => navigate('/login')}
-                >
-                  Login
-                </Button>
-            )}
-          </Box>
-        </Toolbar>
-      </AppBar>
+          ) : (
+            <Button
+              color="primary"
+              sx={buttonStyle(false, false)}
+              onClick={() => navigate('/login')}
+            >
+              Login
+            </Button>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
+
+// Styles for the buttons
+const buttonStyle = (isActive, isMobile) => ({
+  marginRight: isMobile ? '0' : '10px',
+  fontFamily: 'Poppins',
+  backgroundColor: isActive ? '#ff4d4d' : 'transparent',
+  color: isActive ? 'white' : 'black',
+  width: isMobile ? '100%' : 'auto',
+  '&:hover': {
+    backgroundColor: '#ff4d4d',
+    color: 'white',
+  },
+});
 
 export default Navbar;
