@@ -43,7 +43,7 @@ const ProfilePage = () => {
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
-      setError('Failed to fetch user data. Using cached data if available.');
+      setError('Failed to fetch user data. Our servers might be down. Please try again later.');
       setIsLoading(false);
 
       // Fallback to cached data if available
