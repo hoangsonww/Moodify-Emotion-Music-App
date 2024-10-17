@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState("text");
   const [inputValue, setInputValue] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [file, setFile] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -927,18 +928,32 @@ const HomePage = () => {
               >
                 Enter Your Text
               </Typography>
-              <TextField
+             <TextField
                 fullWidth
                 multiline
                 rows={4}
                 variant="outlined"
-                placeholder="Tell us how you feel right now..."
+                placeholder="Tell us how you're feeling..."
                 value={inputValue}
+                inputProps={{
+                  style: {
+                    padding: '8px 12px',
+                    fontFamily: "Poppins",
+                    fontSize: "16px"
+                  }
+                }}
                 InputProps={{
-                  style: { fontFamily: "Poppins", fontSize: "16px" },
+                  style: {
+                    fontFamily: "Poppins",
+                    fontSize: "16px",
+                    padding: '0',
+                    boxShadow: 'none'
+                  }
                 }}
                 InputLabelProps={{
-                  style: { fontFamily: "Poppins" },
+                  style: {
+                    fontFamily: "Poppins",
+                  }
                 }}
                 onChange={(e) => setInputValue(e.target.value)}
               />

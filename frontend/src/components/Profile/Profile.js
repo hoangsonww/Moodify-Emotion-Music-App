@@ -27,7 +27,8 @@ const ProfilePage = () => {
     }
 
     fetchUserData();
-  }, []); // The dependency array is empty to ensure this effect runs only once when the component mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchUserData = async () => {
     setIsLoading(true);
