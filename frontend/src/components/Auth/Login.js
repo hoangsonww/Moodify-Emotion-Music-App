@@ -53,6 +53,12 @@ const Login = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           sx={{ mb: 2 }}
+          InputProps={{
+            style: { fontFamily: 'Poppins', fontSize: '16px' },
+          }}
+          InputLabelProps={{
+            style: { fontFamily: 'Poppins' },
+          }}
         />
         <TextField
           label="Password"
@@ -62,6 +68,12 @@ const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           sx={{ mb: 2 }}
+          InputProps={{
+            style: { fontFamily: 'Poppins', fontSize: '16px' },
+          }}
+          InputLabelProps={{
+            style: { fontFamily: 'Poppins' },
+          }}
         />
         <Button
           variant="contained"

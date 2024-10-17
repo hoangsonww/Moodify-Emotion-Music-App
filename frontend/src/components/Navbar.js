@@ -8,7 +8,7 @@ import axios from 'axios';
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation(); // Get the current location
-  const isMobile = useMediaQuery('(max-width:600px)'); // Check if the screen is mobile size
+  const isMobile = useMediaQuery('(max-width:600px)');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 

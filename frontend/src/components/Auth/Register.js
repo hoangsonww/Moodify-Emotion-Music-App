@@ -52,6 +52,12 @@ const Register = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               sx={{ mb: 2 }}
+              InputProps={{
+                style: { fontFamily: 'Poppins', fontSize: '16px' },
+              }}
+              InputLabelProps={{
+                style: { fontFamily: 'Poppins' },
+              }}
           />
           <TextField
               label="Email"
@@ -60,6 +66,12 @@ const Register = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               sx={{ mb: 2 }}
+              InputProps={{
+                style: { fontFamily: 'Poppins', fontSize: '16px' },
+              }}
+              InputLabelProps={{
+                style: { fontFamily: 'Poppins' },
+              }}
           />
           <TextField
               label="Password"
@@ -69,6 +81,12 @@ const Register = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               sx={{ mb: 2 }}
+              InputProps={{
+                style: { fontFamily: 'Poppins', fontSize: '16px' },
+              }}
+              InputLabelProps={{
+                style: { fontFamily: 'Poppins' },
+              }}
           />
           <TextField
               label="Confirm Password"
@@ -78,6 +96,12 @@ const Register = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               sx={{ mb: 2 }}
+              InputProps={{
+                style: { fontFamily: 'Poppins', fontSize: '16px' },
+              }}
+              InputLabelProps={{
+                style: { fontFamily: 'Poppins' },
+              }}
           />
           <Button
               variant="contained"
