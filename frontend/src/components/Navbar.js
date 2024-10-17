@@ -138,16 +138,14 @@ const Navbar = () => {
           </Button>
           {isLoggedIn ? (
             <Button
-              color="error"
-              sx={buttonStyle(false, isMobile)}
+              sx={logoutButtonStyle(isMobile)}
               onClick={handleLogout}
             >
               Logout
             </Button>
           ) : (
             <Button
-              color="primary"
-              sx={buttonStyle(false, isMobile)}
+              sx={loginButtonStyle(isMobile)}
               onClick={() => navigate('/login')}
             >
               Login
@@ -188,16 +186,14 @@ const Navbar = () => {
           </Button>
           {isLoggedIn ? (
             <Button
-              color="error"
-              sx={buttonStyle(false, false)}
+              sx={logoutButtonStyle(false)}
               onClick={handleLogout}
             >
               Logout
             </Button>
           ) : (
             <Button
-              color="primary"
-              sx={buttonStyle(false, false)}
+              sx={loginButtonStyle(false)}
               onClick={() => navigate('/login')}
             >
               Login
@@ -215,6 +211,30 @@ const buttonStyle = (isActive, isMobile) => ({
   fontFamily: 'Poppins',
   backgroundColor: isActive ? '#ff4d4d' : 'transparent',
   color: isActive ? 'white' : 'black',
+  width: isMobile ? '100%' : 'auto',
+  '&:hover': {
+    backgroundColor: '#ff4d4d',
+    color: 'white',
+  },
+});
+
+// Styles for the Logout button (red text)
+const logoutButtonStyle = (isMobile) => ({
+  marginRight: isMobile ? '0' : '10px',
+  fontFamily: 'Poppins',
+  color: 'red', // Red text for logout
+  width: isMobile ? '100%' : 'auto',
+  '&:hover': {
+    backgroundColor: '#ff4d4d',
+    color: 'white',
+  },
+});
+
+// Styles for the Login button (blue text)
+const loginButtonStyle = (isMobile) => ({
+  marginRight: isMobile ? '0' : '10px',
+  fontFamily: 'Poppins',
+  color: 'blue', // Blue text for login
   width: isMobile ? '100%' : 'auto',
   '&:hover': {
     backgroundColor: '#ff4d4d',

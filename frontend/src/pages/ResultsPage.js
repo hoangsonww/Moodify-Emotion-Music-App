@@ -15,62 +15,12 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-const CACHE_KEY = 'moodCache';
-
 const ResultsPage = () => {
   const location = useLocation();
   const { emotion, recommendations } = location.state || { emotion: "None", recommendations: [] };
   const [loading, setLoading] = useState(false);
   const [selectedMood, setSelectedMood] = useState(emotion || "None");
   const [displayRecommendations, setDisplayRecommendations] = useState(recommendations || []);
-
-  // Helper function to fetch all mood recommendations and store them in localStorage
-  const cacheAllRecommendationsOnce = async () => {
-    const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
-
-    // If cache already exists, do nothing
-    if (cachedData) {
-      console.log('Using cached data');
-      return;
-    }
-
-    console.log('Fetching new data and caching...');
-    try {
-      const allMoods = Object.keys(emotionToGenre);
-      const cacheData = {};
-
-      for (let mood of allMoods) {
-        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
-          emotion: mood.toLowerCase(),
-        });
-        cacheData[mood] = response.data.recommendations || [];
-      }
-
-      // Store the entire cache in localStorage
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-
-    } catch (error) {
-      console.error('Error caching mood recommendations:', error);
-    }
-  };
-
-  // Load cached data or fetch if not cached
-  useEffect(() => {
-    if (emotion && recommendations) {
-      // Save the new data to localStorage if available
-      localStorage.setItem('storedEmotion', emotion);
-      localStorage.setItem('storedRecommendations', JSON.stringify(recommendations));
-    } else {
-      // Retrieve data from localStorage if no new data is available
-      const storedEmotion = localStorage.getItem('storedEmotion') || "None";
-      const storedRecommendations = JSON.parse(localStorage.getItem('storedRecommendations')) || [];
-      setSelectedMood(storedEmotion);
-      setDisplayRecommendations(storedRecommendations);
-    }
-
-    // Cache all mood recommendations only once when the page first loads
-    cacheAllRecommendationsOnce();
-  }, [emotion, recommendations]);
 
   // Function to handle mood change
   const handleMoodChange = async (event) => {
@@ -79,32 +29,18 @@ const ResultsPage = () => {
     setLoading(true);
 
     try {
-      // Check if the mood exists in localStorage
-      const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
-      if (cachedData[newMood]) {
-        // Use cached recommendations if available
-        setDisplayRecommendations(cachedData[newMood]);
-      } else {
-        // Fetch from API if not cached (this shouldn't happen with the one-time caching)
-        const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
-          emotion: newMood.toLowerCase(),
-        });
+      // Fetch new recommendations from the API
+      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
+        emotion: newMood.toLowerCase(),
+      });
 
-        const newRecommendations = response.data.recommendations || [];
+      const newRecommendations = response.data.recommendations || [];
 
-        // Update the displayed recommendations
-        setDisplayRecommendations(newRecommendations);
-
-        // Store the new mood and recommendations in localStorage
-        localStorage.setItem('storedEmotion', newMood);
-        localStorage.setItem('storedRecommendations', JSON.stringify(newRecommendations));
-      }
+      // Update the displayed recommendations
+      setDisplayRecommendations(newRecommendations);
 
     } catch (error) {
       console.error('Error fetching recommendations:', error);
-      // Fallback to stored recommendations if API fails
-      const fallbackRecommendations = JSON.parse(localStorage.getItem('storedRecommendations')) || [];
-      setDisplayRecommendations(fallbackRecommendations);
     } finally {
       setLoading(false);
     }
@@ -195,7 +131,7 @@ const ResultsPage = () => {
             ))
           ) : (
             <Typography variant="body2" style={{ color: '#999', marginTop: '20px', textAlign: 'center', font: 'inherit', fontSize: '14px' }}>
-              No recommendations available. Try inputting a new image, changing the mood, entering some texts, or recording something. If the error persists, it may be that our servers are down and it may take up to 3 minutes to restart, or Spotify's API may be temporarily down.
+              No recommendations available. Try inputting a new image, changing the mood, entering some texts, or recording something. If the error persists, it may be that our servers are down and it may take up to 3 minutes to restart.
             </Typography>
           )}
         </Box>
@@ -243,7 +179,6 @@ const emotionToGenre = {
 };
 
 const styles = {
-  // existing styles
   container: {
     height: '100vh',
     display: 'flex',

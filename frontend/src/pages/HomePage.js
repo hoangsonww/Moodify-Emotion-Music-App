@@ -118,8 +118,6 @@ const HomePage = () => {
 
     setFile(uploadedFile);
 
-    console.log(file);
-
     const formData = new FormData();
     formData.append('file', uploadedFile);
 
@@ -132,26 +130,37 @@ const HomePage = () => {
 
     try {
       let response;
+
+      // Race the file upload request against a 1-minute timeout
       if (activeTab === 'text') {
         const textContent = await uploadedFile.text();
-        response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/text_emotion/', { text: textContent }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        response = await Promise.race([
+          axios.post('https://moodify-emotion-music-app.onrender.com/api/text_emotion/', { text: textContent }, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          }),
+          timeout(60000) // Timeout set to 1 minute
+        ]);
       } else if (activeTab === 'face') {
-        response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/facial_emotion/', formData, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        response = await Promise.race([
+          axios.post('https://moodify-emotion-music-app.onrender.com/api/facial_emotion/', formData, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }),
+          timeout(60000)
+        ]);
       } else if (activeTab === 'speech') {
-        response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        response = await Promise.race([
+          axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }),
+          timeout(60000)
+        ]);
       }
 
       const { emotion, recommendations } = response.data;
@@ -162,7 +171,7 @@ const HomePage = () => {
       navigate('/results', { state: { emotion, recommendations } });
 
     } catch (error) {
-      console.error(`Error uploading ${activeTab} file:`, error);
+      console.error(`Error uploading ${activeTab} file or request timed out:`, error);
 
       // Fallback to a random mood in case of an error
       const randomMood = getRandomMood();
@@ -207,6 +216,14 @@ const HomePage = () => {
     setCapturedImage(null);
   };
 
+  const timeout = (ms) => {
+    return new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('Request timed out'));
+      }, ms);
+    });
+  };
+
   const confirmImage = async () => {
     try {
       const base64Response = await fetch(capturedImage);
@@ -228,12 +245,15 @@ const HomePage = () => {
         return;
       }
 
-      // Try uploading the image and getting the emotion and recommendations
-      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/facial_emotion/', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // Race between the API request and a timeout of 1 minute (60000 ms)
+      const response = await Promise.race([
+        axios.post('https://moodify-emotion-music-app.onrender.com/api/facial_emotion/', formData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }),
+        timeout(60000) // Timeout set to 1 minute
+      ]);
 
       const { emotion, recommendations } = response.data;
 
@@ -243,9 +263,9 @@ const HomePage = () => {
       navigate('/results', { state: { emotion, recommendations } });
 
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error or timeout occurred:', error);
 
-      // Fallback to a random mood in case of an error
+      // Fallback to a random mood in case of an error or timeout
       const randomMood = getRandomMood();
       const newMood = moodMap[randomMood];
       console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
@@ -282,13 +302,16 @@ const HomePage = () => {
     setIsLoading(true);
 
     try {
-      // Attempt to submit the text to the text emotion API
-      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/text_emotion/', { text: inputValue.trim() }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // Race the text submission request against a 1-minute timeout
+      const response = await Promise.race([
+        axios.post('https://moodify-emotion-music-app.onrender.com/api/text_emotion/', { text: inputValue.trim() }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        }),
+        timeout(60000) // Timeout set to 1 minute
+      ]);
 
       const { emotion, recommendations } = response.data;
 
@@ -299,7 +322,7 @@ const HomePage = () => {
       navigate('/results', { state: { emotion, recommendations } });
 
     } catch (error) {
-      console.error('Error processing text:', error);
+      console.error('Error processing text or request timed out:', error);
 
       // Fallback to a random mood in case of an error
       const randomMood = getRandomMood();
@@ -463,27 +486,30 @@ const HomePage = () => {
     }
 
     try {
-      // Try uploading the audio and processing the response
-      const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // Race the audio upload request against a 1-minute timeout
+      const response = await Promise.race([
+        axios.post('https://moodify-emotion-music-app.onrender.com/api/speech_emotion/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`,
+          },
+        }),
+        timeout(60000) // Timeout set to 1 minute
+      ]);
 
       const { emotion, recommendations } = response.data;
       navigate('/results', { state: { emotion, recommendations } });
 
     } catch (error) {
-      console.error('Error uploading audio:', error);
+      console.error('Error uploading audio or request timed out:', error);
 
-      // Fallback to randomly selecting a mood if the upload fails
+      // Fallback to a random mood in case of an error or timeout
       const randomMood = getRandomMood();
       const newMood = moodMap[randomMood];
       console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
 
       try {
-        // Call the API with the selected random mood
+        // Call the API with the randomly selected mood
         const response = await axios.post('https://moodify-emotion-music-app.onrender.com/api/music_recommendation/', {
           emotion: newMood.toLowerCase(),
         });
@@ -494,8 +520,9 @@ const HomePage = () => {
         navigate('/results', { state: { emotion: randomMood, recommendations: newRecommendations } });
 
       } catch (recommendationError) {
-        console.error('Error fetching recommendations:', recommendationError);
-        // You could handle this case by navigating with empty recommendations if desired
+        console.error('Error fetching fallback recommendations:', recommendationError);
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
         navigate('/results', { state: { emotion: randomMood, recommendations: [] } });
       }
     } finally {
