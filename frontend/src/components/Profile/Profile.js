@@ -26,43 +26,39 @@ const ProfilePage = () => {
       return;
     }
 
-    // Check if cached data exists
-    const cachedUserData = localStorage.getItem(CACHE_KEY);
-    if (cachedUserData) {
-      setUserData(JSON.parse(cachedUserData)); // Use cached data
-      setIsLoading(false);
-    } else {
-      // Fetch user data from server if not cached
-      fetchUserData();
-    }
-  }, []);
+    fetchUserData();
+  }, []); // The dependency array is empty to ensure this effect runs only once when the component mounts.
 
   const fetchUserData = async () => {
+    setIsLoading(true);
+
     try {
       const response = await axios.get(
         "https://moodify-emotion-music-app.onrender.com/users/user/profile/",
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 1000, // 1 second timeout
+        }
       );
 
       setUserData(response.data);
       localStorage.setItem(CACHE_KEY, JSON.stringify(response.data)); // Cache user profile data
-      setIsLoading(false);
+      setError(""); // Clear any existing errors
     } catch (error) {
       console.error("Error fetching user data:", error);
-      setError(
-        "Failed to fetch user data. Our servers might be down. Please try again later.",
-      );
-      setIsLoading(false);
 
-      // Fallback to cached data if available
+      // Use cached data as a fallback
       const cachedUserData = localStorage.getItem(CACHE_KEY);
       if (cachedUserData) {
         setUserData(JSON.parse(cachedUserData));
+        setError("Using cached data. Failed to fetch new user data.");
+      } else {
+        setError(
+          "Failed to fetch user data and no cached data available. Our servers might be down. Please try again later."
+        );
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
