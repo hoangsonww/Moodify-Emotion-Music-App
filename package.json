@@ -1,0 +1,43 @@
+{
+  "name": "moodify-app",
+  "displayName": "Moodify App",
+  "author": "Son Nguyen",
+  "license": "MIT",
+  "description": "Moodify Emotion-Based Music Recommendation App",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoangsonww/Moodify-Emotion-Music-App.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues"
+  },
+  "version": "1.1.0",
+  "private": false,
+  "scripts": {
+    "start": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "test": "cd frontend && npm start",
+    "eject": "cd frontend && npm run eject",
+    "frontend": "cd frontend && npm start",
+    "backend": "cd backend && python manage.py runserver",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\""
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
