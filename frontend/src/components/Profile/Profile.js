@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Box, CircularProgress, Card, CardContent } from '@mui/material';
 import axios from 'axios';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
+const CACHE_KEY = 'userProfileCache';
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -17,7 +18,16 @@ const ProfilePage = () => {
       navigate('/login');
       return;
     }
-    fetchUserData();
+
+    // Check if cached data exists
+    const cachedUserData = localStorage.getItem(CACHE_KEY);
+    if (cachedUserData) {
+      setUserData(JSON.parse(cachedUserData));  // Use cached data
+      setIsLoading(false);
+    } else {
+      // Fetch user data from server if not cached
+      fetchUserData();
+    }
   }, []);
 
   const fetchUserData = async () => {
@@ -27,80 +37,88 @@ const ProfilePage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       setUserData(response.data);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(response.data));  // Cache user profile data
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
-      setError('Failed to fetch user data. Please try again.');
+      setError('Failed to fetch user data. Using cached data if available.');
       setIsLoading(false);
+
+      // Fallback to cached data if available
+      const cachedUserData = localStorage.getItem(CACHE_KEY);
+      if (cachedUserData) {
+        setUserData(JSON.parse(cachedUserData));
+      }
     }
   };
 
   return (
-      <Box style={styles.container}>
-        {isLoading ? (
-            <CircularProgress />
-        ) : error ? (
-            <Typography variant="h6" color="error" style={{ font: 'inherit' }}>{error}</Typography>
-        ) : (
-            <Paper elevation={4} style={styles.profileContainer}>
-              <Typography variant="h5" style={styles.title}>
-                Welcome, {userData.username}!
-              </Typography>
-              <Box style={styles.infoSection}>
-                <Typography variant="h6" style={styles.text}>Your Username: {userData.username}</Typography>
-                <Typography variant="h6" style={styles.text}>Your Email: {userData.email}</Typography>
-              </Box>
+    <Box style={styles.container}>
+      {isLoading ? (
+        <CircularProgress />
+      ) : error ? (
+        <Typography variant="h6" color="error" style={{ font: 'inherit' }}>{error}</Typography>
+      ) : (
+        <Paper elevation={4} style={styles.profileContainer}>
+          <Typography variant="h5" style={styles.title}>
+            Welcome, {userData.username}!
+          </Typography>
+          <Box style={styles.infoSection}>
+            <Typography variant="h6" style={styles.text}>Your Username: {userData.username}</Typography>
+            <Typography variant="h6" style={styles.text}>Your Email: {userData.email}</Typography>
+          </Box>
 
-              <Box sx={styles.section}>
-                <Typography variant="h6" style={styles.sectionTitle}>Your Listening History</Typography>
-                {userData.listening_history && userData.listening_history.length > 0 ? (
-                    userData.listening_history.map((track, index) => (
-                        <Card key={index} style={styles.card}>
-                          <CardContent>
-                            <Typography variant="body1" style={styles.text}>{track}</Typography>
-                          </CardContent>
-                        </Card>
-                    ))
-                ) : (
-                    <Typography variant="body2" style={styles.noData}>No listening history available.</Typography>
-                )}
-              </Box>
+          <Box sx={styles.section}>
+            <Typography variant="h6" style={styles.sectionTitle}>Your Listening History</Typography>
+            {userData.listening_history && userData.listening_history.length > 0 ? (
+              userData.listening_history.map((track, index) => (
+                <Card key={index} style={styles.card}>
+                  <CardContent>
+                    <Typography variant="body1" style={styles.text}>{track}</Typography>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Typography variant="body2" style={styles.noData}>No listening history available.</Typography>
+            )}
+          </Box>
 
-              <Box sx={styles.section}>
-                <Typography variant="h6" style={styles.sectionTitle}>Your Mood History</Typography>
-                {userData.mood_history && userData.mood_history.length > 0 ? (
-                    userData.mood_history.map((mood, index) => (
-                        <Card key={index} style={styles.card}>
-                          <CardContent>
-                            <Typography variant="body1" style={styles.text}>{mood}</Typography>
-                          </CardContent>
-                        </Card>
-                    ))
-                ) : (
-                    <Typography variant="body2" style={styles.noData}>No mood history available.</Typography>
-                )}
-              </Box>
+          <Box sx={styles.section}>
+            <Typography variant="h6" style={styles.sectionTitle}>Your Mood History</Typography>
+            {userData.mood_history && userData.mood_history.length > 0 ? (
+              userData.mood_history.map((mood, index) => (
+                <Card key={index} style={styles.card}>
+                  <CardContent>
+                    <Typography variant="body1" style={styles.text}>{mood}</Typography>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Typography variant="body2" style={styles.noData}>No mood history available.</Typography>
+            )}
+          </Box>
 
-              <Box sx={styles.section}>
-                <Typography variant="h6" style={styles.sectionTitle}>Your Recommendations History</Typography>
-                {userData.recommendations && userData.recommendations.length > 0 ? (
-                    userData.recommendations.map((recommendation, index) => (
-                        <Card key={index} style={styles.card}>
-                          <CardContent>
-                            <Typography variant="body1" style={styles.text}>
-                              <strong>{recommendation.name}</strong> by {recommendation.artist}
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                    ))
-                ) : (
-                    <Typography variant="body2" style={styles.noData}>No recommendations available.</Typography>
-                )}
-              </Box>
-            </Paper>
-        )}
-      </Box>
+          <Box sx={styles.section}>
+            <Typography variant="h6" style={styles.sectionTitle}>Your Recommendations History</Typography>
+            {userData.recommendations && userData.recommendations.length > 0 ? (
+              userData.recommendations.map((recommendation, index) => (
+                <Card key={index} style={styles.card}>
+                  <CardContent>
+                    <Typography variant="body1" style={styles.text}>
+                      <strong>{recommendation.name}</strong> by {recommendation.artist}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Typography variant="body2" style={styles.noData}>No recommendations available.</Typography>
+            )}
+          </Box>
+        </Paper>
+      )}
+    </Box>
   );
 };
 
