@@ -6,9 +6,10 @@ schema_view = get_schema_view(
     openapi.Info(
         title="Emotion-Based Music App API",
         default_version='v1',
-        description="API documentation for the Emotion-Based Music App",
-        terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="hoangson091104@gmail.com"),
+        description="Comprehensive API documentation for the Emotion-Based Music App",
+        privacy_policy="https://moodify-emotion-music-app.vercel.app/privacy-policy",
+        terms_of_service="https://moodify-emotion-music-app.vercel.app/terms-of-service",
+        contact=openapi.Contact(email="hoangson091104@gmail.com", name="Moodify", url="https://moodify-emotion-music-app.vercel.app/"),
         license=openapi.License(name="MIT License"),
     ),
     public=True,
