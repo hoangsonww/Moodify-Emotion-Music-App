@@ -218,19 +218,19 @@ const features = [
 const testimonials = [
   {
     text: "Moodify's recommendations are spot on! It really understands my moods.",
-    author: "Jane Doe",
+    author: "Ricky Nguyen",
   },
   {
     text: "I love the different ways to input my mood. The facial analysis is really cool!",
-    author: "John Smith",
+    author: "Adam Smith",
   },
   {
     text: "The best music app I’ve ever used. It feels like it knows me!",
-    author: "Sarah Johnson",
+    author: "Richard Le",
   },
   {
     text: "I've discovered so many great songs through Moodify!",
-    author: "Emily Davis",
+    author: "Katarina Chen",
   },
 ];
 
