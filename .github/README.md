@@ -693,12 +693,12 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
 3. Here are some example visualizations:
 
 <p align="center">
-  <img src="data_analytics/visualizations/emotion_distribution.png" alt="Emotion Distribution" width="100%" style="border-radius: 10px">
+  <img src="../data_analytics/visualizations/emotion_distribution.png" alt="Emotion Distribution" width="100%" style="border-radius: 10px">
   Emotion Distribution Visualization
 </p>
 
 <p align="center">
-  <img src="data_analytics/visualizations/loss_curve.png" alt="Training Loss Curve Visualization" width="100%" style="border-radius: 10px">
+  <img src="../data_analytics/visualizations/loss_curve.png" alt="Training Loss Curve Visualization" width="100%" style="border-radius: 10px">
   Training Loss Curve Visualization
 </p>
 
