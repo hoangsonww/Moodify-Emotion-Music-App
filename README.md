@@ -323,6 +323,16 @@ There is no guarantee of uptime or performance with the current deployment, unle
   <img src="images/notfound-dark.png" alt="404 Not Found Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
+### Responsive Design - Mobile View
+
+<p align="center">
+  <img src="images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
+</p>
+
+<p align="center">
+  <img src="images/mobile-view2.png" alt="Mobile View" width="50%" style="border-radius: 10px">
+</p>
+
 ### Footer
 
 <p align="center">

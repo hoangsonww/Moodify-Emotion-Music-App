@@ -53,7 +53,7 @@ const Navbar = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -81,7 +81,7 @@ const Navbar = () => {
     validateToken();
     const intervalId = setInterval(validateToken, 5000); // Validate token every 5 seconds
     return () => clearInterval(intervalId);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isActive = (path) => location.pathname === path;
@@ -107,7 +107,7 @@ const Navbar = () => {
         <ListItem
           button
           sx={listItemStyle(isActive("/home"), isDarkMode)}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           onClick={() => {
             navigate("/home");
             toggleDrawer(false);
@@ -126,7 +126,7 @@ const Navbar = () => {
         </ListItem>
         <ListItem
           button
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           sx={listItemStyle(isActive("/profile"), isDarkMode)}
           onClick={() => {
             navigate("/profile");
@@ -146,7 +146,7 @@ const Navbar = () => {
         </ListItem>
         <ListItem
           button
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           sx={listItemStyle(isActive("/results"), isDarkMode)}
           onClick={() => {
             navigate("/results");
@@ -167,7 +167,7 @@ const Navbar = () => {
         {isLoggedIn ? (
           <ListItem
             button
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
             sx={listItemStyle(false, isDarkMode)}
             onClick={() => {
               handleLogout();
@@ -188,7 +188,7 @@ const Navbar = () => {
         ) : (
           <ListItem
             button
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
             sx={listItemStyle(isActive("/login"), isDarkMode)}
             onClick={() => {
               navigate("/login");
@@ -209,7 +209,7 @@ const Navbar = () => {
         )}
         <ListItem
           button
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           onClick={() => toggleDrawer(false)}
           sx={listItemStyle(false, isDarkMode)}
         >
@@ -359,7 +359,7 @@ const listItemStyle = (isActive, isDarkMode) => ({
   fontFamily: "Poppins",
   borderRadius: "8px",
   backgroundColor: isActive ? "#ff4d4d" : "transparent",
-  color: (isActive && isDarkMode) ? "white" : "inherit",
+  color: isActive && isDarkMode ? "white" : "inherit",
 });
 
 // Styles for the buttons in the desktop navbar

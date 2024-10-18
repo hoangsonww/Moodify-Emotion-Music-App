@@ -31,7 +31,7 @@ const ForgotPassword = () => {
     try {
       const response = await axios.post(
         "https://moodify-emotion-music-app.onrender.com/users/verify-username-email/",
-        { username, email }
+        { username, email },
       );
       if (response.status === 200) {
         setStep(2); // Move to the next step (reset password)
@@ -58,7 +58,7 @@ const ForgotPassword = () => {
     try {
       const response = await axios.post(
         "https://moodify-emotion-music-app.onrender.com/users/reset-password/",
-        { username, new_password: newPassword }
+        { username, new_password: newPassword },
       );
       if (response.status === 200) {
         alert("Password reset successfully!");
@@ -99,7 +99,11 @@ const ForgotPassword = () => {
             <Typography
               variant="h4"
               align="center"
-              sx={{ mb: 3, fontFamily: "Poppins", color: isDarkMode ? "#ffffff" : "#000000" }} // Dynamic color
+              sx={{
+                mb: 3,
+                fontFamily: "Poppins",
+                color: isDarkMode ? "#ffffff" : "#000000",
+              }} // Dynamic color
             >
               Verify Account
             </Typography>
@@ -167,7 +171,11 @@ const ForgotPassword = () => {
             <Typography
               variant="h4"
               align="center"
-              sx={{ mb: 3, fontFamily: "Poppins", color: isDarkMode ? "#ffffff" : "#000000" }} // Dynamic color
+              sx={{
+                mb: 3,
+                fontFamily: "Poppins",
+                color: isDarkMode ? "#ffffff" : "#000000",
+              }} // Dynamic color
             >
               Reset Password
             </Typography>

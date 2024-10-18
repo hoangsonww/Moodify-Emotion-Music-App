@@ -6,7 +6,6 @@ import Register from './components/Auth/Register';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import ResultsPage from './pages/ResultsPage';
-import RecommendationsPage from './pages/RecommendationsPage';
 import Footer from "./components/Footer";
 import NotFoundPage from "./pages/NotFoundPage";
 import './styles/styles.css';
@@ -19,7 +18,6 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

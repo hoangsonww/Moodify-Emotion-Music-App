@@ -31,7 +31,7 @@ const Login = () => {
       // Make the login request
       const response = await axios.post(
         "https://moodify-emotion-music-app.onrender.com/users/login/",
-        { username, password }
+        { username, password },
       );
       const { access } = response.data; // Extract the access token from the response
 
@@ -43,11 +43,15 @@ const Login = () => {
         // Redirect to the home page
         navigate("/home");
       } else {
-        alert("Login failed. Please check your credentials, or our servers are having issues. Please try again later.");
+        alert(
+          "Login failed. Please check your credentials, or our servers are having issues. Please try again later.",
+        );
       }
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login failed. Please check your credentials, or our servers are having issues. Please try again later.");
+      alert(
+        "Login failed. Please check your credentials, or our servers are having issues. Please try again later.",
+      );
     } finally {
       setLoading(false); // Reset loading state when login process finishes
     }
@@ -68,7 +72,11 @@ const Login = () => {
         <Typography
           variant="h4"
           align="center"
-          sx={{ mb: 3, fontFamily: "Poppins", color: isDarkMode ? "#ffffff" : "#000000" }} // Dynamic color
+          sx={{
+            mb: 3,
+            fontFamily: "Poppins",
+            color: isDarkMode ? "#ffffff" : "#000000",
+          }} // Dynamic color
         >
           Login
         </Typography>
@@ -81,10 +89,17 @@ const Login = () => {
           onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
+            style: {
+              fontFamily: "Poppins",
+              fontSize: "16px",
+              color: isDarkMode ? "#ffffff" : "#000000",
+            }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
+            style: {
+              fontFamily: "Poppins",
+              color: isDarkMode ? "#cccccc" : "#000000",
+            }, // Dynamic label color
           }}
         />
         <TextField
@@ -97,10 +112,17 @@ const Login = () => {
           onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
+            style: {
+              fontFamily: "Poppins",
+              fontSize: "16px",
+              color: isDarkMode ? "#ffffff" : "#000000",
+            }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
+            style: {
+              fontFamily: "Poppins",
+              color: isDarkMode ? "#cccccc" : "#000000",
+            }, // Dynamic label color
           }}
         />
         <Button
