@@ -20,7 +20,7 @@
     "eject": "cd frontend && npm run eject",
     "frontend": "cd frontend && npm start",
     "backend": "cd backend && python manage.py runserver",
-    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
     "format": "prettier --write \"frontend/**/*.{js,jsx,json,css,scss,md}\""
   },
   "eslintConfig": {
@@ -43,5 +43,8 @@
   },
   "dependencies": {
     "prettier": "^3.3.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
   }
 }

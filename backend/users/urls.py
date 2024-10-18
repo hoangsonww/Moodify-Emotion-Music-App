@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     register, login, user_profile, user_profile_update, user_profile_delete,
     save_recommendations, get_recommendations, delete_all_recommendations,
-    user_recommendations, user_mood_history, user_listening_history, validate_token
+    user_recommendations, user_mood_history, user_listening_history, validate_token,
+    verify_username_email, reset_password
 )
 
 urlpatterns = [
@@ -18,4 +19,6 @@ urlpatterns = [
     path('mood_history/<str:user_id>/', user_mood_history, name='user_mood_history'),
     path('listening_history/<str:user_id>/', user_listening_history, name='user_listening_history'),
     path('validate_token/', validate_token, name='validate_token'),
+    path('verify-username-email/', verify_username_email, name='verify_username_email'),
+    path('reset-password/', reset_password, name='reset_password')
 ]
