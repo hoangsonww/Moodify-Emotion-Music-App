@@ -8,7 +8,7 @@ The **Moodify** project is an integrated emotion-based music recommendation syst
 Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance.
 
 <p align="center">
-  <img src="../images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
+  <img src="../../images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
 </p>
 
 ## **Table of Contents**
@@ -146,151 +146,151 @@ There is no guarantee of uptime or performance with the current deployment, unle
 ### Landing Page
 
 <p align="center">
-  <img src="images/landingpage.png" alt="Landing Page" width="100%" style="border-radius: 10px">
+  <img src="../images/landingpage.png" alt="Landing Page" width="100%" style="border-radius: 10px">
 </p>
 
 ### Landing Page - Dark Mode
 
 <p align="center">
-  <img src="images/landingpage-dark.png" alt="Landing Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/landingpage-dark.png" alt="Landing Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Home Page
 
 <p align="center">
-  <img src="images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
+  <img src="../images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### Home Page - Dark Mode
 
 <p align="center">
-  <img src="images/homepage-dark.png" alt="Home Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/homepage-dark.png" alt="Home Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 #### Text Input
 
 <p align="center">
-  <img src="images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
+  <img src="../images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Text Input - Dark Mode
 
 <p align="center">
-  <img src="images/textinput-dark.png" alt="Text Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/textinput-dark.png" alt="Text Input - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 #### Speech Input
 
 <p align="center">
-  <img src="images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
+  <img src="../images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
 </p>
 
 <p align="center">
-  <img src="images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
+  <img src="../images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Speech Input - Dark Mode
 
 <p align="center">
-  <img src="images/speechinputmodal-dark.png" alt="Speech Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/speechinputmodal-dark.png" alt="Speech Input - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 #### Facial Expression Input
 
 <p align="center">
-  <img src="images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+  <img src="../images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 </p>
 
 <p align="center">
-  <img src="images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+  <img src="../images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Facial Expression Input - Dark Mode
 
 <p align="center">
-  <img src="images/facialinputmodal-dark.png" alt="Facial Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/facialinputmodal-dark.png" alt="Facial Input - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Profile Page
 
 <p align="center">
-  <img src="images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
+  <img src="../images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
 <p align="center">
-  <img src="images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
+  <img src="../images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### Profile Page - Dark Mode
 
 <p align="center">
-  <img src="images/profile-dar.png" alt="Profile Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/profile-dar.png" alt="Profile Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Results - Recommendations Page
 
 <p align="center">
-  <img src="images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
+  <img src="../images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### Results - Recommendations Page - Dark Mode
 
 <p align="center">
-  <img src="images/results-dark.png" alt="Results Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/results-dark.png" alt="Results Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Login Page
 
 <p align="center">
-  <img src="images/login.png" alt="Login Page" width="100%" style="border-radius: 10px">
+  <img src="../images/login.png" alt="Login Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### Login Page - Dark Mode
 
 <p align="center">
-  <img src="images/login-dark.png" alt="Login Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/login-dark.png" alt="Login Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Registration Page
 
 <p align="center">
-  <img src="images/register.png" alt="Registration Page" width="100%" style="border-radius: 10px">
+  <img src="../images/register.png" alt="Registration Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### Registration Page - Dark Mode
 
 <p align="center">
-  <img src="images/register-dark.png" alt="Registration Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/register-dark.png" alt="Registration Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Forgot Password Page
 
 <p align="center">
-  <img src="images/forgot-password.png" alt="Forgot Password Page" width="100%" style="border-radius: 10px">
+  <img src="../images/forgot-password.png" alt="Forgot Password Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### Forgot Password Page - Dark Mode
 
 <p align="center">
-  <img src="images/forgot-password-dark.png" alt="Forgot Password Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/forgot-password-dark.png" alt="Forgot Password Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### 404 Not Found Page
 
 <p align="center">
-  <img src="images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
+  <img src="../images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
 </p>
 
 #### 404 Not Found Page - Dark Mode
 
 <p align="center">
-  <img src="images/notfound-dark.png" alt="404 Not Found Page - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="../images/notfound-dark.png" alt="404 Not Found Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Footer
 
 <p align="center">
-  <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
+  <img src="../images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
 </p>
 
 <h2 id="-complete-file-structure">📂 Complete File Structure</h2>
@@ -387,7 +387,7 @@ Moodify-Emotion-Music-App/
 │   ├── package.json               # Dependencies and scripts
 │   └── README.md                  # Mobile app documentation
 │
-├── images/                        # Images used in the README documentation 
+├── ../images/                        # Images used in the README documentation 
 ├── docker-compose.yml             # Docker Compose file for containerization
 └── README.md                      # Comprehensive README file for the entire project
 ```
@@ -576,7 +576,7 @@ Finally, set up the frontend to interact with the backend.
 3. You should see the following login page:
 
 <p align="center">
-  <img src="images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
+  <img src="../images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
 </p>
 
 <h2 id="-backend-apis-documentation">🚀 Backend APIs Documentation</h2>
@@ -595,13 +595,13 @@ Regardless of your choice, you should see the following API documentation if eve
 **Swagger UI:**
 
 <p align="center">
-  <img src="images/swagger-ui.png" alt="Swagger UI" width="100%" style="border-radius: 10px">
+  <img src="../images/swagger-ui.png" alt="Swagger UI" width="100%" style="border-radius: 10px">
 </p>
 
 **Redoc:**
 
 <p align="center">
-  <img src="images/redoc-ui.png" alt="Redoc" width="100%" style="border-radius: 10px">
+  <img src="../images/redoc-ui.png" alt="Redoc" width="100%" style="border-radius: 10px">
 </p>
 
 <h2 id="-about-the-aiml-models">🤖 About the AI/ML Models</h2>
@@ -623,7 +623,7 @@ The models are integrated into the backend API services to provide real-time emo
 The models must be trained first before using them in the backend services. Ensure that the models are trained and placed in the `models` directory before running the backend server. Refer to the (Getting Started)[#getting-started] section for more details.
 
 <p align="center">
-  <img src="images/train_text_model.png" alt="AI/ML Models" width="100%" style="border-radius: 10px">
+  <img src="../images/train_text_model.png" alt="AI/ML Models" width="100%" style="border-radius: 10px">
   Examples of training the text emotion model.
 </p>
 
@@ -726,7 +726,7 @@ There is also a mobile version of the Moodify app built using React Native and E
 If successful, you should see the following home screen:
 
 <p align="center">
-  <img src="images/mobile-ui.png" alt="Mobile Home" width="50%" style="border-radius: 10px">
+  <img src="../images/mobile-ui.png" alt="Mobile Home" width="50%" style="border-radius: 10px">
 </p>
 
 Feel free to explore the mobile app and test its functionalities!
