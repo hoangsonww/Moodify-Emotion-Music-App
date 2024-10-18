@@ -126,10 +126,7 @@ def login(request):
 @permission_classes([AllowAny])
 def verify_username_email(request):
     """
-    Verifies if a combination of username and email exists in the database.
-
-    :param request: Request object
-    :return: Response object
+    Verifies if a combination of username and email exists in the User model.
     """
     username = request.data.get('username')
     email = request.data.get('email')
@@ -138,10 +135,10 @@ def verify_username_email(request):
         return Response({"error": "Username and email are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Search for the user in MongoDB UserProfile collection
-        user_profile = UserProfile.objects.get(username=username, email=email)
+        # Find the user in the Django User model (not in UserProfile)
+        user = User.objects.get(username=username, email=email)
         return Response({"message": "Username and email combination verified."}, status=status.HTTP_200_OK)
-    except DoesNotExist:
+    except User.DoesNotExist:
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -170,9 +167,6 @@ def verify_username_email(request):
 def reset_password(request):
     """
     Resets the password for the given username.
-
-    :param request: Request object
-    :return: Response object
     """
     username = request.data.get('username')
     new_password = request.data.get('new_password')
@@ -181,20 +175,15 @@ def reset_password(request):
         return Response({"error": "Username and new password are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Find the user in the UserProfile collection
-        user_profile = UserProfile.objects.get(username=username)
-
-        # Update password (assuming `UserProfile` stores the password)
-        user_profile.password = make_password(new_password)
-        user_profile.save()
-
-        # Optionally, update password in the Django User model (if used for authentication)
+        # Find the user in the Django User model
         user = User.objects.get(username=username)
+
+        # Update password (Django's set_password method hashes the password before saving)
         user.set_password(new_password)
         user.save()
 
         return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
-    except DoesNotExist:
+    except User.DoesNotExist:
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
