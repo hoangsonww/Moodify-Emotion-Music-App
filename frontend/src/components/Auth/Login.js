@@ -28,7 +28,7 @@ const Login = () => {
       // Make the login request
       const response = await axios.post(
         "https://moodify-emotion-music-app.onrender.com/users/login/",
-        { username, password },
+        { username, password }
       );
       const { access } = response.data; // Extract the access token from the response
 
@@ -100,6 +100,8 @@ const Login = () => {
           {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}{" "}
           {/* Show spinner or "Login" */}
         </Button>
+
+        {/* New Forgot Password Link */}
         <Typography
           variant="body2"
           align="center"
@@ -107,6 +109,28 @@ const Login = () => {
             cursor: "pointer",
             textDecoration: "underline",
             fontFamily: "Poppins",
+            mb: 2,
+            '&:hover': {
+              color: "#ff4d4d",
+              transition: "color 0.2s",
+            }
+          }}
+          onClick={() => navigate("/forgot-password")}
+        >
+          Forgot Password?
+        </Typography>
+
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{
+            cursor: "pointer",
+            textDecoration: "underline",
+            fontFamily: "Poppins",
+            '&:hover': {
+              color: "#ff4d4d",
+              transition: "color 0.2s",
+            }
           }}
           onClick={() => navigate("/register")}
         >
