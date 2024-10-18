@@ -8,7 +8,7 @@ The **Moodify** project is an integrated emotion-based music recommendation syst
 Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance.
 
 <p align="center">
-  <img src="../../images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
+  <img src="../images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
 </p>
 
 ## **Table of Contents**
