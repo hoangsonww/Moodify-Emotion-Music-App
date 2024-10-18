@@ -71,6 +71,13 @@ const ForgotPassword = () => {
     }
   };
 
+  // Function to handle "Enter" key press for form submission
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      step === 1 ? handleVerify() : handleResetPassword();
+    }
+  };
+
   return (
     <div
       style={{
@@ -102,6 +109,7 @@ const ForgotPassword = () => {
               fullWidth
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              onKeyPress={handleKeyPress} // Add key press handler
               sx={{ mb: 2 }}
               InputProps={{
                 style: {
@@ -123,6 +131,7 @@ const ForgotPassword = () => {
               fullWidth
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={handleKeyPress} // Add key press handler
               sx={{ mb: 2 }}
               InputProps={{
                 style: {
@@ -169,6 +178,7 @@ const ForgotPassword = () => {
               fullWidth
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              onKeyPress={handleKeyPress} // Add key press handler
               sx={{ mb: 2 }}
               InputProps={{
                 style: {
@@ -191,6 +201,7 @@ const ForgotPassword = () => {
               fullWidth
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              onKeyPress={handleKeyPress} // Add key press handler
               sx={{ mb: 2 }}
               InputProps={{
                 style: {
