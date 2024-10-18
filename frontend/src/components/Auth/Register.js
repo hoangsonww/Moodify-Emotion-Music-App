@@ -135,6 +135,10 @@ const Register = () => {
             cursor: "pointer",
             textDecoration: "underline",
             fontFamily: "Poppins",
+            '&:hover': {
+              color: "#ff4d4d",
+              transition: "color 0.2s",
+            }
           }}
           onClick={() => navigate("/login")}
         >

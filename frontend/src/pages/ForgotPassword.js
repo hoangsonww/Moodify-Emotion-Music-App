@@ -175,6 +175,22 @@ const ForgotPassword = () => {
             </Button>
           </>
         )}
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{
+            cursor: "pointer",
+            textDecoration: "underline",
+            fontFamily: "Poppins",
+            '&:hover': {
+              color: "#ff4d4d",
+              transition: "color 0.2s",
+            }
+          }}
+          onClick={() => navigate("/login")}
+        >
+          Back to Login
+        </Typography>
       </Paper>
     </div>
   );
