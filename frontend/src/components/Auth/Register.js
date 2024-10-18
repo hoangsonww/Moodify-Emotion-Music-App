@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography, Paper } from "@mui/material";
+import {Button, TextField, Typography, Paper, CircularProgress} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -8,9 +8,12 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async () => {
+    setLoading(true);
+
     if (!username || !email || !password || !confirmPassword) {
       alert("Please fill in all fields");
       return;
@@ -36,11 +39,15 @@ const Register = () => {
         alert("Registration successful! Please log in.");
         navigate("/login"); // Redirect to the login page
       }
+
+      setLoading(false);
     } catch (error) {
       console.error("Registration failed:", error);
       alert(
-        error.response?.data?.error || "Registration failed. Please try again.",
+        error.response?.data?.error || "Registration failed due to internal server error. Please try again later.",
       );
+
+      setLoading(false);
     }
   };
 
@@ -119,7 +126,7 @@ const Register = () => {
           onClick={handleRegister}
           sx={{ mb: 2, backgroundColor: "#ff4d4d", font: "inherit" }}
         >
-          Register
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
         </Button>
         <Typography
           variant="body2"

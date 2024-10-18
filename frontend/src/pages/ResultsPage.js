@@ -192,7 +192,8 @@ const ResultsPage = () => {
               No recommendations available. Try inputting a new image, changing
               the mood, entering some texts, or recording something. If the
               error persists, it may be that our servers are down and it may
-              take up to 3 minutes to restart.
+              take up to 3 minutes to restart, or it may be that Spotify's API
+              is down.
             </Typography>
           )}
         </Box>

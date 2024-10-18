@@ -87,6 +87,7 @@ CORS_ALLOW_ALL_ORIGINS = False  # Disable allow all origins
 # Explicitly allow specific origins
 CORS_ALLOWED_ORIGINS = [
     'https://moodify-emotion-music-app.vercel.app',  # Frontend hosted on Vercel
+    'https://moodify-emotion-music-app.netlify.app',  # Backup Frontend hosted on Netlify
     'http://localhost:3000', # Local development
 ]
 
