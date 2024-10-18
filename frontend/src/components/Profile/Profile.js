@@ -44,7 +44,7 @@ const ProfilePage = () => {
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 1000, // 1 second timeout
-        }
+        },
       );
 
       setUserData(response.data);
@@ -60,7 +60,7 @@ const ProfilePage = () => {
         setError("Using cached data. Failed to fetch new user data.");
       } else {
         setError(
-          "Failed to fetch user data and no cached data available. Our servers might be down. Please try again later."
+          "Failed to fetch user data and no cached data available. Our servers might be down. Please try again later.",
         );
       }
     } finally {

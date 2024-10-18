@@ -25,7 +25,7 @@ const ResultsPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedMood, setSelectedMood] = useState(emotion || "None");
   const [displayRecommendations, setDisplayRecommendations] = useState(
-    recommendations || []
+    recommendations || [],
   );
 
   // Use DarkModeContext for dark mode state
@@ -43,7 +43,7 @@ const ResultsPage = () => {
         "https://moodify-emotion-music-app.onrender.com/api/music_recommendation/",
         {
           emotion: newMood.toLowerCase(),
-        }
+        },
       );
 
       const newRecommendations = response.data.recommendations || [];
@@ -134,7 +134,11 @@ const ResultsPage = () => {
       <Paper elevation={4} style={styles.resultsContainer}>
         <Typography
           variant="h6"
-          style={{ fontFamily: "Poppins", marginBottom: "10px", color: isDarkMode ? "#ffffff" : "#333" }}
+          style={{
+            fontFamily: "Poppins",
+            marginBottom: "10px",
+            color: isDarkMode ? "#ffffff" : "#333",
+          }}
         >
           Your Recommendations
         </Typography>

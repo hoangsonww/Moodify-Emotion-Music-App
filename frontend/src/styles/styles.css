@@ -5,7 +5,9 @@ body {
   font-family: "Poppins", sans-serif;
   margin: 0;
   padding: 0;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Light mode styles */
@@ -14,7 +16,9 @@ body.light-mode {
   color: black;
 }
 
-h2, h4, h6 {
+h2,
+h4,
+h6 {
   color: black;
 }
 
@@ -56,7 +60,8 @@ body.dark-mode button:active {
   background-color: #ff6666 !important;
 }
 
-input, textarea {
+input,
+textarea {
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 10px;
@@ -64,7 +69,8 @@ input, textarea {
   transition: border-color 0.3s ease;
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   border-color: #ff4d4d;
 }
 
