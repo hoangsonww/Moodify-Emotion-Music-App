@@ -88,6 +88,8 @@ There is no guarantee of uptime or performance with the current deployment, unle
 [![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green)](https://moodify-emotion-music-app.vercel.app/)
 [![Deployed with Render](https://img.shields.io/badge/Deployed%20with-Render-green)](https://moodify-emotion-music-app.onrender.com/)
 [![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen)](ai_ml)
+[![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen)](https://moodify-emotion-music-app.netlify.app/)
+
 
 <h2 id="-technologies">🛠️ Technologies</h2>
 
