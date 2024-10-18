@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, {useState, useRef, useCallback, useEffect, useContext} from "react";
 import {
   Box,
   Button,
@@ -11,8 +11,9 @@ import {
 import Webcam from "react-webcam";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { DarkModeContext } from "../context/DarkModeContext";
 
-const HomePage = ({ isDarkMode }) => {
+const HomePage = () => {
   const [activeTab, setActiveTab] = useState("text");
   const [inputValue, setInputValue] = useState("");
   // eslint-disable-next-line no-unused-vars
@@ -27,7 +28,7 @@ const HomePage = ({ isDarkMode }) => {
   const [userData, setUserData] = useState(null);
 
   const token = localStorage.getItem("token");
-  const theme = useTheme();
+  const { isDarkMode } = useContext(DarkModeContext);
 
   useEffect(() => {
     console.log("useEffect triggered, token:", token);
@@ -618,7 +619,11 @@ const HomePage = ({ isDarkMode }) => {
   const loadingText = `Processing, please wait${".".repeat(dotCount)}`;
 
   return (
-    <div style={styles.container}>
+    <div style={{
+      ...styles.container,
+      backgroundColor: isDarkMode ? "#121212" : "#f5f5f5", // Dark mode background
+      color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+    }}>
       {isLoading && (
         <Box sx={styles.loadingOverlay}>
           <CircularProgress sx={{ color: "#ff4d4d" }} />
@@ -646,15 +651,19 @@ const HomePage = ({ isDarkMode }) => {
           </Typography>
         </Box>
       )}
-      <Paper elevation={4} style={styles.formContainer}>
+      <Paper elevation={4} style={{
+        ...styles.formContainer,
+        backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode container background
+        color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+      }}>
         <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
           <Button
             onClick={() => handleTabChange("text")}
             sx={{
               ...styles.tabButton,
               borderRadius: "12px 0 0 12px",
-              backgroundColor: activeTab === "text" ? "#ff4d4d" : "white",
-              color: activeTab === "text" ? "white" : "black",
+              backgroundColor: activeTab === "text" ? "#ff4d4d" : isDarkMode ? "#333" : "white",
+              color: activeTab === "text" ? "white" : isDarkMode ? "#ffffff" : "black",
             }}
           >
             Text
@@ -664,8 +673,8 @@ const HomePage = ({ isDarkMode }) => {
             sx={{
               ...styles.tabButton,
               borderRadius: "0",
-              backgroundColor: activeTab === "face" ? "#ff4d4d" : "white",
-              color: activeTab === "face" ? "white" : "black",
+              backgroundColor: activeTab === "face" ? "#ff4d4d" : isDarkMode ? "#333" : "white",
+              color: activeTab === "face" ? "white" : isDarkMode ? "#ffffff" : "black",
             }}
           >
             Face
@@ -675,8 +684,8 @@ const HomePage = ({ isDarkMode }) => {
             sx={{
               ...styles.tabButton,
               borderRadius: "0 12px 12px 0",
-              backgroundColor: activeTab === "speech" ? "#ff4d4d" : "white",
-              color: activeTab === "speech" ? "white" : "black",
+              backgroundColor: activeTab === "speech" ? "#ff4d4d" : isDarkMode ? "#333" : "white",
+              color: activeTab === "speech" ? "white" : isDarkMode ? "#ffffff" : "black",
             }}
           >
             Speech
@@ -689,6 +698,7 @@ const HomePage = ({ isDarkMode }) => {
             marginBottom: "20px",
             fontFamily: "Poppins",
             fontSize: "16px",
+            color: isDarkMode ? "#fff" : "#000",
           }}
         >
           Choose an input mode ({activeTab})
@@ -705,7 +715,7 @@ const HomePage = ({ isDarkMode }) => {
         <Typography
           variant="h6"
           align="center"
-          style={{ marginTop: "20px", fontFamily: "Poppins", fontSize: "16px" }}
+          style={{ marginTop: "20px", fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#fff" : "#000" }}
         >
           OR
         </Typography>
@@ -744,7 +754,7 @@ const HomePage = ({ isDarkMode }) => {
           <Typography
             variant="body2"
             align="center"
-            style={{ marginTop: "10px", fontFamily: "Poppins", color: "#777" }}
+            style={{ marginTop: "10px", fontFamily: "Poppins", color: isDarkMode ? "#999" : "#777" }}
           >
             Acceptable formats: .wav, .mp4
           </Typography>
@@ -755,7 +765,7 @@ const HomePage = ({ isDarkMode }) => {
           <Typography
             variant="body2"
             align="center"
-            style={{ marginTop: "10px", fontFamily: "Poppins", color: "#777" }}
+            style={{ marginTop: "10px", fontFamily: "Poppins", color: isDarkMode ? "#999" : "#777" }}
           >
             Acceptable formats: .jpg, .jpeg, .png, .webp
           </Typography>
@@ -766,7 +776,7 @@ const HomePage = ({ isDarkMode }) => {
           <Typography
             variant="body2"
             align="center"
-            style={{ marginTop: "10px", fontFamily: "Poppins", color: "#777" }}
+            style={{ marginTop: "10px", fontFamily: "Poppins", color: isDarkMode ? "#999" : "#777" }}
           >
             Acceptable formats: .txt
           </Typography>
@@ -782,6 +792,8 @@ const HomePage = ({ isDarkMode }) => {
                 maxWidth: "600px",
                 padding: { xs: "16px", sm: "24px", md: "32px" }, // Responsive padding
                 margin: "auto",
+                backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode modal background
+                color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
               }}
             >
               <Typography
@@ -790,6 +802,7 @@ const HomePage = ({ isDarkMode }) => {
                   font: "inherit",
                   fontSize: { xs: "14px", sm: "16px", md: "18px" }, // Responsive font size
                   textAlign: "center",
+                  color: isDarkMode ? "#ffffff" : "#000000",
                 }}
               >
                 Record Your Audio
@@ -907,7 +920,7 @@ const HomePage = ({ isDarkMode }) => {
           </Modal>
         )}
 
-        {/* Existing Text and Face Modals */}
+        {/* Text and Face Modal Logic */}
         {activeTab === "text" && (
           <Modal open={showModal} onClose={handleModalClose}>
             <Box
@@ -917,6 +930,8 @@ const HomePage = ({ isDarkMode }) => {
                 maxWidth: "600px",
                 padding: { xs: "16px", sm: "24px", md: "32px" },
                 margin: "auto",
+                backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode modal background
+                color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
               }}
             >
               <Typography
@@ -925,6 +940,7 @@ const HomePage = ({ isDarkMode }) => {
                   marginBottom: "10px",
                   font: "inherit",
                   textAlign: "center",
+                  color: isDarkMode ? "#ffffff" : "#000000",
                 }}
               >
                 Enter Your Text
@@ -941,6 +957,7 @@ const HomePage = ({ isDarkMode }) => {
                     padding: "8px 12px",
                     fontFamily: "Poppins",
                     fontSize: "16px",
+                    color: isDarkMode ? "#ffffff" : "#000000", // Dark mode input text color
                   },
                 }}
                 InputProps={{
@@ -949,11 +966,13 @@ const HomePage = ({ isDarkMode }) => {
                     fontSize: "16px",
                     padding: "0",
                     boxShadow: "none",
+                    color: isDarkMode ? "#ffffff" : "#000000", // Dark mode input text color
                   },
                 }}
                 InputLabelProps={{
                   style: {
                     fontFamily: "Poppins",
+                    color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
                   },
                 }}
                 onChange={(e) => setInputValue(e.target.value)}
@@ -1011,6 +1030,8 @@ const HomePage = ({ isDarkMode }) => {
                 maxWidth: "600px",
                 padding: { xs: "16px", sm: "24px", md: "32px" },
                 margin: "auto",
+                backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode modal background
+                color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
               }}
             >
               {!capturedImage ? (
@@ -1021,6 +1042,7 @@ const HomePage = ({ isDarkMode }) => {
                       marginBottom: "10px",
                       font: "inherit",
                       textAlign: "center",
+                      color: isDarkMode ? "#ffffff" : "#000000",
                     }}
                   >
                     Image Capture
