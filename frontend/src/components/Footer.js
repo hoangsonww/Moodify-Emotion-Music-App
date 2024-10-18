@@ -98,7 +98,7 @@ const Footer = () => {
       {/* Icon Links */}
       <Box sx={styles.iconContainer}>
         <Link
-          href="https://github.com/hoangsonww"
+          href="https://github.com/hoangsonww/Moodify-Emotion-Music-App"
           target="_blank"
           rel="noopener noreferrer"
           sx={styles.iconLink}
