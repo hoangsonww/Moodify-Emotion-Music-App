@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, Typography, Link } from "@mui/material";
-import { GitHub, Instagram, LinkedIn, Mail, Language } from "@mui/icons-material";
+import { GitHub, LinkedIn, Mail, Language } from "@mui/icons-material";
 
 const Footer = () => {
   const navigate = useNavigate();
