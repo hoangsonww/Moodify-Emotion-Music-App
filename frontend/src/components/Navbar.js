@@ -74,12 +74,14 @@ const Navbar = () => {
 
     const intervalId = setInterval(validateToken, 300000); // Validate token every 5 minutes
     return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
 
   useEffect(() => {
     validateToken();
     const intervalId = setInterval(validateToken, 5000); // Validate token every 5 seconds
     return () => clearInterval(intervalId);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isActive = (path) => location.pathname === path;
