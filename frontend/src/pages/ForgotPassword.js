@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Button,
   TextField,
@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
@@ -17,6 +18,8 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { isDarkMode } = useContext(DarkModeContext); // Use DarkModeContext
 
   const handleVerify = async () => {
     if (!username || !email) {
@@ -69,14 +72,27 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <Paper elevation={4} style={styles.formContainer}>
+    <div
+      style={{
+        ...styles.container,
+        backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dark mode background
+        color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+      }}
+    >
+      <Paper
+        elevation={4}
+        style={{
+          ...styles.formContainer,
+          backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode form container
+          color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+        }}
+      >
         {step === 1 ? (
           <>
             <Typography
               variant="h4"
               align="center"
-              sx={{ mb: 3, fontFamily: "Poppins" }}
+              sx={{ mb: 3, fontFamily: "Poppins", color: isDarkMode ? "#ffffff" : "#000000" }} // Dynamic color
             >
               Verify Account
             </Typography>
@@ -88,10 +104,17 @@ const ForgotPassword = () => {
               onChange={(e) => setUsername(e.target.value)}
               sx={{ mb: 2 }}
               InputProps={{
-                style: { fontFamily: "Poppins", fontSize: "16px" },
+                style: {
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+                },
               }}
               InputLabelProps={{
-                style: { fontFamily: "Poppins" },
+                style: {
+                  fontFamily: "Poppins",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
+                },
               }}
             />
             <TextField
@@ -102,10 +125,17 @@ const ForgotPassword = () => {
               onChange={(e) => setEmail(e.target.value)}
               sx={{ mb: 2 }}
               InputProps={{
-                style: { fontFamily: "Poppins", fontSize: "16px" },
+                style: {
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+                },
               }}
               InputLabelProps={{
-                style: { fontFamily: "Poppins" },
+                style: {
+                  fontFamily: "Poppins",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
+                },
               }}
             />
             <Button
@@ -116,7 +146,11 @@ const ForgotPassword = () => {
               sx={{ mb: 2, backgroundColor: "#ff4d4d", font: "inherit" }}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Verify"}
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Verify"
+              )}
             </Button>
           </>
         ) : (
@@ -124,7 +158,7 @@ const ForgotPassword = () => {
             <Typography
               variant="h4"
               align="center"
-              sx={{ mb: 3, fontFamily: "Poppins" }}
+              sx={{ mb: 3, fontFamily: "Poppins", color: isDarkMode ? "#ffffff" : "#000000" }} // Dynamic color
             >
               Reset Password
             </Typography>
@@ -137,10 +171,17 @@ const ForgotPassword = () => {
               onChange={(e) => setNewPassword(e.target.value)}
               sx={{ mb: 2 }}
               InputProps={{
-                style: { fontFamily: "Poppins", fontSize: "16px" },
+                style: {
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+                },
               }}
               InputLabelProps={{
-                style: { fontFamily: "Poppins" },
+                style: {
+                  fontFamily: "Poppins",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
+                },
               }}
             />
             <TextField
@@ -152,10 +193,17 @@ const ForgotPassword = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               sx={{ mb: 2 }}
               InputProps={{
-                style: { fontFamily: "Poppins", fontSize: "16px" },
+                style: {
+                  fontFamily: "Poppins",
+                  fontSize: "16px",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+                },
               }}
               InputLabelProps={{
-                style: { fontFamily: "Poppins" },
+                style: {
+                  fontFamily: "Poppins",
+                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
+                },
               }}
             />
             <Button
@@ -181,10 +229,10 @@ const ForgotPassword = () => {
             cursor: "pointer",
             textDecoration: "underline",
             fontFamily: "Poppins",
-            '&:hover': {
+            "&:hover": {
               color: "#ff4d4d",
               transition: "color 0.2s",
-            }
+            },
           }}
           onClick={() => navigate("/login")}
         >
@@ -201,14 +249,12 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
   },
   formContainer: {
     padding: "30px",
     width: "350px",
     borderRadius: "10px",
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
-    backgroundColor: "white",
   },
 };
 
