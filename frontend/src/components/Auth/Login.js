@@ -43,11 +43,11 @@ const Login = () => {
         // Redirect to the home page
         navigate("/home");
       } else {
-        alert("Login failed. No access token received.");
+        alert("Login failed. Please check your credentials, or our servers are having issues. Please try again later.");
       }
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login failed. Please check your credentials.");
+      alert("Login failed. Please check your credentials, or our servers are having issues. Please try again later.");
     } finally {
       setLoading(false); // Reset loading state when login process finishes
     }

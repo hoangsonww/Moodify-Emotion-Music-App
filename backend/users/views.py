@@ -27,7 +27,10 @@ from django.contrib.auth.hashers import make_password
 @permission_classes([IsAuthenticated])  # Only authenticated users can access this
 def validate_token(request):
     """
-    Validates if the token provided is still valid. If valid, returns a 200 response.
+    Validates the token and returns a response indicating whether the token is valid.
+
+    :param request: Request object
+    :return: Response object
     """
     # If the token is valid, this view will automatically be called.
     # No additional checks are necessary because IsAuthenticated handles token validation.
@@ -56,6 +59,12 @@ def validate_token(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
+    """
+    Registers a new user with the given username, password, and email.
+
+    :param request: Request object
+    :return: Response object
+    """
     if request.method == 'POST':
         username = request.data.get('username')
         password = request.data.get('password')
@@ -93,6 +102,12 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Allow any user to access this view
 def login(request):
+    """
+    Logs in the user with the given username and password.
+
+    :param request: Request object
+    :return: Response object
+    """
     username = request.data.get('username')
     password = request.data.get('password')
 
@@ -127,6 +142,9 @@ def login(request):
 def verify_username_email(request):
     """
     Verifies if a combination of username and email exists in the User model.
+
+    :param request: Request object
+    :return: Response object
     """
     username = request.data.get('username')
     email = request.data.get('email')
@@ -167,6 +185,9 @@ def verify_username_email(request):
 def reset_password(request):
     """
     Resets the password for the given username.
+
+    :param request: Request object
+    :return: Response object
     """
     username = request.data.get('username')
     new_password = request.data.get('new_password')
@@ -266,6 +287,12 @@ def user_profile_update(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def user_profile_delete(request):
+    """
+    Delete the user profile associated with the authenticated user.
+
+    :param request: Request object
+    :return: Response object
+    """
     user = request.user
     profile = UserProfile.objects.get(username=user.username)
     profile.delete()
@@ -303,6 +330,13 @@ def user_profile_delete(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_recommendations(request, user_id):
+    """
+    Save music recommendations for the user with the given user ID.
+
+    :param request: The request object containing the music recommendations.
+    :param user_id: The user ID to save the recommendations for.
+    :return: The response object indicating the status of the operation.
+    """
     try:
         recommendations = request.data.get("recommendations")
 
@@ -332,6 +366,13 @@ def save_recommendations(request, user_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_recommendations(request, user_id):
+    """
+    Retrieve music recommendations for the user with the given user ID.
+
+    :param request: The request object containing the user ID.
+    :param user_id: The user ID to retrieve recommendations for.
+    :return: The response object containing the music recommendations.
+    """
     try:
         # Retrieve user profile using MongoDB ObjectId
         user_profile = UserProfile.objects(id=user_id).first()
@@ -359,6 +400,13 @@ def get_recommendations(request, user_id):
 )
 @api_view(['DELETE'])
 def delete_all_recommendations(request, user_id):
+    """
+    Delete all music recommendations for the user with the given user ID.
+
+    :param request: The request object containing the user ID.
+    :param user_id: The user ID to delete recommendations for.
+    :return: The response object indicating the status of the operation.
+    """
     try:
         # Retrieve user profile by MongoDB ObjectId
         user_profile = UserProfile.objects(id=user_id).first()
@@ -407,6 +455,13 @@ def delete_all_recommendations(request, user_id):
 )
 @api_view(['POST', 'GET', 'DELETE'])
 def user_recommendations(request, user_id):
+    """
+    This function allows users to save, retrieve, and delete music recommendations.
+
+    :param request: The request object containing the music recommendations.
+    :param user_id: The user ID to save the recommendations for.
+    :return: The response object indicating the status of the operation.
+    """
     if request.method == 'POST':
         data = json.loads(request.body)
         try:
@@ -454,6 +509,13 @@ def user_recommendations(request, user_id):
 )
 @api_view(['GET', 'POST', 'DELETE'])
 def user_mood_history(request, user_id):
+    """
+    This function allows users to retrieve, add, and delete moods from their mood history.
+
+    :param request: The request object containing the mood data.
+    :param user_id: The user ID to update the mood history for.
+    :return: The response object indicating the status of the operation.
+    """
     if request.method == 'GET':
         try:
             user = UserProfile.objects.get(id=user_id)
@@ -500,6 +562,13 @@ def user_mood_history(request, user_id):
 )
 @api_view(['GET', 'POST', 'DELETE'])
 def user_listening_history(request, user_id):
+    """
+    This function allows users to retrieve, add, and delete tracks from their listening history.
+
+    :param request: The request object containing the track data.
+    :param user_id: The user ID to update the listening history for.
+    :return: The response object indicating the status of the operation.
+    """
     if request.method == 'GET':
         try:
             user = UserProfile.objects.get(id=user_id)

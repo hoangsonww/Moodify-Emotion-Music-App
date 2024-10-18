@@ -275,42 +275,6 @@ There is no guarantee of uptime or performance with the current deployment, unle
   <img src="images/forgot-password-dark.png" alt="Forgot Password Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
-#### Reset Password - Once the User Has Verified Their Account Ownership
-
-<p align="center">
-  <img src="images/reset-password.png" alt="Reset Password" width="100%" style="border-radius: 10px">
-</p>
-
-#### Reset Password - Dark Mode
-
-<p align="center">
-  <img src="images/reset-password-dark.png" alt="Reset Password - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
-### Privacy Policy Page
-
-<p align="center">
-  <img src="images/privacy-policy.png" alt="Privacy Policy Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Privacy Policy Page - Dark Mode
-
-<p align="center">
-  <img src="images/privacy-policy-dark.png" alt="Privacy Policy Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
-### Terms of Service Page
-
-<p align="center">
-  <img src="images/terms.png" alt="Terms of Service Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Terms of Service Page - Dark Mode
-
-<p align="center">
-  <img src="images/terms-dark.png" alt="Terms of Service Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
 ### 404 Not Found Page
 
 <p align="center">
@@ -412,17 +376,16 @@ Moodify-Emotion-Music-App/
 │   │   ├── ProfilePage.js         # Profile page component
 │   │   ├── ResultsPage.js         # Results page component
 │   │   ├── LandingPage.js         # Landing page component
-│   │   └── (and more...)
+│   │   ├── PrivacyPolicyPage.js   # Privacy policy page component
+│   │   ├── TermsOfServicePage.js  # Login page component
+│   │   ├── ForgotPassword.js      # Forgot password page component
+│   │   └── NotFoundPage.js        # 404 page component
 │   │
 │   ├── assets/                    # Images, fonts, and other assets
 │   ├── styles/                    # Styling files (similar to CSS for web)
 │   ├── .gitignore                 # Git ignore file
 │   ├── package.json               # Dependencies and scripts
 │   └── README.md                  # Mobile app documentation
-│
-├── nginx/                         # NGINX configuration files (for load balancing and reverse proxy)
-│   ├── nginx.conf                 # Main NGINX configuration file
-│   └── Dockerfile                 # Dockerfile for NGINX container
 │
 ├── images/                        # Images used in the README documentation 
 ├── docker-compose.yml             # Docker Compose file for containerization
