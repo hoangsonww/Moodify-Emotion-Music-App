@@ -31,8 +31,6 @@ const HomePage = () => {
   const { isDarkMode } = useContext(DarkModeContext);
 
   useEffect(() => {
-    console.log("useEffect triggered, token:", token);
-
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
