@@ -13,6 +13,7 @@ from .serializers import UserSerializer, UserProfileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.contrib.auth.hashers import make_password
 
 
 @swagger_auto_schema(
@@ -106,6 +107,100 @@ def login(request):
 
 
 @swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username to verify'),
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email to verify'),
+        },
+        required=['username', 'email'],
+    ),
+    responses={
+        200: openapi.Response('Username and email combination verified.'),
+        404: openapi.Response('User not found.'),
+        500: openapi.Response('Internal server error.'),
+    },
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_username_email(request):
+    """
+    Verifies if a combination of username and email exists in the database.
+
+    :param request: Request object
+    :return: Response object
+    """
+    username = request.data.get('username')
+    email = request.data.get('email')
+
+    if not username or not email:
+        return Response({"error": "Username and email are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Search for the user in MongoDB UserProfile collection
+        user_profile = UserProfile.objects.get(username=username, email=email)
+        return Response({"message": "Username and email combination verified."}, status=status.HTTP_200_OK)
+    except DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username to reset password for'),
+            'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='New password'),
+        },
+        required=['username', 'new_password'],
+    ),
+    responses={
+        200: openapi.Response('Password reset successfully.'),
+        404: openapi.Response('User not found.'),
+        400: openapi.Response('Bad request.'),
+        500: openapi.Response('Internal server error.'),
+    },
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@csrf_exempt
+def reset_password(request):
+    """
+    Resets the password for the given username.
+
+    :param request: Request object
+    :return: Response object
+    """
+    username = request.data.get('username')
+    new_password = request.data.get('new_password')
+
+    if not username or not new_password:
+        return Response({"error": "Username and new password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Find the user in the UserProfile collection
+        user_profile = UserProfile.objects.get(username=username)
+
+        # Update password (assuming `UserProfile` stores the password)
+        user_profile.password = make_password(new_password)
+        user_profile.save()
+
+        # Optionally, update password in the Django User model (if used for authentication)
+        user = User.objects.get(username=username)
+        user.set_password(new_password)
+        user.save()
+
+        return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
+    except DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@swagger_auto_schema(
     method='get',
     responses={
         200: openapi.Response('User profile retrieved successfully.'),
@@ -117,6 +212,12 @@ def login(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
+    """
+    Retrieve the user profile associated with the authenticated user.
+
+    :param request: Request object
+    :return: Response object
+    """
     try:
         # Retrieve the UserProfile associated with the authenticated user
         user_profile = UserProfile.objects.get(username=request.user.username)
@@ -150,6 +251,12 @@ def user_profile(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def user_profile_update(request):
+    """
+    Update the user profile based on the request data.
+
+    :param request: Request object
+    :return: Response object
+    """
     user = request.user
     profile = UserProfile.objects.get(username=user.username)
 
