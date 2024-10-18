@@ -57,6 +57,13 @@ const Register = () => {
     }
   };
 
+  // Handle "Enter" key press to submit the form
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleRegister(); // Call handleRegister when Enter is pressed
+    }
+  };
+
   const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
 
   return (
@@ -75,6 +82,7 @@ const Register = () => {
           fullWidth
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
             style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
@@ -89,6 +97,7 @@ const Register = () => {
           fullWidth
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
             style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
@@ -104,6 +113,7 @@ const Register = () => {
           fullWidth
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
             style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
@@ -119,6 +129,7 @@ const Register = () => {
           fullWidth
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
+          onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
             style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
@@ -145,10 +156,10 @@ const Register = () => {
             textDecoration: "underline",
             fontFamily: "Poppins",
             color: isDarkMode ? "#ffffff" : "#000000", // Dynamic color
-            '&:hover': {
+            "&:hover": {
               color: "#ff4d4d",
               transition: "color 0.2s",
-            }
+            },
           }}
           onClick={() => navigate("/login")}
         >
