@@ -326,11 +326,11 @@ There is no guarantee of uptime or performance with the current deployment, unle
 ### Responsive Design - Mobile View
 
 <p align="center">
-  <img src="images/mobile-view.png" alt="Mobile View" width="100%" style="border-radius: 10px">
+  <img src="images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
 
 <p align="center">
-  <img src="images/mobile-view2.png" alt="Mobile View" width="100%" style="border-radius: 10px">
+  <img src="images/mobile-view2.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
 
 ### Footer
