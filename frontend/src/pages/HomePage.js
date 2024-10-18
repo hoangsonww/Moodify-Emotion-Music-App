@@ -6,7 +6,7 @@ import {
   Paper,
   TextField,
   Modal,
-  CircularProgress, useTheme,
+  CircularProgress,
 } from "@mui/material";
 import Webcam from "react-webcam";
 import axios from "axios";
