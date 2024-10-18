@@ -1,6 +1,5 @@
 import React, { useState, useContext } from "react";
 import {
-  Box,
   Button,
   TextField,
   Typography,
@@ -44,13 +43,20 @@ const Login = () => {
         // Redirect to the home page
         navigate("/home");
       } else {
-        alert("Login failed. No access token received.");
+        alert("Login failed. Please check your credentials, or our servers are having issues. Please try again later.");
       }
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login failed. Please check your credentials.");
+      alert("Login failed. Please check your credentials, or our servers are having issues. Please try again later.");
     } finally {
       setLoading(false); // Reset loading state when login process finishes
+    }
+  };
+
+  // Handle "Enter" key press to submit the form
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleLogin(); // Call handleLogin when Enter is pressed
     }
   };
 
@@ -72,6 +78,7 @@ const Login = () => {
           fullWidth
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
             style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
@@ -87,6 +94,7 @@ const Login = () => {
           fullWidth
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
             style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
@@ -117,10 +125,10 @@ const Login = () => {
             fontFamily: "Poppins",
             mb: 2,
             color: isDarkMode ? "#ffffff" : "#000000", // Dynamic color
-            '&:hover': {
+            "&:hover": {
               color: "#ff4d4d",
               transition: "color 0.2s",
-            }
+            },
           }}
           onClick={() => navigate("/forgot-password")}
         >
@@ -135,10 +143,10 @@ const Login = () => {
             textDecoration: "underline",
             fontFamily: "Poppins",
             color: isDarkMode ? "#ffffff" : "#000000", // Dynamic color
-            '&:hover': {
+            "&:hover": {
               color: "#ff4d4d",
               transition: "color 0.2s",
-            }
+            },
           }}
           onClick={() => navigate("/register")}
         >

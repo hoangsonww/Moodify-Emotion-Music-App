@@ -2,31 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/</loc>
-        <lastmod>2024-10-18</lastmod>
+        <lastmod>2024-10-20</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/home</loc>
-        <lastmod>2024-10-18</lastmod>
+        <lastmod>2024-10-20</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/privacy-policy</loc>
-        <lastmod>2024-10-18</lastmod>
+        <lastmod>2024-10-20</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/terms-of-service</loc>
-        <lastmod>2024-10-18</lastmod>
+        <lastmod>2024-10-20</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/results</loc>
-        <lastmod>2024-10-18</lastmod>
+        <lastmod>2024-10-20</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.6</priority>
     </url>

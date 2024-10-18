@@ -866,6 +866,7 @@ const HomePage = () => {
                       marginTop: "10px",
                       font: "inherit",
                       textAlign: "center",
+                      color: isDarkMode ? "#ffffff" : "#000000",
                     }}
                   >
                     Review your recording

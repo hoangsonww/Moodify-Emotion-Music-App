@@ -15,7 +15,7 @@ from pathlib import Path
 from mongoengine import connect
 from decouple import config
 
-# Connect to MongoDB
+# Connect to MongoDB Atlas
 connect(
     db="emotion_based_music_db",
     host=config('MONGO_DB_URI'),  # MongoDB Atlas URI from .env file

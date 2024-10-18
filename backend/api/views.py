@@ -38,6 +38,12 @@ import moviepy.editor as mp
 )
 @api_view(['POST'])
 def text_emotion(request):
+    """
+    This function retrieves the emotion from the text input and returns music recommendations based on the emotion.
+
+    :param request: The request object containing the text input.
+    :return: The response object containing the emotion and music recommendations.
+    """
     data = request.data
     text = data.get("text", "") if data else ""
 
@@ -69,6 +75,12 @@ def text_emotion(request):
 )
 @api_view(['POST'])
 def speech_emotion(request):
+    """
+    This function retrieves the emotion from the audio input and returns music recommendations based on the emotion.
+
+    :param request: The request object containing the audio input.
+    :return: The response object containing the emotion and music recommendations.
+    """
     if "file" not in request.FILES:
         return Response({"error": "No audio file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -142,6 +154,12 @@ def speech_emotion(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def facial_emotion(request):
+    """
+    This function retrieves the emotion from the facial image input and returns music recommendations based on the emotion.
+
+    :param request: The request object containing the image input.
+    :return: The response object containing the emotion and music recommendations.
+    """
     if 'file' not in request.FILES:
         return Response({"error": "No image file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -201,6 +219,12 @@ def facial_emotion(request):
 )
 @api_view(['POST'])
 def music_recommendation(request):
+    """
+    This function retrieves music recommendations based on the provided emotion.
+
+    :param request: The request object containing the emotion input.
+    :return: The response object containing the music recommendations.
+    """
     data = request.data
     emotion = data.get("emotion", "") if data else ""
 
