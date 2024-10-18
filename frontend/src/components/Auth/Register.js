@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import {Button, TextField, Typography, Paper, CircularProgress} from "@mui/material";
+import React, { useState, useContext } from "react";
+import { Button, TextField, Typography, Paper, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { DarkModeContext } from "../../context/DarkModeContext"; // Import DarkModeContext
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -11,16 +12,21 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Access the dark mode state from the context
+  const { isDarkMode } = useContext(DarkModeContext);
+
   const handleRegister = async () => {
     setLoading(true);
 
     if (!username || !email || !password || !confirmPassword) {
       alert("Please fill in all fields");
+      setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       alert("Passwords do not match");
+      setLoading(false);
       return;
     }
 
@@ -32,7 +38,7 @@ const Register = () => {
           username,
           email,
           password,
-        },
+        }
       );
 
       if (response.status === 201) {
@@ -44,12 +50,14 @@ const Register = () => {
     } catch (error) {
       console.error("Registration failed:", error);
       alert(
-        error.response?.data?.error || "Registration failed due to internal server error. Please try again later.",
+        error.response?.data?.error || "Registration failed due to internal server error. Please try again later."
       );
 
       setLoading(false);
     }
   };
+
+  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
 
   return (
     <div style={styles.container}>
@@ -57,7 +65,7 @@ const Register = () => {
         <Typography
           variant="h4"
           align="center"
-          sx={{ mb: 3, fontFamily: "Poppins" }}
+          sx={{ mb: 3, fontFamily: "Poppins", color: isDarkMode ? "#ffffff" : "#000000" }} // Dynamic color
         >
           Register
         </Typography>
@@ -69,10 +77,10 @@ const Register = () => {
           onChange={(e) => setUsername(e.target.value)}
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px" },
+            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins" },
+            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
           }}
         />
         <TextField
@@ -83,10 +91,10 @@ const Register = () => {
           onChange={(e) => setEmail(e.target.value)}
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px" },
+            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins" },
+            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
           }}
         />
         <TextField
@@ -98,10 +106,10 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px" },
+            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins" },
+            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
           }}
         />
         <TextField
@@ -113,10 +121,10 @@ const Register = () => {
           onChange={(e) => setConfirmPassword(e.target.value)}
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px" },
+            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins" },
+            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
           }}
         />
         <Button
@@ -125,6 +133,7 @@ const Register = () => {
           fullWidth
           onClick={handleRegister}
           sx={{ mb: 2, backgroundColor: "#ff4d4d", font: "inherit" }}
+          disabled={loading}
         >
           {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
         </Button>
@@ -135,6 +144,7 @@ const Register = () => {
             cursor: "pointer",
             textDecoration: "underline",
             fontFamily: "Poppins",
+            color: isDarkMode ? "#ffffff" : "#000000", // Dynamic color
             '&:hover': {
               color: "#ff4d4d",
               transition: "color 0.2s",
@@ -149,21 +159,23 @@ const Register = () => {
   );
 };
 
-const styles = {
+// Function to dynamically return styles based on dark mode
+const getStyles = (isDarkMode) => ({
   container: {
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dynamic background color
   },
   formContainer: {
     padding: "30px",
     width: "350px",
     borderRadius: "10px",
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
-    backgroundColor: "white",
+    backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dynamic form background color
+    color: isDarkMode ? "#ffffff" : "#000000", // Dynamic text color
   },
-};
+});
 
 export default Register;

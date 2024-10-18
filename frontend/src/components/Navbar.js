@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -6,18 +6,37 @@ import {
   Button,
   Box,
   IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Switch,
+  Divider,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
+import HomeIcon from "@mui/icons-material/Home";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import RecommendIcon from "@mui/icons-material/Recommend";
+import LoginIcon from "@mui/icons-material/Login";
+import LogoutIcon from "@mui/icons-material/Logout";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import axios from "axios";
+import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current location
+  const location = useLocation();
   const isMobile = useMediaQuery("(max-width:600px)");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+
+  // Use DarkModeContext for dark mode state and toggle function
+  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
 
   // Function to validate the token
   const validateToken = async () => {
@@ -28,14 +47,13 @@ const Navbar = () => {
     }
 
     try {
-      // Make an authenticated request to check the token validity
       const response = await axios.get(
         "https://moodify-emotion-music-app.onrender.com/users/validate_token/",
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       if (response.status === 200) {
@@ -43,7 +61,6 @@ const Navbar = () => {
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        // If the response status is 401, the token is invalid or expired
         localStorage.removeItem("token");
         setIsLoggedIn(false);
         navigate("/login");
@@ -51,196 +68,303 @@ const Navbar = () => {
     }
   };
 
-  // Check if the user is logged in on component mount and whenever location changes
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
 
-    // Validate the token every 5 minutes (300000 ms)
-    const intervalId = setInterval(validateToken, 300000);
-
-    // Clear interval on component unmount
+    const intervalId = setInterval(validateToken, 300000); // Validate token every 5 minutes
     return () => clearInterval(intervalId);
   }, [location]);
 
-  // Validate token once every 5 seconds
   useEffect(() => {
     validateToken();
-    const intervalId = setInterval(validateToken, 5000);
+    const intervalId = setInterval(validateToken, 5000); // Validate token every 5 seconds
     return () => clearInterval(intervalId);
   }, []);
 
-  // Function to determine if the current route is active
   const isActive = (path) => location.pathname === path;
 
-  // Handle Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
     navigate("/login");
   };
 
-  // Toggle the mobile menu
-  const toggleMenu = () => {
-    setShowMenu((prev) => !prev);
-  };
+  const toggleDrawer = (open) => setShowMenu(open);
+
+  const drawerList = (
+    <Box
+      sx={{
+        width: 250,
+        bgcolor: isDarkMode ? "#222" : "white", // Apply dark mode background color
+        color: isDarkMode ? "white" : "black", // Apply dark mode text color
+      }}
+      role="presentation"
+    >
+      <List>
+        <ListItem
+          button
+          sx={listItemStyle(isActive("/home"), isDarkMode)}
+          style={{ cursor: 'pointer' }}
+          onClick={() => {
+            navigate("/home");
+            toggleDrawer(false);
+          }}
+        >
+          <ListItemIcon sx={{ color: isDarkMode ? "white" : "inherit" }}>
+            <HomeIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Home"
+            primaryTypographyProps={{
+              fontFamily: "Poppins",
+              fontSize: "16px",
+            }}
+          />
+        </ListItem>
+        <ListItem
+          button
+          style={{ cursor: 'pointer' }}
+          sx={listItemStyle(isActive("/profile"), isDarkMode)}
+          onClick={() => {
+            navigate("/profile");
+            toggleDrawer(false);
+          }}
+        >
+          <ListItemIcon sx={{ color: isDarkMode ? "white" : "inherit" }}>
+            <AccountCircleIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Profile"
+            primaryTypographyProps={{
+              fontFamily: "Poppins",
+              fontSize: "16px",
+            }}
+          />
+        </ListItem>
+        <ListItem
+          button
+          style={{ cursor: 'pointer' }}
+          sx={listItemStyle(isActive("/results"), isDarkMode)}
+          onClick={() => {
+            navigate("/results");
+            toggleDrawer(false);
+          }}
+        >
+          <ListItemIcon sx={{ color: isDarkMode ? "white" : "inherit" }}>
+            <RecommendIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Recommendations"
+            primaryTypographyProps={{
+              fontFamily: "Poppins",
+              fontSize: "16px",
+            }}
+          />
+        </ListItem>
+        {isLoggedIn ? (
+          <ListItem
+            button
+            style={{ cursor: 'pointer' }}
+            sx={listItemStyle(false, isDarkMode)}
+            onClick={() => {
+              handleLogout();
+              toggleDrawer(false);
+            }}
+          >
+            <ListItemIcon sx={{ color: isDarkMode ? "white" : "inherit" }}>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Logout"
+              primaryTypographyProps={{
+                fontFamily: "Poppins",
+                fontSize: "16px",
+              }}
+            />
+          </ListItem>
+        ) : (
+          <ListItem
+            button
+            style={{ cursor: 'pointer' }}
+            sx={listItemStyle(isActive("/login"), isDarkMode)}
+            onClick={() => {
+              navigate("/login");
+              toggleDrawer(false);
+            }}
+          >
+            <ListItemIcon sx={{ color: isDarkMode ? "white" : "inherit" }}>
+              <LoginIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary="Login"
+              primaryTypographyProps={{
+                fontFamily: "Poppins",
+                fontSize: "16px",
+              }}
+            />
+          </ListItem>
+        )}
+        <ListItem
+          button
+          style={{ cursor: 'pointer' }}
+          onClick={() => toggleDrawer(false)}
+          sx={listItemStyle(false, isDarkMode)}
+        >
+          <ListItemIcon sx={{ color: isDarkMode ? "white" : "inherit" }}>
+            <CloseIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary="Close"
+            primaryTypographyProps={{
+              fontFamily: "Poppins",
+              fontSize: "16px",
+            }}
+          />
+        </ListItem>
+      </List>
+      <Divider sx={{ bgcolor: isDarkMode ? "white" : "inherit" }} />
+      {/* Dark Mode Toggle */}
+      <ListItem>
+        <ListItemIcon sx={{ color: isDarkMode ? "white" : "inherit" }}>
+          {isDarkMode ? <DarkModeIcon /> : <LightModeIcon />}
+        </ListItemIcon>
+        <Switch
+          checked={isDarkMode}
+          onChange={toggleDarkMode}
+          inputProps={{ "aria-label": "dark mode toggle" }}
+          sx={{ cursor: "pointer" }}
+        />
+      </ListItem>
+    </Box>
+  );
 
   return (
     <AppBar
       position="static"
-      sx={{ bgcolor: "white", color: "black", boxShadow: 3 }}
+      sx={{
+        bgcolor: isDarkMode ? "#222" : "white",
+        color: isDarkMode ? "white" : "black",
+        boxShadow: 3,
+      }}
     >
       <Toolbar
         sx={{
           display: "flex",
-          flexDirection: isMobile ? "column" : "row",
+          justifyContent: "space-between",
           alignItems: "center",
-          gap: isMobile ? "10px" : "0",
         }}
       >
-        <Box
+        <Typography
+          variant="h6"
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
+            cursor: "pointer",
+            fontFamily: "Poppins",
+            fontSize: "24px",
+            fontWeight: "bold",
+            color: isDarkMode ? "white" : "black",
           }}
+          onClick={() => navigate("/home")}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              flexGrow: 1,
-              cursor: "pointer",
-              fontFamily: "Poppins",
-              fontSize: "24px",
-              textAlign: isMobile ? "center" : "left",
-              marginTop: isMobile ? "10px" : "0",
-              fontWeight: "bold",
-            }}
-            onClick={() => navigate("/home")}
-          >
-            Moodify
-          </Typography>
-          {isMobile && (
-            <IconButton
-              onClick={toggleMenu}
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "10px",
-                backgroundColor: "white",
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-        </Box>
+          Moodify
+        </Typography>
 
-        {/* Mobile Menu Animation */}
-        <Box
+        {/* Mobile Menu Icon */}
+        {isMobile && (
+          <IconButton onClick={() => toggleDrawer(true)} color="inherit">
+            <MenuIcon />
+          </IconButton>
+        )}
+
+        {/* Drawer for Mobile Menu */}
+        <Drawer
+          anchor="right"
+          open={showMenu}
+          onClose={() => toggleDrawer(false)}
           sx={{
-            display: isMobile ? "flex" : "none",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "10px",
-            width: "100%",
-            maxHeight: showMenu ? "500px" : "0px", // animate maxHeight
-            opacity: showMenu ? 1 : 0, // animate opacity
-            overflow: "hidden",
-            transition: "max-height 0.4s ease, opacity 0.4s ease", // smooth animation
+            "& .MuiDrawer-paper": {
+              bgcolor: isDarkMode ? "#222" : "white", // Dark mode drawer background
+              color: isDarkMode ? "white" : "black", // Dark mode drawer text color
+            },
           }}
         >
-          <Button
-            color="inherit"
-            sx={buttonStyle(isActive("/home"), isMobile)}
-            onClick={() => navigate("/home")}
-          >
-            Home
-          </Button>
-          <Button
-            color="inherit"
-            sx={buttonStyle(isActive("/profile"), isMobile)}
-            onClick={() => navigate("/profile")}
-          >
-            Profile
-          </Button>
-          <Button
-            color="inherit"
-            sx={buttonStyle(isActive("/results"), isMobile)}
-            onClick={() => navigate("/results")}
-          >
-            Recommendations
-          </Button>
-          {isLoggedIn ? (
-            <Button sx={logoutButtonStyle(isMobile)} onClick={handleLogout}>
-              Logout
-            </Button>
-          ) : (
-            <Button
-              sx={loginButtonStyle(isMobile)}
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </Button>
-          )}
-        </Box>
+          {drawerList}
+        </Drawer>
 
         {/* Desktop Menu */}
         <Box
           sx={{
             display: isMobile ? "none" : "flex",
-            flexDirection: "row",
             alignItems: "center",
             gap: "10px",
-            width: "auto",
           }}
         >
           <Button
             color="inherit"
-            sx={buttonStyle(isActive("/home"), false)}
+            startIcon={<HomeIcon />}
+            sx={buttonStyle(isActive("/home"))}
             onClick={() => navigate("/home")}
           >
             Home
           </Button>
           <Button
             color="inherit"
-            sx={buttonStyle(isActive("/profile"), false)}
+            startIcon={<AccountCircleIcon />}
+            sx={buttonStyle(isActive("/profile"))}
             onClick={() => navigate("/profile")}
           >
             Profile
           </Button>
           <Button
             color="inherit"
-            sx={buttonStyle(isActive("/results"), false)}
+            startIcon={<RecommendIcon />}
+            sx={buttonStyle(isActive("/results"))}
             onClick={() => navigate("/results")}
           >
             Recommendations
           </Button>
           {isLoggedIn ? (
-            <Button sx={logoutButtonStyle(false)} onClick={handleLogout}>
+            <Button
+              color="inherit"
+              startIcon={<LogoutIcon />}
+              sx={logoutButtonStyle()}
+              onClick={handleLogout}
+            >
               Logout
             </Button>
           ) : (
             <Button
-              sx={loginButtonStyle(false)}
+              color="inherit"
+              startIcon={<LoginIcon />}
+              sx={loginButtonStyle()}
               onClick={() => navigate("/login")}
             >
               Login
             </Button>
           )}
+          {/* Dark Mode Toggle for Desktop */}
+          <IconButton onClick={toggleDarkMode} color="inherit">
+            {isDarkMode ? <DarkModeIcon /> : <LightModeIcon />}
+          </IconButton>
         </Box>
       </Toolbar>
     </AppBar>
   );
 };
 
-// Styles for the buttons
-const buttonStyle = (isActive, isMobile) => ({
-  marginRight: isMobile ? "0" : "10px",
+// Styles for the ListItems with border radius and active styles
+const listItemStyle = (isActive, isDarkMode) => ({
+  fontFamily: "Poppins",
+  borderRadius: "8px",
+  backgroundColor: isActive ? "#ff4d4d" : "transparent",
+  color: (isActive && isDarkMode) ? "white" : "inherit",
+});
+
+// Styles for the buttons in the desktop navbar
+const buttonStyle = (isActive) => ({
   fontFamily: "Poppins",
   backgroundColor: isActive ? "#ff4d4d" : "transparent",
-  color: isActive ? "white" : "black",
-  width: isMobile ? "100%" : "auto",
+  color: isActive ? "white" : "inherit",
   "&:hover": {
     backgroundColor: "#ff4d4d",
     color: "white",
@@ -248,11 +372,9 @@ const buttonStyle = (isActive, isMobile) => ({
 });
 
 // Styles for the Logout button (red text)
-const logoutButtonStyle = (isMobile) => ({
-  marginRight: isMobile ? "0" : "10px",
+const logoutButtonStyle = () => ({
   fontFamily: "Poppins",
-  color: "red", // Red text for logout
-  width: isMobile ? "100%" : "auto",
+  color: "red",
   "&:hover": {
     backgroundColor: "#ff4d4d",
     color: "white",
@@ -260,11 +382,9 @@ const logoutButtonStyle = (isMobile) => ({
 });
 
 // Styles for the Login button (blue text)
-const loginButtonStyle = (isMobile) => ({
-  marginRight: isMobile ? "0" : "10px",
+const loginButtonStyle = () => ({
   fontFamily: "Poppins",
-  color: "blue", // Blue text for login
-  width: isMobile ? "100%" : "auto",
+  color: "blue",
   "&:hover": {
     backgroundColor: "#ff4d4d",
     color: "white",

@@ -6,13 +6,13 @@ import {
   Paper,
   TextField,
   Modal,
-  CircularProgress,
+  CircularProgress, useTheme,
 } from "@mui/material";
 import Webcam from "react-webcam";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const HomePage = () => {
+const HomePage = ({ isDarkMode }) => {
   const [activeTab, setActiveTab] = useState("text");
   const [inputValue, setInputValue] = useState("");
   // eslint-disable-next-line no-unused-vars
@@ -27,6 +27,7 @@ const HomePage = () => {
   const [userData, setUserData] = useState(null);
 
   const token = localStorage.getItem("token");
+  const theme = useTheme();
 
   useEffect(() => {
     console.log("useEffect triggered, token:", token);

@@ -28,7 +28,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/users/verify-username-email/",
+        "https://moodify-emotion-music-app.onrender.com/users/verify-username-email/",
         { username, email }
       );
       if (response.status === 200) {
@@ -55,7 +55,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/users/reset-password/",
+        "https://moodify-emotion-music-app.onrender.com/users/reset-password/",
         { username, new_password: newPassword }
       );
       if (response.status === 200) {

@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Paper, Typography, Box } from "@mui/material";
+import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
 
 const TermsOfServicePage = () => {
+  const { isDarkMode } = useContext(DarkModeContext); // Access dark mode state from context
   const today = new Date().toLocaleDateString();
+
+  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
 
   return (
     <Box style={styles.container}>
@@ -139,7 +143,8 @@ const TermsOfServicePage = () => {
   );
 };
 
-const styles = {
+// Function to dynamically return styles based on dark mode
+const getStyles = (isDarkMode) => ({
   container: {
     height: "100vh",
     display: "flex",
@@ -147,6 +152,8 @@ const styles = {
     alignItems: "center",
     fontFamily: "Poppins, sans-serif",
     padding: "20px",
+    backgroundColor: isDarkMode ? "#121212" : "#f5f5f5", // Dark mode support
+    color: isDarkMode ? "#ffffff" : "#000000", // Dynamic text color
   },
   policyContainer: {
     padding: "30px",
@@ -155,14 +162,13 @@ const styles = {
     overflowY: "auto",
     borderRadius: "10px",
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
-    backgroundColor: "white",
-    textAlign: "left",
+    backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode support for background
     transition: "all 0.3s ease-in-out",
   },
   title: {
     marginBottom: "20px",
     fontFamily: "Poppins, sans-serif",
-    color: "#333",
+    color: isDarkMode ? "#ffffff" : "#333", // Dark mode title color
     fontWeight: 600,
   },
   sectionTitle: {
@@ -170,17 +176,19 @@ const styles = {
     textDecoration: "underline",
     font: "inherit",
     marginBottom: "10px",
-    color: "#555",
+    color: isDarkMode ? "#bbbbbb" : "#555", // Dark mode section title color
     fontWeight: 500,
   },
   text: {
     font: "inherit",
+    color: isDarkMode ? "#cccccc" : "#000000", // Dark mode text color
     marginBottom: "10px",
   },
   list: {
     paddingLeft: "20px",
     marginBottom: "20px",
+    color: isDarkMode ? "#cccccc" : "#000000", // Dark mode list text color
   },
-};
+});
 
 export default TermsOfServicePage;

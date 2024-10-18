@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   Paper,
   Typography,
@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { DarkModeContext } from "../../context/DarkModeContext"; // Import the DarkModeContext
 
 const CACHE_KEY = "userProfileCache";
 
@@ -16,8 +17,12 @@ const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  // Get dark mode state from DarkModeContext
+  const { isDarkMode } = useContext(DarkModeContext);
 
   useEffect(() => {
     if (!token) {
@@ -39,7 +44,7 @@ const ProfilePage = () => {
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 1000, // 1 second timeout
-        },
+        }
       );
 
       setUserData(response.data);
@@ -55,13 +60,15 @@ const ProfilePage = () => {
         setError("Using cached data. Failed to fetch new user data.");
       } else {
         setError(
-          "Failed to fetch user data and no cached data available. Our servers might be down. Please try again later.",
+          "Failed to fetch user data and no cached data available. Our servers might be down. Please try again later."
         );
       }
     } finally {
       setIsLoading(false);
     }
   };
+
+  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
 
   return (
     <Box style={styles.container}>
@@ -155,7 +162,8 @@ const ProfilePage = () => {
   );
 };
 
-const styles = {
+// Function to dynamically return styles based on dark mode
+const getStyles = (isDarkMode) => ({
   container: {
     height: "100vh",
     display: "flex",
@@ -163,6 +171,9 @@ const styles = {
     alignItems: "center",
     fontFamily: "Poppins, sans-serif",
     padding: "20px",
+    backgroundColor: isDarkMode ? "#121212" : "#f5f5f5",
+    color: isDarkMode ? "#ffffff" : "#000000",
+    transition: "background-color 0.3s ease, color 0.3s ease",
   },
   profileContainer: {
     padding: "30px",
@@ -171,33 +182,35 @@ const styles = {
     overflowY: "auto",
     borderRadius: "10px",
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
-    backgroundColor: "white",
+    backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
     textAlign: "center",
-    transition: "all 0.3s ease-in-out",
+    transition: "background-color 0.3s ease-in-out",
   },
   title: {
     marginBottom: "20px",
     fontFamily: "Poppins, sans-serif",
-    color: "#333",
+    color: isDarkMode ? "#ffffff" : "#333",
   },
   infoSection: {
     marginBottom: "20px",
-    backgroundColor: "#fafafa",
+    backgroundColor: isDarkMode ? "#333333" : "#fafafa",
     padding: "10px",
     borderRadius: "8px",
     boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.05)",
     transition: "all 0.3s ease",
+    color: isDarkMode ? "#ffffff" : "#000000",
   },
   section: {
     marginTop: "15px",
     textAlign: "left",
     padding: "10px",
+    color: isDarkMode ? "#ffffff" : "#000000",
   },
   sectionTitle: {
     textDecoration: "underline",
     font: "inherit",
     marginBottom: "10px",
-    color: "#555",
+    color: isDarkMode ? "#bbbbbb" : "#555",
     fontWeight: 500,
   },
   card: {
@@ -205,21 +218,23 @@ const styles = {
     borderRadius: "8px",
     boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
     padding: "10px",
-    backgroundColor: "#ffffff",
+    backgroundColor: isDarkMode ? "#333333" : "#ffffff",
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
     cursor: "pointer",
     "&:hover": {
       transform: "scale(1.02)",
       boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
     },
+    color: isDarkMode ? "#ffffff" : "#000000",
   },
   text: {
     font: "inherit",
+    color: isDarkMode ? "#cccccc" : "#000000",
   },
   noData: {
-    color: "#999",
+    color: isDarkMode ? "#bbbbbb" : "#999",
     font: "inherit",
   },
-};
+});
 
 export default ProfilePage;
