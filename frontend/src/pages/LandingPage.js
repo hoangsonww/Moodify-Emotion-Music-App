@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Box,
   Typography,
@@ -10,9 +10,11 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Slider from "react-slick";
+import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(DarkModeContext); // Access dark mode state
 
   const settings = {
     dots: true,
@@ -39,6 +41,8 @@ const LandingPage = () => {
       },
     ],
   };
+
+  const styles = getStyles(isDarkMode); // Get dynamic styles based on dark mode
 
   return (
     <Box sx={styles.pageContainer}>
@@ -214,19 +218,19 @@ const features = [
 const testimonials = [
   {
     text: "Moodify's recommendations are spot on! It really understands my moods.",
-    author: "Jane Doe",
+    author: "Ricky Nguyen",
   },
   {
     text: "I love the different ways to input my mood. The facial analysis is really cool!",
-    author: "John Smith",
+    author: "Adam Smith",
   },
   {
     text: "The best music app I’ve ever used. It feels like it knows me!",
-    author: "Sarah Johnson",
+    author: "Richard Le",
   },
   {
     text: "I've discovered so many great songs through Moodify!",
-    author: "Emily Davis",
+    author: "Katarina Chen",
   },
 ];
 
@@ -249,23 +253,18 @@ const whyChooseMoodify = [
   },
 ];
 
-// Styles
-const styles = {
+// Function to dynamically return styles based on dark mode
+const getStyles = (isDarkMode) => ({
   pageContainer: {
     minHeight: "100vh",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dark mode support
     display: "flex",
     flexDirection: "column",
   },
   heroSection: {
-    backgroundColor: "#ff4d4d",
+    backgroundColor: isDarkMode ? "#333" : "#ff4d4d", // Dark mode support for hero
     padding: "80px 0",
-    color: "#fff",
-    textAlign: "center",
-  },
-  additionalHeroSection: {
-    backgroundColor: "#f5f5f5",
-    padding: "50px 0",
+    color: isDarkMode ? "#fff" : "#fff",
     textAlign: "center",
   },
   heroTitle: {
@@ -273,13 +272,13 @@ const styles = {
     fontWeight: "bold",
     fontSize: "2.5rem",
     marginBottom: "20px",
-    color: "#fff",
+    color: isDarkMode ? "#fff" : "#fff", // Ensure white text for both modes
   },
   heroSubtitle: {
     font: "inherit",
     fontSize: "1.2rem",
     marginBottom: "30px",
-    color: "#fff",
+    color: isDarkMode ? "#ddd" : "#fff", // Lighter color for subtitle in dark mode
   },
   buttonContainer: {
     display: "flex",
@@ -319,9 +318,7 @@ const styles = {
     textAlign: "center",
     marginBottom: "40px",
     fontWeight: "bold",
-  },
-  featureSlide: {
-    padding: "10px",
+    color: isDarkMode ? "#fff" : "#333", // Adjust title color based on dark mode
   },
   featureCard: {
     padding: "20px",
@@ -329,19 +326,22 @@ const styles = {
     borderRadius: "8px",
     margin: "0 10px",
     height: "200px",
+    backgroundColor: isDarkMode ? "#2e2e2e" : "#fff", // Adjust card background for dark mode
+    color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
   },
   featureTitle: {
     font: "inherit",
     fontWeight: "bold",
     fontSize: "1.2rem",
     marginBottom: "10px",
+    color: isDarkMode ? "#fff" : "#333", // Adjust title color for dark mode
   },
   featureDescription: {
     font: "inherit",
-    color: "#666",
+    color: isDarkMode ? "#ddd" : "#666", // Adjust description text for dark mode
   },
   testimonialSection: {
-    backgroundColor: "#fafafa",
+    backgroundColor: isDarkMode ? "#121212" : "#fafafa", // Adjust testimonial background for dark mode
     padding: "60px 0",
   },
   testimonialCard: {
@@ -350,38 +350,43 @@ const styles = {
     borderRadius: "8px",
     margin: "0 10px",
     height: "180px",
+    backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust testimonial card background for dark mode
+    color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
   },
   testimonialText: {
     font: "inherit",
     fontStyle: "italic",
     marginBottom: "10px",
-    color: "#555",
+    color: isDarkMode ? "#ddd" : "#555", // Adjust text color for dark mode
   },
   testimonialAuthor: {
     font: "inherit",
-    color: "#333",
+    color: isDarkMode ? "#fff" : "#333", // Adjust author text color for dark mode
     fontWeight: "bold",
   },
   informativeSection: {
     font: "inherit",
     padding: "60px 0",
-    backgroundColor: "#fff",
+    backgroundColor: isDarkMode ? "#121212" : "#fff", // Adjust section background for dark mode
   },
   infoCard: {
     padding: "20px",
     boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
     borderRadius: "8px",
+    backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust info card background for dark mode
+    color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
   },
   infoTitle: {
     font: "inherit",
     fontSize: "1.2rem",
     fontWeight: "bold",
     marginBottom: "10px",
+    color: isDarkMode ? "#fff" : "#333", // Adjust title color for dark mode
   },
   infoDescription: {
     font: "inherit",
-    color: "#666",
+    color: isDarkMode ? "#ddd" : "#666", // Adjust description text for dark mode
   },
-};
+});
 
 export default LandingPage;

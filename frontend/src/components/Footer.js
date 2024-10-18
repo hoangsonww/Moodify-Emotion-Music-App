@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, Typography, Link } from "@mui/material";
-import { GitHub, Instagram, LinkedIn, Mail, Language } from "@mui/icons-material";
+import { GitHub, LinkedIn, Mail, Language } from "@mui/icons-material";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -140,6 +140,7 @@ const styles = {
     color: "white",
     padding: "20px 0",
     textAlign: "center",
+    fontFamily: "Poppins, sans-serif", // Use Poppins font
     marginTop: "20px",
     width: "100%",
     "@media (max-width: 600px)": {
@@ -152,11 +153,13 @@ const styles = {
     gap: "20px",
     marginBottom: "10px",
     flexWrap: "wrap", // Makes it responsive
+    fontFamily: "Poppins, sans-serif", // Use Poppins font
   },
   link: {
     cursor: "pointer",
     color: "white",
     textDecoration: "none",
+    fontFamily: "Poppins, sans-serif", // Use Poppins font
     fontSize: "14px",
     fontWeight: 500,
     position: "relative",
@@ -166,8 +169,8 @@ const styles = {
     },
   },
   activeLink: {
-    borderBottom: "2px solid white", // Active link bottom border
-    borderRadius: 0, // Ensure no border radius
+    borderBottom: "2px solid white",
+    borderRadius: 0,
   },
   iconContainer: {
     display: "flex",
@@ -176,6 +179,7 @@ const styles = {
     marginTop: "20px",
     marginBottom: "10px",
     flexWrap: "wrap", // Makes the icons responsive
+    fontFamily: "Poppins, sans-serif", // Use Poppins font
   },
   iconLink: {
     color: "white",
@@ -188,9 +192,9 @@ const styles = {
     },
   },
   copyright: {
-    font: "inherit",
     marginTop: "10px",
     fontSize: "14px",
+    fontFamily: "Poppins, sans-serif", // Use Poppins font
   },
 };
 

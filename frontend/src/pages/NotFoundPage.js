@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/material";
+import { DarkModeContext } from "../context/DarkModeContext"; // Import the DarkModeContext
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(DarkModeContext); // Access the dark mode state
+
+  const styles = getStyles(isDarkMode); // Get styles based on dark mode
 
   return (
     <Box sx={styles.container}>
@@ -39,14 +43,15 @@ const NotFoundPage = () => {
   );
 };
 
-const styles = {
+// Function to dynamically return styles based on dark mode
+const getStyles = (isDarkMode) => ({
   container: {
     height: "100vh",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dark mode background
     padding: "20px",
     fontFamily: "Poppins",
   },
@@ -63,7 +68,7 @@ const styles = {
     textAlign: "center",
   },
   message: {
-    color: "#666",
+    color: isDarkMode ? "#ccc" : "#666", // Adjust text color for dark mode
     font: "inherit",
     marginBottom: "20px",
     textAlign: "center",
@@ -79,6 +84,6 @@ const styles = {
       backgroundColor: "#ff1a1a",
     },
   },
-};
+});
 
 export default NotFoundPage;

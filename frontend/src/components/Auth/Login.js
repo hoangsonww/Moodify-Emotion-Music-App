@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Box,
   Button,
@@ -9,12 +9,16 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { DarkModeContext } from "../../context/DarkModeContext"; // Import DarkModeContext
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Access the dark mode state from the context
+  const { isDarkMode } = useContext(DarkModeContext);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -28,7 +32,7 @@ const Login = () => {
       // Make the login request
       const response = await axios.post(
         "https://moodify-emotion-music-app.onrender.com/users/login/",
-        { username, password },
+        { username, password }
       );
       const { access } = response.data; // Extract the access token from the response
 
@@ -50,13 +54,15 @@ const Login = () => {
     }
   };
 
+  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
+
   return (
     <div style={styles.container}>
       <Paper elevation={4} style={styles.formContainer}>
         <Typography
           variant="h4"
           align="center"
-          sx={{ mb: 3, fontFamily: "Poppins" }}
+          sx={{ mb: 3, fontFamily: "Poppins", color: isDarkMode ? "#ffffff" : "#000000" }} // Dynamic color
         >
           Login
         </Typography>
@@ -68,10 +74,10 @@ const Login = () => {
           onChange={(e) => setUsername(e.target.value)}
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px" },
+            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins" },
+            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
           }}
         />
         <TextField
@@ -83,10 +89,10 @@ const Login = () => {
           onChange={(e) => setPassword(e.target.value)}
           sx={{ mb: 2 }}
           InputProps={{
-            style: { fontFamily: "Poppins", fontSize: "16px" },
+            style: { fontFamily: "Poppins", fontSize: "16px", color: isDarkMode ? "#ffffff" : "#000000" }, // Dynamic text color
           }}
           InputLabelProps={{
-            style: { fontFamily: "Poppins" },
+            style: { fontFamily: "Poppins", color: isDarkMode ? "#cccccc" : "#000000" }, // Dynamic label color
           }}
         />
         <Button
@@ -100,6 +106,8 @@ const Login = () => {
           {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}{" "}
           {/* Show spinner or "Login" */}
         </Button>
+
+        {/* New Forgot Password Link */}
         <Typography
           variant="body2"
           align="center"
@@ -107,6 +115,30 @@ const Login = () => {
             cursor: "pointer",
             textDecoration: "underline",
             fontFamily: "Poppins",
+            mb: 2,
+            color: isDarkMode ? "#ffffff" : "#000000", // Dynamic color
+            '&:hover': {
+              color: "#ff4d4d",
+              transition: "color 0.2s",
+            }
+          }}
+          onClick={() => navigate("/forgot-password")}
+        >
+          Forgot Password?
+        </Typography>
+
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{
+            cursor: "pointer",
+            textDecoration: "underline",
+            fontFamily: "Poppins",
+            color: isDarkMode ? "#ffffff" : "#000000", // Dynamic color
+            '&:hover': {
+              color: "#ff4d4d",
+              transition: "color 0.2s",
+            }
           }}
           onClick={() => navigate("/register")}
         >
@@ -117,21 +149,23 @@ const Login = () => {
   );
 };
 
-const styles = {
+// Function to dynamically return styles based on dark mode
+const getStyles = (isDarkMode) => ({
   container: {
     height: "100vh",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dynamic background color
   },
   formContainer: {
     padding: "30px",
     width: "350px",
     borderRadius: "10px",
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
-    backgroundColor: "white",
+    backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dynamic form background color
+    color: isDarkMode ? "#ffffff" : "#000000", // Dynamic text color
   },
-};
+});
 
 export default Login;

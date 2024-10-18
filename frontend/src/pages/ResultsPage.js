@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Box,
@@ -14,6 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import axios from "axios";
+import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -24,8 +25,11 @@ const ResultsPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedMood, setSelectedMood] = useState(emotion || "None");
   const [displayRecommendations, setDisplayRecommendations] = useState(
-    recommendations || [],
+    recommendations || []
   );
+
+  // Use DarkModeContext for dark mode state
+  const { isDarkMode } = useContext(DarkModeContext);
 
   // Function to handle mood change
   const handleMoodChange = async (event) => {
@@ -39,7 +43,7 @@ const ResultsPage = () => {
         "https://moodify-emotion-music-app.onrender.com/api/music_recommendation/",
         {
           emotion: newMood.toLowerCase(),
-        },
+        }
       );
 
       const newRecommendations = response.data.recommendations || [];
@@ -52,6 +56,8 @@ const ResultsPage = () => {
       setLoading(false);
     }
   };
+
+  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
 
   return (
     <div style={styles.container}>
@@ -67,7 +73,7 @@ const ResultsPage = () => {
       <Typography
         variant="body2"
         style={{
-          color: "#999",
+          color: isDarkMode ? "#cccccc" : "#999",
           marginBottom: "20px",
           textAlign: "center",
           font: "inherit",
@@ -83,13 +89,35 @@ const ResultsPage = () => {
         fullWidth
         style={{ marginBottom: "20px", maxWidth: "300px" }}
       >
-        <InputLabel>Select Mood</InputLabel>
+        <InputLabel
+          sx={{
+            fontFamily: "Poppins",
+            color: isDarkMode ? "#ffffff" : "#000000", // Label color change based on dark mode
+          }}
+        >
+          Select Mood
+        </InputLabel>
         <Select
           value={selectedMood}
           onChange={handleMoodChange}
           variant={"outlined"}
           label="Select Mood"
-          style={{ fontFamily: "Poppins" }}
+          sx={{
+            fontFamily: "Poppins",
+            color: isDarkMode ? "#ffffff" : "#000000", // Dropdown text color based on dark mode
+            ".MuiOutlinedInput-notchedOutline": {
+              fontFamily: "Poppins",
+              borderColor: isDarkMode ? "#ffffff" : "#000000", // Border color
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              fontFamily: "Poppins",
+              borderColor: isDarkMode ? "#ffffff" : "#000000", // Border color when focused
+            },
+            ".MuiSvgIcon-root": {
+              fontFamily: "Poppins",
+              color: isDarkMode ? "#ffffff" : "#000000", // Arrow icon color
+            },
+          }}
         >
           {Object.keys(emotionToGenre).map((mood, index) => (
             <MenuItem
@@ -106,7 +134,7 @@ const ResultsPage = () => {
       <Paper elevation={4} style={styles.resultsContainer}>
         <Typography
           variant="h6"
-          style={{ fontFamily: "Poppins", marginBottom: "10px" }}
+          style={{ fontFamily: "Poppins", marginBottom: "10px", color: isDarkMode ? "#ffffff" : "#333" }}
         >
           Your Recommendations
         </Typography>
@@ -127,7 +155,7 @@ const ResultsPage = () => {
               <Typography
                 variant="body2"
                 style={{
-                  color: "#999",
+                  color: isDarkMode ? "#cccccc" : "#999",
                   marginTop: "10px",
                   textAlign: "center",
                   font: "inherit",
@@ -182,7 +210,7 @@ const ResultsPage = () => {
             <Typography
               variant="body2"
               style={{
-                color: "#999",
+                color: isDarkMode ? "#cccccc" : "#999",
                 marginTop: "20px",
                 textAlign: "center",
                 font: "inherit",
@@ -240,20 +268,21 @@ const emotionToGenre = {
   amused: "party",
 };
 
-const styles = {
+// Dynamically get styles based on dark mode
+const getStyles = (isDarkMode) => ({
   container: {
     height: "100vh",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
+    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9",
     fontFamily: "Poppins",
     padding: "20px",
   },
   emotionText: {
     marginBottom: "15px",
-    color: "#333",
+    color: isDarkMode ? "#ffffff" : "#333",
     fontFamily: "Poppins",
   },
   emotion: {
@@ -267,7 +296,7 @@ const styles = {
     maxWidth: "1000px",
     height: "650px",
     boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-    backgroundColor: "white",
+    backgroundColor: isDarkMode ? "#1f1f1f" : "white",
     overflowY: "auto",
   },
   recommendationsList: {
@@ -283,7 +312,7 @@ const styles = {
     borderRadius: "10px",
     padding: "15px",
     boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.15)",
-    backgroundColor: "#ffffff",
+    backgroundColor: isDarkMode ? "#333333" : "#ffffff",
     display: "flex",
     font: "inherit",
     flexDirection: "row",
@@ -318,13 +347,13 @@ const styles = {
     font: "inherit",
     fontSize: "1rem",
     fontWeight: "bold",
-    color: "#333",
+    color: isDarkMode ? "#ffffff" : "#333",
     marginBottom: "5px",
   },
   artistName: {
     font: "inherit",
     fontSize: "0.9rem",
-    color: "#555",
+    color: isDarkMode ? "#cccccc" : "#555",
     marginBottom: "8px",
   },
   audioPlayer: {
@@ -343,6 +372,6 @@ const styles = {
       backgroundColor: "#1ed760",
     },
   },
-};
+});
 
 export default ResultsPage;
