@@ -434,7 +434,7 @@ Moodify-Emotion-Music-App/
 │   ├── nginx.conf                 # Main NGINX configuration file
 │   └── Dockerfile                 # Dockerfile for NGINX container
 │
-├── ../images/                        # Images used in the README documentation 
+├── images/                        # Images used in the README documentation 
 ├── docker-compose.yml             # Docker Compose file for containerization
 └── README.md                      # Comprehensive README file for the entire project
 ```
