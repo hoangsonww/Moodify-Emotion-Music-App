@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, Typography, Link } from "@mui/material";
-import { GitHub, Instagram, LinkedIn, Mail } from "@mui/icons-material";
+import { GitHub, Instagram, LinkedIn, Mail, Language } from "@mui/icons-material";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -106,14 +106,6 @@ const Footer = () => {
           <GitHub sx={styles.icon} />
         </Link>
         <Link
-          href="https://www.instagram.com/hoangsonw_"
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={styles.iconLink}
-        >
-          <Instagram sx={styles.icon} />
-        </Link>
-        <Link
           href="https://www.linkedin.com/in/hoangsonw"
           target="_blank"
           rel="noopener noreferrer"
@@ -123,6 +115,14 @@ const Footer = () => {
         </Link>
         <Link href="mailto:hoangson091104@gmail.com" sx={styles.iconLink}>
           <Mail sx={styles.icon} />
+        </Link>
+        <Link
+          href="https://sonnguyenhoang.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={styles.iconLink}
+        >
+          <Language sx={styles.icon} />
         </Link>
       </Box>
 
