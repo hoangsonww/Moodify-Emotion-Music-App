@@ -895,4 +895,5 @@ Feel free to explore the Jenkins pipeline script in the `Jenkinsfile` and custom
 **Created with ❤️ by [Son Nguyen](https://github.com/hoangsonww) in 2024.**
 
 ---
+
 [🔝 Back to Top](#moodify---emotion-based-music-recommendation-app)
