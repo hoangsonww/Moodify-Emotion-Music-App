@@ -14,6 +14,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 ## **Table of Contents**
 
 - [**🎵 Overview**](#-overview)
+- [**🌐 Live Deployment**](#-live-frontend-demo)
 - [**🌟 Features**](#-features)
 - [**🛠️ Technologies**](#-technologies)
 - [**🖼️ User Interface**](#-user-interface)
@@ -28,7 +29,6 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
     - [**Registration Page**](#registration-page)
     - [**404 Not Found Page**](#404-not-found-page)
     - [**Footer**](#footer)
-- [**🌐 Live Deployment**](#-live-frontend-demo)
 - [**📂 Complete File Structure**](#-complete-file-structure)
 - [**🛠️ Getting Started**](#-getting-started)
     - [**Prerequisites**](#prerequisites)
@@ -60,19 +60,6 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 
 Moodify provides personalized music recommendations based on users' emotional states detected through text, speech, and facial expressions. It interacts with a Django-based backend, AI/ML models for emotion detection, and utilizes data analytics for visual insights into emotion trends and model performance.
 
-<h2 id="-features">🌟 Features</h2>
-
-- User registration and login functionality.
-- Input analysis through text, speech, and facial expressions.
-- Real-time music recommendations based on emotion detection.
-- Visualization of emotion detection results and user history.
-- Data analytics scripts for emotion trends and model performance.
-- AI/ML models for text, speech, and facial emotion detection.
-- User profile management and customization.
-- Mobile app version for seamless user experience.
-- Progressive Web App (PWA) features for offline support.
-- Admin panel for managing users, recommendations, and data analytics.
-
 <h2 id="-live-frontend-demo">🌐 Live Deployment</h2>
 
 The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: [Moodify](https://moodify-emotion-music-app.vercel.app/).
@@ -90,6 +77,19 @@ There is no guarantee of uptime or performance with the current deployment, unle
 [![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen)](ai_ml)
 [![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen)](https://moodify-emotion-music-app.netlify.app/)
 [![Docker Container OK](https://img.shields.io/badge/Docker%20Container-OK-brightgreen)](docker-compose.yml)
+
+<h2 id="-features">🌟 Features</h2>
+
+- User registration and login functionality.
+- Input analysis through text, speech, and facial expressions.
+- Real-time music recommendations based on emotion detection.
+- Visualization of emotion detection results and user history.
+- Data analytics scripts for emotion trends and model performance.
+- AI/ML models for text, speech, and facial emotion detection.
+- User profile management and customization.
+- Mobile app version for seamless user experience.
+- Progressive Web App (PWA) features for offline support.
+- Admin panel for managing users, recommendations, and data analytics.
 
 <h2 id="-technologies">🛠️ Technologies</h2>
 
