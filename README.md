@@ -886,7 +886,7 @@ Feel free to explore the Jenkins pipeline script in the `Jenkinsfile` and custom
 <h2 id="-contact">📧 Contact</h2>
 
 - Feel free to contact me at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com) for any questions or feedback.
-- 
+- You can also connect with me on [LinkedIn](https://www.linkedin.com/in/hoangsonw/).
 
 ---
 
