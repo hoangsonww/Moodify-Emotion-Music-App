@@ -217,6 +217,8 @@ There is no guarantee of uptime or performance with the current deployment, unle
   <img src="images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
+#### Profile Page (Continued)
+
 <p align="center">
   <img src="images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
