@@ -329,6 +329,8 @@ There is no guarantee of uptime or performance with the current deployment, unle
   <img src="images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
 
+#### Mobile Navigation Drawer
+
 <p align="center">
   <img src="images/mobile-view2.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
