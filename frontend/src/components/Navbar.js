@@ -103,7 +103,7 @@ const Navbar = () => {
       }}
       role="presentation"
     >
-      <List>
+      <List sx={{ transition: "background-color 0.3s ease" }}>
         <ListItem
           button
           sx={listItemStyle(isActive("/home"), isDarkMode)}
@@ -248,6 +248,7 @@ const Navbar = () => {
         bgcolor: isDarkMode ? "#222" : "white",
         color: isDarkMode ? "white" : "black",
         boxShadow: 3,
+        transition: "background-color 0.3s ease",
       }}
     >
       <Toolbar
@@ -360,6 +361,7 @@ const listItemStyle = (isActive, isDarkMode) => ({
   borderRadius: "8px",
   backgroundColor: isActive ? "#ff4d4d" : "transparent",
   color: isActive && isDarkMode ? "white" : "inherit",
+  transition: "background-color 0.3s ease",
 });
 
 // Styles for the buttons in the desktop navbar
@@ -371,6 +373,7 @@ const buttonStyle = (isActive) => ({
     backgroundColor: "#ff4d4d",
     color: "white",
   },
+  transition: "background-color 0.3s ease",
 });
 
 // Styles for the Logout button (red text)
@@ -381,6 +384,7 @@ const logoutButtonStyle = () => ({
     backgroundColor: "#ff4d4d",
     color: "white",
   },
+  transition: "background-color 0.3s ease",
 });
 
 // Styles for the Login button (blue text)
@@ -391,6 +395,7 @@ const loginButtonStyle = (isDark) => ({
     backgroundColor: "#ff4d4d",
     color: "white",
   },
+  transition: "background-color 0.3s ease",
 });
 
 export default Navbar;

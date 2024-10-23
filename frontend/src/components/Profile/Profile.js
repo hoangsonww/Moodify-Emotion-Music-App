@@ -178,7 +178,7 @@ const getStyles = (isDarkMode) => ({
     padding: "20px",
     backgroundColor: isDarkMode ? "#121212" : "#f5f5f5",
     color: isDarkMode ? "#ffffff" : "#000000",
-    transition: "background-color 0.3s ease, color 0.3s ease",
+    transition: "background-color 0.3s ease",
   },
   profileContainer: {
     padding: "30px",
@@ -189,7 +189,7 @@ const getStyles = (isDarkMode) => ({
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
     backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
     textAlign: "center",
-    transition: "background-color 0.3s ease-in-out",
+    transition: "background-color 0.3s ease",
   },
   title: {
     marginBottom: "20px",

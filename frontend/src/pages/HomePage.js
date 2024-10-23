@@ -1236,6 +1236,7 @@ const styles = {
     alignItems: "center",
     backgroundColor: "#f5f5f5",
     fontFamily: "Poppins",
+    transition: "background-color 0.3s ease",
   },
   formContainer: {
     padding: "20px",
@@ -1243,6 +1244,7 @@ const styles = {
     width: "500px",
     boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
     backgroundColor: "white",
+    transition: "background-color 0.3s ease",
   },
   tabButton: {
     flex: 1,

@@ -186,7 +186,8 @@ const getStyles = (isDarkMode) => ({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dynamic background color
+    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9",
+    transition: "background-color 0.3s ease, color 0.3s ease",
   },
   formContainer: {
     padding: "30px",
@@ -195,6 +196,7 @@ const getStyles = (isDarkMode) => ({
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
     backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dynamic form background color
     color: isDarkMode ? "#ffffff" : "#000000", // Dynamic text color
+    transition: "background-color 0.3s ease, color 0.3s ease",
   },
 });
 

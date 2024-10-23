@@ -283,6 +283,7 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#121212" : "#f9f9f9",
     fontFamily: "Poppins",
     padding: "20px",
+    transition: "background-color 0.3s ease",
   },
   emotionText: {
     marginBottom: "15px",
@@ -302,6 +303,7 @@ const getStyles = (isDarkMode) => ({
     boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
     backgroundColor: isDarkMode ? "#1f1f1f" : "white",
     overflowY: "auto",
+    transition: "background-color 0.3s ease",
   },
   recommendationsList: {
     display: "flex",
@@ -321,6 +323,7 @@ const getStyles = (isDarkMode) => ({
     font: "inherit",
     flexDirection: "row",
     gap: "10px",
+    transition: "background-color 0.3s ease",
   },
   cardContentContainer: {
     display: "flex",
@@ -375,6 +378,7 @@ const getStyles = (isDarkMode) => ({
     "&:hover": {
       backgroundColor: "#1ed760",
     },
+    transition: "background-color 0.3s ease",
   },
 });
 
