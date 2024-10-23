@@ -260,12 +260,14 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dark mode support
     display: "flex",
     flexDirection: "column",
+    transition: "background-color 0.3s ease",
   },
   heroSection: {
     backgroundColor: isDarkMode ? "#333" : "#ff4d4d", // Dark mode support for hero
     padding: "80px 0",
     color: isDarkMode ? "#fff" : "#fff",
     textAlign: "center",
+    transition: "background-color 0.3s ease",
   },
   heroTitle: {
     font: "inherit",
@@ -307,6 +309,7 @@ const getStyles = (isDarkMode) => ({
       backgroundColor: "#ff4d4d",
       color: "#fff",
     },
+    transition: "background-color 0.3s ease",
   },
   sectionContainer: {
     padding: "60px 0",
@@ -328,6 +331,7 @@ const getStyles = (isDarkMode) => ({
     height: "200px",
     backgroundColor: isDarkMode ? "#2e2e2e" : "#fff", // Adjust card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
+    transition: "background-color 0.3s ease",
   },
   featureTitle: {
     font: "inherit",
@@ -343,6 +347,7 @@ const getStyles = (isDarkMode) => ({
   testimonialSection: {
     backgroundColor: isDarkMode ? "#121212" : "#fafafa", // Adjust testimonial background for dark mode
     padding: "60px 0",
+    transition: "background-color 0.3s ease",
   },
   testimonialCard: {
     padding: "20px",
@@ -352,6 +357,7 @@ const getStyles = (isDarkMode) => ({
     height: "180px",
     backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust testimonial card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
+    transition: "background-color 0.3s ease",
   },
   testimonialText: {
     font: "inherit",
@@ -368,6 +374,7 @@ const getStyles = (isDarkMode) => ({
     font: "inherit",
     padding: "60px 0",
     backgroundColor: isDarkMode ? "#121212" : "#fff", // Adjust section background for dark mode
+    transition: "background-color 0.3s ease",
   },
   infoCard: {
     padding: "20px",
@@ -375,6 +382,7 @@ const getStyles = (isDarkMode) => ({
     borderRadius: "8px",
     backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust info card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
+    transition: "background-color 0.3s ease",
   },
   infoTitle: {
     font: "inherit",

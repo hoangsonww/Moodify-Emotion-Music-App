@@ -1,8 +1,18 @@
+# Ignore the node_modules directories
 /frontend/node_modules/
+/node_modules
+
+# Ignoring large AI/ML model files
 /ai_ml/models/text_emotion_model/checkpoint-965/
 /ai_ml/models/text_emotion_model/checkpoint-1930/
 /ai_ml/models/text_emotion_model/checkpoint-2895/
 /ai_ml/models/text_emotion_model/checkpoint-3860/
 /ai_ml/models/text_emotion_model/model.safetensors
+
+# Ignoring the .env files
 .env
-/node_modules/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production

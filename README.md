@@ -5,7 +5,7 @@ Realizing this need, **Moodify** is being developed by [Son Nguyen](https://gith
 
 The **Moodify** project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes text, speech, or facial expressions and suggests music that aligns with the detected emotions.
 
-Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance.
+Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance. Users will be directed to Spotify to listen to the recommended music, and they can save their favorite tracks to their Spotify account.
 
 <p align="center">
   <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
@@ -14,6 +14,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 ## **Table of Contents**
 
 - [**🎵 Overview**](#-overview)
+- [**🌐 Live Deployment**](#-live-frontend-demo)
 - [**🌟 Features**](#-features)
 - [**🛠️ Technologies**](#-technologies)
 - [**🖼️ User Interface**](#-user-interface)
@@ -28,7 +29,6 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
     - [**Registration Page**](#registration-page)
     - [**404 Not Found Page**](#404-not-found-page)
     - [**Footer**](#footer)
-- [**🌐 Live Deployment**](#-live-frontend-demo)
 - [**📂 Complete File Structure**](#-complete-file-structure)
 - [**🛠️ Getting Started**](#-getting-started)
     - [**Prerequisites**](#prerequisites)
@@ -60,19 +60,6 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 
 Moodify provides personalized music recommendations based on users' emotional states detected through text, speech, and facial expressions. It interacts with a Django-based backend, AI/ML models for emotion detection, and utilizes data analytics for visual insights into emotion trends and model performance.
 
-<h2 id="-features">🌟 Features</h2>
-
-- User registration and login functionality.
-- Input analysis through text, speech, and facial expressions.
-- Real-time music recommendations based on emotion detection.
-- Visualization of emotion detection results and user history.
-- Data analytics scripts for emotion trends and model performance.
-- AI/ML models for text, speech, and facial emotion detection.
-- User profile management and customization.
-- Mobile app version for seamless user experience.
-- Progressive Web App (PWA) features for offline support.
-- Admin panel for managing users, recommendations, and data analytics.
-
 <h2 id="-live-frontend-demo">🌐 Live Deployment</h2>
 
 The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: [Moodify](https://moodify-emotion-music-app.vercel.app/).
@@ -90,6 +77,19 @@ There is no guarantee of uptime or performance with the current deployment, unle
 [![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen)](ai_ml)
 [![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen)](https://moodify-emotion-music-app.netlify.app/)
 [![Docker Container OK](https://img.shields.io/badge/Docker%20Container-OK-brightgreen)](docker-compose.yml)
+
+<h2 id="-features">🌟 Features</h2>
+
+- User registration and login functionality.
+- Input analysis through text, speech, and facial expressions.
+- Real-time music recommendations based on emotion detection.
+- Visualization of emotion detection results and user history.
+- Data analytics scripts for emotion trends and model performance.
+- AI/ML models for text, speech, and facial emotion detection.
+- User profile management and customization.
+- Mobile app version for seamless user experience.
+- Progressive Web App (PWA) features for offline support.
+- Admin panel for managing users, recommendations, and data analytics.
 
 <h2 id="-technologies">🛠️ Technologies</h2>
 
@@ -217,6 +217,8 @@ There is no guarantee of uptime or performance with the current deployment, unle
   <img src="images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
+#### Profile Page (Continued)
+
 <p align="center">
   <img src="images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
@@ -328,6 +330,8 @@ There is no guarantee of uptime or performance with the current deployment, unle
 <p align="center">
   <img src="images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
+
+#### Mobile Navigation Drawer
 
 <p align="center">
   <img src="images/mobile-view2.png" alt="Mobile View" width="50%" style="border-radius: 10px">
@@ -886,6 +890,7 @@ Feel free to explore the Jenkins pipeline script in the `Jenkinsfile` and custom
 <h2 id="-contact">📧 Contact</h2>
 
 - Feel free to contact me at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com) for any questions or feedback.
+- You can also connect with me on [LinkedIn](https://www.linkedin.com/in/hoangsonw/).
 
 ---
 

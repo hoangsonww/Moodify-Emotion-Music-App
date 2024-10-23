@@ -268,12 +268,14 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    transition: "background-color 0.3s ease",
   },
   formContainer: {
     padding: "30px",
     width: "350px",
     borderRadius: "10px",
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
+    transition: "background-color 0.3s ease",
   },
 };
 

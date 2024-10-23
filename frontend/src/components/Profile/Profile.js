@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { DarkModeContext } from "../../context/DarkModeContext"; // Import the DarkModeContext
+import { DarkModeContext } from "../../context/DarkModeContext";
 
 const CACHE_KEY = "userProfileCache";
 
@@ -43,12 +43,16 @@ const ProfilePage = () => {
         "https://moodify-emotion-music-app.onrender.com/users/user/profile/",
         {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 1000, // 1 second timeout
+          timeout: 60000, // 60 seconds timeout
         },
       );
 
       setUserData(response.data);
-      localStorage.setItem(CACHE_KEY, JSON.stringify(response.data)); // Cache user profile data
+      // Remove any existing cached data
+      localStorage.removeItem(CACHE_KEY);
+
+      // Cache user profile data
+      localStorage.setItem(CACHE_KEY, JSON.stringify(response.data));
       setError(""); // Clear any existing errors
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -57,11 +61,12 @@ const ProfilePage = () => {
       const cachedUserData = localStorage.getItem(CACHE_KEY);
       if (cachedUserData) {
         setUserData(JSON.parse(cachedUserData));
-        setError("Using cached data. Failed to fetch new user data.");
+        console.log("Failed to fetch profile data. Our servers might be down. Please try again later.");
       } else {
         setError(
-          "Failed to fetch user data and no cached data available. Our servers might be down. Please try again later.",
+          "Failed to fetch profile data. Our servers might be down. Please try again later.",
         );
+        console.error("No cached profile data available.");
       }
     } finally {
       setIsLoading(false);
@@ -173,7 +178,7 @@ const getStyles = (isDarkMode) => ({
     padding: "20px",
     backgroundColor: isDarkMode ? "#121212" : "#f5f5f5",
     color: isDarkMode ? "#ffffff" : "#000000",
-    transition: "background-color 0.3s ease, color 0.3s ease",
+    transition: "background-color 0.3s ease",
   },
   profileContainer: {
     padding: "30px",
@@ -184,7 +189,7 @@ const getStyles = (isDarkMode) => ({
     boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
     backgroundColor: isDarkMode ? "#1f1f1f" : "#ffffff",
     textAlign: "center",
-    transition: "background-color 0.3s ease-in-out",
+    transition: "background-color 0.3s ease",
   },
   title: {
     marginBottom: "20px",
