@@ -360,8 +360,8 @@ Moodify-Emotion-Music-App/
 │   │   ├── pages/                 # Contains main pages of the app
 │   │   ├── styles/                # Contains global styles and themes
 │   │   ├── context/               # Contains React Context API
-│   │   ├── App.jsx                # Main App component
-│   │   ├── index.jsx              # Entry point for React
+│   │   ├── App.js                # Main App component
+│   │   ├── index.js              # Entry point for React
 │   │   └── theme.js               # Material UI theme configuration
 │   │ 
 │   ├── .gitignore                 # Git ignore file

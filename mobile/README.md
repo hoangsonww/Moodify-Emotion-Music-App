@@ -85,7 +85,7 @@ mobile/
 │   └── Recommendations/       # Recommendation-related components
 │
 ├── pages/                     # Main pages of the app
-│   ├── HomePage.jsx           # Home page component
+│   ├── HomePage.js           # Home page component
 │   ├── ProfilePage.js         # Profile page component
 │   ├── ResultsPage.js         # Results page component
 │   └── NotFoundPage.js        # 404 page component
