@@ -38,7 +38,7 @@ frontend/
 │   │   │   └── Recommendations.js   # Music recommendations component
 │   │   ├── Footer.js                # Footer component
 │   │   ├── Navbar.js                # Header component
-│   │   ├── ModalComponent.js        # Modal component for user input
+│   │   └── ModalComponent.js        # Modal component for user input
 │   │
 │   ├── pages/                       # Contains main pages of the app
 │   │   ├── HomePage.js              # Home page component
