@@ -7,7 +7,6 @@ const Emotion = () => {
   const location = useLocation();
   const { emotion } = location.state || { emotion: "" };
 
-
   return (
     <Box style={styles.container}>
       <Typography variant="h5" style={styles.title}>
