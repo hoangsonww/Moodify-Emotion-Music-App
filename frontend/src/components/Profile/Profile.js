@@ -48,7 +48,11 @@ const ProfilePage = () => {
       );
 
       setUserData(response.data);
-      localStorage.setItem(CACHE_KEY, JSON.stringify(response.data)); // Cache user profile data
+      // Remove any existing cached data
+      localStorage.removeItem(CACHE_KEY);
+
+      // Cache user profile data
+      localStorage.setItem(CACHE_KEY, JSON.stringify(response.data));
       setError(""); // Clear any existing errors
     } catch (error) {
       console.error("Error fetching user data:", error);
