@@ -356,8 +356,8 @@ Moodify-Emotion-Music-App/
 │   │   ├── pages/                 # Contains main pages of the app
 │   │   ├── styles/                # Contains global styles and themes
 │   │   ├── context/               # Contains React Context API
-│   │   ├── App.js                 # Main App component
-│   │   ├── index.js               # Entry point for React
+│   │   ├── App.jsx                 # Main App component
+│   │   ├── index.jsx               # Entry point for React
 │   │   └── theme.js               # Material UI theme configuration
 │   │ 
 │   ├── .gitignore                 # Git ignore file
@@ -405,8 +405,8 @@ Moodify-Emotion-Music-App/
 │   └── configmap.yaml             # ConfigMap for environment variables
 │
 ├── mobile/                        # React Native mobile application
-│   ├── App.js                     # Main entry point for React Native app
-│   ├── index.js                   # App registry for React Native
+│   ├── App.jsx                     # Main entry point for React Native app
+│   ├── index.jsx                   # App registry for React Native
 │   ├── package.json               # NPM dependencies and scripts
 │   ├── components/                # React Native components
 │   │   ├── Footer.js              # Footer component
@@ -418,10 +418,10 @@ Moodify-Emotion-Music-App/
 │   │   └── DarkModeContext.js     # Dark mode context provider
 │   │
 │   ├── pages/                     # Main pages of the app
-│   │   ├── HomePage.js            # Home page component
+│   │   ├── HomePage.jsx            # Home page component
 │   │   ├── ProfilePage.js         # Profile page component
 │   │   ├── ResultsPage.js         # Results page component
-│   │   ├── LandingPage.js         # Landing page component
+│   │   ├── LandingPage.jsx         # Landing page component
 │   │   └── (and more...)
 │   │
 │   ├── assets/                    # Images, fonts, and other assets

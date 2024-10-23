@@ -38,10 +38,10 @@ frontend/
 │   │   │   └── Recommendations.js   # Music recommendations component
 │   │   ├── Footer.js                # Footer component
 │   │   ├── Navbar.js                # Header component
-│   │   ├── ModalComponent.js        # Modal component for user input
+│   │   └── ModalComponent.js        # Modal component for user input
 │   │
 │   ├── pages/                       # Contains main pages of the app
-│   │   ├── HomePage.js              # Home page component
+│   │   ├── HomePage.jsx             # Home page component
 │   │   ├── ProfilePage.js           # Profile page component
 │   │   ├── ResultsPage.js           # Results page component
 │   │   ├── NotFoundPage.js          # 404 page component
@@ -50,9 +50,9 @@ frontend/
 │   ├── styles/                      # Contains global styles and themes
 │   │   └── styles.css               # Main CSS file
 │   │
-│   ├── App.js                       # Main App component
+│   ├── App.jsx                      # Main App component
 │   ├── App.css                      # CSS for the main App component
-│   ├── index.js                     # Entry point for React
+│   ├── index.jsx                    # Entry point for React
 │   ├── theme.js                     # Material UI theme configuration
 │   └── reportWebVitals.js           # For measuring performance
 │
