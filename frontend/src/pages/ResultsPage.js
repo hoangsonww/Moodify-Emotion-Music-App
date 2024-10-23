@@ -14,7 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import axios from "axios";
-import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const ResultsPage = () => {
   const location = useLocation();

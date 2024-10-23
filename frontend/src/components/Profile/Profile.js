@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { DarkModeContext } from "../../context/DarkModeContext"; // Import the DarkModeContext
+import { DarkModeContext } from "../../context/DarkModeContext";
 
 const CACHE_KEY = "userProfileCache";
 
@@ -43,7 +43,7 @@ const ProfilePage = () => {
         "https://moodify-emotion-music-app.onrender.com/users/user/profile/",
         {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 1000, // 1 second timeout
+          timeout: 60000, // 60 seconds timeout
         },
       );
 
@@ -57,11 +57,12 @@ const ProfilePage = () => {
       const cachedUserData = localStorage.getItem(CACHE_KEY);
       if (cachedUserData) {
         setUserData(JSON.parse(cachedUserData));
-        setError("Using cached data. Failed to fetch new user data.");
+        console.log("Failed to fetch profile data. Our servers might be down. Please try again later.");
       } else {
         setError(
-          "Failed to fetch user data and no cached data available. Our servers might be down. Please try again later.",
+          "Failed to fetch profile data. Our servers might be down. Please try again later.",
         );
+        console.error("No cached profile data available.");
       }
     } finally {
       setIsLoading(false);
