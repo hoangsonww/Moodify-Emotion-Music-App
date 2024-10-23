@@ -338,7 +338,7 @@ const Navbar = () => {
             <Button
               color="inherit"
               startIcon={<LoginIcon />}
-              sx={loginButtonStyle()}
+              sx={loginButtonStyle(isDarkMode)}
               onClick={() => navigate("/login")}
             >
               Login
@@ -384,9 +384,9 @@ const logoutButtonStyle = () => ({
 });
 
 // Styles for the Login button (blue text)
-const loginButtonStyle = () => ({
+const loginButtonStyle = (isDark) => ({
   fontFamily: "Poppins",
-  color: "blue",
+  color: isDark ? "#fff" : "blue",
   "&:hover": {
     backgroundColor: "#ff4d4d",
     color: "white",
