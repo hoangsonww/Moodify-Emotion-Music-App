@@ -82,14 +82,14 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'backend.urls'
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = False  # Disable allow all origins
+CORS_ALLOW_ALL_ORIGINS = True
 
-# Explicitly allow specific origins
-CORS_ALLOWED_ORIGINS = [
-    'https://moodify-emotion-music-app.vercel.app',  # Frontend hosted on Vercel
-    'https://moodify-emotion-music-app.netlify.app',  # Backup Frontend hosted on Netlify
-    'http://localhost:3000', # Local development
-]
+# # Explicitly allow specific origins
+# CORS_ALLOWED_ORIGINS = [
+#     'https://moodify-emotion-music-app.vercel.app',  # Frontend hosted on Vercel
+#     'https://moodify-emotion-music-app.netlify.app',  # Backup Frontend hosted on Netlify
+#     'http://localhost:3000', # Local development
+# ]
 
 CORS_ALLOW_CREDENTIALS = True  # Allow sending credentials like cookies and auth headers
 
