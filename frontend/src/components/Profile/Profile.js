@@ -61,7 +61,9 @@ const ProfilePage = () => {
       const cachedUserData = localStorage.getItem(CACHE_KEY);
       if (cachedUserData) {
         setUserData(JSON.parse(cachedUserData));
-        console.log("Failed to fetch profile data. Our servers might be down. Please try again later.");
+        console.log(
+          "Failed to fetch profile data. Our servers might be down. Please try again later.",
+        );
       } else {
         setError(
           "Failed to fetch profile data. Our servers might be down. Please try again later.",
