@@ -6,6 +6,7 @@ import {
   CircularProgress,
   Card,
   CardContent,
+  Button,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -13,10 +14,15 @@ import { DarkModeContext } from "../../context/DarkModeContext";
 
 const CACHE_KEY = "userProfileCache";
 
+const timeout = (ms) => {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error("Request timed out")), ms));
+};
+
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadingText, setLoadingText] = useState("Loading...");
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -44,7 +50,7 @@ const ProfilePage = () => {
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 60000, // 60 seconds timeout
-        },
+        }
       );
 
       setUserData(response.data);
@@ -62,14 +68,41 @@ const ProfilePage = () => {
       if (cachedUserData) {
         setUserData(JSON.parse(cachedUserData));
         console.log(
-          "Failed to fetch profile data. Our servers might be down. Please try again later.",
+          "Failed to fetch profile data. Our servers might be down. Please try again later."
         );
       } else {
         setError(
-          "Failed to fetch profile data. Our servers might be down. Please try again later.",
+          "Failed to fetch profile data. Our servers might be down. Please try again later."
         );
         console.error("No cached profile data available.");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMoodClick = async (mood) => {
+    try {
+      setLoadingText(`Fetching recommendations for "${mood}"...`);
+      setIsLoading(true);
+      const response = await Promise.race([
+        axios.post(
+          "https://moodify-emotion-music-app.onrender.com/api/music_recommendation/",
+          { emotion: mood.toLowerCase() }, // Pass the mood as a parameter
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ),
+        timeout(60000),
+      ]);
+
+      const { emotion, recommendations } = response.data;
+      navigate("/results", { state: { emotion, recommendations } });
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      alert("Failed to fetch recommendations. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -79,9 +112,35 @@ const ProfilePage = () => {
 
   return (
     <Box style={styles.container}>
-      {isLoading ? (
-        <CircularProgress />
-      ) : error ? (
+      {isLoading && (
+        <Box sx={styles.loadingOverlay}>
+          <CircularProgress sx={{ color: "#ff4d4d" }} />
+          <Typography
+            variant="h6"
+            style={{ marginTop: "10px", color: "white", font: "inherit" }}
+          >
+            {loadingText}
+          </Typography>
+          <Typography
+            variant="h6"
+            style={{
+              marginTop: "10px",
+              color: "white",
+              font: "inherit",
+              textAlign: "center",
+              fontSize: "14px",
+              padding: "0 2rem",
+            }}
+          >
+            Note that our servers might be slow or experience downtime due to
+            high traffic, or they may spin down after periods of inactivity. It
+            may take up to 2 minutes to process during these times. We
+            appreciate your patience, and apologize for any inconvenience.
+          </Typography>
+        </Box>
+      )}
+
+      {isLoading ? null : error ? (
         <Typography variant="h6" color="error" style={{ font: "inherit" }}>
           {error}
         </Typography>
@@ -103,8 +162,7 @@ const ProfilePage = () => {
             <Typography variant="h6" style={styles.sectionTitle}>
               Your Listening History
             </Typography>
-            {userData.listening_history &&
-            userData.listening_history.length > 0 ? (
+            {userData.listening_history && userData.listening_history.length > 0 ? (
               userData.listening_history.map((track, index) => (
                 <Card key={index} style={styles.card}>
                   <CardContent>
@@ -127,9 +185,13 @@ const ProfilePage = () => {
             </Typography>
             {userData.mood_history && userData.mood_history.length > 0 ? (
               userData.mood_history.map((mood, index) => (
-                <Card key={index} style={styles.card}>
-                  <CardContent>
-                    <Typography variant="body1" style={styles.text}>
+                <Card
+                  key={index}
+                  style={styles.moodCard}
+                  onClick={() => handleMoodClick(mood)} // Redirect on click
+                >
+                  <CardContent style={styles.moodCardContent}>
+                    <Typography variant="body1" style={styles.moodText}>
                       {mood}
                     </Typography>
                   </CardContent>
@@ -148,13 +210,42 @@ const ProfilePage = () => {
             </Typography>
             {userData.recommendations && userData.recommendations.length > 0 ? (
               userData.recommendations.map((recommendation, index) => (
-                <Card key={index} style={styles.card}>
-                  <CardContent>
-                    <Typography variant="body1" style={styles.text}>
-                      <strong>{recommendation.name}</strong> by{" "}
-                      {recommendation.artist}
-                    </Typography>
-                  </CardContent>
+                <Card key={index} sx={styles.recommendationCard}>
+                  <Box sx={styles.cardContentContainer}>
+                    {/* Left Half: Image */}
+                    <Box sx={styles.imageContainer}>
+                      <img
+                        src={recommendation.image_url}
+                        alt={`${recommendation.name} album cover`}
+                        style={styles.albumImage}
+                      />
+                    </Box>
+
+                    {/* Right Half: Song Details */}
+                    <CardContent sx={styles.cardDetails}>
+                      <Typography variant="subtitle1" style={styles.songTitle}>
+                        {recommendation.name}
+                      </Typography>
+                      <Typography variant="body2" style={styles.artistName}>
+                        {recommendation.artist}
+                      </Typography>
+                      {recommendation.preview_url && (
+                        <audio controls style={styles.audioPlayer}>
+                          <source src={recommendation.preview_url} type="audio/mpeg" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      )}
+                      <Button
+                        href={recommendation.external_url}
+                        target="_blank"
+                        variant="contained"
+                        color="primary"
+                        style={styles.spotifyButton}
+                      >
+                        Listen on Spotify
+                      </Button>
+                    </CardContent>
+                  </Box>
                 </Card>
               ))
             ) : (
@@ -181,6 +272,19 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#121212" : "#f5f5f5",
     color: isDarkMode ? "#ffffff" : "#000000",
     transition: "background-color 0.3s ease",
+  },
+  loadingOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    zIndex: 1000,
   },
   profileContainer: {
     padding: "30px",
@@ -215,7 +319,7 @@ const getStyles = (isDarkMode) => ({
   },
   sectionTitle: {
     textDecoration: "underline",
-    font: "inherit",
+    fontFamily: "Poppins, sans-serif",
     marginBottom: "10px",
     color: isDarkMode ? "#bbbbbb" : "#555",
     fontWeight: 500,
@@ -235,12 +339,80 @@ const getStyles = (isDarkMode) => ({
     color: isDarkMode ? "#ffffff" : "#000000",
   },
   text: {
-    font: "inherit",
+    fontFamily: "Poppins, sans-serif",
     color: isDarkMode ? "#cccccc" : "#000000",
+    fontSize: "16px",
   },
   noData: {
     color: isDarkMode ? "#bbbbbb" : "#999",
-    font: "inherit",
+    fontFamily: "Poppins, sans-serif",
+  },
+  moodCard: {
+    marginBottom: "10px",
+    borderRadius: "8px",
+    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+    backgroundColor: isDarkMode ? "#333333" : "#ffffff",
+    cursor: "pointer",
+    "&:hover": {
+      transform: "scale(1.02)",
+      boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
+    },
+  },
+  moodCardContent: {
+    display: "flex",
+    justifyContent: "center",
+  },
+  moodText: {
+    fontFamily: "Poppins, sans-serif",
+    color: isDarkMode ? "#ffffff" : "#000000",
+    marginTop: "5px",
+  },
+  recommendationCard: {
+    marginBottom: "15px",
+    display: "flex",
+    width: "100%",
+    backgroundColor: isDarkMode ? "#333333" : "#ffffff",
+    borderRadius: "8px",
+  },
+  cardContentContainer: {
+    display: "flex",
+    alignItems: "center",
+    padding: "10px",
+    width: "100%", // Take full width
+  },
+  imageContainer: {
+    padding: "0 10px 0 0",
+    flexShrink: 0,
+  },
+  albumImage: {
+    width: "100px",
+    borderRadius: "5px",
+  },
+  cardDetails: {
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  songTitle: {
+    fontWeight: "bold",
+    fontSize: "16px",
+    fontFamily: "Poppins, sans-serif",
+    marginBottom: "5px",
+    color: isDarkMode ? "#ffffff" : "#000000",
+  },
+  artistName: {
+    color: isDarkMode ? "#cccccc" : "#777",
+    fontFamily: "Poppins, sans-serif",
+    marginBottom: "10px",
+  },
+  audioPlayer: {
+    width: "100%",
+    marginBottom: "10px",
+  },
+  spotifyButton: {
+    fontFamily: "Poppins, sans-serif",
   },
 });
 
