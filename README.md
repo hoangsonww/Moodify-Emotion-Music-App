@@ -107,6 +107,7 @@ There is no guarantee of uptime or performance with the current deployment, unle
     - JWT Authentication
     - Spotify APIs
     - Swagger and Redoc for API documentation
+    - Flask (for testing AI/ML models)
 - **Databases**:
     - MongoDB (with MongoDB Atlas)
     - Redis (for server-side caching)
