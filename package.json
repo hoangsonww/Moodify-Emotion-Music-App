@@ -21,7 +21,7 @@
     "frontend": "cd frontend && npm start",
     "backend": "cd backend && python manage.py runserver",
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "format": "prettier --write \"frontend/**/*.{js,jsx,json,css,scss,md}\""
+    "format": "prettier --write \"frontend/**/*.{js,jsx,json,css,scss,md,html}\""
   },
   "eslintConfig": {
     "extends": [
