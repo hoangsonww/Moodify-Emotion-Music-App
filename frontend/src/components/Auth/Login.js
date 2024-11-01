@@ -5,14 +5,18 @@ import {
   Typography,
   Paper,
   CircularProgress,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { DarkModeContext } from "../../context/DarkModeContext"; // Import DarkModeContext
+import { DarkModeContext } from "../../context/DarkModeContext";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -53,7 +57,7 @@ const Login = () => {
         "Login failed. Please check your credentials, or our servers are having issues. Please try again later.",
       );
     } finally {
-      setLoading(false); // Reset loading state when login process finishes
+      setLoading(false);
     }
   };
 
@@ -64,7 +68,11 @@ const Login = () => {
     }
   };
 
-  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const styles = getStyles(isDarkMode);
 
   return (
     <div style={styles.container}>
@@ -104,7 +112,7 @@ const Login = () => {
         />
         <TextField
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           variant="outlined"
           fullWidth
           value={password}
@@ -112,6 +120,17 @@ const Login = () => {
           onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleTogglePasswordVisibility}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
             style: {
               fontFamily: "Poppins",
               fontSize: "16px",

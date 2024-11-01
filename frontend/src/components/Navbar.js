@@ -63,7 +63,6 @@ const Navbar = () => {
       if (error.response && error.response.status === 401) {
         localStorage.removeItem("token");
         setIsLoggedIn(false);
-        navigate("/login");
       }
     }
   };

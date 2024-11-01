@@ -5,10 +5,13 @@ import {
   Typography,
   Paper,
   CircularProgress,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
@@ -16,6 +19,8 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -76,6 +81,14 @@ const ForgotPassword = () => {
     if (event.key === "Enter") {
       step === 1 ? handleVerify() : handleResetPassword();
     }
+  };
+
+  const handleToggleNewPasswordVisibility = () => {
+    setShowNewPassword((prev) => !prev);
+  };
+
+  const handleToggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword((prev) => !prev);
   };
 
   return (
@@ -181,7 +194,7 @@ const ForgotPassword = () => {
             </Typography>
             <TextField
               label="New Password"
-              type="password"
+              type={showNewPassword ? "text" : "password"}
               variant="outlined"
               fullWidth
               value={newPassword}
@@ -189,6 +202,17 @@ const ForgotPassword = () => {
               onKeyPress={handleKeyPress} // Add key press handler
               sx={{ mb: 2 }}
               InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle new password visibility"
+                      onClick={handleToggleNewPasswordVisibility}
+                      edge="end"
+                    >
+                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
                 style: {
                   fontFamily: "Poppins",
                   fontSize: "16px",
@@ -204,7 +228,7 @@ const ForgotPassword = () => {
             />
             <TextField
               label="Confirm Password"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               variant="outlined"
               fullWidth
               value={confirmPassword}
@@ -212,6 +236,17 @@ const ForgotPassword = () => {
               onKeyPress={handleKeyPress} // Add key press handler
               sx={{ mb: 2 }}
               InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      onClick={handleToggleConfirmPasswordVisibility}
+                      edge="end"
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
                 style: {
                   fontFamily: "Poppins",
                   fontSize: "16px",
