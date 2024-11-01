@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Slider from "react-slick";
-import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const LandingPage = () => {
   const navigate = useNavigate();
