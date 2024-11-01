@@ -136,7 +136,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication', # Token Authentication
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Allow any user to access the API
+        'rest_framework.permissions.AllowAny',
     ],
 }
 
