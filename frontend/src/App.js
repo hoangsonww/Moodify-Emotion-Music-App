@@ -13,7 +13,7 @@ import LandingPage from "./pages/LandingPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
-import { DarkModeProvider, DarkModeContext } from "./context/DarkModeContext"; // Import the context
+import { DarkModeProvider, DarkModeContext } from "./context/DarkModeContext";
 import "./styles/styles.css";
 
 function App() {

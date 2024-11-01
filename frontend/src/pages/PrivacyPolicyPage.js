@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Paper, Typography, Box } from "@mui/material";
-import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const PrivacyPolicyPage = () => {
   const { isDarkMode } = useContext(DarkModeContext); // Access dark mode state from context
