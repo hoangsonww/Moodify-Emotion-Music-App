@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/material";
-import { DarkModeContext } from "../context/DarkModeContext"; // Import the DarkModeContext
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
