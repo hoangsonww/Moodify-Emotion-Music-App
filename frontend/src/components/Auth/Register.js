@@ -49,7 +49,7 @@ const Register = () => {
           username,
           email,
           password,
-        }
+        },
       );
 
       if (response.status === 201) {
@@ -62,7 +62,7 @@ const Register = () => {
       console.error("Registration failed:", error);
       alert(
         error.response?.data?.error ||
-        "Registration failed due to internal server error. Please try again later."
+          "Registration failed due to internal server error. Please try again later.",
       );
 
       setLoading(false);

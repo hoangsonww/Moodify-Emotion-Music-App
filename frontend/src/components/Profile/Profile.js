@@ -17,7 +17,9 @@ import placeholderImage from "../../assets/images/profile.webp";
 const CACHE_KEY = "userProfileCache";
 
 const timeout = (ms) => {
-  return new Promise((_, reject) => setTimeout(() => reject(new Error("Request timed out")), ms));
+  return new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("Request timed out")), ms),
+  );
 };
 
 const ProfilePage = () => {
@@ -52,7 +54,7 @@ const ProfilePage = () => {
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 60000, // 60 seconds timeout
-        }
+        },
       );
 
       setUserData(response.data);
@@ -70,11 +72,11 @@ const ProfilePage = () => {
       if (cachedUserData) {
         setUserData(JSON.parse(cachedUserData));
         console.log(
-          "Failed to fetch profile data. Our servers might be down. Please try again later."
+          "Failed to fetch profile data. Our servers might be down. Please try again later.",
         );
       } else {
         setError(
-          "Failed to fetch profile data. Our servers might be down. Please try again later."
+          "Failed to fetch profile data. Our servers might be down. Please try again later.",
         );
         console.error("No cached profile data available.");
       }
@@ -95,7 +97,7 @@ const ProfilePage = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         ),
         timeout(60000),
       ]);
@@ -244,7 +246,10 @@ const ProfilePage = () => {
                       </Typography>
                       {recommendation.preview_url && (
                         <audio controls style={styles.audioPlayer}>
-                          <source src={recommendation.preview_url} type="audio/mpeg" />
+                          <source
+                            src={recommendation.preview_url}
+                            type="audio/mpeg"
+                          />
                           Your browser does not support the audio element.
                         </audio>
                       )}

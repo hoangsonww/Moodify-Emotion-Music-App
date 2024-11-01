@@ -35,7 +35,7 @@ const Login = () => {
       // Make the login request
       const response = await axios.post(
         "https://moodify-emotion-music-app.onrender.com/users/login/",
-        { username, password }
+        { username, password },
       );
       const { access } = response.data; // Extract the access token from the response
 
@@ -48,16 +48,16 @@ const Login = () => {
         navigate("/home");
       } else {
         alert(
-          "Login failed. Please check your credentials, or our servers are having issues. Please try again later."
+          "Login failed. Please check your credentials, or our servers are having issues. Please try again later.",
         );
       }
     } catch (error) {
       console.error("Login failed:", error);
       alert(
-        "Login failed. Please check your credentials, or our servers are having issues. Please try again later."
+        "Login failed. Please check your credentials, or our servers are having issues. Please try again later.",
       );
     } finally {
-      setLoading(false); // Reset loading state when login process finishes
+      setLoading(false);
     }
   };
 
@@ -72,7 +72,7 @@ const Login = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
+  const styles = getStyles(isDarkMode);
 
   return (
     <div style={styles.container}>
