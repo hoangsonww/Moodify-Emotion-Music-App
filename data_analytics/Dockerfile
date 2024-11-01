@@ -1,26 +1,23 @@
-# Use Python 3.10
+# Use a lightweight Python image as the base
 FROM python:3.10-slim
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies for MongoDB and any other required packages
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+# Copy the requirements.txt file if available
+COPY requirements.txt /app
 
-# Copy the requirements.txt file from the root directory one level up
-COPY ../requirements.txt ./requirements.txt
+# Install dependencies
+RUN if [ -f "requirements.txt" ]; then pip install --no-cache-dir -r requirements.txt; fi
 
-# Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the rest of the data_analytics directory into the container
+COPY . /app
 
-# Copy the backend application code
-COPY . .
+# Create a directory for visualizations output
+RUN mkdir -p /app/visualizations
 
-# Expose Django port
-EXPOSE 8000
+# Expose the port if there’s any web-based visualization, if needed (e.g., 8080)
+# EXPOSE 8080
 
-# Run migrations and start the Django server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# Command to run the main script
+CMD ["python", "main.py"]
