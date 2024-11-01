@@ -7,10 +7,12 @@ import {
   Card,
   CardContent,
   Button,
+  Avatar,
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../../context/DarkModeContext";
+import placeholderImage from "../../assets/images/profile.webp";
 
 const CACHE_KEY = "userProfileCache";
 
@@ -150,6 +152,17 @@ const ProfilePage = () => {
             Welcome, {userData.username}!
           </Typography>
           <Box style={styles.infoSection}>
+            <Avatar
+              alt="User Avatar"
+              src={placeholderImage}
+              sx={{
+                width: 100,
+                height: 100,
+                border: "4px solid #ff4d4d",
+                margin: "0 auto",
+                marginBottom: "20px",
+              }}
+            />
             <Typography variant="h6" style={styles.text}>
               Your Username: {userData.username}
             </Typography>
@@ -158,26 +171,26 @@ const ProfilePage = () => {
             </Typography>
           </Box>
 
-          <Box sx={styles.section}>
-            <Typography variant="h6" style={styles.sectionTitle}>
-              Your Listening History
-            </Typography>
-            {userData.listening_history && userData.listening_history.length > 0 ? (
-              userData.listening_history.map((track, index) => (
-                <Card key={index} style={styles.card}>
-                  <CardContent>
-                    <Typography variant="body1" style={styles.text}>
-                      {track}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Typography variant="body2" style={styles.noData}>
-                No listening history available.
-              </Typography>
-            )}
-          </Box>
+          {/*<Box sx={styles.section}>*/}
+          {/*  <Typography variant="h6" style={styles.sectionTitle}>*/}
+          {/*    Your Listening History*/}
+          {/*  </Typography>*/}
+          {/*  {userData.listening_history && userData.listening_history.length > 0 ? (*/}
+          {/*    userData.listening_history.map((track, index) => (*/}
+          {/*      <Card key={index} style={styles.card}>*/}
+          {/*        <CardContent>*/}
+          {/*          <Typography variant="body1" style={styles.text}>*/}
+          {/*            {track}*/}
+          {/*          </Typography>*/}
+          {/*        </CardContent>*/}
+          {/*      </Card>*/}
+          {/*    ))*/}
+          {/*  ) : (*/}
+          {/*    <Typography variant="body2" style={styles.noData}>*/}
+          {/*      No listening history available.*/}
+          {/*    </Typography>*/}
+          {/*  )}*/}
+          {/*</Box>*/}
 
           <Box sx={styles.section}>
             <Typography variant="h6" style={styles.sectionTitle}>
@@ -268,7 +281,7 @@ const getStyles = (isDarkMode) => ({
     justifyContent: "center",
     alignItems: "center",
     fontFamily: "Poppins, sans-serif",
-    padding: "20px",
+    padding: "0",
     backgroundColor: isDarkMode ? "#121212" : "#f5f5f5",
     color: isDarkMode ? "#ffffff" : "#000000",
     transition: "background-color 0.3s ease",
@@ -307,7 +320,7 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#333333" : "#fafafa",
     padding: "10px",
     borderRadius: "8px",
-    boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.05)",
+    boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
     transition: "all 0.3s ease",
     color: isDarkMode ? "#ffffff" : "#000000",
   },

@@ -5,7 +5,10 @@ import {
   Typography,
   Paper,
   CircularProgress,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DarkModeContext } from "../../context/DarkModeContext"; // Import DarkModeContext
@@ -15,6 +18,8 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -44,7 +49,7 @@ const Register = () => {
           username,
           email,
           password,
-        },
+        }
       );
 
       if (response.status === 201) {
@@ -57,7 +62,7 @@ const Register = () => {
       console.error("Registration failed:", error);
       alert(
         error.response?.data?.error ||
-          "Registration failed due to internal server error. Please try again later.",
+        "Registration failed due to internal server error. Please try again later."
       );
 
       setLoading(false);
@@ -69,6 +74,14 @@ const Register = () => {
     if (event.key === "Enter") {
       handleRegister(); // Call handleRegister when Enter is pressed
     }
+  };
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const handleToggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword((prev) => !prev);
   };
 
   const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
@@ -133,7 +146,7 @@ const Register = () => {
         />
         <TextField
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           variant="outlined"
           fullWidth
           value={password}
@@ -141,6 +154,17 @@ const Register = () => {
           onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleTogglePasswordVisibility}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
             style: {
               fontFamily: "Poppins",
               fontSize: "16px",
@@ -156,7 +180,7 @@ const Register = () => {
         />
         <TextField
           label="Confirm Password"
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           variant="outlined"
           fullWidth
           value={confirmPassword}
@@ -164,6 +188,17 @@ const Register = () => {
           onKeyPress={handleKeyPress} // Add key press handler
           sx={{ mb: 2 }}
           InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle confirm password visibility"
+                  onClick={handleToggleConfirmPasswordVisibility}
+                  edge="end"
+                >
+                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
             style: {
               fontFamily: "Poppins",
               fontSize: "16px",

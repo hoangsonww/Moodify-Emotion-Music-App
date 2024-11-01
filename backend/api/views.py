@@ -222,14 +222,15 @@ def music_recommendation(request):
     """
     This function retrieves music recommendations based on the provided emotion.
 
-    :param request: The request object containing the emotion input.
+    :param request: The request object containing the emotion input and optional market.
     :return: The response object containing the music recommendations.
     """
     data = request.data
     emotion = data.get("emotion", "") if data else ""
+    market = data.get("market", None) if data else None  # Get the optional market parameter
 
     if not emotion:
         return Response({"error": "No emotion provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-    recommendations = get_music_recommendation(emotion)
-    return Response({"emotion": emotion, "recommendations": recommendations})
+    recommendations = get_music_recommendation(emotion, market)  # Pass the market to the function
+    return Response({"emotion": emotion, "market": market, "recommendations": recommendations})
