@@ -158,10 +158,12 @@ SWAGGER_SETTINGS = {
     'DEFAULT_API_URL': 'https://moodify-emotion-music-app.onrender.com',
 }
 
-# Simple JWT settings
+# JWT settings - Token lifetime = 7 days for access token and 14 days for refresh token
+# This is to ensure the user's continuous access to the API and convenience
+# You can change the token lifetime as per your requirements
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
 }
 
 # AllAuth settings
