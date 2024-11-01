@@ -26,7 +26,7 @@ import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from "@mui/icons-material/Logout";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import axios from "axios";
-import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
