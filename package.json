@@ -41,7 +41,6 @@
       "last 1 safari version"
     ]
   },
-  
   "dependencies": {
     "prettier": "^3.3.3"
   },
