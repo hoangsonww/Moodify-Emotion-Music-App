@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Slider from "react-slick";
 import { DarkModeContext } from "../context/DarkModeContext";
-import '../App.css';
+import "../App.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -40,7 +40,9 @@ const LandingPage = () => {
           alignItems: "center",
         }}
       >
-        <ul style={{ display: "flex", listStyle: "none", margin: 0, padding: 0 }}>
+        <ul
+          style={{ display: "flex", listStyle: "none", margin: 0, padding: 0 }}
+        >
           {dots.map((dot, index) => (
             <li
               key={index}
@@ -65,7 +67,9 @@ const LandingPage = () => {
                     : dot.props.className.includes("slick-active")
                       ? "#333"
                       : "#bbb",
-                  opacity: dot.props.className.includes("slick-active") ? "1" : "0.5",
+                  opacity: dot.props.className.includes("slick-active")
+                    ? "1"
+                    : "0.5",
                   transform: dot.props.className.includes("slick-active")
                     ? "scale(1.2)"
                     : "scale(1)",
