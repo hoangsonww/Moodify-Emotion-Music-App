@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import {
   Box,
   Typography,
@@ -15,7 +15,10 @@ import '../App.css';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { isDarkMode } = useContext(DarkModeContext); // Access dark mode state
+  const { isDarkMode } = useContext(DarkModeContext);
+
+  // Ref to access Slider instance
+  const sliderRef = useRef(null);
 
   const settings = {
     dots: true,
@@ -24,9 +27,69 @@ const LandingPage = () => {
     slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 2000,
     pauseOnHover: true,
     arrows: false,
+    appendDots: (dots) => (
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-25px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ul style={{ display: "flex", listStyle: "none", margin: 0, padding: 0 }}>
+          {dots.map((dot, index) => (
+            <li
+              key={index}
+              style={{
+                margin: "0 5px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                // Use sliderRef to navigate to the specific slide
+                sliderRef.current.slickGoTo(index);
+              }}
+            >
+              <div
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: isDarkMode
+                    ? dot.props.className.includes("slick-active")
+                      ? "#fff"
+                      : "#888"
+                    : dot.props.className.includes("slick-active")
+                      ? "#333"
+                      : "#bbb",
+                  opacity: dot.props.className.includes("slick-active") ? "1" : "0.5",
+                  transform: dot.props.className.includes("slick-active")
+                    ? "scale(1.2)"
+                    : "scale(1)",
+                  transition: "all 0.3s ease",
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    ),
+    customPaging: (i) => (
+      <div
+        style={{
+          width: "10px",
+          height: "10px",
+          borderRadius: "50%",
+          cursor: "pointer",
+          backgroundColor: isDarkMode ? "#fff" : "#333",
+          opacity: "0.5",
+          transition: "opacity 0.3s ease, transform 0.3s ease",
+        }}
+      ></div>
+    ),
     responsive: [
       {
         breakpoint: 960,
@@ -83,7 +146,7 @@ const LandingPage = () => {
         <Typography variant="h4" sx={styles.sectionTitle}>
           Features
         </Typography>
-        <Slider {...settings}>
+        <Slider {...settings} ref={sliderRef}>
           {features.map((feature, index) => (
             <Grid item xs={12} md={4} key={index}>
               <Card sx={styles.featureCard}>
@@ -120,7 +183,7 @@ const LandingPage = () => {
           <Typography variant="h4" sx={styles.sectionTitle}>
             What Our Users Say
           </Typography>
-          <Slider {...settings}>
+          <Slider {...settings} ref={sliderRef}>
             {testimonials.map((testimonial, index) => (
               <Grid item xs={12} md={4} key={index}>
                 <Card sx={styles.testimonialCard}>
