@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Slider from "react-slick";
 import { DarkModeContext } from "../context/DarkModeContext";
+import '../App.css';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -261,6 +262,7 @@ const getStyles = (isDarkMode) => ({
     display: "flex",
     flexDirection: "column",
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   heroSection: {
     backgroundColor: isDarkMode ? "#333" : "#ff4d4d", // Dark mode support for hero
@@ -268,6 +270,7 @@ const getStyles = (isDarkMode) => ({
     color: isDarkMode ? "#fff" : "#fff",
     textAlign: "center",
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   heroTitle: {
     font: "inherit",
@@ -275,17 +278,20 @@ const getStyles = (isDarkMode) => ({
     fontSize: "2.5rem",
     marginBottom: "20px",
     color: isDarkMode ? "#fff" : "#fff", // Ensure white text for both modes
+    animation: "slideUp 0.6s ease-out",
   },
   heroSubtitle: {
     font: "inherit",
     fontSize: "1.2rem",
     marginBottom: "30px",
     color: isDarkMode ? "#ddd" : "#fff", // Lighter color for subtitle in dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   buttonContainer: {
     display: "flex",
     justifyContent: "center",
     gap: "15px",
+    animation: "slideUp 0.6s ease-out",
   },
   heroButton: {
     font: "inherit",
@@ -314,6 +320,7 @@ const getStyles = (isDarkMode) => ({
   sectionContainer: {
     padding: "60px 0",
     textAlign: "center",
+    animation: "slideUp 0.6s ease-out",
   },
   sectionTitle: {
     font: "inherit",
@@ -322,6 +329,7 @@ const getStyles = (isDarkMode) => ({
     marginBottom: "40px",
     fontWeight: "bold",
     color: isDarkMode ? "#fff" : "#333", // Adjust title color based on dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   featureCard: {
     padding: "20px",
@@ -332,6 +340,7 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#2e2e2e" : "#fff", // Adjust card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   featureTitle: {
     font: "inherit",
@@ -339,15 +348,18 @@ const getStyles = (isDarkMode) => ({
     fontSize: "1.2rem",
     marginBottom: "10px",
     color: isDarkMode ? "#fff" : "#333", // Adjust title color for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   featureDescription: {
     font: "inherit",
     color: isDarkMode ? "#ddd" : "#666", // Adjust description text for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialSection: {
     backgroundColor: isDarkMode ? "#121212" : "#fafafa", // Adjust testimonial background for dark mode
     padding: "60px 0",
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialCard: {
     padding: "20px",
@@ -358,23 +370,27 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust testimonial card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialText: {
     font: "inherit",
     fontStyle: "italic",
     marginBottom: "10px",
     color: isDarkMode ? "#ddd" : "#555", // Adjust text color for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialAuthor: {
     font: "inherit",
     color: isDarkMode ? "#fff" : "#333", // Adjust author text color for dark mode
     fontWeight: "bold",
+    animation: "slideUp 0.6s ease-out",
   },
   informativeSection: {
     font: "inherit",
     padding: "60px 0",
     backgroundColor: isDarkMode ? "#121212" : "#fff", // Adjust section background for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   infoCard: {
     padding: "20px",
@@ -383,6 +399,7 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust info card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   infoTitle: {
     font: "inherit",
@@ -390,10 +407,12 @@ const getStyles = (isDarkMode) => ({
     fontWeight: "bold",
     marginBottom: "10px",
     color: isDarkMode ? "#fff" : "#333", // Adjust title color for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   infoDescription: {
     font: "inherit",
     color: isDarkMode ? "#ddd" : "#666", // Adjust description text for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
 });
 
