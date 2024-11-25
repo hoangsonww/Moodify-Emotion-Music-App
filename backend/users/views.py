@@ -7,7 +7,9 @@ from django.contrib.auth import authenticate
 from .models import UserProfile
 from django.http import JsonResponse
 from mongoengine.errors import DoesNotExist
+
 import json
+
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import UserSerializer, UserProfileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken

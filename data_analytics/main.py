@@ -2,9 +2,12 @@ import subprocess
 import os
 import sys
 
+
 def run_script(script_name):
     """
     Helper function to run a Python script using the current virtual environment's Python executable.
+
+    :param script_name: The name of the script to run.
     """
     try:
         # Use sys.executable to ensure the current Python interpreter (from the virtual environment) is used
@@ -14,7 +17,13 @@ def run_script(script_name):
     except subprocess.CalledProcessError as e:
         print(f"Error occurred while running {script_name}: {e}")
 
+
 def main():
+    """
+    Main function to run all analytics scripts.
+
+    :return: None
+    """
     # Define the list of scripts to run
     scripts_to_run = [
         "emotion_distribution.py",
@@ -36,6 +45,7 @@ def main():
         run_script(script)
 
     print("\nAll analytics scripts have been executed.")
+
 
 if __name__ == "__main__":
     main()

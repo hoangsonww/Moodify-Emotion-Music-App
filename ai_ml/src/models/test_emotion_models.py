@@ -4,11 +4,17 @@ import os
 from ai_ml.src.models.text_emotion import infer_text_emotion
 from ai_ml.src.models.speech_emotion import infer_speech_emotion
 from ai_ml.src.models.facial_emotion import infer_facial_emotion
-from ai_ml.src.recommendation.music_recommendation import get_music_recommendation  # Import music recommendation
+from ai_ml.src.recommendation.music_recommendation import get_music_recommendation
 
 
 # Function to display music recommendations
 def display_music_recommendations(emotion):
+    """
+    Display music recommendations based on the detected emotion.
+
+    :param emotion: The detected emotion.
+    :return: None
+    """
     print(f"\n--- Music Recommendations for the Emotion '{emotion}' ---")
     recommended_tracks = get_music_recommendation(emotion)
 
@@ -24,6 +30,11 @@ def display_music_recommendations(emotion):
 
 # Test Text-Based Emotion Model
 def test_text_emotion():
+    """
+    Test the text-based emotion model with sample text inputs.
+
+    :return: None
+    """
     print("\n--- Testing Text-Based Emotion Model ---")
     # Example test inputs
     sample_texts = [
@@ -51,6 +62,12 @@ def test_text_emotion():
 # Test Speech-Based Emotion Model
 # Current test path: C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/src/models/test_data/speech.mp4
 def test_speech_emotion(audio_file_path):
+    """
+    Test the speech-based emotion model with a sample audio file.
+
+    :param audio_file_path: The path to the audio file.
+    :return: None
+    """
     print("\n--- Testing Speech-Based Emotion Model ---")
     if not os.path.isfile(audio_file_path):
         print(f"Error: The audio file '{audio_file_path}' does not exist.")
@@ -65,6 +82,12 @@ def test_speech_emotion(audio_file_path):
 # Test Facial Emotion Model
 # Current test path: C:/Users/hoang/PycharmProjects/Emotion-Based-Music-App/Emotion-Based-Music-App/ai_ml/src/models/test_data/surprised.jpg
 def test_facial_emotion(image_file_path):
+    """
+    Test the facial emotion model with a sample image file.
+
+    :param image_file_path: The path to the image file.
+    :return: None
+    """
     print("\n--- Testing Facial Emotion Model ---")
     if not os.path.isfile(image_file_path):
         print(f"Error: The image file '{image_file_path}' does not exist.")

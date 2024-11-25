@@ -14,6 +14,11 @@ CORS(app)  # Enable CORS for all routes
 
 @app.route("/text_emotion", methods=["POST"])
 def text_emotion():
+    """
+    This function retrieves the emotion from the text input and returns music recommendations based on the emotion.
+
+    :return: The response object containing the emotion and music recommendations.
+    """
     data = request.json
     text = data.get("text", "") if data else ""
 
@@ -29,6 +34,11 @@ def text_emotion():
 
 @app.route("/speech_emotion", methods=["POST"])
 def speech_emotion():
+    """
+    This function retrieves the emotion from the speech input and returns music recommendations based on the emotion.
+
+    :return: The response object containing the emotion and music recommendations.
+    """
     if 'file' not in request.files:
         return jsonify({"error": "No audio file provided"}), 400
 
@@ -57,6 +67,11 @@ def speech_emotion():
 
 @app.route("/facial_emotion", methods=["POST"])
 def facial_emotion():
+    """
+    This function retrieves the emotion from the facial image input and returns music recommendations based on the emotion.
+
+    :return: The response object containing the emotion and music recommendations.
+    """
     if 'file' not in request.files:
         return jsonify({"error": "No image file provided"}), 400
 
@@ -85,6 +100,11 @@ def facial_emotion():
 
 @app.route("/music_recommendation", methods=["POST"])
 def music_recommendation():
+    """
+    This function retrieves music recommendations based on the provided emotion.
+
+    :return: The response object containing the emotion and music recommendations.
+    """
     data = request.json
     emotion = data.get("emotion", "") if data else ""
 

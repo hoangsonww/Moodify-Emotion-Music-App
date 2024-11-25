@@ -1,10 +1,17 @@
-# music_recommendation.py
 import requests
 import random
 from ai_ml.src.utils import get_spotify_access_token
 from ai_ml.src.config import CONFIG
 
+
 def get_music_recommendation(emotion, market=None):
+    """
+    Get music recommendations based on the detected emotion.
+
+    :param emotion: The detected emotion.
+    :param market: The market for which the recommendations are to be provided.
+    :return: A list of recommended tracks.
+    """
     try:
         access_token = get_spotify_access_token()
     except Exception as e:
