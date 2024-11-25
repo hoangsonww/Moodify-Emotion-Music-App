@@ -8,7 +8,14 @@ import hadoop_config
 TRAINING_DATA_PATH = os.path.abspath("ai_ml/data/training.csv")
 TEST_DATA_PATH = os.path.abspath("ai_ml/data/test.csv")
 
+
 def process_data_with_spark():
+    """
+    This function reads the training and test data using Spark, performs some simple transformations, and saves the
+    transformed training data to a new location.
+
+    :return: A dictionary containing the training and test data DataFrames.
+    """
     # Initialize Spark Session
     spark = SparkSession.builder \
         .appName("EmotionBasedMusicApp") \

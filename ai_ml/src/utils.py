@@ -3,6 +3,11 @@ import requests
 from ai_ml.src.config import CONFIG
 
 def get_spotify_access_token():
+    """
+    Retrieve the Spotify access token using the client ID and client secret.
+
+    :return: The Spotify access token.
+    """
     client_id = CONFIG["spotify_client_id"]
     client_secret = CONFIG["spotify_client_secret"]
     token_url = "https://accounts.spotify.com/api/token"

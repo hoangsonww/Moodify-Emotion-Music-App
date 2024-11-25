@@ -26,7 +26,13 @@ emotion_to_genre = {
 # Load the model globally
 _model = None
 
+
 def load_facial_emotion_model():
+    """
+    Load the pre-trained facial emotion model.
+
+    :return: The loaded model.
+    """
     global _model
     if _model is None:
         print("Loading facial emotion model for the first time...")
@@ -35,6 +41,12 @@ def load_facial_emotion_model():
 
 
 def infer_facial_emotion(image_file):
+    """
+    Infer the facial emotion from the given image file.
+
+    :param image_file: The path to the image file.
+    :return: The detected emotion.
+    """
     try:
         # Load the pre-trained facial emotion model
         model = load_facial_emotion_model()
@@ -78,6 +90,10 @@ def preprocess_image(image_file, target_size=(48, 48)):
     """
     Preprocess the image before feeding it to the model.
     Resize, normalize, and adjust channels as needed.
+
+    :param image_file: The path to the image file.
+    :param target_size: The target size for the image.
+    :return: The preprocessed image.
     """
     # Read the image using OpenCV
     image = cv2.imread(image_file, cv2.IMREAD_COLOR)

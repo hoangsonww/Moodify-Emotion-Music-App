@@ -1,6 +1,8 @@
 import torch
+
 from transformers import AutoModelForSequenceClassification, Trainer, TrainingArguments, AutoTokenizer
 from datasets import Dataset
+
 import pandas as pd
 import sys
 import os
@@ -11,6 +13,11 @@ from ai_ml.src.config import CONFIG
 
 
 def load_data():
+    """
+    Load the training and test data from the CSV files and preprocess them.
+
+    :return: The preprocessed training and test data.
+    """
     # Read the training and test data
     df = pd.read_csv(CONFIG["train_data_path"])
     test_df = pd.read_csv(CONFIG["test_data_path"])
@@ -27,6 +34,11 @@ def load_data():
 
 
 def preprocess_and_tokenize():
+    """
+    Preprocess the data and tokenize the text data using the pre-trained tokenizer.
+
+    :return: The preprocessed training and test datasets and the tokenizer.
+    """
     df, test_df = load_data()
     tokenizer = AutoTokenizer.from_pretrained(CONFIG["model_name"])
 
@@ -55,14 +67,21 @@ def preprocess_and_tokenize():
 class CustomTrainer(Trainer):
     """
     Custom Trainer class to log training and validation metrics after each epoch and display them to the console.
+
+    :param Trainer: The Hugging Face Trainer class.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.log_history = []
 
-
     def log(self, logs: dict):
+        """
+        Log the training and validation metrics after each epoch.
+
+        :param logs: The dictionary containing the training and validation metrics.
+        :return: None
+        """
         super().log(logs)
         if "epoch" in logs:
             self.log_history.append(logs)
@@ -73,17 +92,28 @@ class CustomTrainer(Trainer):
             eval_accuracy = logs.get("eval_accuracy", None)
 
             if eval_loss is not None and eval_accuracy is not None:
-                print(f"Epoch {epoch}: Train Loss = {train_loss}, Eval Loss = {eval_loss}, Eval Accuracy = {eval_accuracy}")
+                print(
+                    f"Epoch {epoch}: Train Loss = {train_loss}, Eval Loss = {eval_loss}, Eval Accuracy = {eval_accuracy}")
             else:
                 print(f"Epoch {epoch}: Train Loss = {train_loss}")
 
-
     def save_log_history(self, output_dir):
+        """
+        Save the training log history to a CSV file.
+
+        :param output_dir: The output directory to save the log file.
+        :return: None
+        """
         df = pd.DataFrame(self.log_history)
         df.to_csv(os.path.join(output_dir, "training_log.csv"), index=False)
 
 
 def train_text_emotion_model():
+    """
+    Train the text emotion classification model using the pre-trained BERT model.
+
+    :return: None
+    """
     # Load and preprocess the data
     train_dataset, test_dataset, tokenizer = preprocess_and_tokenize()
 

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import {
   Box,
   Typography,
@@ -11,10 +11,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import Slider from "react-slick";
 import { DarkModeContext } from "../context/DarkModeContext";
+import "../App.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { isDarkMode } = useContext(DarkModeContext); // Access dark mode state
+  const { isDarkMode } = useContext(DarkModeContext);
+
+  // Ref to access Slider instance
+  const sliderRef = useRef(null);
 
   const settings = {
     dots: true,
@@ -23,9 +27,73 @@ const LandingPage = () => {
     slidesToShow: 3,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 2000,
     pauseOnHover: true,
     arrows: false,
+    appendDots: (dots) => (
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-25px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ul
+          style={{ display: "flex", listStyle: "none", margin: 0, padding: 0 }}
+        >
+          {dots.map((dot, index) => (
+            <li
+              key={index}
+              style={{
+                margin: "0 5px",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                // Use sliderRef to navigate to the specific slide
+                sliderRef.current.slickGoTo(index);
+              }}
+            >
+              <div
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  backgroundColor: isDarkMode
+                    ? dot.props.className.includes("slick-active")
+                      ? "#fff"
+                      : "#888"
+                    : dot.props.className.includes("slick-active")
+                      ? "#333"
+                      : "#bbb",
+                  opacity: dot.props.className.includes("slick-active")
+                    ? "1"
+                    : "0.5",
+                  transform: dot.props.className.includes("slick-active")
+                    ? "scale(1.2)"
+                    : "scale(1)",
+                  transition: "all 0.3s ease",
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    ),
+    customPaging: (i) => (
+      <div
+        style={{
+          width: "10px",
+          height: "10px",
+          borderRadius: "50%",
+          cursor: "pointer",
+          backgroundColor: isDarkMode ? "#fff" : "#333",
+          opacity: "0.5",
+          transition: "opacity 0.3s ease, transform 0.3s ease",
+        }}
+      ></div>
+    ),
     responsive: [
       {
         breakpoint: 960,
@@ -82,7 +150,7 @@ const LandingPage = () => {
         <Typography variant="h4" sx={styles.sectionTitle}>
           Features
         </Typography>
-        <Slider {...settings}>
+        <Slider {...settings} ref={sliderRef}>
           {features.map((feature, index) => (
             <Grid item xs={12} md={4} key={index}>
               <Card sx={styles.featureCard}>
@@ -119,7 +187,7 @@ const LandingPage = () => {
           <Typography variant="h4" sx={styles.sectionTitle}>
             What Our Users Say
           </Typography>
-          <Slider {...settings}>
+          <Slider {...settings} ref={sliderRef}>
             {testimonials.map((testimonial, index) => (
               <Grid item xs={12} md={4} key={index}>
                 <Card sx={styles.testimonialCard}>
@@ -261,6 +329,7 @@ const getStyles = (isDarkMode) => ({
     display: "flex",
     flexDirection: "column",
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   heroSection: {
     backgroundColor: isDarkMode ? "#333" : "#ff4d4d", // Dark mode support for hero
@@ -268,6 +337,7 @@ const getStyles = (isDarkMode) => ({
     color: isDarkMode ? "#fff" : "#fff",
     textAlign: "center",
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   heroTitle: {
     font: "inherit",
@@ -275,17 +345,20 @@ const getStyles = (isDarkMode) => ({
     fontSize: "2.5rem",
     marginBottom: "20px",
     color: isDarkMode ? "#fff" : "#fff", // Ensure white text for both modes
+    animation: "slideUp 0.6s ease-out",
   },
   heroSubtitle: {
     font: "inherit",
     fontSize: "1.2rem",
     marginBottom: "30px",
     color: isDarkMode ? "#ddd" : "#fff", // Lighter color for subtitle in dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   buttonContainer: {
     display: "flex",
     justifyContent: "center",
     gap: "15px",
+    animation: "slideUp 0.6s ease-out",
   },
   heroButton: {
     font: "inherit",
@@ -314,6 +387,7 @@ const getStyles = (isDarkMode) => ({
   sectionContainer: {
     padding: "60px 0",
     textAlign: "center",
+    animation: "slideUp 0.6s ease-out",
   },
   sectionTitle: {
     font: "inherit",
@@ -322,6 +396,7 @@ const getStyles = (isDarkMode) => ({
     marginBottom: "40px",
     fontWeight: "bold",
     color: isDarkMode ? "#fff" : "#333", // Adjust title color based on dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   featureCard: {
     padding: "20px",
@@ -332,6 +407,7 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#2e2e2e" : "#fff", // Adjust card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   featureTitle: {
     font: "inherit",
@@ -339,15 +415,18 @@ const getStyles = (isDarkMode) => ({
     fontSize: "1.2rem",
     marginBottom: "10px",
     color: isDarkMode ? "#fff" : "#333", // Adjust title color for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   featureDescription: {
     font: "inherit",
     color: isDarkMode ? "#ddd" : "#666", // Adjust description text for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialSection: {
     backgroundColor: isDarkMode ? "#121212" : "#fafafa", // Adjust testimonial background for dark mode
     padding: "60px 0",
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialCard: {
     padding: "20px",
@@ -358,23 +437,27 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust testimonial card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialText: {
     font: "inherit",
     fontStyle: "italic",
     marginBottom: "10px",
     color: isDarkMode ? "#ddd" : "#555", // Adjust text color for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   testimonialAuthor: {
     font: "inherit",
     color: isDarkMode ? "#fff" : "#333", // Adjust author text color for dark mode
     fontWeight: "bold",
+    animation: "slideUp 0.6s ease-out",
   },
   informativeSection: {
     font: "inherit",
     padding: "60px 0",
     backgroundColor: isDarkMode ? "#121212" : "#fff", // Adjust section background for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   infoCard: {
     padding: "20px",
@@ -383,6 +466,7 @@ const getStyles = (isDarkMode) => ({
     backgroundColor: isDarkMode ? "#333" : "#fff", // Adjust info card background for dark mode
     color: isDarkMode ? "#fff" : "#333", // Adjust text color for dark mode
     transition: "background-color 0.3s ease",
+    animation: "slideUp 0.6s ease-out",
   },
   infoTitle: {
     font: "inherit",
@@ -390,10 +474,12 @@ const getStyles = (isDarkMode) => ({
     fontWeight: "bold",
     marginBottom: "10px",
     color: isDarkMode ? "#fff" : "#333", // Adjust title color for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
   infoDescription: {
     font: "inherit",
     color: isDarkMode ? "#ddd" : "#666", // Adjust description text for dark mode
+    animation: "slideUp 0.6s ease-out",
   },
 });
 

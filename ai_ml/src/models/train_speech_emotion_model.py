@@ -2,6 +2,7 @@ import os
 import numpy as np
 import librosa
 import pickle
+
 from moviepy.editor import AudioFileClip
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
@@ -28,6 +29,9 @@ def extract_features(file_name):
     """
     Extract MFCC features from an audio file using librosa.
     Handles both .wav and .mp4 files.
+
+    :param file_name: The path to the audio file.
+    :return: The extracted MFCC features
     """
     try:
         # If the file is an mp4, convert it to wav using moviepy
@@ -56,6 +60,9 @@ def extract_features(file_name):
 def load_data(dataset_path):
     """
     Load the dataset and extract features and labels.
+
+    :param dataset_path: The path to the dataset directory.
+    :return: The extracted features and labels.
     """
     X = []
     y = []
@@ -85,6 +92,10 @@ def load_data(dataset_path):
 def train_speech_emotion_model(X, y):
     """
     Train a speech emotion recognition model using SVM.
+
+    :param X: The features.
+    :param y: The labels.
+    :return: None
     """
     # Split the dataset into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

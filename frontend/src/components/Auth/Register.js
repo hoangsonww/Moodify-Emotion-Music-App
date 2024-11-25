@@ -160,6 +160,7 @@ const Register = () => {
                   aria-label="toggle password visibility"
                   onClick={handleTogglePasswordVisibility}
                   edge="end"
+                  sx={{ color: isDarkMode ? "white" : "#333" }}
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
@@ -194,6 +195,7 @@ const Register = () => {
                   aria-label="toggle confirm password visibility"
                   onClick={handleToggleConfirmPasswordVisibility}
                   edge="end"
+                  sx={{ color: isDarkMode ? "white" : "#333" }}
                 >
                   {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>

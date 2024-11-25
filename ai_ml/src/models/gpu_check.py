@@ -2,6 +2,11 @@ import torch
 
 
 def check_gpu():
+    """
+    Check if a GPU is available and print the GPU name.
+
+    :return: None
+    """
     cuda_available = torch.cuda.is_available()
     num_gpus = torch.cuda.device_count()
     if cuda_available and num_gpus > 0:

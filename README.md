@@ -62,9 +62,11 @@ Moodify provides personalized music recommendations based on users' emotional st
 
 <h2 id="-live-frontend-demo">🌐 Live Deployment</h2>
 
-The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: [Moodify](https://moodify-emotion-music-app.vercel.app/).
+The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: [Moodify](https://moodify-app.vercel.app).
 
 Feel free to also visit the backend at [Moodify Backend API](https://moodify-emotion-music-app.onrender.com/).
+
+For your information, the frontend's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
 **Diclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
 
@@ -887,6 +889,7 @@ Feel free to explore the Jenkins pipeline script in the `Jenkinsfile` and custom
 <h2 id="-license">📝 License</h2>
 
 - This project is licensed under the **MIT License**. Please see the [LICENSE](LICENSE) file for details.
+- If you use or build upon this project, please provide the necessary attribution and references.
 
 <h2 id="-contact">📧 Contact</h2>
 

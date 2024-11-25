@@ -3,8 +3,10 @@ import librosa
 import pickle
 import os
 import soundfile as sf
+
 from moviepy.editor import AudioFileClip
 from sklearn.preprocessing import StandardScaler
+
 import random
 
 # Define the base directory two levels up from the current file
@@ -52,9 +54,11 @@ emotion_to_genre = {
     "amused": "party"
 }
 
+
 def load_speech_emotion_model():
     """
     Load the pre-trained speech emotion recognition model and scaler.
+
     :return: The loaded model and scaler
     """
     with open(MODEL_PATH, 'rb') as file:
@@ -63,9 +67,11 @@ def load_speech_emotion_model():
         scaler = pickle.load(file)
     return model, scaler
 
+
 def convert_mp4_to_wav(mp4_file):
     """
     Convert an mp4 file to a wav file using moviepy.
+
     :param mp4_file: The path to the mp4 file
     :return: The path to the converted wav file
     """
@@ -83,9 +89,11 @@ def convert_mp4_to_wav(mp4_file):
         print(f"Error converting mp4 to wav: {e}")
         return None
 
+
 def extract_features(audio_file):
     """
     Extract MFCC features from an audio file using librosa.
+
     :param audio_file: The path to the audio file
     :return: The extracted MFCC features
     """
@@ -97,9 +105,11 @@ def extract_features(audio_file):
         print(f"Error extracting features from {audio_file}: {e}")
         return None
 
+
 def infer_speech_emotion(audio_file):
     """
     Infer the emotion from an audio file using a pre-trained speech emotion recognition model.
+
     :param audio_file:
     :return: The predicted emotion
     """

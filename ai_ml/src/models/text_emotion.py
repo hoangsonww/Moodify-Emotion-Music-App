@@ -4,6 +4,12 @@ from ai_ml.src.config import CONFIG
 
 
 def infer_text_emotion(text):
+    """
+    Infer the emotion from the given text using the trained text emotion model.
+
+    :param text: The input text.
+    :return: The detected emotion.
+    """
     tokenizer = AutoTokenizer.from_pretrained(CONFIG["output_dir"])
     model = AutoModelForSequenceClassification.from_pretrained(CONFIG["output_dir"])
 
