@@ -68,11 +68,11 @@ Feel free to also visit the backend at [Moodify Backend API](https://moodify-emo
 
 For your information, the frontend's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
-**Diclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
+> **Diclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
 
-Also, the amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. Also, the facial and speech emotion detection models may also fail due to memory constraints - which can also cause the server to restart.
+> **Additional Note**: the amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. Also, the facial and speech emotion detection models may also fail due to memory constraints - which can also cause the server to crash and restart.
 
-There is no guarantee of uptime or performance with the current deployment, unless I have more resources _(money)_ to upgrade the server :( Feel free to [contact me](#contact) if you encounter any issues or need further assistance.
+> There is no guarantee of uptime or performance with the current deployment, unless I have more resources _(money)_ to upgrade the server :( Feel free to [contact me](#contact) if you encounter any issues or need further assistance.
 
 [![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green)](https://moodify-emotion-music-app.vercel.app/)
 [![Deployed with Render](https://img.shields.io/badge/Deployed%20with-Render-green)](https://moodify-emotion-music-app.onrender.com/)
