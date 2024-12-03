@@ -1,8 +1,6 @@
 import requests
 import random
 from ai_ml.src.utils import get_spotify_access_token
-from ai_ml.src.config import CONFIG
-
 
 def get_music_recommendation(emotion, market=None):
     """
@@ -18,69 +16,44 @@ def get_music_recommendation(emotion, market=None):
         print(f"Error retrieving access token: {e}")
         return []
 
-    available_genre = ["acoustic", "afrobeat", "alt-rock", "alternative", "ambient", "anime", "black-metal",
-                       "bluegrass", "blues", "bossanova", "brazil", "breakbeat", "british", "cantopop",
-                       "chicago-house", "children", "chill", "classical", "club", "comedy", "country", "dance",
-                       "dancehall", "death-metal", "deep-house", "detroit-techno", "disco", "disney",
-                       "drum-and-bass", "dub", "dubstep", "edm", "electro", "electronic", "emo", "folk", "forro",
-                       "french", "funk", "garage", "german", "gospel", "goth", "grindcore", "groove", "grunge",
-                       "guitar", "happy", "hard-rock", "hardcore", "hardstyle", "heavy-metal", "hip-hop", "holidays",
-                       "honky-tonk", "house", "idm", "indian", "indie", "indie-pop", "industrial", "iranian",
-                       "j-dance", "j-idol", "j-pop", "j-rock", "jazz", "k-pop", "kids", "latin", "latino", "malay",
-                       "mandopop", "metal", "metal-misc", "metalcore", "minimal-techno", "movies", "mpb", "new-age",
-                       "new-release", "opera", "pagode", "party", "philippines-opm", "piano", "pop", "pop-film",
-                       "post-dubstep", "power-pop", "progressive-house", "psych-rock", "punk", "punk-rock", "r-n-b",
-                       "rainy-day", "reggae", "reggaeton", "road-trip", "rock", "rock-n-roll", "rockabilly",
-                       "romance", "sad", "salsa", "samba", "sertanejo", "show-tunes", "singer-songwriter", "ska",
-                       "sleep", "songwriter", "soul", "soundtracks", "spanish", "study", "summer", "swedish",
-                       "synth-pop", "tango", "techno", "trance", "trip-hop", "turkish", "work-out", "world-music"]
-
-    # Mapping emotion to genre
-    emotion_to_genre = {
-        "joy": "hip-hop",
+    # Map emotions to keywords for the search query
+    emotion_to_keyword = {
+        "joy": "happy",
         "happy": "happy",
         "sadness": "sad",
-        "anger": "metal",
-        "love": "romance",
-        "fear": "sad",
-        "neutral": "pop",
-        "calm": "chill",
+        "anger": "angry",
+        "love": "romantic",
+        "fear": "calm",
+        "neutral": "chill",
+        "calm": "peaceful",
         "disgust": "blues",
         "surprised": "party",
-        "surprise": "party",
-        "excited": "party",
-        "bored": "pop",
-        "tired": "chill",
-        "relaxed": "chill",
-        "stressed": "chill",
-        "anxious": "chill",
+        "excited": "energetic",
+        "bored": "relaxing",
+        "tired": "calm",
+        "relaxed": "calm",
+        "stressed": "calm",
+        "anxious": "calm",
         "depressed": "sad",
         "lonely": "sad",
-        "energetic": "hip-hop",
-        "nostalgic": "pop",
-        "confused": "pop",
-        "frustrated": "metal",
-        "hopeful": "romance",
-        "proud": "hip-hop",
-        "guilty": "blues",
-        "jealous": "pop",
-        "ashamed": "blues",
-        "disappointed": "pop",
+        "energetic": "upbeat",
+        "nostalgic": "retro",
+        "confused": "instrumental",
+        "frustrated": "aggressive",
+        "hopeful": "uplifting",
+        "proud": "epic",
+        "guilty": "melancholic",
+        "jealous": "dark",
+        "ashamed": "melancholic",
+        "disappointed": "sad",
         "content": "chill",
-        "insecure": "pop",
+        "insecure": "soulful",
         "embarassed": "blues",
-        "overwhelmed": "chill",
-        "amused": "party"
+        "overwhelmed": "ambient",
+        "amused": "fun"
     }
 
-    # Determine the genre for the given emotion
-    genre = emotion_to_genre.get(emotion.lower(), "pop")  # Default to "pop" if emotion isn't recognized
-
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    # List of markets based on the full list from Spotify
+    # Full list of available markets
     available_markets = [
         "AD", "AE", "AG", "AL", "AM", "AO", "AR", "AT", "AU", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI",
         "BJ", "BN", "BO", "BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CD", "CG", "CH", "CI", "CL", "CM", "CO", "CR",
@@ -95,31 +68,30 @@ def get_music_recommendation(emotion, market=None):
         "WS", "XK", "ZA", "ZM", "ZW"
     ]
 
-    # Select the market provided or randomly pick one if not provided
+    # Determine the keyword for the given emotion
+    keyword = emotion_to_keyword.get(emotion.lower(), "pop")  # Default to "pop" if emotion isn't recognized
+
+    # Select market randomly if not provided
     selected_market = market if market in available_markets else random.choice(available_markets)
 
-    params = {
-        "seed_genres": genre,
-        "limit": 10,
-        "market": selected_market,  # Use the selected market
-        "locale": selected_market  # Set locale to be the same as the market
+    headers = {
+        "Authorization": f"Bearer {access_token}"
     }
 
-    # Optionally, customize the energy/valence based on emotion (Spotify-specific attributes)
-    if emotion in ["joy", "love"]:
-        params["target_valence"] = 0.8  # Happiness
-        params["target_energy"] = 0.7  # Energetic
-    elif emotion == "sadness":
-        params["target_valence"] = 0.2  # Sadness
-        params["target_energy"] = 0.3  # Calm
-    elif emotion == "anger":
-        params["target_energy"] = 0.9  # High energy
-        params["target_valence"] = 0.4  # Not necessarily positive
+    # Prepare query parameters
+    params = {
+        "q": keyword,  # Use the keyword mapped from emotion
+        "type": "track",
+        "limit": 10,
+        "market": selected_market
+    }
 
-    # Making a request to the Spotify Recommendations API
-    response = requests.get("https://api.spotify.com/v1/recommendations", headers=headers, params=params)
+    print(f"Parameters sent to Spotify API: {params}")
 
-    # Handling various response statuses
+    # Make the request to Spotify Search API
+    response = requests.get("https://api.spotify.com/v1/search", headers=headers, params=params)
+
+    # Handle response statuses
     if response.status_code == 401:
         print("Access token expired. Please refresh the token.")
         return []
@@ -127,14 +99,18 @@ def get_music_recommendation(emotion, market=None):
         print(f"Failed to fetch music recommendations. Status code: {response.status_code}")
         return []
 
-    tracks = response.json().get("tracks", [])
+    # Parse the response
+    response_data = response.json()
+    tracks = response_data.get("tracks", {}).get("items", [])
 
-    # Extracting track details including image
+    print(f"Spotify API response: {response_data}")
+
+    # Extract track details
     recommended_tracks = [
         {
             "name": track["name"],
             "artist": ", ".join([artist["name"] for artist in track["artists"]]),
-            "preview_url": track["preview_url"],
+            "preview_url": track.get("preview_url"),
             "external_url": track["external_urls"]["spotify"],  # Spotify link
             "image_url": track["album"]["images"][0]["url"] if track["album"]["images"] else None  # Album image
         }
@@ -142,6 +118,6 @@ def get_music_recommendation(emotion, market=None):
     ]
 
     if not recommended_tracks:
-        print(f"No tracks found for genre: {genre}")
+        print(f"No tracks found for keyword: {keyword}")
 
     return recommended_tracks

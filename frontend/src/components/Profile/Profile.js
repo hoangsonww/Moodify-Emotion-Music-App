@@ -12,7 +12,6 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../../context/DarkModeContext";
-import placeholderImage from "../../assets/images/profile.webp";
 
 const CACHE_KEY = "userProfileCache";
 
@@ -27,14 +26,40 @@ const ProfilePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [loadingText, setLoadingText] = useState("Loading...");
-
+  const [randomImage, setRandomImage] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Get dark mode state from DarkModeContext
-  const { isDarkMode } = useContext(DarkModeContext);
+  const placeholderImages = [
+    require("../../assets/images/profile.webp"),
+    require("../../assets/images/OIP.jpg"),
+    require("../../assets/images/OIP2.webp"),
+    require("../../assets/images/OIP3.png"),
+    require("../../assets/images/OIP4.png"),
+    require("../../assets/images/OIP5.png"),
+    require("../../assets/images/OIP6.webp"),
+    require("../../assets/images/OIP7.webp"),
+    require("../../assets/images/OIP8.webp"),
+    require("../../assets/images/OIP9.webp"),
+    require("../../assets/images/OIP10.webp"),
+    require("../../assets/images/OIP11.webp"),
+    require("../../assets/images/OIP12.webp"),
+    require("../../assets/images/OIP13.webp"),
+    require("../../assets/images/OIP14.webp"),
+    require("../../assets/images/OIP15.webp"),
+    require("../../assets/images/OIP16.webp"),
+    require("../../assets/images/OIP17.webp"),
+    require("../../assets/images/OIP18.webp"),
+    require("../../assets/images/OIP19.webp"),
+    require("../../assets/images/OIP20.webp"),
+  ];
 
   useEffect(() => {
+    // Randomly select an image on component mount
+    setRandomImage(
+      placeholderImages[Math.floor(Math.random() * placeholderImages.length)]
+    );
+
     if (!token) {
       alert("You are not authenticated. Please log in.");
       navigate("/login");
@@ -44,6 +69,9 @@ const ProfilePage = () => {
     fetchUserData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Get dark mode state from DarkModeContext
+  const { isDarkMode } = useContext(DarkModeContext);
 
   const fetchUserData = async () => {
     setIsLoading(true);
@@ -156,7 +184,7 @@ const ProfilePage = () => {
           <Box style={styles.infoSection}>
             <Avatar
               alt="User Avatar"
-              src={placeholderImage}
+              src={randomImage}
               sx={{
                 width: 100,
                 height: 100,
