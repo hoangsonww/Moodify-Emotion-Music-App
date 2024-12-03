@@ -68,17 +68,18 @@ Feel free to also visit the backend at [Moodify Backend API](https://moodify-emo
 
 For your information, the frontend's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
-**Diclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
+> **Diclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
 
-Also, the amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. Also, the facial and speech emotion detection models may also fail due to memory constraints - which can also cause the server to restart.
+> **Additional Note**: The amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. **Also**, the facial and speech emotion detection models may also **cause the server to crash** due to memory constraints and the heavy processing required by AI applications, so please be patient if the server crashes and restarts.
 
-There is no guarantee of uptime or performance with the current deployment, unless I have more resources _(money)_ to upgrade the server :( Feel free to [contact me](#contact) if you encounter any issues or need further assistance.
+> There is no guarantee of uptime or performance with the current deployment, unless I have more resources _(money)_ to upgrade the server :( Feel free to [contact me](#contact) if you encounter any issues or need further assistance.
 
-[![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green)](https://moodify-emotion-music-app.vercel.app/)
-[![Deployed with Render](https://img.shields.io/badge/Deployed%20with-Render-green)](https://moodify-emotion-music-app.onrender.com/)
-[![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen)](ai_ml)
-[![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen)](https://moodify-emotion-music-app.netlify.app/)
-[![Docker Container OK](https://img.shields.io/badge/Docker%20Container-OK-brightgreen)](docker-compose.yml)
+[![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green?logo=vercel)](https://moodify-emotion-music-app.vercel.app/)
+[![Deployed with Render](https://img.shields.io/badge/Deployed%20with-Render-green?logo=render)](https://moodify-emotion-music-app.onrender.com/)
+[![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen?logo=ai)](ai_ml)
+[![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen?logo=netlify)](https://moodify-emotion-music-app.netlify.app/)
+[![Docker Container OK](https://img.shields.io/badge/Docker%20Container-OK-brightgreen?logo=docker)](docker-compose.yml)
+[![Jenkins Build Status](https://img.shields.io/badge/Jenkins%20Build-Passing-brightgreen?logo=jenkins)](http://your-jenkins-url)
 
 <h2 id="-features">🌟 Features</h2>
 
