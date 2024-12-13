@@ -18,7 +18,7 @@ def get_music_recommendation(emotion, market=None):
 
     # Map emotions to keywords for the search query
     emotion_to_keyword = {
-        "joy": "happy",
+        "joy": "joy",
         "happy": "happy",
         "sadness": "sad",
         "anger": "angry",
@@ -80,7 +80,7 @@ def get_music_recommendation(emotion, market=None):
 
     # Prepare query parameters
     params = {
-        "q": keyword,  # Use the keyword mapped from emotion
+        "q": keyword,
         "type": "track",
         "limit": 10,
         "market": selected_market
