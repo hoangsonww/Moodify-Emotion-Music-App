@@ -52,6 +52,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 - [**🐳 Containerization**](#-containerization)
 - [**☸️ Kubernetes**](#-kubernetes)
 - [**🔗 Jenkins**](#-jenkins)
+- [**🚀 OpenAPI Specification**](#openapi-specification)
 - [**🔧 Contributing**](#-contributing)
 - [**📝 License**](#-license)
 - [**📧 Contact**](#-contact)
@@ -68,7 +69,7 @@ Feel free to also visit the backend at [Moodify Backend API](https://moodify-emo
 
 For your information, the frontend's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
-> **Diclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
+> **Dislaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
 
 > **Additional Note**: The amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. **Also**, the facial and speech emotion detection models may also **cause the server to crash** due to memory constraints and the heavy processing required by AI applications, so please be patient if the server crashes and restarts.
 
@@ -880,6 +881,58 @@ We have also included Jenkins pipeline script for automating the build and deplo
     - The pipeline will automate the build, test, and deployment process for the app.
 
 Feel free to explore the Jenkins pipeline script in the `Jenkinsfile` and customize it as needed for your deployment process.
+
+<h2 id="openapi-specification">🚀 OpenAPI Specification</h2>
+
+The backend APIs are documented using the OpenAPI Specification (OAS) format. The `openapi.yaml` file contains the API documentation in the OAS format, which can be used to generate client libraries, server stubs, and mock servers.
+
+#### Using the `openapi.yaml` File
+
+1. **View the API Documentation**
+- Open [Swagger Editor](https://editor.swagger.io/).
+- Upload the `openapi.yaml` file or paste its content.
+- Visualize and interact with the API documentation.
+
+2. **Test the API**
+- Import `openapi.yaml` into [Postman](https://www.postman.com/):
+  - Open Postman → Import → Select `openapi.yaml`.
+  - Test the API endpoints directly from Postman.
+- Or use [Swagger UI](https://swagger.io/tools/swagger-ui/):
+  - Provide the file URL or upload it to view and test endpoints.
+
+3. **Generate Client Libraries**
+- Install OpenAPI Generator:
+  ```bash
+  npm install @openapitools/openapi-generator-cli -g
+  ```
+- Generate a client library:
+  ```bash
+  openapi-generator-cli generate -i openapi.yaml -g <language> -o ./client
+  ```
+- Replace `<language>` with the desired programming language.
+
+4. **Generate Server Stubs**
+- Generate a server stub:
+  ```bash
+  openapi-generator-cli generate -i openapi.yaml -g <framework> -o ./server
+  ```
+- Replace `<framework>` with the desired framework.
+
+5. **Run a Mock Server**
+- Install Prism:
+  ```bash
+  npm install -g @stoplight/prism-cli
+  ```
+- Start the mock server:
+  ```bash
+  prism mock openapi.yaml
+  ```
+
+6. **Validate the OpenAPI File**
+- Use [Swagger Validator](https://validator.swagger.io/):
+  - Upload `openapi.yaml` or paste its content to check for errors.
+
+This guide enables you to view, test, and utilize the API.
 
 <h2 id="-contributing">🔧 Contributing</h2>
 
