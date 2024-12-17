@@ -57,7 +57,7 @@ const ProfilePage = () => {
   useEffect(() => {
     // Randomly select an image on component mount
     setRandomImage(
-      placeholderImages[Math.floor(Math.random() * placeholderImages.length)]
+      placeholderImages[Math.floor(Math.random() * placeholderImages.length)],
     );
 
     if (!token) {
