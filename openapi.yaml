@@ -1,0 +1,421 @@
+openapi: 3.0.0
+info:
+  title: User, Emotion Detection, Admin, and Documentation API
+  version: 1.0.0
+  description: API for managing users, detecting emotions, and accessing admin and documentation endpoints for the Moodify Emotion Music App
+  contact:
+    name: Son Nguyen
+    email: hoangson091104@gmail.com
+servers:
+  - url: https://moodify-emotion-music-app.onrender.com/
+    description: Production server
+  - url: http://127.0.0.1:8000/
+    description: Local development server
+paths:
+  /users/register/:
+    post:
+      summary: Register a new user
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        '201':
+          description: User registered successfully
+  /users/login/:
+    post:
+      summary: Login a user and obtain a JWT token
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Login successful
+  /users/user/profile/:
+    get:
+      summary: Retrieve the authenticated user's profile
+      tags:
+        - User
+      responses:
+        '200':
+          description: User profile retrieved
+    put:
+      summary: Update the authenticated user's profile
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      responses:
+        '200':
+          description: User profile updated
+    delete:
+      summary: Delete the authenticated user's profile
+      tags:
+        - User
+      responses:
+        '204':
+          description: User profile deleted
+  /users/recommendations/:
+    post:
+      summary: Save recommendations for a user
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRecommendations'
+      responses:
+        '201':
+          description: Recommendations saved successfully
+  /users/recommendations/{username}/:
+    get:
+      summary: Retrieve recommendations for a user by username
+      tags:
+        - User
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recommendations retrieved successfully
+    delete:
+      summary: Delete all recommendations for a user
+      tags:
+        - User
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Recommendations deleted
+  /users/recommendations/{username}/{recommendation_id}/:
+    delete:
+      summary: Delete a specific recommendation for a user
+      tags:
+        - User
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: recommendation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Recommendation deleted
+  /users/mood_history/{user_id}/:
+    post:
+      summary: Add a mood to the user's mood history
+      tags:
+        - User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoodHistory'
+      responses:
+        '201':
+          description: Mood added successfully
+    get:
+      summary: Retrieve mood history for a user
+      tags:
+        - User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Mood history retrieved successfully
+    delete:
+      summary: Delete a specific mood from the user's history
+      tags:
+        - User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Mood deleted
+  /users/listening_history/{user_id}/:
+    post:
+      summary: Add a track to the user's listening history
+      tags:
+        - User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListeningHistory'
+      responses:
+        '201':
+          description: Track added successfully
+    get:
+      summary: Retrieve listening history for a user
+      tags:
+        - User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Listening history retrieved successfully
+    delete:
+      summary: Delete a specific track from the user's history
+      tags:
+        - User
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Track deleted
+  /users/verify-username-email/:
+    post:
+      summary: Verify if a username and email are valid
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Verification successful
+  /users/reset-password/:
+    post:
+      summary: Reset a user's password
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password reset successfully
+  /users/verify-token/:
+    get:
+      summary: Verify a user's token
+      tags:
+        - User
+      responses:
+        '200':
+          description: Token verified successfully
+  /api/text_emotion/:
+    post:
+      summary: Analyze text for emotional content
+      tags:
+        - Emotion Detection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Text emotion analysis successful
+  /api/speech_emotion/:
+    post:
+      summary: Analyze speech for emotional content
+      tags:
+        - Emotion Detection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                audioFile:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Speech emotion analysis successful
+  /api/facial_emotion/:
+    post:
+      summary: Analyze facial expressions for emotions
+      tags:
+        - Emotion Detection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imageFile:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Facial emotion analysis successful
+  /api/music_recommendation/:
+    post:
+      summary: Get music recommendations based on emotion
+      tags:
+        - Emotion Detection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emotion:
+                  type: string
+      responses:
+        '200':
+          description: Music recommendations retrieved
+  /admin/:
+    get:
+      summary: Access the Django Admin interface
+      tags:
+        - Admin Interface
+      responses:
+        '200':
+          description: Admin interface accessed
+  /swagger/:
+    get:
+      summary: Access the Swagger UI API documentation
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: Swagger UI accessed
+  /redoc/:
+    get:
+      summary: Access the Redoc API documentation
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: Redoc accessed
+  /:
+    get:
+      summary: Access the API root endpoint (Swagger UI)
+      tags:
+        - Documentation
+      responses:
+        '200':
+          description: API root accessed
+components:
+  schemas:
+    UserRegister:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    UserLogin:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    UserProfile:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        bio:
+          type: string
+    UserRecommendations:
+      type: object
+      properties:
+        recommendations:
+          type: array
+          items:
+            type: string
+    MoodHistory:
+      type: object
+      properties:
+        mood:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ListeningHistory:
+      type: object
+      properties:
+        track:
+          type: string
+        artist:
+          type: string
+        album:
+          type: string
