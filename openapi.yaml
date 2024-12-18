@@ -2,12 +2,15 @@ openapi: 3.0.0
 info:
   title: User, Emotion Detection, Admin, and Documentation API
   version: 1.0.0
-  description: API for managing users, detecting emotions, and accessing admin and documentation endpoints.
+  description: API for managing users, detecting emotions, and accessing admin and documentation endpoints for the Moodify Emotion Music App
   contact:
     name: Son Nguyen
     email: hoangson091104@gmail.com
 servers:
   - url: https://moodify-emotion-music-app.onrender.com/
+    description: Production server
+  - url: http://127.0.0.1:8000/
+    description: Local development server
 paths:
   /users/register/:
     post:
