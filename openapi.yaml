@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: User, Emotion Detection, Admin, and Documentation API
+  title: Moodify Emotion Music App API
   version: 1.0.0
   description: API for managing users, detecting emotions, and accessing admin and documentation endpoints for the Moodify Emotion Music App
   contact:
