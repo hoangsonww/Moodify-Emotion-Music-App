@@ -69,7 +69,7 @@ Feel free to also visit the backend at [Moodify Backend API](https://moodify-emo
 
 For your information, the frontend's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
-> **Dislaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
+> **Disclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
 
 > **Additional Note**: The amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. **Also**, the facial and speech emotion detection models may also **cause the server to crash** due to memory constraints and the heavy processing required by AI applications, so please be patient if the server crashes and restarts.
 
