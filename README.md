@@ -99,6 +99,8 @@ For your information, the frontend's production (deployment) branch is `frontend
 
 <h2 id="-technologies">🛠️ Technologies</h2>
 
+Here is the list of technologies used in the Moodify project:
+
 - **Frontend**:
     - React
     - Axios
@@ -135,7 +137,7 @@ For your information, the frontend's production (deployment) branch is `frontend
     - Matplotlib
     - Hadoop
     - Spark
-- **Mobile**:
+- **Mobile** **(in progress):**
     - React Native
     - Expo
     - Expo Go
