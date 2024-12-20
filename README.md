@@ -86,6 +86,8 @@ For your information, the frontend's production (deployment) branch is `frontend
 
 <h2 id="-features">🌟 Features</h2>
 
+The Moodify project aims to provide the following features:
+
 - User registration and login functionality.
 - Input analysis through text, speech, and facial expressions.
 - Real-time music recommendations based on emotion detection.
@@ -96,6 +98,7 @@ For your information, the frontend's production (deployment) branch is `frontend
 - Mobile app version for seamless user experience.
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
+- And so much more!
 
 <h2 id="-technologies">🛠️ Technologies</h2>
 
