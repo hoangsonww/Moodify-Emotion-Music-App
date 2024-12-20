@@ -141,8 +141,6 @@ Here is the list of technologies used in the Moodify project:
     - React Native
     - Expo
     - Expo Go
-- **PWA**:
-    - Progressive Web App features for offline support
 - **Containerization, Deployment, and CI/CD**:
     - Docker
     - Kubernetes
