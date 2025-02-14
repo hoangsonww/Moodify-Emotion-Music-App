@@ -1,0 +1,14 @@
+{
+  "name": "AI-ML Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "extensions": [
+    "ms-python.python",
+    "ms-azuretools.vscode-docker",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ],
+  "forwardPorts": [3000, 8000, 5000, 27017],
+  "remoteUser": "vscode"
+}

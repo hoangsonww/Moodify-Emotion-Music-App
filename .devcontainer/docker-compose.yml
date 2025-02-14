@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  devcontainer:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: devcontainer
+    volumes:
+      - ..:/workspace:cached
+    environment:
+      - AI_ML_URL=http://ai_ml:5000
+      - REACT_APP_BACKEND_URL=http://backend:8000
+    networks:
+      - dev_network
+    depends_on:
+      - ai_ml
+      - backend
+      - frontend
+      - mongodb
+    command: sleep infinity
+
+  ai_ml:
+    build:
+      context: ..
+      dockerfile: ./ai_ml/Dockerfile
+    container_name: ai_ml_service
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    networks:
+      - dev_network
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    container_name: backend_service
+    ports:
+      - "8000:8000"
+    environment:
+      - AI_ML_URL=http://ai_ml:5000
+    depends_on:
+      - ai_ml
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - dev_network
+
+  frontend:
+    build:
+      context: ../frontend
+    container_name: frontend_service
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - dev_network
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - dev_network
+
+networks:
+  dev_network:
+
+volumes:
+  mongo_data:
