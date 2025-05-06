@@ -11,6 +11,13 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
   <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
 </p>
 
+> ⚠️ **Impersonation Alert**  
+> Be aware that there may be fake accounts or handles (current known impersonator: **@MoodifyAPP**) claiming to be me and soliciting investments or personal information. **I am only “Son Nguyen” at [hoangsonww on GitHub](https://github.com/hoangsonww)** and on any other platforms linked here in this repo.
+>
+> • Do *not* send money or personal data to anyone else.  
+> • Always verify you’re interacting with one of the links in this README.
+> • If you have any questions or concerns, please [contact me](mailto:hoangson091104@gmail.com) directly, before taking any action.
+
 ## **Table of Contents**
 
 - [**🎵 Overview**](#-overview)
