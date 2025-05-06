@@ -20,7 +20,6 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 
 ## **Table of Contents**
 
-
 - [**🎵 Overview**](#-overview)
 - [**🌐 Live Deployment**](#-live-frontend-demo)
 - [**🌟 Features**](#-features)
