@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ai-ml-backend
+    runtime: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python backend/download_models.py
+    startCommand: gunicorn backend.wsgi:application --log-file -
+    plan: free
