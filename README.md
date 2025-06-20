@@ -11,6 +11,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
   <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
 </p>
 
+> [!IMPORTANT]
 > ⚠️ **Impersonation Alert**  
 > Be aware that there may be fake accounts or handles (current known impersonator: **@MoodifyAPP**) claiming to be me and soliciting investments or personal information. **I am only “Son Nguyen” at [hoangsonww on GitHub](https://github.com/hoangsonww)** and on any other platforms linked here in this repo.
 >
@@ -76,10 +77,13 @@ Feel free to also visit the backend at [Moodify Backend API](https://moodify-emo
 
 For your information, the front-end's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
+> [!IMPORTANT]
 > **Disclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
 
-> **Additional Note**: The amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. **Also**, the facial and speech emotion detection models may also **cause the server to crash** due to memory constraints and the heavy processing required by AI applications, so please be patient if the server crashes and restarts. I'd also recommend that you clone the repository and replace the URLs with your own local backend server for a more stable experience.
+> [!IMPORTANT]
+> **Note**: The amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. **Also**, the facial and speech emotion detection models may also **cause the server to crash** due to memory constraints and the heavy processing required by AI applications, so please be patient if the server crashes and restarts. I'd also recommend that you clone the repository and replace the URLs with your own local backend server for a more stable experience.
 
+> [!NOTE]
 > There is no guarantee of uptime or performance with the current deployment, unless I have more resources _(money)_ to upgrade the server :( Feel free to [contact me](#contact) if you encounter any issues or need further assistance.
 
 ### Live Statuses
