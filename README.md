@@ -1,11 +1,11 @@
 # **Moodify - Emotion-Based Music Recommendation App**
 
 With the rise of personalized music streaming services, there is a growing need for systems that can recommend music based on users' emotional states.
-Realizing this need, **Moodify** is being developed by [Son Nguyen](https://github.com/hoangsonww) in 2024 to provide personalized music recommendations based on users' detected emotions.
+Realizing this need, **Moodify** is being developed by **[Son Nguyen](https://github.com/hoangsonww)** in 2024 to provide personalized music recommendations based on users' detected emotions.
 
 The **Moodify** project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes text, speech, or facial expressions and suggests music that aligns with the detected emotions.
 
-Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. Data analytics scripts are used to visualize emotion trends and model performance. Users will be directed to Spotify to listen to the recommended music, and they can save their favorite tracks to their Spotify account.
+Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. **Data analytics** scripts and **Apache Spark and Hadoop** are also used to visualize emotion trends and model performance. Users will be directed to Spotify to listen to the recommended music, and they can save their favorite tracks to their Spotify account.
 
 <p align="center">
   <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
@@ -562,7 +562,9 @@ Once the AI/ML models are ready, proceed with setting up the backend.
       MONGODB_URI=<your_mongodb_uri>
       ```
     - Visit `backend/settings.py` and add `SECRET_KEY` & set `DEBUG` to `True`.
-    - **Important**: Ensure these steps are completed before running the backend server.
+
+> [!CAUTION]
+> Ensure these steps are completed before running the backend server.
 
 5. **Run database migrations:**
    ```bash
