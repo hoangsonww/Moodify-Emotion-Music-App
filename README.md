@@ -595,7 +595,8 @@ Finally, set up the frontend to interact with the backend.
    ```
    The frontend will start at `http://localhost:3000`.
 
-**Note:** If you encounter any problems or need my `.env` file, feel free to [contact me](#contact).
+> [!NOTE]
+> If you encounter any problems or need my `.env` file, feel free to [contact me](#contact).
 
 <h2 id="-api-endpoints">📋 API Endpoints</h2>
 
@@ -667,7 +668,9 @@ Finally, set up the frontend to interact with the backend.
 Our backend APIs are all well-documented using Swagger UI and Redoc. You can access the API documentation at the following URLs:
 - **Swagger UI**: `https://moodify-emotion-music-app.onrender.com/swagger`.
 - **Redoc**: `https://moodify-emotion-music-app.onrender.com/redoc`.
-- Note that the backend server may spin down after a period of inactivity, so it may take a few seconds to load initially.
+
+> [!IMPORTANT]
+> Our backend server may spin down after a period of inactivity, so it may take a few seconds to load initially!
 
 Alternatively, you can run the backend server locally and access the API documentation at the following endpoints:
 - **Swagger UI**: `http://127.0.0.1:8000/swagger`.
@@ -718,9 +721,11 @@ To train the models, you can run the provided scripts in the `ai_ml/src/models` 
 
 Ensure that you have the necessary dependencies, datasets, and configurations set up before training the models. Specifically, make sure to visit the `config.py` file and update the paths to the datasets and output directories to the correct ones on your system.
 
-**Note:** By default, these scripts will prioritize using your GPU with CUDA (if available) for faster training.
-However, if that is not available on your machine, the scripts will automatically fall back to using the CPU for training.
-To ensure that you have the necessary dependencies for GPU training, install PyTorch with CUDA support using the following command:
+> [!IMPORTANT]
+> By default, these scripts will prioritize using your GPU with CUDA (if available) for faster training.
+> However, if that is not available on your machine, the scripts will automatically fall back to using the CPU for training.
+> 
+> To ensure that you have the necessary dependencies for GPU training, install PyTorch with CUDA support using the following command:
 
 ```bash
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
@@ -747,7 +752,8 @@ The endpoints are as follows:
 - `/facial_emotion`: Detects emotion from an image
 - `/music_recommendation`: Provides music recommendations based on the detected emotion
 
-**_Important_: For more information about training and using the models, please refer to the [AI/ML documentation](ai_ml/README.md) in the `ai_ml` directory.**
+> [!IMPORTANT]
+> For more information about training and using the models, please refer to the [AI/ML documentation](ai_ml/README.md) in the `ai_ml` directory.**
 
 ### **Pre-Trained Models**
 
