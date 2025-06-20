@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for EstateWise App
+name: CI/CD Pipeline for Moodify App
 
 on:
   push:
