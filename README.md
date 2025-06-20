@@ -562,7 +562,9 @@ Once the AI/ML models are ready, proceed with setting up the backend.
       MONGODB_URI=<your_mongodb_uri>
       ```
     - Visit `backend/settings.py` and add `SECRET_KEY` & set `DEBUG` to `True`.
-    - **Important**: Ensure these steps are completed before running the backend server.
+
+> [!CAUTION]
+> Ensure these steps are completed before running the backend server.
 
 5. **Run database migrations:**
    ```bash
