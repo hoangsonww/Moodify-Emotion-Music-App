@@ -9,7 +9,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
 
 <p align="center">
   <a href="https://moodify-app.vercel.app/" target="_blank" rel="noopener noreferrer">
-  <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
+    <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
   </a>
 </p>
 
