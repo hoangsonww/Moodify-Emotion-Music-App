@@ -61,7 +61,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
   <!-- Mobile -->
   <img src="https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React Native" />
   <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
-  <img src="https://img.shields.io/badge/Expo_Go-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo Go" />
+  <img src="https://img.shields.io/badge/Expo_Go-003020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo Go" />
 
   <!-- DevOps / Deployment -->
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
