@@ -47,7 +47,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
   <img src="https://img.shields.io/badge/Scikit_Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="Scikit Learn" />
   <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy" />
   <img src="https://img.shields.io/badge/MLFlow-999999?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow" />
-  <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge&logoColor=white" alt="FER" />
+  <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge&logo=streamlabs&logoColor=white" alt="FER" />
 
   <!-- Load Balancing -->
   <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="NGINX" />
