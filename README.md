@@ -30,7 +30,7 @@ Supporting both desktop and mobile platforms, **Moodify** offers a seamless user
   <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
   <img src="https://img.shields.io/badge/Spotify-1DB954?style=for-the-badge&logo=spotify&logoColor=white" alt="Spotify" />
   <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger" />
-  <img src="https://img.shields.io/badge/Redoc-EB222A?style=for-the-badge&logo=redoc&logoColor=white" alt="Redoc" />
+  <img src="https://img.shields.io/badge/Redoc-EB222A?style=for-the-badge&logo=googledocs&logoColor=white" alt="Redoc" />
   <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
 
   <!-- Databases -->
