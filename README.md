@@ -220,8 +220,8 @@ Here is the list of technologies used in the Moodify project:
 ### **Data Analytics**:
 - **Matplotlib**: For data visualization.
 - **Apache Hadoop**: For big data processing and analytics.
-- **Spark**: For big data processing and analytics.
-- 
+- **Apache Spark**: For distributed data processing and analytics.
+- **PySpark**: For using Spark with Python.
 
 ### **Mobile (in progress)**:
 - **React Native**: For building the mobile application.
