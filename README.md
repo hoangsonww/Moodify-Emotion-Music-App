@@ -8,7 +8,9 @@ The **Moodify** project is an integrated emotion-based music recommendation syst
 Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. **Data analytics** scripts and **Apache Spark and Hadoop** are also used to visualize emotion trends and model performance. Users will be directed to Spotify to listen to the recommended music, and they can save their favorite tracks to their Spotify account.
 
 <p align="center">
+  <a href="https://moodify-app.vercel.app/" target="_blank">
   <img src="images/moodify-logo.png" alt="Moodify Logo" width="50%" style="border-radius: 12px">
+  </a>
 </p>
 
 > [!IMPORTANT]
