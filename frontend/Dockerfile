@@ -1,18 +1,24 @@
-# Base image
-FROM node:14
+FROM node:18-alpine AS build
 
-# Set the working directory
+# install dependencies
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci
+
+# build the app
+COPY frontend/ ./
+RUN npm run build
+RUN npm prune --production
+
+# lightweight runtime to serve the build
+FROM node:18-alpine
 WORKDIR /app
 
-# Copy package.json and install dependencies
-COPY package.json yarn.lock ./
-RUN yarn install
+# copy build from previous stage
+COPY --from=build /app/build ./build
 
-# Copy the rest of the application code
-COPY . .
+# install a simple static server
+RUN npm install -g serve
 
-# Expose the port that React runs on
 EXPOSE 3000
-
-# Start the React development server
-CMD ["yarn", "start"]
+CMD ["serve", "-s", "build", "-l", "3000"]
