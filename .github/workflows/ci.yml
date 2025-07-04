@@ -55,12 +55,19 @@ jobs:
       - name: Run backend tests
         run: |
           pytest backend -q --maxfail=1 --disable-warnings
-          pytest backend --cov=backend --cov-report=term-missing
+          pytest backend --cov=backend --cov-report=xml
+
+      - name: Upload backend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: backend/coverage.xml
 
   frontend-tests:
     name: 🌐 Frontend Build & Test
     runs-on: ubuntu-latest
-    needs: backend-tests
+    needs: formatting
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -77,35 +84,45 @@ jobs:
         run: npm --prefix frontend test
 
       - name: Generate frontend coverage
-        run: npm --prefix frontend run test:coverage
+        run: npm --prefix frontend run test:coverage -- --coverageReporters=lcov
+
+      - name: Upload frontend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: frontend/coverage/lcov-report
 
   coverage:
-    name: 📊 Generate Coverage Reports
+    name: 📊 Combined Coverage Reports
     runs-on: ubuntu-latest
     needs:
       - backend-tests
       - frontend-tests
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - name: Download backend coverage
+        uses: actions/download-artifact@v4
         with:
-          node-version: 18
+          name: backend-coverage-report
+          path: ./reports/backend
 
-      - name: Install root dependencies
-        run: npm ci
+      - name: Download frontend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: ./reports/frontend
 
-      - name: Run combined coverage
-        run: npm run coverage
-
-      - name: Archive coverage report
-        if: always()
+      - name: Archive combined coverage
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage
+          name: combined-coverage
+          path: ./reports
+
+      - name: Coverage report links
+        run: |
+          echo "✅ Coverage artifacts uploaded:"
+          echo "- Backend report: ${{ github.server_url }}/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/combined-coverage/backend-coverage-report"
+          echo "- Frontend report: ${{ github.server_url }}/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/combined-coverage/frontend-coverage-report"
 
   docker:
     name: 🐳 Build & Push Docker Images
