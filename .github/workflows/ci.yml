@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
       - name: Run Prettier
@@ -38,16 +38,15 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install backend dependencies
+      - name: Install Python dependencies
         run: |
-          pip install -r backend/requirements.txt
-          pip install pytest pytest-cov
+          pip install -r requirements.txt
+          pip install pytest pytest-django pytest-cov
 
-      - name: Run pytest
+      - name: Run backend tests
         run: |
-          cd backend
-          pytest -q
-          pytest --cov=.
+          pytest backend -q --maxfail=1 --disable-warnings
+          pytest backend --cov=backend --cov-report=term-missing
 
   frontend-tests:
     name: "🌐 Frontend Build & Test"
