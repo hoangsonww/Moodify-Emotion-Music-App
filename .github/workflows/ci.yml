@@ -31,6 +31,8 @@ jobs:
     name: 🐍 Backend Build & Test
     runs-on: ubuntu-latest
     needs: formatting
+    env:
+      MONGO_DB_URI: mongodb://localhost:27017/test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
