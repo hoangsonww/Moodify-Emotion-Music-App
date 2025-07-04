@@ -105,12 +105,24 @@ jobs:
         with:
           name: backend-coverage-report
           path: ./reports/backend
+        continue-on-error: true
+
+      - name: Warn if backend coverage missing
+        if: failure()
+        run: |
+          echo "⚠️ backend coverage artifact not available, skipping."
 
       - name: Download frontend coverage
         uses: actions/download-artifact@v4
         with:
           name: frontend-coverage-report
           path: ./reports/frontend
+        continue-on-error: true
+
+      - name: Warn if frontend coverage missing
+        if: failure()
+        run: |
+          echo "⚠️ frontend coverage artifact not available, skipping."
 
       - name: Archive combined coverage
         uses: actions/upload-artifact@v4
@@ -118,11 +130,11 @@ jobs:
           name: combined-coverage
           path: ./reports
 
-      - name: Coverage report links
+      - name: Show coverage report links
         run: |
           echo "✅ Coverage artifacts uploaded:"
-          echo "- Backend report: ${{ github.server_url }}/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/combined-coverage/backend-coverage-report"
-          echo "- Frontend report: ${{ github.server_url }}/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/combined-coverage/frontend-coverage-report"
+          echo "- Backend report: ${{ github.server_url }}/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/combined-coverage/reports/backend"
+          echo "- Frontend report: ${{ github.server_url }}/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/combined-coverage/reports/frontend"
 
   docker:
     name: 🐳 Build & Push Docker Images
