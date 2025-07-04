@@ -32,7 +32,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: formatting
     env:
-      MONGO_DB_URI: mongodb://localhost:27017/test
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      MONGO_DB_URI: ${{ secrets.MONGO_DB_URI }}
+      MONGO_DB_USERNAME: ${{ secrets.MONGO_DB_USERNAME }}
+      MONGO_DB_PASSWORD: ${{ secrets.MONGO_DB_PASSWORD }}
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
