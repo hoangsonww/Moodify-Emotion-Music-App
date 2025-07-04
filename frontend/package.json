@@ -21,8 +21,6 @@
     "@ffmpeg/ffmpeg": "^0.12.10",
     "@mui/icons-material": "^6.1.1",
     "@mui/material": "^6.1.1",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
     "jwt-decode": "^4.0.0",
@@ -41,7 +39,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "coverage": "jest --coverage",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -61,5 +62,15 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "babel-jest": "^30.0.4",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^27.5.1"
   }
 }
