@@ -939,6 +939,45 @@ If you encounter any errors, try to rebuild your image without using the cache s
    docker-compose build --no-cache
    ```
 
+<h2 id="-testing">🧪 Testing</h2>
+
+**Moodify** uses Jest for backend API testing and Jest with React Testing Library for frontend component testing. The tests ensure that the APIs and components are functioning correctly.
+
+### **Backend API and AI/ML Model Tests**
+
+The project includes unit tests for the backend APIs and AI/ML models. You can run the tests to ensure everything is working correctly.
+
+1. **Navigate to the backend directory:**
+   ```bash
+   cd backend
+   ```
+   
+2. **Run the tests:**
+   ```bash
+   pytest -q
+   ```
+   
+This will run all the tests in the API and AI/ML model directories. Ensure that all tests pass before deploying the application.
+
+### **Frontend Tests**
+
+The frontend also includes unit tests for the React components. You can run the tests using the following command:
+
+```bash
+cd frontend
+
+# Run the frontend tests (default mode)
+npm test
+
+# Run the frontend tests in watch mode (will re-run tests on file changes)
+npm test:watch
+
+# Run the frontend tests in coverage mode (generates a coverage report)
+npm test:coverage
+```
+
+This will run all the tests in the frontend directory and generate a coverage report. Ensure that all tests pass before deploying the frontend application.
+
 <h2 id="-kubernetes">☸️ Kubernetes</h2>
 
 We also added Kubernetes deployment files for the backend and frontend services. You can deploy the services on a Kubernetes cluster using the provided YAML files.
