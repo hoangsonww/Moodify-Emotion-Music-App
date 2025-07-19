@@ -38,6 +38,8 @@ jobs:
       MONGO_DB_PASSWORD: ${{ secrets.MONGO_DB_PASSWORD }}
       SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
       SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+    outputs:
+      coverage_exists: ${{ steps.check-backend-coverage.outputs.coverage_exists }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -57,8 +59,17 @@ jobs:
           pytest backend -q --maxfail=1 --disable-warnings
           pytest backend --cov=backend --cov-report=xml
 
+      - name: Check backend coverage file exists
+        id: check-backend-coverage
+        run: |
+          if [ -f backend/coverage.xml ]; then
+            echo "coverage_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "coverage_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload backend coverage
-        if: always()
+        if: steps.check-backend-coverage.outputs.coverage_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-report
@@ -68,6 +79,8 @@ jobs:
     name: 🌐 Frontend Build & Test
     runs-on: ubuntu-latest
     needs: formatting
+    outputs:
+      coverage_exists: ${{ steps.check-frontend-coverage.outputs.coverage_exists }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -86,8 +99,17 @@ jobs:
       - name: Generate frontend coverage
         run: npm --prefix frontend run test:coverage -- --coverageReporters=lcov
 
+      - name: Check frontend coverage directory exists
+        id: check-frontend-coverage
+        run: |
+          if [ -d frontend/coverage/lcov-report ] && [ "$(ls -A frontend/coverage/lcov-report)" ]; then
+            echo "coverage_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "coverage_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload frontend coverage
-        if: always()
+        if: steps.check-frontend-coverage.outputs.coverage_exists == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage-report
@@ -101,28 +123,18 @@ jobs:
       - frontend-tests
     steps:
       - name: Download backend coverage
+        if: needs.backend-tests.outputs.coverage_exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: backend-coverage-report
           path: ./reports/backend
-        continue-on-error: true
-
-      - name: Warn if backend coverage missing
-        if: failure()
-        run: |
-          echo "⚠️ backend coverage artifact not available, skipping."
 
       - name: Download frontend coverage
+        if: needs.frontend-tests.outputs.coverage_exists == 'true'
         uses: actions/download-artifact@v4
         with:
           name: frontend-coverage-report
           path: ./reports/frontend
-        continue-on-error: true
-
-      - name: Warn if frontend coverage missing
-        if: failure()
-        run: |
-          echo "⚠️ frontend coverage artifact not available, skipping."
 
       - name: Archive combined coverage
         uses: actions/upload-artifact@v4
