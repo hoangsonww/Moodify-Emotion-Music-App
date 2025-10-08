@@ -19,6 +19,71 @@ The `ai_ml` directory contains all the necessary components for building, traini
   - [Testing `/music_recommendation` Endpoint](#4-testing-music_recommendation-endpoint)
 - [Notes and Tips](#notes-and-tips)
 
+## **AI/ML System Architecture**
+
+```mermaid
+graph TB
+    subgraph "Input Layer"
+        A[Text Input]
+        B[Speech Audio Input]
+        C[Facial Image Input]
+    end
+
+    subgraph "Preprocessing Layer"
+        D[Text Tokenization<br/>BERT Tokenizer]
+        E[Audio Feature Extraction<br/>MFCC, Chroma, Spectral]
+        F[Face Detection<br/>& Normalization]
+    end
+
+    subgraph "Model Layer"
+        G[Text Emotion Model<br/>BERT Fine-tuned<br/>5 Emotions]
+        H[Speech Emotion Model<br/>CNN + LSTM<br/>7 Emotions]
+        I[Facial Emotion Model<br/>ResNet50<br/>7 Emotions]
+    end
+
+    subgraph "Post-Processing"
+        J[Emotion Classification]
+        K[Confidence Scoring]
+        L[Result Aggregation]
+    end
+
+    subgraph "Recommendation Engine"
+        M[Emotion-to-Genre Mapping]
+        N[Spotify API Integration]
+        O[Track Filtering & Ranking]
+    end
+
+    subgraph "Output"
+        P[Recommended Tracks]
+    end
+
+    A --> D
+    B --> E
+    C --> F
+    D --> G
+    E --> H
+    F --> I
+    G --> J
+    H --> J
+    I --> J
+    J --> K
+    K --> L
+    L --> M
+    M --> N
+    N --> O
+    O --> P
+
+    style A fill:#4CAF50
+    style B fill:#2196F3
+    style C fill:#FF9800
+    style G fill:#FF6F00
+    style H fill:#FF6F00
+    style I fill:#FF6F00
+    style M fill:#9C27B0
+    style N fill:#1DB954
+    style P fill:#34A853
+```
+
 ## **Directory Structure**
 
 Here's a detailed breakdown of the directory and its contents:
@@ -125,6 +190,197 @@ python ai_ml/src/models/train_text_emotion.py
 
 Note that, by default, the model will be trained using GPU support if available. If you want to train the model on the CPU, you can modify the script to use the CPU instead.
 Before training by GPU, make sure you have installed the necessary dependencies and set up PyTorch with CUDA support.
+
+### **Model Training Workflow**
+
+```mermaid
+flowchart TD
+    A[Start Training] --> B[Load Configuration]
+    B --> C[Check GPU Availability]
+    C -->|GPU Available| D[Initialize CUDA]
+    C -->|No GPU| E[Use CPU]
+    D --> F[Load Dataset]
+    E --> F
+    F --> G[Data Preprocessing]
+
+    G --> H{Data Augmentation}
+    H -->|Text| I[Synonym Replacement<br/>Back Translation]
+    H -->|Speech| J[Pitch Shifting<br/>Time Stretching<br/>Noise Addition]
+    H -->|Image| K[Rotation<br/>Flip<br/>Brightness Adjustment]
+
+    I --> L[Split Train/Val/Test]
+    J --> L
+    K --> L
+
+    L --> M[Initialize Model]
+    M --> N[Set Optimizer & Scheduler]
+    N --> O[Training Loop]
+
+    O --> P{Epoch Complete?}
+    P -->|No| Q[Forward Pass]
+    Q --> R[Calculate Loss]
+    R --> S[Backward Pass]
+    S --> T[Update Weights]
+    T --> U[Validate on Val Set]
+    U --> V{Early Stopping?}
+    V -->|No| P
+    V -->|Yes| W[Save Best Model]
+    P -->|Yes| W
+
+    W --> X[Evaluate on Test Set]
+    X --> Y[Generate Metrics Report]
+    Y --> Z[Save Model Artifacts]
+    Z --> AA[Training Complete]
+
+    style A fill:#4CAF50
+    style D fill:#FF6F00
+    style E fill:#FFC107
+    style M fill:#2196F3
+    style W fill:#9C27B0
+    style AA fill:#4CAF50
+```
+
+### **Text Emotion Model Architecture**
+
+```mermaid
+graph TB
+    subgraph "Input Processing"
+        A[Input Text] --> B[BERT Tokenizer]
+        B --> C[Token IDs<br/>Attention Masks]
+    end
+
+    subgraph "BERT Base Model"
+        C --> D[Embedding Layer<br/>768 dimensions]
+        D --> E[Transformer Encoder 1]
+        E --> F[Transformer Encoder 2]
+        F --> G[...]
+        G --> H[Transformer Encoder 12]
+        H --> I[Pooled Output<br/>CLS Token]
+    end
+
+    subgraph "Classification Head"
+        I --> J[Dropout 0.3]
+        J --> K[Linear Layer<br/>768 -> 256]
+        K --> L[ReLU Activation]
+        L --> M[Dropout 0.3]
+        M --> N[Linear Layer<br/>256 -> 5]
+        N --> O[Softmax]
+    end
+
+    subgraph "Output"
+        O --> P[Emotion Probabilities<br/>Joy, Sadness, Anger<br/>Fear, Surprise]
+    end
+
+    style A fill:#4CAF50
+    style D fill:#2196F3
+    style E fill:#2196F3
+    style I fill:#FF9800
+    style O fill:#9C27B0
+    style P fill:#4CAF50
+```
+
+### **Speech Emotion Model Architecture**
+
+```mermaid
+graph TB
+    subgraph "Audio Input"
+        A[Audio File<br/>WAV/MP3] --> B[Librosa Loader<br/>Sample Rate: 22050]
+    end
+
+    subgraph "Feature Extraction"
+        B --> C[MFCC Features<br/>40 coefficients]
+        B --> D[Chroma Features<br/>12 dimensions]
+        B --> E[Spectral Contrast<br/>7 bands]
+        B --> F[Zero Crossing Rate]
+        C --> G[Feature Concatenation<br/>193 features]
+        D --> G
+        E --> G
+        F --> G
+    end
+
+    subgraph "Preprocessing"
+        G --> H[Normalization<br/>StandardScaler]
+        H --> I[Reshape for CNN<br/>time_steps x features]
+    end
+
+    subgraph "CNN Layers"
+        I --> J[Conv1D<br/>64 filters, kernel=3]
+        J --> K[BatchNorm + ReLU]
+        K --> L[MaxPooling<br/>pool_size=2]
+        L --> M[Conv1D<br/>128 filters, kernel=3]
+        M --> N[BatchNorm + ReLU]
+        N --> O[MaxPooling<br/>pool_size=2]
+    end
+
+    subgraph "LSTM Layers"
+        O --> P[LSTM<br/>128 units, return_sequences]
+        P --> Q[Dropout 0.3]
+        Q --> R[LSTM<br/>64 units]
+        R --> S[Dropout 0.3]
+    end
+
+    subgraph "Dense Layers"
+        S --> T[Dense<br/>64 units, ReLU]
+        T --> U[Dropout 0.4]
+        U --> V[Dense<br/>7 units, Softmax]
+    end
+
+    subgraph "Output"
+        V --> W[Emotions<br/>Neutral, Calm, Happy<br/>Sad, Angry, Fearful, Disgust]
+    end
+
+    style A fill:#2196F3
+    style G fill:#FF9800
+    style J fill:#9C27B0
+    style P fill:#E91E63
+    style V fill:#4CAF50
+    style W fill:#4CAF50
+```
+
+### **Facial Emotion Model Architecture**
+
+```mermaid
+graph TB
+    subgraph "Image Input"
+        A[Image File<br/>JPG/PNG] --> B[Face Detection<br/>Haar Cascade/MTCNN]
+        B --> C[Crop Face Region]
+        C --> D[Resize to 224x224]
+        D --> E[Normalize<br/>ImageNet Stats]
+    end
+
+    subgraph "ResNet50 Backbone"
+        E --> F[Conv1: 7x7, 64]
+        F --> G[MaxPool: 3x3]
+        G --> H[ResBlock 1<br/>64 filters x 3]
+        H --> I[ResBlock 2<br/>128 filters x 4]
+        I --> J[ResBlock 3<br/>256 filters x 6]
+        J --> K[ResBlock 4<br/>512 filters x 3]
+        K --> L[Global Average Pool]
+    end
+
+    subgraph "Custom Classification Head"
+        L --> M[Flatten<br/>2048 features]
+        M --> N[Dropout 0.5]
+        N --> O[Dense<br/>512 units, ReLU]
+        O --> P[BatchNorm]
+        P --> Q[Dropout 0.3]
+        Q --> R[Dense<br/>256 units, ReLU]
+        R --> S[Dense<br/>7 units, Softmax]
+    end
+
+    subgraph "Output"
+        S --> T[Emotions<br/>Angry, Disgust, Fear<br/>Happy, Sad, Surprise, Neutral]
+    end
+
+    style A fill:#FF9800
+    style B fill:#2196F3
+    style H fill:#9C27B0
+    style I fill:#9C27B0
+    style J fill:#9C27B0
+    style K fill:#9C27B0
+    style S fill:#4CAF50
+    style T fill:#4CAF50
+```
 
 ### **Expected Output**
 After training, the model and tokenizer will be saved in the `models/text_emotion_model` directory. Below is an example of the expected training output:

@@ -61,6 +61,258 @@ frontend/
 └── README.md                        # Project documentation
 ```
 
+## Frontend Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "React Application"
+        subgraph "Routing Layer"
+            A[React Router]
+        end
+
+        subgraph "Pages"
+            B[Landing Page]
+            C[Home Page]
+            D[Profile Page]
+            E[Results Page]
+            F[Login/Register]
+            G[404 Page]
+        end
+
+        subgraph "Components"
+            subgraph "Layout"
+                H[Navbar]
+                I[Footer]
+            end
+
+            subgraph "Authentication"
+                J[Login Form]
+                K[Register Form]
+            end
+
+            subgraph "Mood Input"
+                L[Text Input]
+                M[Speech Input]
+                N[Facial Input]
+                O[Modal Component]
+            end
+
+            subgraph "Profile"
+                P[User Profile]
+                Q[Mood History]
+                R[Listening History]
+                S[Recommendations]
+            end
+        end
+
+        subgraph "State Management"
+            T[Redux Store]
+            U[Auth Slice]
+            V[User Slice]
+            W[Theme Slice]
+        end
+
+        subgraph "Services"
+            X[API Service<br/>Axios]
+            Y[Auth Service]
+            Z[Storage Service<br/>localStorage]
+        end
+
+        subgraph "Styling"
+            AA[Material-UI]
+            AB[Custom Theme]
+            AC[Dark Mode]
+        end
+    end
+
+    subgraph "Backend"
+        AD[Django REST API]
+    end
+
+    A --> B & C & D & E & F & G
+    B & C & D & E & F --> H & I
+    C --> L & M & N
+    L & M & N --> O
+    F --> J & K
+    D --> P & Q & R & S
+    J & K --> Y
+    P & Q & R & S --> X
+    L & M & N --> X
+    Y --> T
+    X --> T
+    T --> U & V & W
+    Z --> U
+    AA --> AB
+    AB --> AC
+    X --> AD
+
+    style A fill:#CA4245
+    style T fill:#764ABC
+    style X fill:#5A29E4
+    style AD fill:#092E20
+    style AA fill:#007FFF
+```
+
+### Component Hierarchy
+
+```mermaid
+graph TD
+    A[App.js] --> B[Router]
+
+    B --> C[Public Routes]
+    B --> D[Protected Routes]
+
+    C --> E[LandingPage]
+    C --> F[LoginPage]
+    C --> G[RegisterPage]
+    C --> H[NotFoundPage]
+
+    D --> I[HomePage]
+    D --> J[ProfilePage]
+    D --> K[ResultsPage]
+
+    A --> L[Navbar]
+    A --> M[Footer]
+
+    I --> N[TextInput]
+    I --> O[SpeechInput]
+    I --> P[FacialInput]
+
+    N & O & P --> Q[ModalComponent]
+
+    J --> R[Profile Info]
+    J --> S[MoodHistory]
+    J --> T[ListeningHistory]
+    J --> U[Recommendations]
+
+    K --> V[Track List]
+    K --> W[Player Controls]
+
+    style A fill:#61DAFB
+    style B fill:#CA4245
+    style D fill:#4CAF50
+    style L fill:#007FFF
+    style N fill:#FF9800
+    style O fill:#2196F3
+    style P fill:#9C27B0
+```
+
+### State Management Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> AppInit
+    AppInit --> CheckAuth
+
+    state CheckAuth {
+        [*] --> LoadingAuth
+        LoadingAuth --> ValidateToken
+        ValidateToken --> Authenticated: Token Valid
+        ValidateToken --> Unauthenticated: Token Invalid
+    }
+
+    Authenticated --> Dashboard
+    Unauthenticated --> LandingPage
+
+    state Dashboard {
+        [*] --> HomePage
+        HomePage --> InputSelection
+
+        state InputSelection {
+            [*] --> TextMode
+            [*] --> SpeechMode
+            [*] --> FacialMode
+        }
+
+        InputSelection --> ProcessingInput
+        ProcessingInput --> FetchingRecommendations
+        FetchingRecommendations --> ShowResults
+        ShowResults --> SaveHistory
+    }
+
+    Dashboard --> ProfilePage
+    state ProfilePage {
+        [*] --> LoadUserData
+        LoadUserData --> DisplayProfile
+        DisplayProfile --> ViewHistory
+        ViewHistory --> [*]
+    }
+
+    Dashboard --> Logout
+    Logout --> LandingPage
+
+    LandingPage --> LoginFlow
+    state LoginFlow {
+        [*] --> EnterCredentials
+        EnterCredentials --> ValidateLogin
+        ValidateLogin --> StoreToken: Success
+        ValidateLogin --> ShowError: Failure
+        StoreToken --> Dashboard
+        ShowError --> EnterCredentials
+    }
+```
+
+### User Interaction Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant UI as React UI
+    participant ST as Redux Store
+    participant API as API Service
+    participant BE as Backend
+
+    U->>UI: Open App
+    UI->>ST: Check Auth State
+    ST->>UI: Return Auth Status
+
+    alt Authenticated
+        UI->>U: Show Dashboard
+        U->>UI: Select Input Mode
+        UI->>U: Show Input Modal
+
+        alt Text Input
+            U->>UI: Type Text
+            UI->>API: POST /api/text_emotion
+        else Speech Input
+            U->>UI: Record/Upload Audio
+            UI->>API: POST /api/speech_emotion
+        else Facial Input
+            U->>UI: Capture/Upload Image
+            UI->>API: POST /api/facial_emotion
+        end
+
+        API->>BE: Forward Request
+        BE-->>API: Emotion Result
+        API->>ST: Update Emotion State
+        ST->>UI: Trigger Re-render
+        UI->>API: GET /api/recommendations
+        API->>BE: Fetch Tracks
+        BE-->>API: Track List
+        API->>ST: Update Recommendations
+        ST->>UI: Update Results Page
+        UI->>U: Display Recommendations
+
+        U->>UI: Play Track
+        UI->>API: POST /users/listening_history
+        API->>BE: Save History
+        BE-->>API: Success
+        API->>ST: Update History
+
+    else Unauthenticated
+        UI->>U: Show Landing Page
+        U->>UI: Click Login
+        UI->>U: Show Login Form
+        U->>UI: Enter Credentials
+        UI->>API: POST /users/login
+        API->>BE: Authenticate
+        BE-->>API: JWT Tokens
+        API->>ST: Store Tokens
+        API->>ST: Set User Data
+        ST->>UI: Redirect to Dashboard
+    end
+```
+
 ## Features
 
 - User registration and login functionality.
