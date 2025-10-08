@@ -49,6 +49,8 @@ are also used to visualize emotion trends and model performance. Users will be d
   <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy" />
   <img src="https://img.shields.io/badge/MLFlow-999999?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow" />
   <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge&logo=streamlabs&logoColor=white" alt="FER" />
+  <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" alt="OpenCV" />
+  <img src="https://img.shields.io/badge/Librosa-1E1E1E?style=for-the-badge&logo=python&logoColor=white" alt="Librosa" />
 
   <!-- Load Balancing -->
   <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="NGINX" />
@@ -65,8 +67,11 @@ are also used to visualize emotion trends and model performance. Users will be d
   <img src="https://img.shields.io/badge/Expo_Go-003020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo Go" />
 
   <!-- DevOps / Deployment -->
+  <img src="https://img.shields.io/badge/Amazon_Web_Services-232F3E?style=for-the-badge&logo=task&logoColor=white" alt="AWS" />
+  <img src="https://img.shields.io/badge/Google_Cloud_Platform-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="GCP" />
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes" />
+  <img src="https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white" alt="Terraform" />
   <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins" />
   <img src="https://img.shields.io/badge/Render-152535?style=for-the-badge&logo=render&logoColor=white" alt="Render" />
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
@@ -134,6 +139,108 @@ are also used to visualize emotion trends and model performance. Users will be d
 
 Moodify provides personalized music recommendations based on users' emotional states detected through text, speech, and facial expressions. It interacts with a Django-based backend, AI/ML models for emotion detection, and utilizes data analytics for visual insights into emotion trends and model performance.
 
+### System Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        A[Web App - React]
+        B[Mobile App - React Native]
+    end
+
+    subgraph "Load Balancer Layer"
+        C[NGINX Load Balancer]
+    end
+
+    subgraph "Application Layer"
+        D[Django Backend API]
+        E[AI/ML Service - Flask]
+    end
+
+    subgraph "AI/ML Models"
+        F[Text Emotion Model<br/>BERT-based]
+        G[Speech Emotion Model<br/>CNN + LSTM]
+        H[Facial Emotion Model<br/>ResNet50]
+    end
+
+    subgraph "External Services"
+        I[Spotify API]
+    end
+
+    subgraph "Data Layer"
+        J[(MongoDB)]
+        K[(Redis Cache)]
+        L[(SQLite)]
+    end
+
+    subgraph "Analytics Layer"
+        M[Apache Spark]
+        N[Apache Hadoop]
+        O[Data Visualization]
+    end
+
+    A -->|HTTPS| C
+    B -->|HTTPS| C
+    C -->|Load Balance| D
+    D -->|REST API| E
+    E --> F
+    E --> G
+    E --> H
+    D -->|Fetch Music| I
+    D --> J
+    D --> K
+    D --> L
+    J -.->|Analytics| M
+    M <--> N
+    M --> O
+
+    style A fill:#61DAFB
+    style B fill:#61DAFB
+    style C fill:#009639
+    style D fill:#092E20
+    style E fill:#000000
+    style F fill:#FF6F00
+    style G fill:#FF6F00
+    style H fill:#FF6F00
+    style I fill:#1DB954
+    style J fill:#47A248
+    style K fill:#DC382D
+    style M fill:#E25A1C
+    style N fill:#66CCFF
+```
+
+### Data Flow Architecture
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant LB as Load Balancer
+    participant BE as Backend API
+    participant AI as AI/ML Service
+    participant DB as MongoDB
+    participant SP as Spotify API
+    participant CH as Redis Cache
+
+    U->>FE: Input (Text/Speech/Image)
+    FE->>LB: Send Request
+    LB->>BE: Route to Backend
+    BE->>CH: Check Cache
+    alt Cache Hit
+        CH-->>BE: Return Cached Result
+    else Cache Miss
+        BE->>AI: Forward for Analysis
+        AI->>AI: Process with ML Model
+        AI-->>BE: Return Emotion
+        BE->>SP: Request Music Recommendations
+        SP-->>BE: Return Tracks
+        BE->>DB: Store User History
+        BE->>CH: Cache Result
+    end
+    BE-->>FE: Return Recommendations
+    FE-->>U: Display Results
+```
+
 <h2 id="-live-frontend-demo">🌐 Live Deployment</h2>
 
 The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: **[https://moodify-app.vercel.app](https://moodify-app.vercel.app).**
@@ -158,7 +265,9 @@ For your information, the front-end's production (deployment) branch is `fronten
 [![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen?logo=ai)](ai_ml)
 [![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen?logo=netlify)](https://moodify-emotion-music-app.netlify.app/)
 [![Docker Container OK](https://img.shields.io/badge/Docker%20Container-OK-brightgreen?logo=docker)](docker-compose.yml)
-[![Jenkins Build Status](https://img.shields.io/badge/Jenkins%20Build-Passing-brightgreen?logo=jenkins)](http://your-jenkins-url)
+[![Jenkins Build Status](https://img.shields.io/badge/Jenkins%20Build-Passing-brightgreen?logo=jenkins)](http://moodify-app.vercel.app/)
+[![Kubernetes Deployment OK](https://img.shields.io/badge/Kubernetes%20Deployment-OK-brightgreen?logo=kubernetes)](kubernetes)
+[![GitHub Repo Size](https://img.shields.io/github/repo-size/hoangsonww/Moodify-Emotion-Music-App?logo=github)](https://github.com/hoangsonww/Moodify-Emotion-Music-App)
 
 <h2 id="-features">🌟 Features</h2>
 
@@ -924,6 +1033,42 @@ Feel free to customize the NGINX configuration and Gunicorn settings as needed f
 
 The project can be containerized using Docker for easy deployment and scaling. You can create Docker images for the frontend, backend, and AI/ML models.
 
+### Container Architecture
+
+```mermaid
+graph LR
+    subgraph "Docker Compose Stack"
+        subgraph "Application Containers"
+            A[Frontend Container<br/>React:3000]
+            B[Backend Container<br/>Django:8000]
+            C[AI/ML Container<br/>Flask:5000]
+        end
+
+        subgraph "Database Containers"
+            D[MongoDB Container<br/>:27017]
+            E[Redis Container<br/>:6379]
+        end
+
+        subgraph "Infrastructure"
+            F[NGINX Container<br/>:80]
+        end
+    end
+
+    F -->|Proxy| A
+    F -->|Proxy| B
+    A -->|API Calls| B
+    B -->|ML Requests| C
+    B -->|Data| D
+    B -->|Cache| E
+
+    style A fill:#61DAFB
+    style B fill:#092E20
+    style C fill:#000000
+    style D fill:#47A248
+    style E fill:#DC382D
+    style F fill:#009639
+```
+
 1. **Build the Docker images:**
    ```bash
    docker compose up --build
@@ -938,6 +1083,53 @@ If you encounter any errors, try to rebuild your image without using the cache s
    ```bash
    docker-compose build --no-cache
    ```
+
+### User Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant BE as Backend API
+    participant DB as MongoDB
+    participant JWT as JWT Service
+    participant CH as Redis
+
+    U->>FE: Login Request
+    FE->>BE: POST /users/login/
+    BE->>DB: Verify Credentials
+    alt Valid Credentials
+        DB-->>BE: User Found
+        BE->>JWT: Generate Tokens
+        JWT-->>BE: Access + Refresh Tokens
+        BE->>CH: Cache Session
+        BE-->>FE: Return Tokens
+        FE->>FE: Store in localStorage
+        FE-->>U: Redirect to Dashboard
+    else Invalid Credentials
+        DB-->>BE: User Not Found
+        BE-->>FE: 401 Unauthorized
+        FE-->>U: Show Error
+    end
+
+    Note over U,CH: Subsequent Requests
+    U->>FE: Make Request
+    FE->>BE: Request + Bearer Token
+    BE->>CH: Validate Token
+    alt Valid Token
+        CH-->>BE: Token Valid
+        BE->>BE: Process Request
+        BE-->>FE: Return Data
+    else Invalid Token
+        CH-->>BE: Token Invalid
+        BE-->>FE: 401 Unauthorized
+        FE->>BE: Refresh Token
+        BE->>JWT: Generate New Access Token
+        JWT-->>BE: New Access Token
+        BE-->>FE: Return New Token
+        FE->>FE: Update Token
+    end
+```
 
 <h2 id="-testing">🧪 Testing</h2>
 
@@ -982,6 +1174,92 @@ This will run all the tests in the frontend directory and generate a coverage re
 
 We also added Kubernetes deployment files for the backend and frontend services. You can deploy the services on a Kubernetes cluster using the provided YAML files.
 
+### Kubernetes Deployment Architecture
+
+```mermaid
+graph TB
+    subgraph "Kubernetes Cluster"
+        subgraph "Ingress Layer"
+            ING[Ingress Controller<br/>NGINX]
+        end
+
+        subgraph "Service Layer"
+            SVC1[Frontend Service<br/>ClusterIP]
+            SVC2[Backend Service<br/>ClusterIP]
+            SVC3[AI/ML Service<br/>ClusterIP]
+            SVC4[MongoDB Service<br/>ClusterIP]
+            SVC5[Redis Service<br/>ClusterIP]
+        end
+
+        subgraph "Deployment Layer"
+            subgraph "Frontend Pods"
+                FE1[Frontend Pod 1]
+                FE2[Frontend Pod 2]
+                FE3[Frontend Pod 3]
+            end
+
+            subgraph "Backend Pods"
+                BE1[Backend Pod 1]
+                BE2[Backend Pod 2]
+                BE3[Backend Pod 3]
+            end
+
+            subgraph "AI/ML Pods"
+                AI1[AI/ML Pod 1]
+                AI2[AI/ML Pod 2]
+            end
+
+            subgraph "StatefulSets"
+                DB1[MongoDB Pod]
+                RD1[Redis Pod]
+            end
+        end
+
+        subgraph "Storage Layer"
+            PV1[(Persistent Volume<br/>MongoDB)]
+            PV2[(Persistent Volume<br/>Models)]
+        end
+
+        subgraph "ConfigMaps & Secrets"
+            CM[ConfigMap]
+            SEC[Secrets]
+        end
+    end
+
+    ING -->|Route /| SVC1
+    ING -->|Route /api| SVC2
+    SVC1 --> FE1 & FE2 & FE3
+    SVC2 --> BE1 & BE2 & BE3
+    SVC3 --> AI1 & AI2
+    SVC4 --> DB1
+    SVC5 --> RD1
+    BE1 & BE2 & BE3 -->|Connect| SVC3
+    BE1 & BE2 & BE3 -->|Connect| SVC4
+    BE1 & BE2 & BE3 -->|Connect| SVC5
+    DB1 --> PV1
+    AI1 & AI2 --> PV2
+    FE1 & FE2 & FE3 -.->|Config| CM
+    BE1 & BE2 & BE3 -.->|Config| CM
+    BE1 & BE2 & BE3 -.->|Credentials| SEC
+
+    style ING fill:#009639
+    style SVC1 fill:#326CE5
+    style SVC2 fill:#326CE5
+    style SVC3 fill:#326CE5
+    style SVC4 fill:#326CE5
+    style SVC5 fill:#326CE5
+    style FE1 fill:#61DAFB
+    style FE2 fill:#61DAFB
+    style FE3 fill:#61DAFB
+    style BE1 fill:#092E20
+    style BE2 fill:#092E20
+    style BE3 fill:#092E20
+    style AI1 fill:#FF6F00
+    style AI2 fill:#FF6F00
+    style DB1 fill:#47A248
+    style RD1 fill:#DC382D
+```
+
 1. **Deploy the backend service:**
    ```bash
    kubectl apply -f kubernetes/backend-deployment.yaml
@@ -1007,6 +1285,119 @@ Feel free to visit the `kubernetes` directory for more information about the dep
 <h2 id="-jenkins">🔗 Jenkins</h2>
 
 We have also included Jenkins pipeline script for automating the build and deployment process. You can use Jenkins to automate the CI/CD process for the Moodify app.
+
+### CI/CD Pipeline Architecture
+
+```mermaid
+graph LR
+    subgraph "Source Control"
+        A[GitHub Repository]
+    end
+
+    subgraph "CI/CD Pipeline - GitHub Actions & Jenkins"
+        B[Trigger on Push/PR]
+        C[Run Tests]
+        D[Build Docker Images]
+        E[Security Scanning]
+        F[Push to Registry]
+        G[Deploy to Staging]
+        H[Integration Tests]
+        I[Deploy to Production]
+    end
+
+    subgraph "Container Registry"
+        J[Docker Hub/ECR/GCR]
+    end
+
+    subgraph "Deployment Targets"
+        K[Kubernetes Cluster]
+        L[AWS/GCP]
+        M[Vercel Frontend]
+        N[Render Backend]
+    end
+
+    subgraph "Monitoring"
+        O[Health Checks]
+        P[Rollback on Failure]
+    end
+
+    A -->|Webhook| B
+    B --> C
+    C -->|Pass| D
+    D --> E
+    E -->|Pass| F
+    F --> J
+    J --> G
+    G --> H
+    H -->|Pass| I
+    I --> K
+    I --> L
+    I --> M
+    I --> N
+    K & L & M & N --> O
+    O -->|Failure| P
+    P --> G
+
+    style A fill:#181717
+    style B fill:#2088FF
+    style C fill:#34A853
+    style D fill:#2496ED
+    style E fill:#FF6B6B
+    style F fill:#4CAF50
+    style G fill:#FFA000
+    style H fill:#34A853
+    style I fill:#4CAF50
+    style J fill:#2496ED
+    style K fill:#326CE5
+    style L fill:#FF9900
+    style M fill:#000000
+    style N fill:#46A2F1
+```
+
+### Deployment Workflow
+
+```mermaid
+stateDiagram-v2
+    [*] --> CodeCommit
+    CodeCommit --> BuildStage
+    BuildStage --> TestStage
+    TestStage --> SecurityScan
+    SecurityScan --> BuildImages
+    BuildImages --> PushRegistry
+    PushRegistry --> StagingDeploy
+    StagingDeploy --> IntegrationTest
+
+    state TestStage {
+        [*] --> UnitTests
+        UnitTests --> IntegrationTests
+        IntegrationTests --> E2ETests
+        E2ETests --> [*]
+    }
+
+    state IntegrationTest {
+        [*] --> HealthCheck
+        HealthCheck --> SmokeTests
+        SmokeTests --> [*]
+    }
+
+    IntegrationTest --> ApprovalGate
+    ApprovalGate --> ProductionDeploy: Approved
+    ApprovalGate --> [*]: Rejected
+
+    state ProductionDeploy {
+        [*] --> BlueGreenDeploy
+        BlueGreenDeploy --> CanaryRelease
+        CanaryRelease --> FullRollout
+        FullRollout --> [*]
+    }
+
+    ProductionDeploy --> MonitoringAlerts
+    MonitoringAlerts --> Healthy: All Clear
+    MonitoringAlerts --> Rollback: Issues Detected
+
+    Rollback --> StagingDeploy
+    Healthy --> [*]
+```
 
 1. **Install Jenkins on your server or local machine.**
 

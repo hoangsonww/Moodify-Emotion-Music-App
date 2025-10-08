@@ -70,6 +70,196 @@ Before running the backend, ensure you have the following installed:
 
 The server should now be running at `http://127.0.0.1:8000/`.
 
+## Backend Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        A[Web Frontend]
+        B[Mobile App]
+    end
+
+    subgraph "API Gateway"
+        C[NGINX<br/>Load Balancer]
+    end
+
+    subgraph "Django Application"
+        D[URL Router<br/>urls.py]
+
+        subgraph "Apps"
+            E[Users App<br/>Authentication & Profiles]
+            F[API App<br/>Emotion Detection]
+        end
+
+        subgraph "Middleware"
+            G[CORS Middleware]
+            H[JWT Authentication]
+            I[Rate Limiting]
+        end
+
+        subgraph "Views & Serializers"
+            J[DRF ViewSets]
+            K[Serializers]
+        end
+
+        subgraph "Business Logic"
+            L[User Management]
+            M[Emotion Processing]
+            N[Recommendation Logic]
+        end
+    end
+
+    subgraph "External Services"
+        O[AI/ML Service<br/>Flask API]
+        P[Spotify API]
+    end
+
+    subgraph "Data Layer"
+        Q[(MongoDB<br/>User Data)]
+        R[(Redis<br/>Session Cache)]
+        S[(SQLite<br/>Dev Database)]
+    end
+
+    subgraph "Documentation"
+        T[Swagger UI]
+        U[ReDoc]
+    end
+
+    A & B --> C
+    C --> D
+    D --> G
+    G --> H
+    H --> I
+    I --> E & F
+    E & F --> J
+    J --> K
+    K --> L & M & N
+    M --> O
+    N --> P
+    L & M & N --> Q
+    H --> R
+    E --> S
+    D --> T & U
+
+    style C fill:#009639
+    style D fill:#092E20
+    style E fill:#092E20
+    style F fill:#092E20
+    style O fill:#000000
+    style P fill:#1DB954
+    style Q fill:#47A248
+    style R fill:#DC382D
+```
+
+### API Request Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant N as NGINX
+    participant D as Django
+    participant M as Middleware Stack
+    participant V as View
+    participant S as Serializer
+    participant AI as AI/ML Service
+    participant DB as MongoDB
+    participant SP as Spotify
+    participant RD as Redis
+
+    C->>N: HTTP Request
+    N->>D: Forward Request
+    D->>M: Process through Middleware
+    M->>M: CORS Check
+    M->>M: JWT Validation
+    M->>M: Rate Limit Check
+
+    alt Authenticated & Valid
+        M->>V: Route to View
+        V->>S: Validate Input
+        S->>V: Validated Data
+
+        alt Emotion Detection Request
+            V->>AI: POST /emotion_detection
+            AI-->>V: Emotion Result
+            V->>SP: GET /recommendations
+            SP-->>V: Track List
+        else User Data Request
+            V->>DB: Query User Data
+            DB-->>V: User Information
+        end
+
+        V->>RD: Cache Result
+        V->>DB: Store History
+        V->>S: Serialize Response
+        S-->>C: JSON Response
+    else Unauthorized
+        M-->>C: 401 Unauthorized
+    else Rate Limit Exceeded
+        M-->>C: 429 Too Many Requests
+    end
+```
+
+### Database Schema
+
+```mermaid
+erDiagram
+    USER ||--o{ MOOD_HISTORY : has
+    USER ||--o{ LISTENING_HISTORY : has
+    USER ||--o{ RECOMMENDATIONS : receives
+    USER {
+        ObjectId _id PK
+        string username UK
+        string email UK
+        string password_hash
+        datetime created_at
+        datetime updated_at
+        string profile_picture
+        json preferences
+    }
+
+    MOOD_HISTORY {
+        ObjectId _id PK
+        ObjectId user_id FK
+        string emotion
+        float confidence
+        string input_type
+        datetime timestamp
+        json metadata
+    }
+
+    LISTENING_HISTORY {
+        ObjectId _id PK
+        ObjectId user_id FK
+        string track_id
+        string track_name
+        string artist
+        string album
+        datetime played_at
+        int duration_ms
+        string emotion_context
+    }
+
+    RECOMMENDATIONS {
+        ObjectId _id PK
+        ObjectId user_id FK
+        string emotion
+        json tracks
+        datetime generated_at
+        float relevance_score
+        boolean saved
+    }
+
+    SESSION {
+        string session_id PK
+        ObjectId user_id FK
+        string jwt_token
+        datetime expires_at
+        json metadata
+    }
+
+    USER ||--o{ SESSION : authenticates
+```
+
 ## File Structure
 
 Here is the detailed file structure of the backend:

@@ -1,0 +1,204 @@
+# ConfigMap for Moodify Application Configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moodify-config
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: config
+data:
+  # Environment
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+
+  # Backend Configuration
+  DJANGO_SETTINGS_MODULE: "backend.settings"
+  ALLOWED_HOSTS: "*.moodify.com,moodify.com"
+  CORS_ALLOWED_ORIGINS: "https://moodify.com,https://www.moodify.com"
+
+  # Frontend Configuration
+  REACT_APP_API_URL: "https://api.moodify.com"
+  REACT_APP_ENVIRONMENT: "production"
+
+  # AI/ML Configuration
+  AI_ML_SERVICE_URL: "http://ai-ml-service:5000"
+  MODEL_CACHE_ENABLED: "true"
+  BATCH_SIZE: "16"
+
+  # Database Configuration (non-sensitive)
+  MONGODB_DB_NAME: "moodify_production"
+  MONGODB_MAX_POOL_SIZE: "100"
+  MONGODB_MIN_POOL_SIZE: "10"
+
+  # Redis Configuration (non-sensitive)
+  REDIS_DB: "0"
+  REDIS_MAX_CONNECTIONS: "50"
+  REDIS_SOCKET_TIMEOUT: "5"
+
+  # Cache Configuration
+  CACHE_TTL: "3600"
+  CACHE_DEFAULT_TIMEOUT: "300"
+
+  # Rate Limiting
+  RATE_LIMIT_PER_MINUTE: "100"
+  RATE_LIMIT_BURST: "20"
+
+  # Logging
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Monitoring
+  METRICS_ENABLED: "true"
+  PROMETHEUS_PORT: "9090"
+
+  # Feature Flags
+  ENABLE_TEXT_EMOTION: "true"
+  ENABLE_SPEECH_EMOTION: "true"
+  ENABLE_FACIAL_EMOTION: "true"
+  ENABLE_ANALYTICS: "true"
+
+  # Model Versions
+  TEXT_MODEL_VERSION: "v1.0.0"
+  SPEECH_MODEL_VERSION: "v1.0.0"
+  FACIAL_MODEL_VERSION: "v1.0.0"
+
+  # AWS Configuration
+  AWS_REGION: "us-east-1"
+  S3_BUCKET_MODELS: "moodify-production-models"
+  S3_BUCKET_ASSETS: "moodify-production-assets"
+
+  # Worker Configuration
+  CELERY_BROKER_URL: "redis://redis-service:6379/1"
+  CELERY_RESULT_BACKEND: "redis://redis-service:6379/2"
+  CELERY_TASK_SERIALIZER: "json"
+  CELERY_RESULT_SERIALIZER: "json"
+  CELERY_ACCEPT_CONTENT: "json"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: nginx
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+
+    events {
+        worker_connections 4096;
+        use epoll;
+        multi_accept on;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        log_format json_combined escape=json
+          '{'
+            '"time_local":"$time_local",'
+            '"remote_addr":"$remote_addr",'
+            '"remote_user":"$remote_user",'
+            '"request":"$request",'
+            '"status": "$status",'
+            '"body_bytes_sent":"$body_bytes_sent",'
+            '"request_time":"$request_time",'
+            '"http_referrer":"$http_referer",'
+            '"http_user_agent":"$http_user_agent"'
+          '}';
+
+        access_log /var/log/nginx/access.log json_combined;
+
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        client_max_body_size 100M;
+
+        gzip on;
+        gzip_vary on;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types text/plain text/css text/xml text/javascript
+                   application/json application/javascript application/xml+rss
+                   application/rss+xml font/truetype font/opentype
+                   application/vnd.ms-fontobject image/svg+xml;
+
+        upstream backend {
+            least_conn;
+            server backend-service:8000 max_fails=3 fail_timeout=30s;
+            keepalive 32;
+        }
+
+        upstream ai_ml {
+            least_conn;
+            server ai-ml-service:5000 max_fails=3 fail_timeout=30s;
+            keepalive 16;
+        }
+
+        server {
+            listen 80 default_server;
+            listen [::]:80 default_server;
+            server_name _;
+
+            # Security headers
+            add_header X-Frame-Options "SAMEORIGIN" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header X-XSS-Protection "1; mode=block" always;
+            add_header Referrer-Policy "no-referrer-when-downgrade" always;
+
+            # Health check endpoint
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+
+            # Backend API
+            location /api/ {
+                proxy_pass http://backend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 60s;
+                proxy_send_timeout 60s;
+                proxy_read_timeout 60s;
+            }
+
+            # ML Service (internal only)
+            location /ml/ {
+                proxy_pass http://ai_ml/;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_connect_timeout 120s;
+                proxy_send_timeout 120s;
+                proxy_read_timeout 120s;
+            }
+
+            # Static files
+            location /static/ {
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+            }
+
+            # Default location
+            location / {
+                return 404;
+            }
+        }
+    }

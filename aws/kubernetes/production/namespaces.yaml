@@ -1,0 +1,32 @@
+# Kubernetes Namespaces for Moodify Application
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: moodify-production
+  labels:
+    name: moodify-production
+    environment: production
+    app.kubernetes.io/name: moodify
+    app.kubernetes.io/managed-by: kubectl
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: moodify-monitoring
+  labels:
+    name: moodify-monitoring
+    environment: production
+    purpose: monitoring
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: moodify-ingress
+  labels:
+    name: moodify-ingress
+    environment: production
+    purpose: ingress-controller
