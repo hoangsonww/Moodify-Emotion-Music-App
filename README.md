@@ -614,6 +614,9 @@ Moodify-Emotion-Music-App/
 │   ├── frontend-deployment.yaml   # Deployment file for the frontend service
 │   ├── frontend-service.yaml      # Deployment file for the frontend service
 │   └── configmap.yaml             # ConfigMap for environment variables
+│ 
+├── aws/                           # AWS deployment and infrastructure as code (IaC) files
+├── gcp/                           # GCP deployment and infrastructure as code (IaC) files
 │
 ├── mobile/                        # React Native mobile application
 │   ├── App.js                     # Main entry point for React Native app
