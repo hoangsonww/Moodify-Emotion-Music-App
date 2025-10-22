@@ -1,0 +1,5 @@
+{
+  "entryPoints": ["backend", "frontend"],
+  "out": "docs",
+  "exclude": ["**/node_modules/**", "**/dist/**"]
+}
