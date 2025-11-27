@@ -19,23 +19,23 @@ This `data_analytics` directory contains scripts for performing data analysis an
 
 The `data_analytics` directory has the following structure:
 
-```
-data_analytics
-│
-├── emotion_distribution.py          # Script for visualizing emotion distribution in training data
-├── training_visualization.py        # Script for visualizing training and validation metrics
-├── predictions_analysis.py          # Script for analyzing and visualizing model predictions
-├── recommendation_analysis.py       # Script for visualizing music recommendations based on emotions
-├── main.py                          # Script to execute all analytics scripts sequentially
-├── spark-hadoop/                    # Directory containing Spark and Hadoop integration scripts
-├── ├── hadoop_config.py             # Hadoop configuration settings
-│   └── spark_hadoop_integration.py  # Script for data preprocessing using Spark and Hadoop
-└── visualizations/                  # Directory to store generated visualizations
-    ├── emotion_distribution.png
-    ├── loss_curve.png
-    ├── accuracy_curve.png
-    ├── text_emotion_predictions.png
-    └── music_recommendation_trends.png
+```mermaid
+mindmap
+  root((data_analytics))
+    scripts["emotion_distribution.py — visualize training emotion distribution"]
+    scripts2["training_visualization.py — training/validation metrics"]
+    scripts3["predictions_analysis.py — analyze prediction accuracy"]
+    scripts4["recommendation_analysis.py — recommendation trends"]
+    main["main.py — orchestrate analytics runs"]
+    spark["spark-hadoop/ — Spark + Hadoop helpers"]
+      hadoop_config.py
+      spark_hadoop_integration.py
+    visualizations["visualizations/ — generated outputs"]
+      emotion_distribution.png
+      loss_curve.png
+      accuracy_curve.png
+      text_emotion_predictions.png
+      music_recommendation_trends.png
 ```
 
 ## Installation

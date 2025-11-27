@@ -1,0 +1,166 @@
+# Velero Installation for Backup and Disaster Recovery
+# Provides cluster backup, restore, and migration capabilities
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: velero
+
+---
+# Install Velero using Helm
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: install-velero
+  namespace: velero
+spec:
+  template:
+    spec:
+      serviceAccountName: velero-installer
+      containers:
+      - name: helm
+        image: alpine/helm:3.13.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
+          helm repo update
+          helm install velero vmware-tanzu/velero \
+            --namespace velero \
+            --version 5.2.0 \
+            --set configuration.provider=aws \
+            --set configuration.backupStorageLocation.bucket=moodify-velero-backups \
+            --set configuration.backupStorageLocation.config.region=us-east-1 \
+            --set configuration.volumeSnapshotLocation.config.region=us-east-1 \
+            --set serviceAccount.server.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::ACCOUNT_ID:role/velero \
+            --set initContainers[0].name=velero-plugin-for-aws \
+            --set initContainers[0].image=velero/velero-plugin-for-aws:v1.9.0 \
+            --set initContainers[0].volumeMounts[0].mountPath=/target \
+            --set initContainers[0].volumeMounts[0].name=plugins \
+            --wait
+      restartPolicy: OnFailure
+  backoffLimit: 3
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: velero-installer
+  namespace: velero
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: velero-installer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: velero-installer
+  namespace: velero
+
+---
+# Backup Schedule: Daily Full Backup
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: daily-full-backup
+  namespace: velero
+spec:
+  schedule: "0 2 * * *"  # 2 AM daily
+  template:
+    includedNamespaces:
+    - moodify-production
+    - moodify-staging
+    - monitoring
+    - argocd
+    includeClusterResources: true
+    snapshotVolumes: true
+    ttl: 720h0m0s  # 30 days
+    storageLocation: default
+    volumeSnapshotLocations:
+    - default
+
+---
+# Backup Schedule: Hourly Incremental Backup (production only)
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: hourly-production-backup
+  namespace: velero
+spec:
+  schedule: "0 * * * *"  # Every hour
+  template:
+    includedNamespaces:
+    - moodify-production
+    includeClusterResources: false
+    snapshotVolumes: false
+    ttl: 168h0m0s  # 7 days
+    storageLocation: default
+
+---
+# Backup Schedule: Weekly Full Cluster Backup
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: weekly-cluster-backup
+  namespace: velero
+spec:
+  schedule: "0 3 * * 0"  # 3 AM every Sunday
+  template:
+    includeClusterResources: true
+    snapshotVolumes: true
+    ttl: 2160h0m0s  # 90 days
+    storageLocation: default
+    volumeSnapshotLocations:
+    - default
+
+---
+# BackupStorageLocation (configured via Helm, here for reference)
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: default
+  namespace: velero
+spec:
+  provider: aws
+  objectStorage:
+    bucket: moodify-velero-backups
+    prefix: production
+  config:
+    region: us-east-1
+
+---
+# VolumeSnapshotLocation (configured via Helm, here for reference)
+apiVersion: velero.io/v1
+kind: VolumeSnapshotLocation
+metadata:
+  name: default
+  namespace: velero
+spec:
+  provider: aws
+  config:
+    region: us-east-1
+
+---
+# Backup Hook: Pre-backup for database
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-hooks
+  namespace: velero
+data:
+  pre-backup.sh: |
+    #!/bin/bash
+    # Flush MongoDB before backup
+    mongo --eval "db.runCommand({ fsync: 1, async: false })"
+
+  post-backup.sh: |
+    #!/bin/bash
+    # Cleanup temporary files
+    echo "Backup completed"

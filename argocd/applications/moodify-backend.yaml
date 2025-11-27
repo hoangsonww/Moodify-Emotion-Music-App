@@ -1,0 +1,122 @@
+# ArgoCD Application for Moodify Backend
+# Manages backend deployment via GitOps
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: moodify-backend-production
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: moodify
+
+  source:
+    repoURL: https://github.com/your-org/moodify.git
+    targetRevision: main
+    path: helm/moodify-backend
+    helm:
+      releaseName: moodify-backend
+      values: |
+        environment: production
+        replicaCount: 3
+
+        image:
+          repository: ${IMAGE_REGISTRY}/backend
+          tag: ${IMAGE_TAG}
+          pullPolicy: Always
+
+        autoscaling:
+          enabled: true
+          minReplicas: 3
+          maxReplicas: 15
+          targetCPUUtilizationPercentage: 70
+          targetMemoryUtilizationPercentage: 80
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+
+        monitoring:
+          enabled: true
+          serviceMonitor: true
+
+        blueGreen:
+          enabled: true
+          activeEnvironment: blue
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: moodify-production
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  revisionHistoryLimit: 10
+
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: moodify
+  namespace: argocd
+spec:
+  description: Moodify Application Project
+
+  sourceRepos:
+    - 'https://github.com/your-org/moodify.git'
+    - 'https://charts.bitnami.com/bitnami'
+    - 'https://prometheus-community.github.io/helm-charts'
+
+  destinations:
+    - namespace: 'moodify-*'
+      server: https://kubernetes.default.svc
+    - namespace: monitoring
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  roles:
+    - name: admin
+      description: Admin role for Moodify project
+      policies:
+        - p, proj:moodify:admin, applications, *, moodify/*, allow
+      groups:
+        - devops-team
+
+    - name: developer
+      description: Developer role for Moodify project
+      policies:
+        - p, proj:moodify:developer, applications, get, moodify/*, allow
+        - p, proj:moodify:developer, applications, sync, moodify/*, allow
+      groups:
+        - developers

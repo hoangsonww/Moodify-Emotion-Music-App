@@ -18,32 +18,48 @@ Complete production-ready deployment guide for Moodify on Google Cloud Platform 
 
 ## Architecture Overview
 
-```
-┌───────────────────────────────────────────────────────────────┐
-│                    Google Cloud Platform                      │
-├───────────────────────────────────────────────────────────────┤
-│  Cloud CDN → Cloud Armor → Cloud Load Balancing               │
-│                                                               │
-│  ┌────────────────────────────────────────────────────────┐   │
-│  │  GKE Cluster (Kubernetes)                              │   │
-│  │  ├── Frontend Pods (React) x3                          │   │
-│  │  ├── Backend Pods (Django) x3                          │   │
-│  │  ├── AI/ML Pods (Flask) x2 (GPU-enabled)               │   │
-│  │  └── Worker Pods (Celery) x2                           │   │
-│  └────────────────────────────────────────────────────────┘   │
-│                                                               │
-│  Data Layer:                                                  │
-│  ├── Cloud Firestore - Document database                      │
-│  ├── Memorystore Redis - Caching (HA mode)                    │
-│  ├── Cloud Storage - Models, Assets, Logs                     │
-│  └── Cloud SQL PostgreSQL (Optional) - Analytics              │
-│                                                               │
-│  Monitoring & Logging:                                        │
-│  ├── Cloud Monitoring - Metrics, Dashboards                   │
-│  ├── Cloud Logging - Centralized logs                         │
-│  ├── Cloud Trace - Distributed tracing                        │
-│  └── Error Reporting - Error tracking                         │
-└───────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph GCP["Google Cloud Platform"]
+        cdn[Cloud CDN]
+        armor[Cloud Armor]
+        lb[Cloud Load Balancing]
+        cdn --> armor --> lb
+
+        subgraph GKE["GKE Cluster (Kubernetes)"]
+            fe[Frontend Pods (React) x3]
+            be[Backend Pods (Django) x3]
+            ml[AI/ML Pods (Flask, GPU) x2]
+            worker[Worker Pods (Celery) x2]
+        end
+
+        subgraph Data["Data Layer"]
+            firestore[Cloud Firestore<br/>document DB]
+            redis[Memorystore Redis<br/>HA mode]
+            gcs[Cloud Storage<br/>models, assets, logs]
+            sql[Cloud SQL PostgreSQL (optional)<br/>analytics]
+        end
+
+        subgraph Observability["Monitoring & Logging"]
+            monitoring[Cloud Monitoring<br/>metrics, dashboards]
+            logging[Cloud Logging<br/>centralized logs]
+            trace[Cloud Trace<br/>distributed tracing]
+            errors[Error Reporting<br/>error tracking]
+        end
+    end
+
+    lb --> fe
+    lb --> be
+    lb --> ml
+    lb --> worker
+    be --> firestore
+    be --> redis
+    ml --> gcs
+    worker --> gcs
+    monitoring -.-> be
+    logging -.-> be
+    trace -.-> be
+    errors -.-> lb
 ```
 
 ### Key GCP Services

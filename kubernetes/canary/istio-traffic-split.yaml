@@ -1,0 +1,186 @@
+# Istio Configuration for Canary Deployment
+# Provides advanced traffic management and gradual rollout
+
+---
+# VirtualService for traffic splitting
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: backend-vs
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+spec:
+  hosts:
+  - backend-service
+  - backend-service.moodify-production.svc.cluster.local
+  - api.moodify.com
+  http:
+  # Canary route with weight-based routing
+  - match:
+    - headers:
+        x-canary-user:
+          exact: "true"
+    route:
+    - destination:
+        host: backend-canary-service
+        port:
+          number: 8000
+      weight: 100
+
+  # Progressive traffic split (adjust weights for gradual rollout)
+  - route:
+    - destination:
+        host: backend-service  # Stable (blue/green)
+        port:
+          number: 8000
+        subset: stable
+      weight: 90  # 90% to stable
+    - destination:
+        host: backend-canary-service  # Canary
+        port:
+          number: 8000
+        subset: canary
+      weight: 10  # 10% to canary
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 10s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+
+---
+# DestinationRule for load balancing and circuit breaking
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: backend-dr
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+spec:
+  host: backend-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 1000
+      http:
+        http1MaxPendingRequests: 1000
+        http2MaxRequests: 1000
+        maxRequestsPerConnection: 10
+    loadBalancer:
+      simple: LEAST_REQUEST
+      localityLbSetting:
+        enabled: true
+    outlierDetection:
+      consecutiveErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 40
+  subsets:
+  - name: stable
+    labels:
+      environment: blue
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 1000
+        http:
+          http1MaxPendingRequests: 1000
+          http2MaxRequests: 1000
+  - name: canary
+    labels:
+      version: canary
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 200  # Limited for canary
+        http:
+          http1MaxPendingRequests: 200
+          http2MaxRequests: 200
+
+---
+# Gateway for external traffic
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: moodify-gateway
+  namespace: moodify-production
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: moodify-tls-cert
+    hosts:
+    - api.moodify.com
+    - "*.moodify.com"
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - api.moodify.com
+    - "*.moodify.com"
+    tls:
+      httpsRedirect: true
+
+---
+# ServiceEntry for external dependencies
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-apis
+  namespace: moodify-production
+spec:
+  hosts:
+  - api.spotify.com
+  - accounts.spotify.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  location: MESH_EXTERNAL
+  resolution: DNS
+
+---
+# PeerAuthentication for mTLS
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: moodify-production
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# AuthorizationPolicy for service-to-service auth
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: backend-authz
+  namespace: moodify-production
+spec:
+  selector:
+    matchLabels:
+      app: moodify
+      component: backend
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/moodify-production/sa/moodify-frontend-sa"]
+    - source:
+        namespaces: ["istio-system"]
+  - to:
+    - operation:
+        paths: ["/health/*", "/metrics"]
+        methods: ["GET"]

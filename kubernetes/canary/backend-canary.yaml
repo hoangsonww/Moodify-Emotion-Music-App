@@ -1,0 +1,324 @@
+# Canary Deployment for Backend
+# Used for gradual rollout with traffic splitting
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-canary
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+    version: canary
+    deployment-strategy: canary
+spec:
+  replicas: 1  # Start with 1 replica for 10% traffic
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: moodify
+      component: backend
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: moodify
+        component: backend
+        version: canary
+        track: canary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+        deployment.kubernetes.io/revision: "1"
+    spec:
+      serviceAccountName: moodify-backend-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - backend
+                - key: version
+                  operator: In
+                  values:
+                  - canary
+              topologyKey: kubernetes.io/hostname
+
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z ${DB_HOST:-documentdb-service} ${DB_PORT:-27017}; do echo waiting for db; sleep 2; done;']
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+
+      - name: wait-for-redis
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z ${REDIS_HOST:-redis-service} ${REDIS_PORT:-6379}; do echo waiting for redis; sleep 2; done;']
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+
+      - name: migration-check
+        image: ${IMAGE_REGISTRY:-moodify}/backend:${IMAGE_TAG:-canary}
+        command: ['python', 'manage.py', 'migrate', '--check']
+        envFrom:
+        - configMapRef:
+            name: moodify-config
+        - secretRef:
+            name: moodify-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+      containers:
+      - name: backend
+        image: ${IMAGE_REGISTRY:-moodify}/backend:${IMAGE_TAG:-canary}
+        imagePullPolicy: Always
+
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+
+        envFrom:
+        - configMapRef:
+            name: moodify-config
+        - secretRef:
+            name: moodify-secrets
+
+        env:
+        - name: DEPLOYMENT_VERSION
+          value: "canary"
+        - name: CANARY_DEPLOYMENT
+          value: "true"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8000
+            httpHeaders:
+            - name: X-Health-Check
+              value: "liveness"
+            - name: X-Canary-Check
+              value: "true"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+            httpHeaders:
+            - name: X-Health-Check
+              value: "readiness"
+            - name: X-Canary-Check
+              value: "true"
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: 8000
+            httpHeaders:
+            - name: X-Health-Check
+              value: "startup"
+            - name: X-Canary-Check
+              value: "true"
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 30
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+        - name: logs
+          mountPath: /app/logs
+
+      # Sidecar: Log shipper with canary tagging
+      - name: log-shipper
+        image: fluent/fluent-bit:2.1
+        env:
+        - name: DEPLOYMENT_TYPE
+          value: "canary"
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+          readOnly: true
+        - name: fluent-bit-config
+          mountPath: /fluent-bit/etc/
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      - name: fluent-bit-config
+        configMap:
+          name: fluent-bit-config
+
+---
+# Canary Service (for direct testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-canary-service
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+    version: canary
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app: moodify
+    component: backend
+    version: canary
+
+---
+# HPA for Canary (limited scaling)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-canary-hpa
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+    version: canary
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-canary
+  minReplicas: 1
+  maxReplicas: 5  # Limited for canary
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 60
+
+---
+# PodDisruptionBudget for Canary
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-canary-pdb
+  namespace: moodify-production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: moodify
+      component: backend
+      version: canary

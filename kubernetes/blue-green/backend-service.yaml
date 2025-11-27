@@ -1,0 +1,116 @@
+# Backend Service for Blue-Green Deployment
+# This service routes traffic to either blue or green environment based on selector
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/health/ready"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "10"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app: moodify
+    component: backend
+    environment: blue  # Change to 'green' to switch traffic
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# Blue Environment Service (Direct Access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-blue-service
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+    environment: blue
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app: moodify
+    component: backend
+    environment: blue
+  sessionAffinity: None
+
+---
+# Green Environment Service (Direct Access for Testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-green-service
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+    environment: green
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  selector:
+    app: moodify
+    component: backend
+    environment: green
+  sessionAffinity: None
+
+---
+# Headless Service for StatefulSet-like behavior (if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-headless
+  namespace: moodify-production
+  labels:
+    app: moodify
+    component: backend
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: moodify
+    component: backend

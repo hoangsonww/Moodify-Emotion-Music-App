@@ -1,0 +1,208 @@
+# Chaos Mesh Installation
+# Provides chaos engineering capabilities for testing resilience
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chaos-mesh
+
+---
+# Install Chaos Mesh using Helm
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: install-chaos-mesh
+  namespace: chaos-mesh
+spec:
+  template:
+    spec:
+      serviceAccountName: chaos-mesh-installer
+      containers:
+      - name: helm
+        image: alpine/helm:3.13.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          helm repo add chaos-mesh https://charts.chaos-mesh.org
+          helm repo update
+          helm install chaos-mesh chaos-mesh/chaos-mesh \
+            --namespace chaos-mesh \
+            --version 2.6.2 \
+            --set chaosDaemon.runtime=containerd \
+            --set chaosDaemon.socketPath=/run/containerd/containerd.sock \
+            --set dashboard.create=true \
+            --set dashboard.securityMode=true \
+            --wait
+      restartPolicy: OnFailure
+  backoffLimit: 3
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chaos-mesh-installer
+  namespace: chaos-mesh
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: chaos-mesh-installer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: chaos-mesh-installer
+  namespace: chaos-mesh
+
+---
+# Chaos Experiment: Pod Failure
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: pod-failure-example
+  namespace: chaos-mesh
+spec:
+  action: pod-failure
+  mode: one
+  duration: "30s"
+  selector:
+    namespaces:
+      - moodify-staging
+    labelSelectors:
+      app: moodify
+      component: backend
+  scheduler:
+    cron: "@every 2h"
+
+---
+# Chaos Experiment: Network Delay
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: network-delay-example
+  namespace: chaos-mesh
+spec:
+  action: delay
+  mode: one
+  selector:
+    namespaces:
+      - moodify-staging
+    labelSelectors:
+      app: moodify
+      component: backend
+  delay:
+    latency: "100ms"
+    correlation: "100"
+    jitter: "0ms"
+  duration: "5m"
+  scheduler:
+    cron: "@every 4h"
+
+---
+# Chaos Experiment: Pod Kill
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: pod-kill-example
+  namespace: chaos-mesh
+spec:
+  action: pod-kill
+  mode: fixed-percent
+  value: "10"
+  duration: "1m"
+  selector:
+    namespaces:
+      - moodify-staging
+    labelSelectors:
+      app: moodify
+  scheduler:
+    cron: "@daily"
+
+---
+# Chaos Experiment: CPU Stress
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: cpu-stress-example
+  namespace: chaos-mesh
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - moodify-staging
+    labelSelectors:
+      app: moodify
+      component: backend
+  stressors:
+    cpu:
+      workers: 2
+      load: 80
+  duration: "5m"
+
+---
+# Chaos Experiment: Memory Stress
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: memory-stress-example
+  namespace: chaos-mesh
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - moodify-staging
+    labelSelectors:
+      app: moodify
+      component: backend
+  stressors:
+    memory:
+      workers: 1
+      size: "512Mi"
+  duration: "3m"
+
+---
+# Chaos Dashboard Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chaos-dashboard
+  namespace: chaos-mesh
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Chaos Mesh'
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: chaos.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: chaos-dashboard
+            port:
+              number: 2333
+  tls:
+  - hosts:
+    - chaos.moodify.com
+    secretName: chaos-dashboard-tls
+
+---
+# Basic Auth Secret for Dashboard (create with: htpasswd -c auth admin)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: basic-auth
+  namespace: chaos-mesh
+type: Opaque
+stringData:
+  auth: |
+    admin:$apr1$xyz...  # Replace with actual htpasswd output

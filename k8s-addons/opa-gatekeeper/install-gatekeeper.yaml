@@ -1,0 +1,250 @@
+# OPA Gatekeeper Installation and Policies
+# Provides policy enforcement for Kubernetes
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gatekeeper-system
+
+---
+# Install Gatekeeper using Helm
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: install-gatekeeper
+  namespace: gatekeeper-system
+spec:
+  template:
+    spec:
+      serviceAccountName: gatekeeper-installer
+      containers:
+      - name: helm
+        image: alpine/helm:3.13.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          helm repo add gatekeeper https://open-policy-agent.github.io/gatekeeper/charts
+          helm repo update
+          helm install gatekeeper gatekeeper/gatekeeper \
+            --namespace gatekeeper-system \
+            --version 3.15.0 \
+            --set auditInterval=60 \
+            --set constraintViolationsLimit=20 \
+            --set replicas=3 \
+            --wait
+      restartPolicy: OnFailure
+  backoffLimit: 3
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gatekeeper-installer
+  namespace: gatekeeper-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gatekeeper-installer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: gatekeeper-installer
+  namespace: gatekeeper-system
+
+---
+# ConstraintTemplate: Require labels
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredlabels
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredLabels
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            labels:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredlabels
+
+        violation[{"msg": msg, "details": {"missing_labels": missing}}] {
+          provided := {label | input.review.object.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("You must provide labels: %v", [missing])
+        }
+
+---
+# Constraint: Require environment and app labels
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredLabels
+metadata:
+  name: require-environment-and-app-labels
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces:
+      - moodify-production
+      - moodify-staging
+  parameters:
+    labels:
+      - "app"
+      - "environment"
+      - "component"
+
+---
+# ConstraintTemplate: Block privileged containers
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sblockprivileged
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sBlockPrivileged
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sblockprivileged
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          container.securityContext.privileged
+          msg := sprintf("Privileged container is not allowed: %v", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.initContainers[_]
+          container.securityContext.privileged
+          msg := sprintf("Privileged init container is not allowed: %v", [container.name])
+        }
+
+---
+# Constraint: Block privileged containers
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sBlockPrivileged
+metadata:
+  name: block-privileged-containers
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps", ""]
+        kinds: ["Deployment", "Pod", "StatefulSet", "DaemonSet"]
+
+---
+# ConstraintTemplate: Require resource limits
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequireresourcelimits
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequireResourceLimits
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequireresourcelimits
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.limits.cpu
+          msg := sprintf("Container %v must have CPU limit", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.limits.memory
+          msg := sprintf("Container %v must have memory limit", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.requests.cpu
+          msg := sprintf("Container %v must have CPU request", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.requests.memory
+          msg := sprintf("Container %v must have memory request", [container.name])
+        }
+
+---
+# Constraint: Require resource limits
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireResourceLimits
+metadata:
+  name: require-resource-limits
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces:
+      - moodify-production
+      - moodify-staging
+
+---
+# ConstraintTemplate: Block latest image tag
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sblocklatestimage
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sBlockLatestImage
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sblocklatestimage
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          image := container.image
+          endswith(image, ":latest")
+          msg := sprintf("Container %v uses 'latest' tag which is not allowed in production", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          image := container.image
+          not contains(image, ":")
+          msg := sprintf("Container %v has no tag specified (defaults to latest), which is not allowed", [container.name])
+        }
+
+---
+# Constraint: Block latest tag in production
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sBlockLatestImage
+metadata:
+  name: block-latest-image-prod
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces:
+      - moodify-production
