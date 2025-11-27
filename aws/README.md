@@ -20,31 +20,47 @@ Complete production-ready deployment guide for Moodify on Amazon Web Services (A
 
 The Moodify application is deployed on AWS using the following services:
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                      AWS Cloud                               │
-├──────────────────────────────────────────────────────────────┤
-│  CloudFront CDN → WAF → Route53 → Application Load Balancer  │
-│                                                              │
-│  ┌───────────────────────────────────────────────────────┐   │
-│  │  EKS Cluster (Kubernetes)                             │   │
-│  │  ├── Frontend Pods (React) x3                         │   │
-│  │  ├── Backend Pods (Django) x3                         │   │
-│  │  ├── AI/ML Pods (Flask) x2                            │   │
-│  │  └── Worker Pods (Celery) x2                          │   │
-│  └───────────────────────────────────────────────────────┘   │
-│                                                              │
-│  Data Layer:                                                 │
-│  ├── DocumentDB (MongoDB Compatible) - 3 instances           │
-│  ├── ElastiCache (Redis) - 3 node cluster                    │
-│  ├── S3 Buckets - Models, Assets, Logs                       │
-│  └── RDS PostgreSQL (Optional) - for analytics               │
-│                                                              │
-│  Monitoring & Logging:                                       │
-│  ├── CloudWatch - Metrics, Logs, Alarms                      │
-│  ├── X-Ray - Distributed Tracing                             │
-│  └── SNS - Alert Notifications                               │
-└──────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph AWS["AWS Cloud"]
+        cf[CloudFront CDN]
+        waf[WAF]
+        r53[Route53]
+        alb[Application Load Balancer]
+        cf --> waf --> r53 --> alb
+
+        subgraph EKS["EKS Cluster (Kubernetes)"]
+            fe[Frontend Pods - React x3]
+            be[Backend Pods - Django x3]
+            ml[AI/ML Pods - Flask x2]
+            worker[Worker Pods - Celery x2]
+        end
+
+        subgraph Data["Data Layer"]
+            docdb[DocumentDB - MongoDB compatible<br/>3 instances]
+            redis[ElastiCache Redis<br/>3-node cluster]
+            s3[S3 Buckets<br/>models, assets, logs]
+            rds[RDS PostgreSQL - optional<br/>analytics]
+        end
+
+        subgraph Observability["Monitoring & Logging"]
+            cw[CloudWatch<br/>metrics, logs, alarms]
+            xray[X-Ray<br/>tracing]
+            sns[SNS<br/>alert notifications]
+        end
+    end
+
+    alb --> fe
+    alb --> be
+    alb --> ml
+    alb --> worker
+    be --> docdb
+    be --> redis
+    ml --> s3
+    worker --> s3
+    cw -.-> be
+    xray -.-> be
+    sns -.-> alb
 ```
 
 ### Key AWS Services

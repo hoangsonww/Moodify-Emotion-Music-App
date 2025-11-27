@@ -5,18 +5,91 @@ Comprehensive deployment procedures, runbooks, and operational guidelines for Mo
 ## Table of Contents
 
 - [Deployment Overview](#deployment-overview)
+  - [Deployment Architecture](#deployment-architecture)
+  - [Deployment Strategies](#deployment-strategies)
+- [Quick Start](#quick-start)
 - [Pre-Deployment Checklist](#pre-deployment-checklist)
 - [Deployment Procedures](#deployment-procedures)
+  - [Blue-Green Deployment](#blue-green-deployment)
+  - [Canary Deployment](#canary-deployment)
+  - [Automated CI/CD Pipeline](#automated-cicd-pipeline)
 - [Rollback Procedures](#rollback-procedures)
 - [Incident Response](#incident-response)
 - [Operational Runbooks](#operational-runbooks)
 - [Monitoring and Alerting](#monitoring-and-alerting)
+- [Infrastructure Components](#infrastructure-components)
 
 ## Deployment Overview
 
+### Deployment Architecture
+
+Moodify employs a production-ready, cloud-native deployment architecture with multiple deployment strategies and comprehensive automation:
+
+**Key Features:**
+- 🔵🟢 **Blue-Green Deployment**: Instant traffic switching with zero downtime
+- 🐤 **Canary Deployment**: Progressive rollout with traffic-based validation
+- 🔄 **Automated CI/CD**: Comprehensive Jenkins pipeline with quality gates
+- 🛡️ **Security**: Multi-layer security scanning (SAST, DAST, container scanning)
+- 📊 **Monitoring**: Real-time metrics, health checks, and automated alerting
+- 🔙 **Automated Rollback**: Instant rollback capabilities on failure detection
+- ☸️ **Kubernetes**: Container orchestration with auto-scaling
+- 🔀 **Traffic Management**: Istio service mesh with advanced routing
+
+### Deployment Strategies
+
+Moodify supports three deployment strategies:
+
+#### 1. Blue-Green Deployment (Recommended)
+
+**Use Case**: Major releases, critical updates
+
+**Benefits:**
+- Instant rollback capability
+- Zero downtime
+- Full environment validation before traffic switch
+- Easy A/B testing
+
+**How it works:**
+1. Deploy new version to inactive environment (Green)
+2. Run comprehensive tests on Green
+3. Switch traffic from Blue to Green
+4. Keep Blue as instant rollback option
+
+**Script:** `./scripts/deployment/blue-green-deploy.sh`
+
+#### 2. Canary Deployment (Progressive Rollout)
+
+**Use Case**: Gradual rollouts, risk mitigation, feature flags
+
+**Benefits:**
+- Progressive traffic increase (10% → 25% → 50% → 100%)
+- Early issue detection with minimal user impact
+- Automated rollback on error threshold breach
+- Real-time monitoring at each stage
+
+**How it works:**
+1. Deploy canary version alongside stable
+2. Route 10% traffic to canary
+3. Monitor metrics for 5 minutes
+4. Progressively increase traffic if healthy
+5. Promote to 100% or rollback on issues
+
+**Script:** `./scripts/deployment/canary-deploy.sh`
+
+#### 3. Rolling Deployment
+
+**Use Case**: Minor updates, patches
+
+**Benefits:**
+- Simple and straightforward
+- Gradual pod replacement
+- Built into Kubernetes
+
+**Recommended for:** Non-critical updates, configuration changes
+
 ### Deployment Strategy
 
-Moodify uses **Blue-Green Deployment** with **Canary Releases** for zero-downtime deployments.
+Moodify uses **Blue-Green Deployment** as the primary strategy with **Canary Releases** available for high-risk changes.
 
 ```mermaid
 graph LR
@@ -64,6 +137,68 @@ graph LR
 - Last week of quarter
 - During active incidents
 
+## Quick Start
+
+### Deploy to Staging
+
+```bash
+# Using CI/CD pipeline (recommended)
+# Trigger Jenkins pipeline with DEPLOY_ENVIRONMENT=staging
+
+# Manual deployment
+export IMAGE_TAG=v1.2.3
+export IMAGE_REGISTRY=your-registry.azurecr.io
+export NAMESPACE=moodify-staging
+
+./scripts/deployment/blue-green-deploy.sh \
+    -e staging \
+    -v $IMAGE_TAG \
+    -r $IMAGE_REGISTRY
+```
+
+### Deploy to Production (Blue-Green)
+
+```bash
+# Using automation script
+./scripts/deployment/blue-green-deploy.sh \
+    -e production \
+    -v v1.2.3 \
+    -r your-registry.azurecr.io
+
+# Or trigger via Jenkins pipeline
+# Set DEPLOY_ENVIRONMENT=production and DEPLOY_STRATEGY=blue-green
+```
+
+### Deploy to Production (Canary)
+
+```bash
+# Progressive canary rollout
+./scripts/deployment/canary-deploy.sh \
+    -v v1.2.3 \
+    -r your-registry.azurecr.io \
+    -s progressive \
+    -m 300
+
+# Quick canary (shorter monitoring)
+./scripts/deployment/canary-deploy.sh \
+    -v v1.2.3 \
+    -s progressive \
+    -m 180
+```
+
+### Emergency Rollback
+
+```bash
+# Rollback blue-green deployment
+./scripts/deployment/rollback.sh -t blue-green -f
+
+# Rollback canary deployment
+./scripts/deployment/rollback.sh -t canary -f
+
+# Rollback to specific version
+./scripts/deployment/rollback.sh -t version -v v1.2.2 -f
+```
+
 ## Pre-Deployment Checklist
 
 ### 1. Code Quality
@@ -110,7 +245,350 @@ graph LR
 
 ## Deployment Procedures
 
-### Standard Deployment (Blue-Green with Canary)
+### Blue-Green Deployment
+
+Blue-Green deployment provides instant traffic switching with zero downtime by maintaining two identical production environments.
+
+#### Prerequisites
+
+```bash
+# Verify kubectl access
+kubectl cluster-info
+kubectl get nodes
+
+# Verify namespace exists
+kubectl get namespace moodify-production
+
+# Verify current environment
+kubectl get service backend-service -n moodify-production \
+    -o jsonpath='{.spec.selector.environment}'
+```
+
+#### Automated Blue-Green Deployment
+
+The recommended approach is using the automation script:
+
+```bash
+./scripts/deployment/blue-green-deploy.sh \
+    -e production \
+    -v v1.2.3 \
+    -r your-registry.azurecr.io
+```
+
+**Script Features:**
+- ✅ Automatic environment detection (blue/green)
+- ✅ Health checks and smoke tests
+- ✅ Automated traffic switching
+- ✅ Rollout verification
+- ✅ Detailed logging and reporting
+
+#### Manual Blue-Green Deployment
+
+For advanced use cases or troubleshooting:
+
+##### Step 1: Identify Current Environment
+
+```bash
+# Get active environment
+ACTIVE_ENV=$(kubectl get service backend-service -n moodify-production \
+    -o jsonpath='{.spec.selector.environment}')
+
+echo "Active environment: $ACTIVE_ENV"
+
+# Determine target environment
+if [ "$ACTIVE_ENV" = "blue" ]; then
+    TARGET_ENV="green"
+else
+    TARGET_ENV="blue"
+fi
+
+echo "Deploying to: $TARGET_ENV"
+```
+
+##### Step 2: Deploy to Inactive Environment
+
+```bash
+# Set variables
+export IMAGE_TAG=v1.2.3
+export IMAGE_REGISTRY=your-registry.azurecr.io
+export NAMESPACE=moodify-production
+
+# Apply deployment
+envsubst < kubernetes/blue-green/backend-$TARGET_ENV.yaml | \
+    kubectl apply -f - -n $NAMESPACE
+
+# Wait for rollout
+kubectl rollout status deployment/backend-$TARGET_ENV -n $NAMESPACE --timeout=10m
+```
+
+##### Step 3: Verify New Environment
+
+```bash
+# Check pod status
+kubectl get pods -n $NAMESPACE -l environment=$TARGET_ENV
+
+# Check pod logs
+kubectl logs -f deployment/backend-$TARGET_ENV -n $NAMESPACE
+
+# Run health checks
+kubectl exec deployment/backend-$TARGET_ENV -n $NAMESPACE -- \
+    wget -q -O- http://localhost:8000/health/ready
+
+# Run smoke tests
+./scripts/deployment/smoke-tests.sh production
+```
+
+##### Step 4: Switch Traffic
+
+```bash
+# Switch service selector to new environment
+kubectl patch service backend-service -n $NAMESPACE \
+    -p "{\"spec\":{\"selector\":{\"environment\":\"$TARGET_ENV\"}}}"
+
+# Verify switch
+kubectl get service backend-service -n $NAMESPACE \
+    -o jsonpath='{.spec.selector.environment}'
+```
+
+##### Step 5: Monitor and Validate
+
+```bash
+# Watch pod metrics
+kubectl top pods -n $NAMESPACE -l environment=$TARGET_ENV
+
+# Check service endpoints
+kubectl get endpoints backend-service -n $NAMESPACE
+
+# Monitor logs
+kubectl logs -f deployment/backend-$TARGET_ENV -n $NAMESPACE --tail=100
+
+# Run post-deployment validation
+./scripts/deployment/smoke-tests.sh production
+```
+
+### Canary Deployment
+
+Canary deployment enables progressive rollout with traffic-based validation and automatic rollback.
+
+#### Automated Canary Deployment (Recommended)
+
+```bash
+# Progressive canary with default settings (10% → 25% → 50% → 100%)
+./scripts/deployment/canary-deploy.sh \
+    -v v1.2.3 \
+    -r your-registry.azurecr.io \
+    -s progressive \
+    -m 300  # Monitor for 5 minutes at each stage
+
+# Immediate canary (direct to 100% after validation)
+./scripts/deployment/canary-deploy.sh \
+    -v v1.2.3 \
+    -s immediate
+```
+
+**Script Features:**
+- ✅ Progressive traffic increase (10% → 25% → 50% → 100%)
+- ✅ Automated monitoring at each stage
+- ✅ Error rate threshold checking
+- ✅ Automatic rollback on failures
+- ✅ Health check validation
+
+#### Manual Canary Deployment
+
+##### Step 1: Deploy Canary
+
+```bash
+export IMAGE_TAG=v1.2.3-canary
+export IMAGE_REGISTRY=your-registry.azurecr.io
+export NAMESPACE=moodify-production
+
+# Deploy canary
+envsubst < kubernetes/canary/backend-canary.yaml | kubectl apply -f -
+
+# Wait for canary to be ready
+kubectl rollout status deployment/backend-canary -n $NAMESPACE
+```
+
+##### Step 2: Configure Traffic Splitting
+
+**Option A: Using Istio**
+
+```bash
+# Set 10% traffic to canary
+kubectl patch virtualservice backend-vs -n $NAMESPACE --type='json' \
+    -p='[
+        {"op": "replace", "path": "/spec/http/1/route/0/weight", "value": 90},
+        {"op": "replace", "path": "/spec/http/1/route/1/weight", "value": 10}
+    ]'
+```
+
+**Option B: Using NGINX Ingress**
+
+```bash
+# Set canary weight to 10%
+kubectl annotate ingress backend-ingress-canary -n $NAMESPACE \
+    nginx.ingress.kubernetes.io/canary-weight="10" \
+    --overwrite
+```
+
+##### Step 3: Monitor Canary
+
+```bash
+# Watch canary pods
+watch -n 5 'kubectl get pods -n moodify-production -l version=canary'
+
+# Monitor metrics
+kubectl top pods -n $NAMESPACE -l version=canary
+
+# Check logs
+kubectl logs -f deployment/backend-canary -n $NAMESPACE
+
+# Monitor error rates (example using metrics endpoint)
+kubectl exec deployment/backend-canary -n $NAMESPACE -- \
+    wget -q -O- http://localhost:8000/metrics | grep error_rate
+```
+
+##### Step 4: Increase Traffic Progressively
+
+```bash
+# Increase to 25%
+kubectl patch virtualservice backend-vs -n $NAMESPACE --type='json' \
+    -p='[
+        {"op": "replace", "path": "/spec/http/1/route/0/weight", "value": 75},
+        {"op": "replace", "path": "/spec/http/1/route/1/weight", "value": 25}
+    ]'
+
+# Monitor for 5 minutes, then increase to 50%
+kubectl patch virtualservice backend-vs -n $NAMESPACE --type='json' \
+    -p='[
+        {"op": "replace", "path": "/spec/http/1/route/0/weight", "value": 50},
+        {"op": "replace", "path": "/spec/http/1/route/1/weight", "value": 50}
+    ]'
+
+# Monitor for 5 minutes, then increase to 100%
+kubectl patch virtualservice backend-vs -n $NAMESPACE --type='json' \
+    -p='[
+        {"op": "replace", "path": "/spec/http/1/route/0/weight", "value": 0},
+        {"op": "replace", "path": "/spec/http/1/route/1/weight", "value": 100}
+    ]'
+```
+
+##### Step 5: Promote Canary to Stable
+
+```bash
+# Get canary image
+CANARY_IMAGE=$(kubectl get deployment backend-canary -n $NAMESPACE \
+    -o jsonpath='{.spec.template.spec.containers[0].image}')
+
+# Determine active environment
+ACTIVE_ENV=$(kubectl get service backend-service -n $NAMESPACE \
+    -o jsonpath='{.spec.selector.environment}')
+
+# Update stable deployment with canary image
+kubectl set image deployment/backend-$ACTIVE_ENV \
+    backend=$CANARY_IMAGE \
+    -n $NAMESPACE \
+    --record
+
+# Wait for rollout
+kubectl rollout status deployment/backend-$ACTIVE_ENV -n $NAMESPACE
+
+# Scale down canary
+kubectl scale deployment backend-canary -n $NAMESPACE --replicas=0
+```
+
+### Automated CI/CD Pipeline
+
+The Jenkins pipeline provides end-to-end automation for the entire deployment lifecycle.
+
+#### Pipeline Features
+
+- **Build & Test**: Automated building, unit tests, integration tests
+- **Security**: SAST, DAST, dependency scanning, secret detection, container scanning
+- **Quality Gates**: Code coverage, SonarQube analysis
+- **Multi-Environment**: Automatic staging deployment, manual production approval
+- **Flexible Strategies**: Support for blue-green, canary, and rolling deployments
+- **Monitoring**: Integrated smoke tests, health checks, performance tests
+- **Notifications**: Slack notifications for all pipeline events
+- **Rollback**: Automatic rollback on deployment failure
+
+#### Triggering Deployments via Jenkins
+
+**1. Via Jenkins UI:**
+- Navigate to Moodify pipeline
+- Click "Build with Parameters"
+- Select deployment options:
+  - `DEPLOY_ENVIRONMENT`: staging/production
+  - `DEPLOY_STRATEGY`: blue-green/canary/rolling
+  - `RUN_SECURITY_SCAN`: true/false
+- Click "Build"
+
+**2. Via Jenkins API:**
+
+```bash
+# Trigger build with parameters
+curl -X POST "https://jenkins.moodify.com/job/moodify-pipeline/buildWithParameters" \
+    -u "username:api-token" \
+    --data-urlencode "DEPLOY_ENVIRONMENT=production" \
+    --data-urlencode "DEPLOY_STRATEGY=blue-green"
+```
+
+**3. Automated Triggers:**
+
+- **On Commit**: Automatic build and staging deployment for `develop` branch
+- **On PR**: Build and test (no deployment)
+- **On Merge to Master**: Build, test, and await production approval
+
+#### Pipeline Stages
+
+```mermaid
+graph TD
+    A[Initialize Pipeline] --> B[Checkout Code]
+    B --> C[Pre-build Checks]
+    C --> C1[Lint Code]
+    C --> C2[Check Dependencies]
+    C --> C3[Validate K8s Manifests]
+    C1 --> D
+    C2 --> D
+    C3 --> D
+    D[Unit Tests] --> E[Integration Tests]
+    E --> F[Security Scanning]
+    F --> F1[SAST - SonarQube]
+    F --> F2[Dependency - Snyk]
+    F --> F3[Secrets - GitLeaks]
+    F1 --> G
+    F2 --> G
+    F3 --> G
+    G[Build Backend + Frontend] --> H[Build Docker Images]
+    H --> I[Scan Docker Images - Trivy]
+    I --> J[Push Images to Registry]
+    J --> K[Deploy to Staging]
+    K --> L[Staging Smoke Tests]
+    L --> M{Manual Approval<br/>Required?}
+    M -->|Approved| N[Production Deployment]
+    M -->|Rejected| Z[Pipeline Ended]
+    N --> N1{Deployment<br/>Strategy}
+    N1 -->|Blue-Green| O1[Blue-Green Deploy]
+    N1 -->|Canary| O2[Progressive Canary]
+    N1 -->|Rolling| O3[Rolling Update]
+    O1 --> P
+    O2 --> P
+    O3 --> P
+    P[Production Verification] --> Q[Performance Tests]
+    Q --> R[Create Release Tag]
+    R --> S[Pipeline Success]
+
+    style A fill:#4A90E2,stroke:#2E5C8A,color:#fff
+    style M fill:#E74C3C,stroke:#922B21,color:#fff
+    style N fill:#50C878,stroke:#2E7D4E,color:#fff
+    style S fill:#27AE60,stroke:#1E8449,color:#fff
+    style Z fill:#95A5A6,stroke:#626567,color:#fff
+    style F1 fill:#9B59B6,stroke:#6C3483,color:#fff
+    style F2 fill:#9B59B6,stroke:#6C3483,color:#fff
+    style F3 fill:#9B59B6,stroke:#6C3483,color:#fff
+```
+
+### Standard Deployment (Legacy Reference)
 
 #### Phase 1: Preparation (T-30 minutes)
 
@@ -499,8 +977,136 @@ aws elasticache reboot-cache-cluster \
 - **P2 (Medium)**: 2 hours
 - **P3 (Low)**: Next business day
 
+## Infrastructure Components
+
+### Kubernetes Resources
+
+#### Deployments
+- **backend-blue**: Blue environment deployment (stable)
+- **backend-green**: Green environment deployment (candidate)
+- **backend-canary**: Canary deployment for progressive rollout
+
+#### Services
+- **backend-service**: Main service (routes to active environment)
+- **backend-blue-service**: Direct access to blue environment
+- **backend-green-service**: Direct access to green environment
+- **backend-canary-service**: Direct access to canary deployment
+
+#### Auto-scaling
+- **HorizontalPodAutoscaler**: Auto-scales based on CPU, memory, and custom metrics
+  - Min replicas: 3
+  - Max replicas: 15
+  - Target CPU: 70%
+  - Target Memory: 80%
+
+#### Traffic Management
+
+**Istio (Recommended):**
+- VirtualService for traffic splitting
+- DestinationRule for load balancing and circuit breaking
+- Gateway for external traffic
+- ServiceEntry for external dependencies
+- PeerAuthentication for mTLS
+
+**NGINX Ingress (Alternative):**
+- Main ingress for stable traffic
+- Canary ingress with weight-based routing
+- Test ingresses for blue/green/canary environments
+
+### Deployment Scripts
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `blue-green-deploy.sh` | Blue-green deployment | `./blue-green-deploy.sh -e production -v v1.2.3` |
+| `canary-deploy.sh` | Canary deployment | `./canary-deploy.sh -v v1.2.3 -s progressive` |
+| `rollback.sh` | Rollback operations | `./rollback.sh -t blue-green -f` |
+| `smoke-tests.sh` | Post-deployment tests | `./smoke-tests.sh production` |
+
+### Jenkins Pipeline
+
+**Configuration File**: `Jenkinsfile`
+
+**Credentials Required**:
+- `docker-registry-url`: Docker registry URL
+- `docker-registry-credentials`: Registry credentials
+- `kubeconfig-production`: Kubernetes config
+- `sonarqube-url`: SonarQube server
+- `snyk-token`: Snyk API token
+- `slack-webhook`: Slack webhook URL
+
+### Monitoring & Observability
+
+**Health Check Endpoints**:
+- `/health/live`: Liveness probe
+- `/health/ready`: Readiness probe
+- `/health/startup`: Startup probe
+- `/metrics`: Prometheus metrics
+
+**Logging**:
+- Fluent Bit sidecar for log shipping
+- Centralized logging to cloud provider
+
+**Metrics**:
+- Prometheus for metrics collection
+- Grafana for visualization
+- Custom metrics for business KPIs
+
+### Security
+
+**Container Security**:
+- Non-root user (UID 1000)
+- Read-only root filesystem
+- Dropped all capabilities
+- No privilege escalation
+
+**Network Security**:
+- Istio mTLS for service-to-service communication
+- Network policies for pod-to-pod communication
+- TLS termination at ingress
+
+**Scanning**:
+- Snyk for dependency scanning
+- Trivy for container image scanning
+- SonarQube for code quality and security
+- GitLeaks for secret detection
+
+### Directory Structure
+
+```mermaid
+mindmap
+  root((Deployment Assets))
+    kubernetes["kubernetes/"]
+      blue_green["blue-green/"]
+        bg_blue["backend-blue.yaml — blue deployment"]
+        bg_green["backend-green.yaml — green deployment"]
+        bg_service["backend-service.yaml — services"]
+      canary["canary/"]
+        canary_backend["backend-canary.yaml — canary deployment"]
+        canary_istio["istio-traffic-split.yaml — Istio config"]
+        canary_nginx["nginx-ingress-canary.yaml — NGINX config"]
+      common["common/"]
+        configmap.yaml
+        secrets.yaml
+        namespaces.yaml
+    scripts["scripts/deployment/"]
+      blue-green-deploy.sh
+      canary-deploy.sh
+      rollback.sh
+      smoke-tests.sh
+    Jenkinsfile
+```
+
 ---
 
-**Document Version**: 1.0
-**Last Updated**: 2025-10-07
-**Maintained by**: Son Nguyen
+**Document Version**: 2.0
+**Last Updated**: 2025-11-26
+**Maintained by**: DevOps Team
+**Changes in v2.0**:
+- Added blue-green deployment infrastructure
+- Added canary deployment with progressive rollout
+- Enhanced Jenkinsfile with comprehensive CI/CD
+- Added automated deployment scripts
+- Added smoke testing framework
+- Enhanced security scanning
+- Added Istio/NGINX traffic management
+- Comprehensive rollback procedures

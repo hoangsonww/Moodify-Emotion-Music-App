@@ -1,0 +1,194 @@
+# NGINX Ingress Configuration for Canary Deployment
+# Alternative to Istio for simpler setups
+
+---
+# Main Ingress (Stable)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  namespace: moodify-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://moodify.com,https://www.moodify.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    # Health check configuration
+    nginx.ingress.kubernetes.io/health-check-path: "/health/ready"
+    nginx.ingress.kubernetes.io/health-check-interval: "10s"
+    nginx.ingress.kubernetes.io/health-check-timeout: "5s"
+spec:
+  tls:
+  - hosts:
+    - api.moodify.com
+    - backend.moodify.com
+    secretName: moodify-tls-secret
+  rules:
+  - host: api.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 8000
+  - host: backend.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 8000
+
+---
+# Canary Ingress (10% traffic split using NGINX canary annotations)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress-canary
+  namespace: moodify-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Canary annotations
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "10"  # 10% traffic to canary
+    # Alternative: Header-based canary
+    # nginx.ingress.kubernetes.io/canary-by-header: "X-Canary"
+    # nginx.ingress.kubernetes.io/canary-by-header-value: "always"
+    # Alternative: Cookie-based canary
+    # nginx.ingress.kubernetes.io/canary-by-cookie: "canary-user"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  tls:
+  - hosts:
+    - api.moodify.com
+    - backend.moodify.com
+    secretName: moodify-tls-secret
+  rules:
+  - host: api.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-canary-service
+            port:
+              number: 8000
+  - host: backend.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-canary-service
+            port:
+              number: 8000
+
+---
+# Canary Test Ingress (for direct canary testing)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-canary-test
+  namespace: moodify-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: canary-test-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Canary Testing - Authentication Required"
+spec:
+  tls:
+  - hosts:
+    - canary.moodify.com
+    secretName: moodify-tls-secret
+  rules:
+  - host: canary.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-canary-service
+            port:
+              number: 8000
+
+---
+# Blue Environment Ingress (for direct testing)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-blue-test
+  namespace: moodify-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - blue.moodify.com
+    secretName: moodify-tls-secret
+  rules:
+  - host: blue.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-blue-service
+            port:
+              number: 8000
+
+---
+# Green Environment Ingress (for direct testing)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-green-test
+  namespace: moodify-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - green.moodify.com
+    secretName: moodify-tls-secret
+  rules:
+  - host: green.moodify.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-green-service
+            port:
+              number: 8000

@@ -1,0 +1,275 @@
+# ArgoCD Installation and Configuration
+# Provides GitOps continuous delivery for Kubernetes
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    name: argocd
+
+---
+# Install ArgoCD using Helm
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-install-script
+  namespace: argocd
+data:
+  install.sh: |
+    #!/bin/bash
+
+    # Add ArgoCD Helm repository
+    helm repo add argo https://argoproj.github.io/argo-helm
+    helm repo update
+
+    # Install ArgoCD
+    helm install argocd argo/argo-cd \
+      --namespace argocd \
+      --version 5.51.0 \
+      --values /config/values.yaml \
+      --create-namespace \
+      --wait
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-helm-values
+  namespace: argocd
+data:
+  values.yaml: |
+    global:
+      domain: argocd.moodify.com
+
+    server:
+      replicas: 2
+
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 5
+        targetCPUUtilizationPercentage: 70
+
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+
+      ingress:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+        hosts:
+          - argocd.moodify.com
+        tls:
+          - secretName: argocd-server-tls
+            hosts:
+              - argocd.moodify.com
+
+      config:
+        url: https://argocd.moodify.com
+        application.instanceLabelKey: argocd.argoproj.io/instance
+
+        # Dex OIDC configuration (optional)
+        # dex.config: |
+        #   connectors:
+        #     - type: github
+        #       id: github
+        #       name: GitHub
+        #       config:
+        #         clientID: $GITHUB_CLIENT_ID
+        #         clientSecret: $GITHUB_CLIENT_SECRET
+        #         orgs:
+        #         - name: your-org
+
+      rbacConfig:
+        policy.default: role:readonly
+        policy.csv: |
+          # Admin role
+          p, role:admin, applications, *, */*, allow
+          p, role:admin, clusters, *, *, allow
+          p, role:admin, repositories, *, *, allow
+          p, role:admin, projects, *, *, allow
+
+          # Developer role
+          p, role:developer, applications, get, */*, allow
+          p, role:developer, applications, sync, */*, allow
+          p, role:developer, applications, override, */*, allow
+
+          # Group bindings
+          g, your-org:devops, role:admin
+          g, your-org:developers, role:developer
+
+    repoServer:
+      replicas: 2
+
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 5
+
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+
+    applicationSet:
+      enabled: true
+      replicas: 2
+
+    controller:
+      replicas: 1
+
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+
+    redis:
+      enabled: true
+
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+
+    notifications:
+      enabled: true
+
+      argocdUrl: https://argocd.moodify.com
+
+      notifiers:
+        service.slack: |
+          token: $slack-token
+
+      templates:
+        template.app-deployed: |
+          message: |
+            Application {{.app.metadata.name}} is now running new version.
+          slack:
+            attachments: |
+              [{
+                "title": "{{ .app.metadata.name}}",
+                "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+                "color": "#18be52",
+                "fields": [
+                {
+                  "title": "Sync Status",
+                  "value": "{{.app.status.sync.status}}",
+                  "short": true
+                },
+                {
+                  "title": "Health Status",
+                  "value": "{{.app.status.health.status}}",
+                  "short": true
+                },
+                {
+                  "title": "Repository",
+                  "value": "{{.app.spec.source.repoURL}}",
+                  "short": true
+                }
+                ]
+              }]
+
+        template.app-health-degraded: |
+          message: |
+            Application {{.app.metadata.name}} has degraded health.
+          slack:
+            attachments: |
+              [{
+                "title": "{{ .app.metadata.name}}",
+                "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+                "color": "#f4c030",
+                "fields": [
+                {
+                  "title": "Health Status",
+                  "value": "{{.app.status.health.status}}",
+                  "short": true
+                }
+                ]
+              }]
+
+      triggers:
+        trigger.on-deployed: |
+          - when: app.status.operationState.phase in ['Succeeded']
+            send: [app-deployed]
+        trigger.on-health-degraded: |
+          - when: app.status.health.status == 'Degraded'
+            send: [app-health-degraded]
+
+      subscriptions:
+        - recipients:
+          - slack:deployments
+          triggers:
+          - on-deployed
+          - on-health-degraded
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: argocd-install
+  namespace: argocd
+spec:
+  template:
+    spec:
+      serviceAccountName: argocd-installer
+      containers:
+      - name: installer
+        image: alpine/helm:3.13.0
+        command: ["/bin/sh", "/scripts/install.sh"]
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: scripts
+        configMap:
+          name: argocd-install-script
+          defaultMode: 0755
+      - name: config
+        configMap:
+          name: argocd-helm-values
+      restartPolicy: OnFailure
+  backoffLimit: 3
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argocd-installer
+  namespace: argocd
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd-installer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: argocd-installer
+  namespace: argocd

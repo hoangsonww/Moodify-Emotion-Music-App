@@ -1,0 +1,22 @@
+apiVersion: v2
+name: moodify-backend
+description: Helm chart for Moodify backend application with blue-green deployment support
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - moodify
+  - backend
+  - nodejs
+  - blue-green
+
+maintainers:
+  - name: DevOps Team
+    email: devops@moodify.com
+
+dependencies: []
+
+annotations:
+  category: Application
+  licenses: Apache-2.0
