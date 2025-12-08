@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Moodify - AI-Powered Emotion-Based Music Recommendation System. Experience music tailored to your emotions.">
+    <meta name="keywords" content="Moodify, emotion detection, music recommendation, AI, ML, React, Django, PyTorch">
+    <meta name="author" content="Son Nguyen">
+    <title>Moodify - Emotion-Based Music Recommendation</title>
+    <link rel="icon" type="image/png" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/moodify-logo.png">
+    <link rel="stylesheet" href="packages/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="images/moodify-logo.png" alt="Moodify Logo" class="logo">
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#technology">Technology</a></li>
+                <li><a href="#deployment">Deployment</a></li>
+                <li><a href="#demo">Live Demo</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <span class="icon-sun">☀️</span>
+                    <span class="icon-moon">🌙</span>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero" id="home">
+        <div class="hero-background">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="badge-icon">🎵</span>
+                        <span>AI-Powered Music Recommendation</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Music That<br/>
+                        Understands Your<br/>
+                        <span class="gradient-text">Emotions</span>
+                    </h1>
+                    <p class="hero-subtitle">Harness the power of cutting-edge AI to discover music perfectly matched to your mood. Three specialized models analyze your emotions through text, voice, and facial expressions.</p>
+                    <div class="hero-buttons">
+                        <a href="https://moodify-app.vercel.app" class="btn btn-primary btn-large" target="_blank">
+                            <span>Launch Application</span>
+                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </a>
+                        <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" class="btn btn-secondary btn-large" target="_blank">
+                            <svg class="github-icon" fill="black" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                            </svg>
+                            <span style="color: black">View Source Code</span>
+                        </a>
+                    </div>
+                    <div class="hero-features">
+                        <div class="feature-pill">
+                            <span class="pill-icon">🎯</span>
+                            <span>95%+ Accuracy</span>
+                        </div>
+                        <div class="feature-pill">
+                            <span class="pill-icon">⚡</span>
+                            <span>Real-Time Analysis</span>
+                        </div>
+                        <div class="feature-pill">
+                            <span class="pill-icon">🔒</span>
+                            <span>Enterprise Security</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="visual-container">
+                        <div class="emotion-circle">
+                            <div class="emotion-item" style="--rotation: 0deg;">
+                                <div class="emotion-card happy-card">
+                                    <div class="emotion-icon">😊</div>
+                                    <div class="emotion-name">Happy</div>
+                                </div>
+                            </div>
+                            <div class="emotion-item" style="--rotation: 90deg;">
+                                <div class="emotion-card sad-card">
+                                    <div class="emotion-icon">😢</div>
+                                    <div class="emotion-name">Sad</div>
+                                </div>
+                            </div>
+                            <div class="emotion-item" style="--rotation: 180deg;">
+                                <div class="emotion-card angry-card">
+                                    <div class="emotion-icon">😡</div>
+                                    <div class="emotion-name">Angry</div>
+                                </div>
+                            </div>
+                            <div class="emotion-item" style="--rotation: 270deg;">
+                                <div class="emotion-card surprise-card">
+                                    <div class="emotion-icon">😮</div>
+                                    <div class="emotion-name">Surprised</div>
+                                </div>
+                            </div>
+                            <div class="center-logo">
+                                <div class="logo-pulse"></div>
+                                <span class="logo-text">AI</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🤖</div>
+                    <div class="stat-content">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">AI Models</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✨</div>
+                    <div class="stat-content">
+                        <div class="stat-value">99.9%</div>
+                        <div class="stat-label">Uptime</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <div class="stat-value">&lt;2s</div>
+                        <div class="stat-label">Response Time</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚀</div>
+                    <div class="stat-content">
+                        <div class="stat-value">20+</div>
+                        <div class="stat-label">Technologies</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Overview Section -->
+    <section id="overview" class="section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">About the Project</span>
+                <h2 class="section-title">What is Moodify?</h2>
+                <p class="section-subtitle">An intelligent music recommendation system powered by cutting-edge AI/ML technology</p>
+            </div>
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <div class="card-icon">🎯</div>
+                    <h3>Mission</h3>
+                    <p>To revolutionize music discovery by creating an intelligent system that understands and responds to human emotions through advanced AI technology.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🚀</div>
+                    <h3>Vision</h3>
+                    <p>Providing personalized music recommendations that perfectly match users' emotional states, detected through text, speech, and facial expressions.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">💡</div>
+                    <h3>Innovation</h3>
+                    <p>Combines three self-trained AI/ML models (BERT, CNN-LSTM, ResNet50) with real-time Spotify integration for seamless music discovery.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🌐</div>
+                    <h3>Accessibility</h3>
+                    <p>Available on web and mobile platforms with progressive web app features, ensuring a seamless experience across all devices.</p>
+                </div>
+            </div>
+
+            <div class="info-banner">
+                <div class="banner-icon">⚠️</div>
+                <div>
+                    <strong>Important Notice:</strong> Be aware of impersonation attempts. The official developer is Son Nguyen (@hoangsonww on GitHub).
+                    Do not send money or personal information to anyone claiming to be associated with this project.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section section-dark">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Capabilities</span>
+                <h2 class="section-title">Key Features</h2>
+                <p class="section-subtitle">Comprehensive emotion detection and music recommendation system</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Text Emotion Analysis</h3>
+                    <p>Advanced BERT-based model analyzes text input to detect emotional content with high accuracy. Supports multiple languages and contexts.</p>
+                    <div class="feature-tags">
+                        <span class="tag">NLP</span>
+                        <span class="tag">BERT</span>
+                        <span class="tag">Transformers</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎤</div>
+                    <h3>Speech Emotion Detection</h3>
+                    <p>CNN-LSTM architecture processes audio features (MFCC, pitch, energy) to identify emotions from voice recordings in real-time.</p>
+                    <div class="feature-tags">
+                        <span class="tag">CNN</span>
+                        <span class="tag">LSTM</span>
+                        <span class="tag">Librosa</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>Facial Expression Recognition</h3>
+                    <p>ResNet50-based deep learning model detects emotions from facial expressions with state-of-the-art accuracy using computer vision.</p>
+                    <div class="feature-tags">
+                        <span class="tag">ResNet50</span>
+                        <span class="tag">OpenCV</span>
+                        <span class="tag">FER</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎵</div>
+                    <h3>Spotify Integration</h3>
+                    <p>Seamless integration with Spotify API provides personalized music recommendations based on detected emotions and user preferences.</p>
+                    <div class="feature-tags">
+                        <span class="tag">Spotify API</span>
+                        <span class="tag">OAuth</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👤</div>
+                    <h3>User Management</h3>
+                    <p>Complete user authentication system with JWT tokens, profile management, mood history tracking, and listening preferences.</p>
+                    <div class="feature-tags">
+                        <span class="tag">JWT</span>
+                        <span class="tag">MongoDB</span>
+                        <span class="tag">Redis</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Analytics Dashboard</h3>
+                    <p>Comprehensive data analytics using Apache Spark and Hadoop for emotion trends, model performance, and user insights visualization.</p>
+                    <div class="feature-tags">
+                        <span class="tag">Spark</span>
+                        <span class="tag">Hadoop</span>
+                        <span class="tag">Matplotlib</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Application</h3>
+                    <p>Native mobile experience built with React Native and Expo, providing seamless emotion detection and music recommendations on-the-go.</p>
+                    <div class="feature-tags">
+                        <span class="tag">React Native</span>
+                        <span class="tag">Expo</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Enterprise Security</h3>
+                    <p>Multi-layer security with JWT authentication, rate limiting, input validation, encryption at rest and in transit, and comprehensive audit logging.</p>
+                    <div class="feature-tags">
+                        <span class="tag">Security</span>
+                        <span class="tag">Encryption</span>
+                        <span class="tag">Compliance</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time Processing</h3>
+                    <p>Sub-second response times with Redis caching, load balancing via NGINX, and horizontal scaling through Kubernetes orchestration.</p>
+                    <div class="feature-tags">
+                        <span class="tag">Redis</span>
+                        <span class="tag">NGINX</span>
+                        <span class="tag">K8s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">System Design</span>
+                <h2 class="section-title">System Architecture</h2>
+                <p class="section-subtitle">Scalable, cloud-native microservices architecture</p>
+            </div>
+
+            <div class="architecture-tabs">
+                <button class="tab-btn active" data-tab="overview">Overview</button>
+                <button class="tab-btn" data-tab="flow">Data Flow</button>
+                <button class="tab-btn" data-tab="deployment">Deployment</button>
+                <button class="tab-btn" data-tab="security">Security</button>
+            </div>
+
+            <div class="tab-content active" id="overview-tab">
+                <div class="diagram-container">
+                    <pre class="mermaid">
+graph TB
+    subgraph "Client Layer"
+        A[Web App - React]
+        B[Mobile App - React Native]
+    end
+
+    subgraph "Load Balancer Layer"
+        C[NGINX Load Balancer]
+    end
+
+    subgraph "Application Layer"
+        D[Django Backend API]
+        E[AI/ML Service - Flask]
+    end
+
+    subgraph "AI/ML Models"
+        F[Text Emotion Model<br/>BERT-based]
+        G[Speech Emotion Model<br/>CNN + LSTM]
+        H[Facial Emotion Model<br/>ResNet50]
+    end
+
+    subgraph "External Services"
+        I[Spotify API]
+    end
+
+    subgraph "Data Layer"
+        J[(MongoDB)]
+        K[(Redis Cache)]
+        L[(SQLite)]
+    end
+
+    subgraph "Analytics Layer"
+        M[Apache Spark]
+        N[Apache Hadoop]
+        O[Data Visualization]
+    end
+
+    A -->|HTTPS| C
+    B -->|HTTPS| C
+    C -->|Load Balance| D
+    D -->|REST API| E
+    E --> F
+    E --> G
+    E --> H
+    D -->|Fetch Music| I
+    D --> J
+    D --> K
+    D --> L
+    J -.->|Analytics| M
+    M <--> N
+    M --> O
+
+    style A fill:#61DAFB
+    style B fill:#61DAFB
+    style C fill:#009639
+    style D fill:#efefef
+    style E fill:#ffffff
+    style F fill:#FF6F00
+    style G fill:#FF6F00
+    style H fill:#FF6F00
+    style I fill:#1DB954
+    style J fill:#47A248
+    style K fill:#DC382D
+    style M fill:#E25A1C
+    style N fill:#66CCFF
+                    </pre>
+                </div>
+                <div class="architecture-description">
+                    <h3>Layered Architecture</h3>
+                    <ul>
+                        <li><strong>Client Layer:</strong> React web app and React Native mobile app for user interaction</li>
+                        <li><strong>Load Balancer:</strong> NGINX for distributing traffic and SSL termination</li>
+                        <li><strong>Application Layer:</strong> Django REST Framework backend and Flask ML services</li>
+                        <li><strong>AI/ML Layer:</strong> Three specialized models for emotion detection</li>
+                        <li><strong>Data Layer:</strong> MongoDB for persistence, Redis for caching, SQLite for development</li>
+                        <li><strong>Analytics Layer:</strong> Apache Spark and Hadoop for big data processing</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-content" id="flow-tab">
+                <div class="diagram-container">
+                    <pre class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant LB as Load Balancer
+    participant BE as Backend API
+    participant AI as AI/ML Service
+    participant DB as MongoDB
+    participant SP as Spotify API
+    participant CH as Redis Cache
+
+    U->>FE: Input (Text/Speech/Image)
+    FE->>LB: Send Request
+    LB->>BE: Route to Backend
+    BE->>CH: Check Cache
+    alt Cache Hit
+        CH-->>BE: Return Cached Result
+    else Cache Miss
+        BE->>AI: Forward for Analysis
+        AI->>AI: Process with ML Model
+        AI-->>BE: Return Emotion
+        BE->>SP: Request Music Recommendations
+        SP-->>BE: Return Tracks
+        BE->>DB: Store User History
+        BE->>CH: Cache Result
+    end
+    BE-->>FE: Return Recommendations
+    FE-->>U: Display Results
+                    </pre>
+                </div>
+                <div class="architecture-description">
+                    <h3>Request Flow</h3>
+                    <ol>
+                        <li>User submits emotion input through web or mobile interface</li>
+                        <li>Request is load-balanced by NGINX to backend instances</li>
+                        <li>Backend checks Redis cache for existing results</li>
+                        <li>If cache miss, forwards to AI/ML service for emotion detection</li>
+                        <li>ML model processes input and returns emotion with confidence score</li>
+                        <li>Backend queries Spotify API for music recommendations</li>
+                        <li>Results are cached in Redis and stored in MongoDB</li>
+                        <li>Response is returned to user with recommendations</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="tab-content" id="deployment-tab">
+                <div class="deployment-diagram">
+                    <h4 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary);">Docker Compose Microservices Architecture</h4>
+
+                    <!-- Load Balancer Layer -->
+                    <div class="diagram-layer">
+                        <div class="layer-title">Load Balancer</div>
+                        <div class="diagram-node nginx-node">
+                            <div class="node-icon">🌐</div>
+                            <div class="node-title">NGINX</div>
+                            <div class="node-detail">Port: 80/443</div>
+                            <div class="node-detail">SSL Termination</div>
+                            <div class="node-detail">Reverse Proxy</div>
+                        </div>
+                    </div>
+
+                    <div class="diagram-connector">
+                        <div class="connector-line"></div>
+                        <div class="connector-arrow">▼</div>
+                    </div>
+
+                    <!-- Application Layer -->
+                    <div class="diagram-layer">
+                        <div class="layer-title">Application Layer</div>
+                        <div class="diagram-row">
+                            <div class="diagram-node frontend-node">
+                                <div class="node-icon">⚛️</div>
+                                <div class="node-title">Frontend</div>
+                                <div class="node-detail">React 18</div>
+                                <div class="node-detail">Port: 3000</div>
+                                <div class="node-detail">SPA + PWA</div>
+                            </div>
+                            <div class="diagram-node backend-node">
+                                <div class="node-icon">🐍</div>
+                                <div class="node-title">Backend API</div>
+                                <div class="node-detail">Django 4.2</div>
+                                <div class="node-detail">Port: 8000</div>
+                                <div class="node-detail">REST + GraphQL</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="diagram-connector">
+                        <div class="connector-line"></div>
+                        <div class="connector-arrow">▼</div>
+                    </div>
+
+                    <!-- Service Layer -->
+                    <div class="diagram-layer">
+                        <div class="layer-title">AI/ML Services</div>
+                        <div class="diagram-node aiml-node">
+                            <div class="node-icon">🤖</div>
+                            <div class="node-title">ML Service</div>
+                            <div class="node-detail">Flask + PyTorch</div>
+                            <div class="node-detail">Port: 5000</div>
+                            <div class="node-detail">BERT + CNN-LSTM + ResNet50</div>
+                        </div>
+                    </div>
+
+                    <div class="diagram-connector">
+                        <div class="connector-line"></div>
+                        <div class="connector-arrow">▼</div>
+                    </div>
+
+                    <!-- Data Layer -->
+                    <div class="diagram-layer">
+                        <div class="layer-title">Data & Cache Layer</div>
+                        <div class="diagram-row">
+                            <div class="diagram-node mongodb-node">
+                                <div class="node-icon">🍃</div>
+                                <div class="node-title">MongoDB</div>
+                                <div class="node-detail">NoSQL Database</div>
+                                <div class="node-detail">Port: 27017</div>
+                                <div class="node-detail">User Data + History</div>
+                            </div>
+                            <div class="diagram-node redis-node">
+                                <div class="node-icon">⚡</div>
+                                <div class="node-title">Redis</div>
+                                <div class="node-detail">In-Memory Cache</div>
+                                <div class="node-detail">Port: 6379</div>
+                                <div class="node-detail">Session + Cache</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="architecture-description">
+                    <h3>Containerized Deployment</h3>
+                    <ul>
+                        <li><strong>Docker Compose:</strong> Orchestrates all services with defined dependencies</li>
+                        <li><strong>Kubernetes:</strong> Production orchestration with auto-scaling and self-healing</li>
+                        <li><strong>CI/CD:</strong> Jenkins pipeline with automated testing and deployment</li>
+                        <li><strong>Blue-Green Deployment:</strong> Zero-downtime deployments with instant rollback</li>
+                        <li><strong>Cloud Providers:</strong> AWS and GCP with Terraform IaC</li>
+                        <li><strong>Monitoring:</strong> Prometheus, Grafana, and ELK stack for observability</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-content" id="security-tab">
+                <div class="security-diagram">
+                    <h4 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary);">Multi-Layer Security Architecture</h4>
+
+                    <!-- Perimeter Security -->
+                    <div class="security-layer perimeter-layer">
+                        <div class="security-layer-title">
+                            <span class="layer-number">1</span>
+                            Perimeter Security
+                        </div>
+                        <div class="security-items">
+                            <div class="security-item">
+                                <div class="security-icon">🛡️</div>
+                                <div class="security-name">DDoS Protection</div>
+                                <div class="security-desc">CloudFlare + AWS Shield</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">🔥</div>
+                                <div class="security-name">Web Application Firewall</div>
+                                <div class="security-desc">AWS WAF + ModSecurity</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">⏱️</div>
+                                <div class="security-name">Rate Limiting</div>
+                                <div class="security-desc">NGINX + Redis 1000 req/min</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="security-arrow">↓</div>
+
+                    <!-- Application Security -->
+                    <div class="security-layer application-layer">
+                        <div class="security-layer-title">
+                            <span class="layer-number">2</span>
+                            Application Security
+                        </div>
+                        <div class="security-items">
+                            <div class="security-item">
+                                <div class="security-icon">🔑</div>
+                                <div class="security-name">JWT Authentication</div>
+                                <div class="security-desc">RS256 Asymmetric Tokens</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">👥</div>
+                                <div class="security-name">RBAC Authorization</div>
+                                <div class="security-desc">Role-Based Access Control</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">✅</div>
+                                <div class="security-name">Input Validation</div>
+                                <div class="security-desc">Sanitization + Type Checking</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">🚫</div>
+                                <div class="security-name">XSS Protection</div>
+                                <div class="security-desc">Content Security Policy</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">🔐</div>
+                                <div class="security-name">CSRF Protection</div>
+                                <div class="security-desc">Token-Based Validation</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="security-arrow">↓</div>
+
+                    <!-- Data Security -->
+                    <div class="security-layer data-layer">
+                        <div class="security-layer-title">
+                            <span class="layer-number">3</span>
+                            Data Security
+                        </div>
+                        <div class="security-items">
+                            <div class="security-item">
+                                <div class="security-icon">🔒</div>
+                                <div class="security-name">Encryption at Rest</div>
+                                <div class="security-desc">AES-256-GCM for all data</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">🌐</div>
+                                <div class="security-name">Encryption in Transit</div>
+                                <div class="security-desc">TLS 1.3 + HSTS Enabled</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">🗝️</div>
+                                <div class="security-name">Key Management</div>
+                                <div class="security-desc">AWS KMS + HashiCorp Vault</div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-icon">📋</div>
+                                <div class="security-name">Audit Logging</div>
+                                <div class="security-desc">ELK Stack + CloudWatch</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="architecture-description">
+                    <h3>Security Layers</h3>
+                    <ul>
+                        <li><strong>Perimeter:</strong> CloudFlare DDoS protection, AWS WAF, NGINX rate limiting</li>
+                        <li><strong>Authentication:</strong> JWT tokens with RS256 asymmetric encryption</li>
+                        <li><strong>Authorization:</strong> Role-based access control (RBAC) with fine-grained permissions</li>
+                        <li><strong>Data Protection:</strong> AES-256 encryption at rest, TLS 1.3 in transit</li>
+                        <li><strong>Compliance:</strong> GDPR compliant with data retention policies and audit logs</li>
+                        <li><strong>Vulnerability Management:</strong> Regular security scans with Snyk and SonarQube</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Stack Section -->
+    <section id="technology" class="section section-dark">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Tech Stack</span>
+                <h2 class="section-title">Technologies & Tools</h2>
+                <p class="section-subtitle">Built with modern, production-ready technologies</p>
+            </div>
+
+            <div class="tech-categories">
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">⚛️</span>
+                        Frontend
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Redux-764ABC?style=for-the-badge&logo=redux&logoColor=white" alt="Redux">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/MUI-007FFF?style=for-the-badge&logo=mui&logoColor=white" alt="Material UI">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">🐍</span>
+                        Backend
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/DRF-ff1709?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white" alt="Gunicorn">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">🤖</span>
+                        AI/ML
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Keras-D00000?style=for-the-badge&logo=keras&logoColor=white" alt="Keras">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/HuggingFace-FFD54F?style=for-the-badge&logo=huggingface&logoColor=black" alt="HuggingFace">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" alt="OpenCV">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Scikit_Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="Scikit Learn">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">💾</span>
+                        Databases
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">☸️</span>
+                        DevOps
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white" alt="Terraform">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">☁️</span>
+                        Cloud & Hosting
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Amazon_Web_Services-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Google_Cloud_Platform-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="GCP">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Render-152535?style=for-the-badge&logo=render&logoColor=white" alt="Render">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deployment Section -->
+    <section id="deployment" class="section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Infrastructure</span>
+                <h2 class="section-title">Deployment & Operations</h2>
+                <p class="section-subtitle">Enterprise-grade deployment with multiple strategies</p>
+            </div>
+
+            <div class="deployment-grid">
+                <div class="deployment-card">
+                    <div class="deployment-icon">🔵🟢</div>
+                    <h3>Blue-Green Deployment</h3>
+                    <p>Zero-downtime deployments with instant rollback capability. Two identical production environments ensure smooth transitions and rapid recovery.</p>
+                    <ul class="deployment-features">
+                        <li>✅ Instant traffic switching</li>
+                        <li>✅ Full environment validation</li>
+                        <li>✅ Easy A/B testing</li>
+                        <li>✅ Zero downtime</li>
+                    </ul>
+                </div>
+
+                <div class="deployment-card">
+                    <div class="deployment-icon">🐤</div>
+                    <h3>Canary Deployment</h3>
+                    <p>Progressive rollout strategy with traffic-based validation. Gradually increases traffic from 10% to 100% with automated health monitoring.</p>
+                    <ul class="deployment-features">
+                        <li>✅ Progressive traffic increase</li>
+                        <li>✅ Early issue detection</li>
+                        <li>✅ Automated rollback</li>
+                        <li>✅ Minimal risk</li>
+                    </ul>
+                </div>
+
+                <div class="deployment-card">
+                    <div class="deployment-icon">🔄</div>
+                    <h3>CI/CD Pipeline</h3>
+                    <p>Comprehensive Jenkins pipeline with automated testing, security scanning, and deployment. Includes quality gates and approval workflows.</p>
+                    <ul class="deployment-features">
+                        <li>✅ Automated testing</li>
+                        <li>✅ Security scanning</li>
+                        <li>✅ Quality gates</li>
+                        <li>✅ Multi-environment</li>
+                    </ul>
+                </div>
+
+                <div class="deployment-card">
+                    <div class="deployment-icon">☸️</div>
+                    <h3>Kubernetes Orchestration</h3>
+                    <p>Container orchestration with auto-scaling, self-healing, and service discovery. Manages complex deployments across multiple cloud providers.</p>
+                    <ul class="deployment-features">
+                        <li>✅ Auto-scaling</li>
+                        <li>✅ Self-healing</li>
+                        <li>✅ Load balancing</li>
+                        <li>✅ Service mesh</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="monitoring-section">
+                <h3>Monitoring & Observability</h3>
+                <div class="monitoring-grid">
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon">📊</div>
+                        <h4>Metrics</h4>
+                        <p>Prometheus & Grafana dashboards for real-time system metrics, application performance, and business KPIs.</p>
+                    </div>
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon">📝</div>
+                        <h4>Logging</h4>
+                        <p>ELK Stack (Elasticsearch, Logstash, Kibana) for centralized log aggregation, search, and analysis.</p>
+                    </div>
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon">🔍</div>
+                        <h4>Tracing</h4>
+                        <p>Jaeger distributed tracing for request tracking across microservices and performance bottleneck identification.</p>
+                    </div>
+                    <div class="monitoring-item">
+                        <div class="monitoring-icon">🚨</div>
+                        <h4>Alerting</h4>
+                        <p>PagerDuty and Slack integration for instant notifications on critical issues with automated escalation policies.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Section -->
+    <section id="demo" class="section section-dark">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Try It Now</span>
+                <h2 class="section-title">Live Deployment</h2>
+                <p class="section-subtitle">Experience Moodify in action</p>
+            </div>
+
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <div class="demo-icon">🌐</div>
+                    <h3>Web Application</h3>
+                    <p>Full-featured web app with all emotion detection modes and music recommendations.</p>
+                    <a href="https://moodify-app.vercel.app" class="demo-link" target="_blank">
+                        Launch App →
+                    </a>
+                    <div class="status-badge success">
+                        <span class="status-dot"></span>
+                        Live on Vercel
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-icon">🔧</div>
+                    <h3>Backend API</h3>
+                    <p>RESTful API with comprehensive documentation via Swagger and Redoc.</p>
+                    <a href="https://moodify-emotion-music-app.onrender.com/swagger" class="demo-link" target="_blank">
+                        View API Docs →
+                    </a>
+                    <div class="status-badge success">
+                        <span class="status-dot"></span>
+                        Live on Render
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-icon">💻</div>
+                    <h3>Source Code</h3>
+                    <p>Open-source project with comprehensive documentation and contribution guidelines.</p>
+                    <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" class="demo-link" target="_blank">
+                        View on GitHub →
+                    </a>
+                    <div class="status-badge">
+                        <span class="status-dot"></span>
+                        MIT License
+                    </div>
+                </div>
+            </div>
+
+            <div class="disclaimer-box">
+                <h4>⚠️ Important Notes</h4>
+                <ul>
+                    <li>The backend is hosted on Render's free tier (512MB RAM, 0.1 CPU), which may cause slower initial load times and occasional restarts due to memory constraints.</li>
+                    <li>Facial and speech emotion detection models may cause temporary server issues due to heavy processing requirements.</li>
+                    <li>For optimal performance, consider cloning the repository and running locally.</li>
+                    <li>No guarantee of uptime or performance with current free-tier deployment.</li>
+                </ul>
+            </div>
+
+            <div class="stats-showcase">
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-number">&lt;2s</div>
+                    <div class="stat-label">Average Response Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-number">95%+</div>
+                    <div class="stat-label">Emotion Detection Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Target Uptime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🌍</div>
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Global Availability</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Moodify</h3>
+                    <p>AI-powered emotion-based music recommendation system</p>
+                    <div class="social-links">
+                        <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" aria-label="GitHub">
+                            <svg fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/hoangsonw/" target="_blank" aria-label="LinkedIn">
+                            <svg fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#overview">Overview</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#architecture">Architecture</a></li>
+                        <li><a href="#technology">Technology</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank">Documentation</a></li>
+                        <li><a href="https://moodify-emotion-music-app.onrender.com/swagger" target="_blank">API Reference</a></li>
+                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank">Issue Tracker</a></li>
+                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/main/LICENSE" target="_blank">License</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:hoangson091104@gmail.com">Email</a></li>
+                        <li><a href="https://github.com/hoangsonww" target="_blank">GitHub Profile</a></li>
+                        <li><a href="https://www.linkedin.com/in/hoangsonw/" target="_blank">LinkedIn</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Moodify. Created with ❤️ by <a href="https://github.com/hoangsonww" target="_blank">Son Nguyen</a></p>
+                <p>Licensed under the MIT License</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="packages/script.js"></script>
+</body>
+</html>
