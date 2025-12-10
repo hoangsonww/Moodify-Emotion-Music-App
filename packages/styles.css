@@ -763,6 +763,7 @@ a:hover {
     
     .hero-stats {
         grid-template-columns: 1fr;
+        justify-items: center;
     }
 }
 
