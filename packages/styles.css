@@ -1306,6 +1306,7 @@ a:hover {
     border-radius: var(--border-radius);
     padding: 3rem;
     margin-top: 3rem;
+    text-align: center;
 }
 
 .monitoring-grid {
@@ -1421,9 +1422,10 @@ a:hover {
 }
 
 .stats-showcase {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap */
     gap: 2rem;
+    justify-content: center; /* Center the items */
 }
 
 .stat-card {
@@ -1433,6 +1435,9 @@ a:hover {
     padding: 2rem;
     text-align: center;
     transition: var(--transition);
+    flex: 1 1 200px; /* Allow cards to grow and shrink, with a base size */
+    max-width: 300px; /* Prevent cards from getting too wide */
+    word-wrap: break-word; /* Ensure long words break and wrap */
 }
 
 .stat-card:hover {
@@ -1515,22 +1520,23 @@ a:hover {
     background: var(--bg-secondary);
     border-radius: 50%;
     transition: var(--transition);
+    color: #4CAF50 !important; /* Greenish color */
 }
 
 .social-links a:hover {
     background: var(--primary-color);
     transform: translateY(-2px);
+    color: white !important; /* White on hover */
 }
 
 .social-links a {
-    color: white !important;
     text-decoration: none !important;
 }
 
 .social-links svg {
     width: 20px;
     height: 20px;
-    fill: white;
+    fill: currentColor;
 }
 
 .footer-bottom {
@@ -1630,6 +1636,56 @@ a:hover {
     .btn {
         width: 100%;
         justify-content: center;
+    }
+
+    /* Monitoring Section Mobile */
+    .monitoring-grid {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        gap: 1rem;
+        padding-bottom: 1rem; /* Add some padding for scrollbar */
+    }
+
+    .monitoring-item {
+        flex: 0 0 auto;
+        width: 250px; /* Fixed width for scrollable items */
+        text-align: left; /* Left align content within item */
+        margin-right: 1rem; /* Space between scrollable items */
+    }
+
+    .monitoring-section {
+        text-align: center; /* Ensure the main title is centered */
+    }
+
+    /* Stats Showcase Mobile */
+    .stats-showcase {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 1rem; /* Add some padding for scrollbar */
+    }
+
+    .stat-card {
+        flex: 0 0 auto; /* Prevent shrinking/growing, use a fixed size */
+        width: 180px; /* Adjust width to better fit content */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stat-card .stat-content {
+        flex: 1; /* Ensure it takes available space */
+        min-width: 0; /* Allow content to shrink below its intrinsic size */
+        max-width: 100%; /* Constrain to parent width */
+    }
+
+    .stat-card .stat-label {
+        white-space: normal; /* Allow text to wrap */
+        word-wrap: break-word; /* Break long words */
+        overflow-wrap: break-word; /* Modern equivalent for word-wrap */
+        word-break: break-word; /* More aggressive word breaking */
+        hyphens: auto; /* Allow hyphenation for better breaks */
     }
 }
 
