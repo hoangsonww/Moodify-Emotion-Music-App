@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moodify-backend
+  namespace: moodify-production
+  labels:
+    app.kubernetes.io/name: moodify-backend
+    app.kubernetes.io/part-of: moodify
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: moodify-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: moodify-backend
+        app.kubernetes.io/part-of: moodify
+    spec:
+      containers:
+        - name: backend
+          image: moodify-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: SECRET_KEY
+            - name: MONGO_DB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: MONGO_DB_URI
+            - name: MONGO_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: MONGO_DB_USERNAME
+            - name: MONGO_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: MONGO_DB_PASSWORD
+            - name: SPOTIFY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: SPOTIFY_CLIENT_ID
+            - name: SPOTIFY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: SPOTIFY_CLIENT_SECRET
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 20

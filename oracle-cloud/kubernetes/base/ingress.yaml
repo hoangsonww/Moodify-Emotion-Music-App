@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: moodify-ingress
+  namespace: moodify-production
+  labels:
+    app.kubernetes.io/name: moodify-ingress
+    app.kubernetes.io/part-of: moodify
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - moodify.example.com
+        - api.moodify.example.com
+      secretName: moodify-tls
+  rules:
+    - host: moodify.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-frontend
+                port:
+                  number: 3000
+    - host: api.moodify.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-backend
+                port:
+                  number: 8000

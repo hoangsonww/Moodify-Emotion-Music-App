@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moodify-frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: frontend
+          image: us-ashburn-1.ocir.io/yourtenancy/moodify-frontend:2025.01.01
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moodify-backend
+spec:
+  template:
+    spec:
+      containers:
+        - name: backend
+          image: us-ashburn-1.ocir.io/yourtenancy/moodify-backend:2025.01.01
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moodify-ai-ml
+spec:
+  template:
+    spec:
+      containers:
+        - name: ai-ml
+          image: us-ashburn-1.ocir.io/yourtenancy/moodify-ai-ml:2025.01.01
