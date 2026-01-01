@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: moodify-mongo
+  namespace: moodify-production
+  labels:
+    app.kubernetes.io/name: moodify-mongo
+    app.kubernetes.io/part-of: moodify
+spec:
+  serviceName: moodify-mongo
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: moodify-mongo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: moodify-mongo
+        app.kubernetes.io/part-of: moodify
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:6.0
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: MONGO_DB_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: moodify-secrets
+                  key: MONGO_DB_PASSWORD
+            - name: MONGO_INITDB_DATABASE
+              value: emotion_based_music_db
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 50Gi
+        storageClassName: oci-bv

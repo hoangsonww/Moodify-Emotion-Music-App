@@ -1,0 +1,32 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: moodify-backend-pdb
+  namespace: moodify-production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: moodify-backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: moodify-ai-ml-pdb
+  namespace: moodify-production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: moodify-ai-ml
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: moodify-frontend-pdb
+  namespace: moodify-production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: moodify-frontend

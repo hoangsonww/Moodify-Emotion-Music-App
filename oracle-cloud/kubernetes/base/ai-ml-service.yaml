@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: moodify-ai-ml
+  namespace: moodify-production
+  labels:
+    app.kubernetes.io/name: moodify-ai-ml
+    app.kubernetes.io/part-of: moodify
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: moodify-ai-ml
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000

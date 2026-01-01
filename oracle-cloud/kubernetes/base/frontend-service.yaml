@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: moodify-frontend
+  namespace: moodify-production
+  labels:
+    app.kubernetes.io/name: moodify-frontend
+    app.kubernetes.io/part-of: moodify
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: moodify-frontend
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

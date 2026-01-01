@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: moodify-production
+  labels:
+    app.kubernetes.io/name: moodify
+    app.kubernetes.io/part-of: moodify
