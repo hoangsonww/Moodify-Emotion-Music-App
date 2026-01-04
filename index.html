@@ -387,8 +387,10 @@ graph TB
     style I fill:#1DB954
     style J fill:#47A248
     style K fill:#DC382D
+    style L fill:#FFC0CB,stroke:#D87093,stroke-width:2px
     style M fill:#E25A1C
     style N fill:#66CCFF
+    style O fill:#FFC0CB,stroke:#D87093,stroke-width:2px
                     </pre>
                 </div>
                 <div class="architecture-description">
@@ -1042,6 +1044,13 @@ sequenceDiagram
         </div>
     </footer>
 
+    <script>
+        document.querySelectorAll('.mermaid').forEach((diagram) => {
+            if (!diagram.getAttribute('data-mermaid-src')) {
+                diagram.setAttribute('data-mermaid-src', diagram.innerHTML);
+            }
+        });
+    </script>
     <script src="packages/script.js"></script>
 </body>
 </html>

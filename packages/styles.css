@@ -936,6 +936,17 @@ a:hover {
     overflow-x: auto;
 }
 
+#overview-tab .mermaid svg text,
+#overview-tab .mermaid svg tspan,
+#overview-tab .mermaid .label,
+#overview-tab .mermaid .nodeLabel,
+#overview-tab .mermaid .edgeLabel,
+#overview-tab .mermaid .cluster-label,
+#overview-tab .mermaid .titleText {
+    color: #000000 !important;
+    fill: #000000 !important;
+}
+
 /* Deployment Diagram Styles */
 .deployment-diagram {
     background: var(--bg-secondary);
