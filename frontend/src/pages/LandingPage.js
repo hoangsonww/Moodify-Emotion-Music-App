@@ -31,7 +31,6 @@ import {
   Bolt,
   Devices,
   Favorite,
-  PlayCircleOutline,
   Group,
   School,
   Work,
@@ -1706,6 +1705,7 @@ const testimonials = [
   },
 ];
 
+// eslint-disable-next-line no-unused-vars
 const pricing = [
   {
     title: "Starter",
