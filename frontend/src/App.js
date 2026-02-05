@@ -1,5 +1,10 @@
 import React, { useEffect, useContext } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
@@ -27,7 +32,18 @@ function App() {
 
   return (
     <Router>
-      <Navbar />
+      <AppLayout />
+    </Router>
+  );
+}
+
+function AppLayout() {
+  const location = useLocation();
+  const hideNavbar = location.pathname === "/";
+
+  return (
+    <>
+      {!hideNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<HomePage />} />
@@ -42,7 +58,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Footer />
-    </Router>
+    </>
   );
 }
 
