@@ -96,17 +96,6 @@ are also used to visualize emotion trends and model performance. Users will be d
 - [**🌟 Features**](#-features)
 - [**🛠️ Technologies**](#-technologies)
 - [**🖼️ User Interface**](#-user-interface)
-    - [**Landing Page**](#landing-page)
-    - [**Home Page**](#home-page)
-    - [**Text Input**](#text-input)
-    - [**Speech Input**](#speech-input)
-    - [**Facial Expression Input**](#facial-expression-input)
-    - [**Profile Page**](#profile-page)
-    - [**Results/Recommendations Page**](#results---recommendations-page)
-    - [**Login Page**](#login-page)
-    - [**Registration Page**](#registration-page)
-    - [**404 Not Found Page**](#404-not-found-page)
-    - [**Footer**](#footer)
 - [**📂 Complete File Structure**](#-complete-file-structure)
 - [**🛠️ Getting Started**](#-getting-started)
     - [**Prerequisites**](#prerequisites)
@@ -356,12 +345,6 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/landingpage.png" alt="Landing Page" width="100%" style="border-radius: 10px">
 </p>
 
-### Landing Page - Dark Mode
-
-<p align="center">
-  <img src="images/landingpage-dark.png" alt="Landing Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
 ### Home Page
 
 <p align="center">
@@ -454,22 +437,10 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/login.png" alt="Login Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Login Page - Dark Mode
-
-<p align="center">
-  <img src="images/login-dark.png" alt="Login Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
 ### Registration Page
 
 <p align="center">
   <img src="images/register.png" alt="Registration Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Registration Page - Dark Mode
-
-<p align="center">
-  <img src="images/register-dark.png" alt="Registration Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Forgot Password Page
@@ -478,22 +449,10 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/forgot-password.png" alt="Forgot Password Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Forgot Password Page - Dark Mode
-
-<p align="center">
-  <img src="images/forgot-password-dark.png" alt="Forgot Password Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
 #### Reset Password - Once the User Has Verified Their Account Ownership
 
 <p align="center">
   <img src="images/reset-password.png" alt="Reset Password" width="100%" style="border-radius: 10px">
-</p>
-
-#### Reset Password - Dark Mode
-
-<p align="center">
-  <img src="images/reset-password-dark.png" alt="Reset Password - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Privacy Policy Page
@@ -502,34 +461,10 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/privacy-policy.png" alt="Privacy Policy Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Privacy Policy Page - Dark Mode
-
-<p align="center">
-  <img src="images/privacy-policy-dark.png" alt="Privacy Policy Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
 ### Terms of Service Page
 
 <p align="center">
   <img src="images/terms.png" alt="Terms of Service Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Terms of Service Page - Dark Mode
-
-<p align="center">
-  <img src="images/terms-dark.png" alt="Terms of Service Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
-### 404 Not Found Page
-
-<p align="center">
-  <img src="images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### 404 Not Found Page - Dark Mode
-
-<p align="center">
-  <img src="images/notfound-dark.png" alt="404 Not Found Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Responsive Design - Mobile View
@@ -538,16 +473,8 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
 
-#### Mobile Navigation Drawer
-
 <p align="center">
   <img src="images/mobile-view2.png" alt="Mobile View" width="50%" style="border-radius: 10px">
-</p>
-
-### Footer
-
-<p align="center">
-  <img src="images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
 </p>
 
 <h2 id="-complete-file-structure">📂 Complete File Structure</h2>

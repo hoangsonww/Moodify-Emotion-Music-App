@@ -1903,6 +1903,7 @@ const getStyles = (isDarkMode) => {
     },
     heroChips: {
       marginBottom: "6px",
+      marginTop: "24px",
       display: "flex",
       flexWrap: "wrap",
       gap: "8px",
