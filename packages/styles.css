@@ -190,26 +190,57 @@ a:hover {
 }
 
 .nav-links a {
+    position: relative;
     color: var(--text-primary);
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    transition: var(--transition);
+    transition: color 0.28s ease, background-color 0.28s ease;
     text-decoration: none;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.25rem;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--primary-color);
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
 }
 
 .nav-links a:hover {
     color: var(--primary-color);
-    background: var(--bg-secondary);
+    background: rgba(29, 185, 84, 0.08);
     text-decoration: none;
 }
 
 .nav-links a.active {
     color: var(--primary-color);
+    background: rgba(29, 185, 84, 0.12);
+}
+
+.nav-links a.active::after {
+    transform: scaleX(1);
+    opacity: 1;
 }
 
 [data-theme="dark"] .nav-links a {
     color: white;
+}
+
+[data-theme="dark"] .nav-links a:hover {
+    background: rgba(29, 185, 84, 0.16);
+}
+
+[data-theme="dark"] .nav-links a.active {
+    color: var(--primary-color);
+    background: rgba(29, 185, 84, 0.2);
 }
 
 .nav-actions {

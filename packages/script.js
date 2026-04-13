@@ -103,6 +103,7 @@ class TabManager {
 class ScrollManager {
     constructor() {
         this.navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+        this.activeNavId = null;
         this.init();
     }
 
@@ -133,37 +134,69 @@ class ScrollManager {
     }
 
     setupScrollSpy() {
-        const sections = document.querySelectorAll('section[id], header[id]');
-        const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
-        
-        const observerOptions = {
-            threshold: 0.3,
-            rootMargin: '-80px 0px -80px 0px'
+        const sections = Array.from(document.querySelectorAll('section[id], header[id]'));
+        const navLinks = Array.from(this.navLinks);
+
+        if (!sections.length || !navLinks.length) {
+            return;
+        }
+
+        const linkById = new Map(
+            navLinks
+                .map((link) => [link.getAttribute('href')?.slice(1), link])
+                .filter(([id]) => Boolean(id))
+        );
+
+        const setActiveLink = (id) => {
+            if (!id || this.activeNavId === id) {
+                return;
+            }
+
+            navLinks.forEach((link) => link.classList.remove('active'));
+            const activeLink = linkById.get(id);
+            if (activeLink) {
+                activeLink.classList.add('active');
+                this.activeNavId = id;
+            }
         };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.getAttribute('id');
-                    
-                    // Remove active class from all links
-                    navLinks.forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    
-                    // Add active class to current link
-                    const activeLink = document.querySelector(`.nav-links a[href="#${id}"]`);
-                    if (activeLink) {
-                        activeLink.classList.add('active');
-                    }
+
+        const resolveCurrentSectionId = () => {
+            const navHeight = document.querySelector('.navbar')?.offsetHeight || 0;
+            const marker = window.scrollY + navHeight + 140;
+            let currentId = sections[0].id;
+
+            for (const section of sections) {
+                if (section.offsetTop <= marker) {
+                    currentId = section.id;
+                } else {
+                    break;
                 }
+            }
+
+            const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+            if (nearBottom) {
+                currentId = sections[sections.length - 1].id;
+            }
+
+            return currentId;
+        };
+
+        let isTicking = false;
+        const updateActiveOnScroll = () => {
+            if (isTicking) {
+                return;
+            }
+
+            isTicking = true;
+            requestAnimationFrame(() => {
+                setActiveLink(resolveCurrentSectionId());
+                isTicking = false;
             });
-        }, observerOptions);
-        
-        // Observe all sections
-        sections.forEach(section => {
-            observer.observe(section);
-        });
+        };
+
+        window.addEventListener('scroll', updateActiveOnScroll, { passive: true });
+        window.addEventListener('resize', updateActiveOnScroll);
+        updateActiveOnScroll();
     }
 
     setupBackToTop() {
