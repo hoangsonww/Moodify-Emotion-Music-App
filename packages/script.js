@@ -230,8 +230,8 @@ class ScrollManager {
 class AnimationManager {
     constructor() {
         this.observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
+            threshold: 0.05,
+            rootMargin: '0px 0px -60px 0px'
         };
         this.init();
     }
@@ -241,26 +241,131 @@ class AnimationManager {
     }
 
     setupIntersectionObserver() {
-        const elements = document.querySelectorAll('.overview-card, .feature-card, .deployment-card, .demo-card, .stat-card');
-        
+        const selectors = [
+            '.section-header',
+            '.overview-card',
+            '.feature-card',
+            '.deployment-card',
+            '.demo-card',
+            '.stat-card',
+            '.tech-category',
+            '.disclaimer-box',
+            '.monitoring-section',
+            '.monitoring-item',
+            '.security-item',
+            '.architecture-tabs',
+            '.tab-content',
+            '.hero-stats',
+            '.diagram-node'
+        ];
+
+        const elements = document.querySelectorAll(selectors.join(', '));
+
+        elements.forEach(el => {
+            el.classList.add('reveal');
+        });
+
         const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
+            entries.forEach((entry, i) => {
                 if (entry.isIntersecting) {
-                    entry.target.style.opacity = '0';
-                    entry.target.style.transform = 'translateY(20px)';
-                    
+                    const siblings = Array.from(entry.target.parentElement?.children || [])
+                        .filter(c => c.classList.contains('reveal') && !c.classList.contains('revealed'));
+                    const idx = siblings.indexOf(entry.target);
+                    const stagger = Math.max(0, idx) * 80;
+
                     setTimeout(() => {
-                        entry.target.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }, 100);
-                    
+                        entry.target.classList.add('revealed');
+                    }, stagger);
+
                     observer.unobserve(entry.target);
                 }
             });
         }, this.observerOptions);
-        
+
         elements.forEach(element => observer.observe(element));
+    }
+}
+
+// ==========================================
+// Hero Stats Count-Up Animation
+// ==========================================
+
+class StatCounterManager {
+    constructor() {
+        this.statValues = document.querySelectorAll('.hero-stats .stat-value[data-count-to]');
+        this.hasAnimated = false;
+        this.init();
+    }
+
+    init() {
+        if (!this.statValues.length) {
+            return;
+        }
+
+        const statsSection = document.querySelector('.hero-stats');
+        if (!statsSection) {
+            this.startAnimations();
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting && !this.hasAnimated) {
+                    this.hasAnimated = true;
+                    this.startAnimations();
+                    observer.disconnect();
+                }
+            });
+        }, {
+            threshold: 0.35
+        });
+
+        observer.observe(statsSection);
+    }
+
+    startAnimations() {
+        this.statValues.forEach((statValue) => {
+            this.animateValue(statValue);
+        });
+    }
+
+    animateValue(element) {
+        const targetValue = Number.parseFloat(element.dataset.countTo);
+        if (Number.isNaN(targetValue)) {
+            return;
+        }
+
+        const startValue = Number.parseFloat(element.dataset.start || '0');
+        const decimalPlaces = Number.parseInt(element.dataset.decimals || '0', 10);
+        const prefix = element.dataset.prefix || '';
+        const suffix = element.dataset.suffix || '';
+        const duration = Number.parseInt(element.dataset.duration || '1600', 10);
+        const startTime = performance.now();
+
+        const easeOutCubic = (progress) => 1 - Math.pow(1 - progress, 3);
+        const renderValue = (value) => {
+            const displayedValue = decimalPlaces > 0
+                ? value.toFixed(decimalPlaces)
+                : Math.round(value).toString();
+            element.textContent = `${prefix}${displayedValue}${suffix}`;
+        };
+
+        const updateFrame = (timestamp) => {
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeOutCubic(progress);
+            const currentValue = startValue + (targetValue - startValue) * easedProgress;
+
+            renderValue(currentValue);
+
+            if (progress < 1) {
+                requestAnimationFrame(updateFrame);
+            } else {
+                renderValue(targetValue);
+            }
+        };
+
+        requestAnimationFrame(updateFrame);
     }
 }
 
@@ -533,6 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new TabManager();
     new ScrollManager();
     new AnimationManager();
+    new StatCounterManager();
     new NavbarManager();
     new DiagramManager();
     new LoadingManager();
@@ -578,6 +684,7 @@ if (typeof module !== 'undefined' && module.exports) {
         TabManager,
         ScrollManager,
         AnimationManager,
+        StatCounterManager,
         NavbarManager,
         DiagramManager,
         Utils
