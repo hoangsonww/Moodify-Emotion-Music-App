@@ -165,7 +165,7 @@ const HomePage = () => {
         const textContent = await uploadedFile.text();
         response = await Promise.race([
           axios.post(
-            `${API_URL}/api/text_emotion/`,
+            `${MODAL_API_URL}/text_emotion`,
             { text: textContent },
             {
               headers: {
@@ -224,7 +224,7 @@ const HomePage = () => {
       try {
         // Call the API with the randomly selected mood
         const response = await axios.post(
-          `${API_URL}/api/music_recommendation/`,
+          `${MODAL_API_URL}/music_recommendation`,
           {
             emotion: newMood.toLowerCase(),
           },
@@ -325,7 +325,7 @@ const HomePage = () => {
       try {
         // Call the API with the randomly selected mood
         const response = await axios.post(
-          `${API_URL}/api/music_recommendation/`,
+          `${MODAL_API_URL}/music_recommendation`,
           {
             emotion: newMood.toLowerCase(),
           },
@@ -363,7 +363,7 @@ const HomePage = () => {
       // Race the text submission request against a 1-minute timeout
       const response = await Promise.race([
         axios.post(
-          `${API_URL}/api/text_emotion/`,
+          `${MODAL_API_URL}/text_emotion`,
           { text: inputValue.trim() },
           {
             headers: {
@@ -393,7 +393,7 @@ const HomePage = () => {
       try {
         // Call the API with the randomly selected mood
         const response = await axios.post(
-          `${API_URL}/api/music_recommendation/`,
+          `${MODAL_API_URL}/music_recommendation`,
           {
             emotion: newMood.toLowerCase(),
           },
@@ -581,7 +581,7 @@ const HomePage = () => {
       try {
         // Call the API with the randomly selected mood
         const response = await axios.post(
-          `${API_URL}/api/music_recommendation/`,
+          `${MODAL_API_URL}/music_recommendation`,
           {
             emotion: newMood.toLowerCase(),
           },

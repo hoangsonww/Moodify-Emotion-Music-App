@@ -137,7 +137,7 @@ const HomePage = () => {
       let response;
       if (activeTab === 'text') {
         const textContent = await uploadedFile.text();
-        response = await axios.post(`${API_URL}/api/text_emotion/`, { text: textContent }, {
+        response = await axios.post(`${MODAL_API_URL}/text_emotion`, { text: textContent }, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -237,7 +237,7 @@ const HomePage = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/api/text_emotion/`, { text: inputValue.trim() }, {
+      const response = await axios.post(`${MODAL_API_URL}/text_emotion`, { text: inputValue.trim() }, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,

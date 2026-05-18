@@ -95,6 +95,18 @@ export function installAuthInterceptor() {
   if (interceptorInstalled) return;
   interceptorInstalled = true;
 
+  // Attach the bearer token to every outgoing request, so calls to both
+  // the Django API and the Modal inference service are authenticated
+  // without each call site managing headers.
+  axios.interceptors.request.use((config) => {
+    const token = getToken();
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+
   axios.interceptors.response.use(
     (response) => response,
     async (error) => {

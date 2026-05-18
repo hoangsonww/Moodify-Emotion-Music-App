@@ -134,25 +134,28 @@ Concrete problems found in the code:
 
 ### Request flows
 
-- **Text emotion:** browser → `POST /api/text_emotion/` (Django) → Django
-  `inference_client` → `POST {MODAL}/text_emotion` → `{emotion,
-  recommendations}` returned through Django. Django attaches the
-  authenticated user and may persist mood history.
-- **Speech / facial emotion:** browser → `POST {MODAL}/speech_emotion` (or
-  `/facial_emotion`) **directly**, with the user's JWT in the
-  `Authorization` header. Modal verifies the JWT (shared signing key),
-  runs inference, calls Spotify, returns `{emotion, recommendations}`. The
-  frontend then POSTs the result to Django's history endpoints.
-- **Music only:** browser → `POST /api/music_recommendation/` (Django) →
-  proxied to `{MODAL}/music_recommendation`.
+- **All emotion inference (text / speech / facial):** browser → `POST
+  {MODAL}/text_emotion` (or `/speech_emotion`, `/facial_emotion`)
+  **directly**, with the user's JWT in the `Authorization` header. Modal
+  verifies the JWT (shared signing key), runs inference, calls Spotify,
+  and returns `{emotion, recommendations}`. The frontend then POSTs the
+  result to Django's history endpoints. Going direct keeps Vercel's
+  function-duration limit out of the (cold-start-prone) inference path.
+- **Music recommendation:** browser → `POST {MODAL}/music_recommendation`
+  directly, same auth.
+- Django still exposes `/api/text_emotion/` and
+  `/api/music_recommendation/` as authenticated proxy endpoints (using the
+  service token) for non-browser/back-compat callers, but the browser and
+  mobile apps no longer use them.
 
 ### Why this split
 
 - Modal has no request-body cap and is built for GPU/CPU model serving, so
-  media uploads go straight there — Vercel's ~4.5 MB cap never applies.
-- Django keeps a single small surface (text + auth + history) and ships
-  with **zero ML dependencies**, so the Vercel bundle is tiny and cold
-  starts are fast.
+  uploads go straight there — Vercel's ~4.5 MB cap never applies — and the
+  Vercel function-duration limit never sits in front of a Modal cold start.
+- Django keeps a single small surface (auth + history) and ships with
+  **zero ML dependencies**, so the Vercel bundle is tiny and cold starts
+  are fast.
 - One implementation of inference (Modal). The Flask app
   `ai_ml/src/api/emotion_api.py` is retired.
 

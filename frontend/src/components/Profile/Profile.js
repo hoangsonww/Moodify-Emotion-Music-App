@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../../context/DarkModeContext";
-import { API_URL } from "../../config";
+import { API_URL, MODAL_API_URL } from "../../config";
 
 const CACHE_KEY = "userProfileCache";
 
@@ -120,7 +120,7 @@ const ProfilePage = () => {
       setIsLoading(true);
       const response = await Promise.race([
         axios.post(
-          `${API_URL}/api/music_recommendation/`,
+          `${MODAL_API_URL}/music_recommendation`,
           { emotion: mood.toLowerCase() }, // Pass the mood as a parameter
           {
             headers: {

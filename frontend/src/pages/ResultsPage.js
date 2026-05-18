@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { DarkModeContext } from "../context/DarkModeContext";
-import { API_URL } from "../config";
+import { MODAL_API_URL } from "../config";
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -41,7 +41,7 @@ const ResultsPage = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/music_recommendation/`,
+        `${MODAL_API_URL}/music_recommendation`,
         {
           emotion: selectedMood.toLowerCase(), // Keep the current mood
           market: newMarket || undefined, // Pass market if selected, else undefined
@@ -65,7 +65,7 @@ const ResultsPage = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/music_recommendation/`,
+        `${MODAL_API_URL}/music_recommendation`,
         {
           emotion: newMood.toLowerCase(),
           market: selectedMarket || undefined, // Pass market if selected, else undefined
