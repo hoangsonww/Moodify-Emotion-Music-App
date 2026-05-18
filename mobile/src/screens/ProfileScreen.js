@@ -1,19 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import Screen from '../components/Screen';
 import AppButton from '../components/AppButton';
 import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../services/emotion';
-import { colors, radius, spacing } from '../../theme';
+import { colors, gradient, radius, spacing } from '../../theme';
 
 export default function ProfileScreen() {
   const { signOut, user } = useAuth();
@@ -25,7 +19,7 @@ export default function ProfileScreen() {
     try {
       setProfile(await getProfile());
     } catch (e) {
-      // leave profile null -> shows the fallback state
+      // leave profile null -> fallback values are shown
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -39,8 +33,6 @@ export default function ProfileScreen() {
   );
 
   const moods = (profile?.mood_history || []).slice(-15).reverse();
-  const recCount = (profile?.recommendations || []).length;
-  const listenCount = (profile?.listening_history || []).length;
   const username = profile?.username || user?.username || 'You';
 
   if (loading) {
@@ -57,6 +49,7 @@ export default function ProfileScreen() {
     <Screen padded={false}>
       <ScrollView
         contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -69,17 +62,22 @@ export default function ProfileScreen() {
         }
       >
         <View style={styles.card}>
-          <View style={styles.avatar}>
+          <LinearGradient
+            colors={gradient.colors}
+            start={gradient.start}
+            end={gradient.end}
+            style={styles.avatar}
+          >
             <Text style={styles.avatarText}>{username.charAt(0).toUpperCase()}</Text>
-          </View>
+          </LinearGradient>
           <Text style={styles.name}>{username}</Text>
           {profile?.email ? <Text style={styles.email}>{profile.email}</Text> : null}
         </View>
 
         <View style={styles.stats}>
           <Stat label="Moods logged" value={(profile?.mood_history || []).length} />
-          <Stat label="Saved tracks" value={recCount} />
-          <Stat label="Listened" value={listenCount} />
+          <Stat label="Saved tracks" value={(profile?.recommendations || []).length} />
+          <Stat label="Listened" value={(profile?.listening_history || []).length} />
         </View>
 
         <Text style={styles.section}>Recent moods</Text>
@@ -97,6 +95,7 @@ export default function ProfileScreen() {
 
         <AppButton
           title="Log out"
+          icon="log-out-outline"
           variant="danger"
           onPress={signOut}
           style={{ marginTop: spacing.xl }}
@@ -121,33 +120,36 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   avatar: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: colors.primary,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff', fontSize: 32, fontWeight: '900' },
-  name: { color: colors.text, fontSize: 22, fontWeight: '800', marginTop: spacing.md },
-  email: { color: colors.textMuted, fontSize: 14, marginTop: 2 },
+  avatarText: { color: '#fff', fontSize: 34, fontWeight: '900' },
+  name: { color: colors.text, fontSize: 22, fontWeight: '900', marginTop: spacing.md },
+  email: { color: colors.textMuted, fontSize: 14, marginTop: 3 },
   stats: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
   stat: {
     flex: 1,
     backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
   statValue: { color: colors.primary, fontSize: 22, fontWeight: '900' },
-  statLabel: { color: colors.textMuted, fontSize: 12, marginTop: 2, textAlign: 'center' },
+  statLabel: { color: colors.textMuted, fontSize: 11, marginTop: 3, textAlign: 'center' },
   section: {
     color: colors.text,
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '800',
     marginTop: spacing.xl,
     marginBottom: spacing.md,
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    paddingVertical: 7,
   },
   chipText: { color: colors.text, fontSize: 13, fontWeight: '600', textTransform: 'capitalize' },
   empty: { color: colors.textMuted, fontSize: 14 },

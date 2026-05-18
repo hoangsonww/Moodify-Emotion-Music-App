@@ -18,7 +18,7 @@ export default function TrackCard({ track }) {
         <Image source={{ uri: track.image_url }} style={styles.art} />
       ) : (
         <View style={[styles.art, styles.artFallback]}>
-          <Ionicons name="musical-notes" size={22} color={colors.textMuted} />
+          <Ionicons name="musical-note" size={22} color={colors.textMuted} />
         </View>
       )}
       <View style={styles.meta}>
@@ -29,7 +29,9 @@ export default function TrackCard({ track }) {
           {track.artist || 'Unknown artist'}
         </Text>
       </View>
-      <Ionicons name="open-outline" size={20} color={colors.textMuted} />
+      <View style={styles.openBadge}>
+        <Ionicons name="play" size={14} color={colors.text} />
+      </View>
     </Pressable>
   );
 }
@@ -42,11 +44,21 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.sm,
     marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  pressed: { opacity: 0.8 },
-  art: { width: 52, height: 52, borderRadius: radius.sm, backgroundColor: colors.surfaceAlt },
+  pressed: { opacity: 0.85 },
+  art: { width: 54, height: 54, borderRadius: radius.sm, backgroundColor: colors.surfaceAlt },
   artFallback: { alignItems: 'center', justifyContent: 'center' },
   meta: { flex: 1, marginHorizontal: spacing.md },
   name: { color: colors.text, fontSize: 15, fontWeight: '700' },
-  artist: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  artist: { color: colors.textMuted, fontSize: 13, marginTop: 3 },
+  openBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

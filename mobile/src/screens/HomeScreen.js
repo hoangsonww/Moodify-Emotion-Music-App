@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -9,12 +9,13 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Audio } from 'expo-av';
 
 import Screen from '../components/Screen';
 import TextField from '../components/TextField';
 import AppButton from '../components/AppButton';
+import FaceCapture from '../components/FaceCapture';
 import {
   analyzeFace,
   analyzeSpeech,
@@ -23,7 +24,7 @@ import {
   saveMood,
   saveRecommendations,
 } from '../services/emotion';
-import { colors, radius, spacing } from '../../theme';
+import { colors, gradient, radius, spacing } from '../../theme';
 
 const MODES = [
   { key: 'text', label: 'Text', icon: 'create-outline' },
@@ -38,19 +39,7 @@ export default function HomeScreen({ navigation }) {
   const [recording, setRecording] = useState(false);
   const [profileId, setProfileId] = useState(null);
 
-  const [camPermission, requestCamPermission] = useCameraPermissions();
-  const cameraRef = useRef(null);
   const recordingRef = useRef(null);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable onPress={() => navigation.navigate('Profile')} hitSlop={12}>
-          <Ionicons name="person-circle-outline" size={28} color={colors.text} />
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
 
   useEffect(() => {
     getProfile()
@@ -64,9 +53,7 @@ export default function HomeScreen({ navigation }) {
       const recommendations = data.recommendations || [];
       if (profileId) {
         saveMood(profileId, emotion).catch(() => {});
-        if (recommendations.length) {
-          saveRecommendations(profileId, recommendations).catch(() => {});
-        }
+        if (recommendations.length) saveRecommendations(profileId, recommendations).catch(() => {});
       }
       navigation.navigate('Results', { emotion, recommendations, degraded: !!data.degraded });
     },
@@ -128,37 +115,35 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  const capture = async () => {
-    if (!cameraRef.current) return;
-    try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.6, skipProcessing: true });
-      runAnalysis(() => analyzeFace(photo.uri));
-    } catch (e) {
-      Alert.alert('Camera error', 'Could not capture a photo.');
-    }
-  };
-
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.heading}>How are you feeling?</Text>
-        <Text style={styles.sub}>Pick a way to share your mood and we'll find the music.</Text>
+        <Text style={styles.heading}>How are you{'\n'}feeling today?</Text>
+        <Text style={styles.sub}>Share your mood and we'll tune the music to it.</Text>
 
         <View style={styles.tabs}>
           {MODES.map((m) => {
             const active = mode === m.key;
-            return (
-              <Pressable
-                key={m.key}
-                onPress={() => setMode(m.key)}
-                style={[styles.tab, active && styles.tabActive]}
-              >
-                <Ionicons
-                  name={m.icon}
-                  size={20}
-                  color={active ? '#fff' : colors.textMuted}
-                />
+            const body = (
+              <>
+                <Ionicons name={m.icon} size={19} color={active ? '#fff' : colors.textMuted} />
                 <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{m.label}</Text>
+              </>
+            );
+            return (
+              <Pressable key={m.key} onPress={() => setMode(m.key)} style={styles.tabWrap}>
+                {active ? (
+                  <LinearGradient
+                    colors={gradient.colors}
+                    start={gradient.start}
+                    end={gradient.end}
+                    style={styles.tab}
+                  >
+                    {body}
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.tab}>{body}</View>
+                )}
               </Pressable>
             );
           })}
@@ -172,61 +157,46 @@ export default function HomeScreen({ navigation }) {
               onChangeText={setText}
               placeholder="e.g. I feel calm and a little nostalgic..."
               multiline
-              numberOfLines={4}
-              style={{ marginBottom: spacing.md }}
             />
-            <AppButton title="Analyze my mood" onPress={onAnalyzeText} />
+            <AppButton title="Analyze my mood" icon="sparkles" onPress={onAnalyzeText} />
           </View>
         )}
 
         {mode === 'speech' && (
           <View style={[styles.panel, styles.center]}>
-            <Pressable
-              onPress={recording ? stopRecording : startRecording}
-              style={[styles.micButton, recording && styles.micButtonActive]}
-            >
-              <Ionicons name={recording ? 'stop' : 'mic'} size={44} color="#fff" />
-            </Pressable>
+            {recording ? (
+              <Pressable onPress={stopRecording} style={[styles.mic, styles.micRecording]}>
+                <Ionicons name="stop" size={42} color="#fff" />
+              </Pressable>
+            ) : (
+              <Pressable onPress={startRecording}>
+                <LinearGradient
+                  colors={gradient.colors}
+                  start={gradient.start}
+                  end={gradient.end}
+                  style={styles.mic}
+                >
+                  <Ionicons name="mic" size={46} color="#fff" />
+                </LinearGradient>
+              </Pressable>
+            )}
             <Text style={styles.hint}>
-              {recording ? 'Recording... tap to stop & analyze' : 'Tap to record your voice'}
+              {recording ? 'Recording — tap to stop & analyze' : 'Tap to record your voice'}
             </Text>
           </View>
         )}
 
         {mode === 'face' && (
           <View style={[styles.panel, styles.center]}>
-            {!camPermission ? (
-              <ActivityIndicator color={colors.primary} />
-            ) : !camPermission.granted ? (
-              <>
-                <Text style={styles.hint}>Camera access is needed for face mood.</Text>
-                <AppButton
-                  title="Grant camera access"
-                  variant="ghost"
-                  onPress={requestCamPermission}
-                  style={{ marginTop: spacing.md }}
-                />
-              </>
-            ) : (
-              <>
-                <View style={styles.cameraWrap}>
-                  <CameraView ref={cameraRef} facing="front" style={styles.camera} />
-                </View>
-                <AppButton
-                  title="Capture & analyze"
-                  onPress={capture}
-                  style={{ marginTop: spacing.md, alignSelf: 'stretch' }}
-                />
-              </>
-            )}
+            <FaceCapture onCapture={(uri) => runAnalysis(() => analyzeFace(uri))} />
           </View>
         )}
       </ScrollView>
 
       {busy && (
-        <View style={styles.overlay} pointerEvents="auto">
+        <View style={styles.overlay}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.overlayText}>Reading your mood...</Text>
+          <Text style={styles.overlayText}>Reading your mood…</Text>
         </View>
       )}
     </Screen>
@@ -235,56 +205,55 @@ export default function HomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   content: { padding: spacing.lg },
-  heading: { color: colors.text, fontSize: 24, fontWeight: '800' },
-  sub: { color: colors.textMuted, fontSize: 14, marginTop: spacing.xs, marginBottom: spacing.lg },
+  heading: { color: colors.text, fontSize: 28, fontWeight: '900', lineHeight: 34 },
+  sub: { color: colors.textMuted, fontSize: 14, marginTop: spacing.sm, marginBottom: spacing.lg },
   tabs: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
     borderRadius: radius.md,
-    padding: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 5,
     marginBottom: spacing.lg,
   },
+  tabWrap: { flex: 1 },
   tab: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: 11,
     borderRadius: radius.sm,
-    gap: 6,
+    gap: 7,
   },
-  tabActive: { backgroundColor: colors.primary },
   tabLabel: { color: colors.textMuted, fontWeight: '700', fontSize: 14 },
   tabLabelActive: { color: '#fff' },
   panel: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.lg,
   },
-  center: { alignItems: 'center' },
-  hint: { color: colors.textMuted, fontSize: 14, marginTop: spacing.md, textAlign: 'center' },
-  micButton: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.primary,
+  center: { alignItems: 'center', paddingVertical: spacing.xl },
+  hint: { color: colors.textMuted, fontSize: 14, marginTop: spacing.lg, textAlign: 'center' },
+  mic: {
+    width: 132,
+    height: 132,
+    borderRadius: 66,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
   },
-  micButtonActive: { backgroundColor: colors.danger },
-  cameraWrap: {
-    width: '100%',
-    aspectRatio: 3 / 4,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-    backgroundColor: colors.surfaceAlt,
-  },
-  camera: { flex: 1 },
+  micRecording: { backgroundColor: colors.danger, shadowColor: colors.danger },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15,15,20,0.85)',
+    backgroundColor: 'rgba(13,13,18,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  overlayText: { color: colors.text, marginTop: spacing.md, fontSize: 15, fontWeight: '600' },
+  overlayText: { color: colors.text, marginTop: spacing.md, fontSize: 15, fontWeight: '700' },
 });

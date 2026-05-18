@@ -1,9 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { colors, navTheme } from './theme';
@@ -14,6 +15,23 @@ import ResultsScreen from './src/screens/ResultsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
+
+/** Profile button shown in the Home screen's header. Declared as a static
+ *  screen option (not via setOptions) to avoid re-render loops. */
+function ProfileHeaderButton() {
+  const navigation = useNavigation();
+  return (
+    <Pressable
+      onPress={() => navigation.navigate('Profile')}
+      hitSlop={12}
+      accessibilityRole="button"
+      accessibilityLabel="Open profile"
+      style={{ paddingHorizontal: 4 }}
+    >
+      <Ionicons name="person-circle-outline" size={26} color={colors.text} />
+    </Pressable>
+  );
+}
 
 function RootNavigator() {
   const { status } = useAuth();
@@ -39,7 +57,11 @@ function RootNavigator() {
       >
         {status === 'signedIn' ? (
           <>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Moodify' }} />
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{ title: 'Moodify', headerRight: () => <ProfileHeaderButton /> }}
+            />
             <Stack.Screen name="Results" component={ResultsScreen} options={{ title: 'Your Vibe' }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
           </>

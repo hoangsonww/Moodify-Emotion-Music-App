@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import Screen from '../components/Screen';
 import TextField from '../components/TextField';
 import AppButton from '../components/AppButton';
 import { useAuth } from '../context/AuthContext';
-import { spacing } from '../../theme';
+import { colors, radius, spacing } from '../../theme';
 
-export default function RegisterScreen({ navigation }) {
+export default function RegisterScreen() {
   const { register, signIn } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -53,34 +61,39 @@ export default function RegisterScreen({ navigation }) {
         style={styles.flex}
       >
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
-          <TextField label="Username" value={username} onChangeText={setUsername} placeholder="pick a username" />
-          <TextField
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="you@example.com"
-            keyboardType="email-address"
-          />
-          <TextField
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="at least 8 characters"
-            secureTextEntry
-          />
-          <TextField
-            label="Confirm password"
-            value={confirm}
-            onChangeText={setConfirm}
-            placeholder="re-enter your password"
-            secureTextEntry
-          />
-          <AppButton
-            title="Create account"
-            onPress={onRegister}
-            loading={loading}
-            style={{ marginTop: spacing.sm }}
-          />
+          <Text style={styles.title}>Create your account</Text>
+          <Text style={styles.subtitle}>Start getting music tuned to how you feel.</Text>
+
+          <View style={styles.card}>
+            <TextField label="Username" value={username} onChangeText={setUsername} placeholder="pick a username" />
+            <TextField
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+            />
+            <TextField
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              placeholder="at least 8 characters"
+              secureTextEntry
+            />
+            <TextField
+              label="Confirm password"
+              value={confirm}
+              onChangeText={setConfirm}
+              placeholder="re-enter your password"
+              secureTextEntry
+            />
+            <AppButton
+              title="Create account"
+              onPress={onRegister}
+              loading={loading}
+              style={{ marginTop: spacing.sm }}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
@@ -89,5 +102,14 @@ export default function RegisterScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  content: { paddingVertical: spacing.lg, justifyContent: 'center', flexGrow: 1 },
+  content: { paddingVertical: spacing.lg, flexGrow: 1, justifyContent: 'center' },
+  title: { color: colors.text, fontSize: 24, fontWeight: '900' },
+  subtitle: { color: colors.textMuted, fontSize: 14, marginTop: spacing.xs, marginBottom: spacing.lg },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.lg,
+  },
 });
