@@ -25,69 +25,38 @@ import RecommendIcon from "@mui/icons-material/Recommend";
 import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from "@mui/icons-material/Logout";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import axios from "axios";
 import { DarkModeContext } from "../context/DarkModeContext";
-import { API_URL } from "../config";
+import { isAuthenticated, logout, AUTH_EVENT } from "../services/auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
   const [showMenu, setShowMenu] = useState(false);
 
   // Use DarkModeContext for dark mode state and toggle function
   const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
 
-  // Function to validate the token
-  const validateToken = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setIsLoggedIn(false);
-      return;
-    }
-
-    try {
-      const response = await axios.get(
-        `${API_URL}/users/validate_token/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (response.status === 200) {
-        setIsLoggedIn(true);
-      }
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        localStorage.removeItem("token");
-        setIsLoggedIn(false);
-      }
-    }
-  };
-
+  // Token validity is determined by decoding the JWT locally (no network,
+  // no polling). The navbar re-syncs on route changes and on auth-change
+  // events -- login/logout/refresh in this tab, or token changes in
+  // another tab (via the storage event).
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-
-    const intervalId = setInterval(validateToken, 300000); // Validate token every 5 minutes
-    return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const sync = () => setIsLoggedIn(isAuthenticated());
+    sync();
+    window.addEventListener(AUTH_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(AUTH_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
   }, [location]);
-
-  useEffect(() => {
-    validateToken();
-    const intervalId = setInterval(validateToken, 5000); // Validate token every 5 seconds
-    return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     setIsLoggedIn(false);
     navigate("/login");
   };

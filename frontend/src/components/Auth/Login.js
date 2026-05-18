@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DarkModeContext } from "../../context/DarkModeContext";
 import { API_URL } from "../../config";
+import { setTokens } from "../../services/auth";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -38,11 +39,12 @@ const Login = () => {
         `${API_URL}/users/login/`,
         { username, password },
       );
-      const { access } = response.data; // Extract the access token from the response
+      const { access, refresh } = response.data;
 
       if (access) {
-        // Store the access token in localStorage
-        localStorage.setItem("token", access);
+        // Store the access + refresh tokens (refresh enables silent
+        // re-authentication on a 401 -- see services/auth.js).
+        setTokens(access, refresh);
         alert("Login successful!");
 
         // Redirect to the home page

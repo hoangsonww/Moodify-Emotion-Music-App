@@ -19,7 +19,11 @@ import ForgotPassword from "./pages/ForgotPassword";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import { DarkModeProvider, DarkModeContext } from "./context/DarkModeContext";
+import { installAuthInterceptor } from "./services/auth";
 import "./styles/styles.css";
+
+// Install the global 401 -> token-refresh interceptor once at startup.
+installAuthInterceptor();
 
 function App() {
   const { isDarkMode } = useContext(DarkModeContext);
