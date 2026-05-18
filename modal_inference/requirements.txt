@@ -1,0 +1,41 @@
+# Moodify Modal inference service -- CPU dependency set.
+#
+# PyTorch CPU wheels are installed separately in modal_app.py via
+#   .pip_install(..., index_url="https://download.pytorch.org/whl/cpu")
+# to keep the container image small. Do NOT add torch/torchvision/
+# torchaudio here.
+#
+# For the NVIDIA GPU variant see requirements-gpu.txt.
+
+# --- Web layer ---
+fastapi==0.115.0
+python-multipart==0.0.12
+pydantic==2.9.2
+
+# --- Text emotion (BERT / Transformers) ---
+transformers==4.44.2
+tokenizers==0.19.1
+safetensors==0.4.5
+huggingface-hub==0.25.1
+
+# --- Speech emotion (librosa + scikit-learn) ---
+numpy==1.26.4
+scikit-learn==1.5.2
+librosa==0.10.2.post1
+soundfile==0.12.1
+audioread==3.0.1
+moviepy==1.0.3
+
+# --- Facial emotion (OpenCV; headless avoids the libGL system dep) ---
+opencv-python-headless==4.10.0.84
+# TODO(impl): the trained .pt exposes `.top_emotion()`, which belongs to
+# the `fer` library's FER class. Confirm during Phase 1 and pin exactly
+# one of: fer / facenet-pytorch / (none, if it is a plain nn.Module).
+# fer==22.5.1
+
+# --- Auth + outbound HTTP ---
+PyJWT==2.9.0
+requests==2.32.3
+
+# --- Model weight download (used by download_models.py) ---
+gdown==5.2.0
