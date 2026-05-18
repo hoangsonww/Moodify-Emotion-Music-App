@@ -76,6 +76,7 @@ models_volume = modal.Volume.from_name(config.MODELS_VOLUME_NAME, create_if_miss
 @app.function(
     image=inference_image,
     volumes={config.MODELS_DIR: models_volume},
+    secrets=[modal.Secret.from_name(config.SECRET_NAME)],
     timeout=1800,
 )
 def download_models() -> None:

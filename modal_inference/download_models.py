@@ -1,51 +1,44 @@
 """Model-weight setup for the Moodify Modal service.
 
-Assembles the text emotion model directory on the Modal Volume:
-  * copies the bundled tokenizer/config files (image asset) into the
-    Volume, and
-  * downloads the large ``model.safetensors`` weight file from Google Drive.
+Downloads the fine-tuned text-emotion model (config + tokenizer +
+model.safetensors) from the Hugging Face Hub into the Modal Volume. The
+speech model is bundled in the image and the facial detector uses the
+``fer`` package's bundled weights -- neither needs the Volume.
 
-Speech weights are bundled directly in the image; the facial detector uses
-the ``fer`` package's bundled weights -- neither needs the Volume.
+Wrapped by the ``download_models`` Modal function in modal_app.py; run
+once before the first deploy (and again when the model is updated):
 
-Wrapped by the ``download_models`` Modal function in modal_app.py:
     modal run modal_app.py::download_models
+
+The HF repo is configured via HF_TEXT_MODEL_REPO (and HF_TOKEN if the
+repo is private) -- see config.py / .env.example.
 """
 
 import os
-import shutil
 
 import config
 
-# Google Drive file ID for the fine-tuned BERT weights (from the legacy
-# backend/download_models.py).
-TEXT_SAFETENSORS_GDRIVE_ID = "1EjGqjYBmGclL1t8aF6tV2eWCfBSnOMot"
-
-
-def assemble_text_model(models_dir: str) -> None:
-    """Build ``<models_dir>/text_emotion_model`` from assets + Drive weights."""
-    import gdown
-
-    dest_dir = os.path.join(models_dir, "text_emotion_model")
-    os.makedirs(dest_dir, exist_ok=True)
-
-    # 1. Copy bundled tokenizer/config files (small) from the image asset.
-    for name in os.listdir(config.TEXT_ASSETS_DIR):
-        src = os.path.join(config.TEXT_ASSETS_DIR, name)
-        if os.path.isfile(src):
-            shutil.copy2(src, os.path.join(dest_dir, name))
-    print(f"Copied tokenizer/config files into {dest_dir}")
-
-    # 2. Download the large weight file (skip if already present).
-    weights_path = os.path.join(dest_dir, "model.safetensors")
-    if os.path.exists(weights_path):
-        print("model.safetensors already present -- skipping download")
-        return
-    print("Downloading model.safetensors from Google Drive...")
-    gdown.download(id=TEXT_SAFETENSORS_GDRIVE_ID, output=weights_path, quiet=False)
-    print(f"Downloaded {weights_path}")
-
 
 def fetch_all(models_dir: str) -> None:
-    """Populate the Modal Volume with every model file it needs."""
-    assemble_text_model(models_dir)
+    """Download the text-emotion model from Hugging Face into the Volume."""
+    from huggingface_hub import snapshot_download
+
+    repo = config.HF_TEXT_MODEL_REPO
+    if not repo:
+        raise RuntimeError(
+            "HF_TEXT_MODEL_REPO is not set -- point it at the Hugging Face "
+            "repo that holds the fine-tuned text-emotion model."
+        )
+
+    dest = os.path.join(models_dir, "text_emotion_model")
+    os.makedirs(dest, exist_ok=True)
+
+    print(f"Downloading text-emotion model from Hugging Face: {repo}")
+    snapshot_download(
+        repo_id=repo,
+        local_dir=dest,
+        token=config.HF_TOKEN or None,
+        # Pull only what transformers needs to load the model.
+        allow_patterns=["*.json", "*.txt", "*.safetensors", "*.model"],
+    )
+    print(f"Text-emotion model ready at {dest}")

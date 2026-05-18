@@ -15,7 +15,7 @@ modal_app.py        Modal App: image, Volume, InferenceService, FastAPI app
 config.py           env + model paths
 auth.py             JWT + service-token verification
 schemas.py          Pydantic request/response models
-download_models.py  fetches model weights into the Modal Volume
+download_models.py  pulls the text model from Hugging Face into the Volume
 inference/          one load-once class per model
 recommendation/     Spotify client + token cache
 requirements.txt    CPU dependencies   (requirements-gpu.txt = NVIDIA path)
@@ -47,10 +47,11 @@ modal token new
 # One-time secret (see .env.example for the full list)
 modal secret create moodify-secrets \
   SPOTIFY_CLIENT_ID=...  SPOTIFY_CLIENT_SECRET=... \
+  HF_TEXT_MODEL_REPO=your-hf-username/moodify-text-emotion \
   JWT_SIGNING_KEY=...    MODAL_SERVICE_TOKEN=... \
   ALLOWED_ORIGINS=https://your-frontend.example
 
-# One-time: download model weights into the Modal Volume
+# One-time: pull the text-emotion model from Hugging Face into the Volume
 modal run modal_app.py::download_models
 
 # Develop locally / deploy

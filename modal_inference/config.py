@@ -51,6 +51,11 @@ DEFAULT_EMOTION = "neutral"
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
+# Hugging Face repo holding the fine-tuned text-emotion model (config +
+# tokenizer + model.safetensors). HF_TOKEN is only needed for a private repo.
+HF_TEXT_MODEL_REPO = os.getenv("HF_TEXT_MODEL_REPO", "")
+HF_TOKEN = os.getenv("HF_TOKEN")
+
 # Shared HS256 key: Django issues JWTs with it, Modal verifies with it.
 JWT_SIGNING_KEY = os.getenv("JWT_SIGNING_KEY")
 JWT_ALGORITHM = "HS256"

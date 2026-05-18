@@ -48,7 +48,6 @@ Pillow==10.2.0
 # --- Auth + outbound HTTP ---
 PyJWT==2.9.0
 requests==2.32.3
-gdown==5.2.0
 
 # --- NVIDIA GPU acceleration (optional) ---
 # TensorRT-LLM / torch-tensorrt for compiling the BERT text model.
