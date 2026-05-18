@@ -59,14 +59,12 @@ jobs:
           df -h
 
       - name: Install Python dependencies
-        run: |
-          pip install --no-cache-dir -r requirements.txt
-          pip install --no-cache-dir pytest pytest-django pytest-cov
+        run: pip install --no-cache-dir -r backend/requirements-dev.txt
 
       - name: Run backend tests
         run: |
-          pytest backend -q --maxfail=1 --disable-warnings
-          pytest backend --cov=backend --cov-report=xml
+          pytest backend -q --disable-warnings
+          pytest backend --cov=backend --cov-report=xml:backend/coverage.xml
 
       - name: Check backend coverage file exists
         id: check-backend-coverage
@@ -83,6 +81,26 @@ jobs:
         with:
           name: backend-coverage-report
           path: backend/coverage.xml
+
+  modal-tests:
+    name: 🧠 Modal Inference Tests
+    runs-on: ubuntu-latest
+    needs: formatting
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install inference test dependencies
+        run: pip install --no-cache-dir -r modal_inference/requirements-dev.txt
+
+      - name: Run inference service tests
+        run: pytest tests -q
+        working-directory: modal_inference
 
   frontend-tests:
     name: 🌐 Frontend Build & Test
@@ -160,7 +178,9 @@ jobs:
   docker:
     name: 🐳 Build & Push Docker Images
     runs-on: ubuntu-latest
-    needs: coverage
+    needs:
+      - coverage
+      - modal-tests
     permissions:
       contents: read
       packages: write

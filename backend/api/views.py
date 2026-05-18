@@ -21,6 +21,13 @@ logger = logging.getLogger(__name__)
 _BAD_GATEWAY = {"error": "The inference service is currently unavailable."}
 
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def health(request):
+    """Lightweight liveness probe for uptime monitoring."""
+    return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def text_emotion(request):

@@ -7,7 +7,7 @@ Authentication is JWT-only, backed by the mongoengine ``User`` document
 import logging
 
 import jwt
-from mongoengine.errors import DoesNotExist, NotUniqueError
+from mongoengine.errors import NotUniqueError, ValidationError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -28,7 +28,11 @@ def _profile_for(request_user, user_id: str):
 
     Returns (profile, error_response). Exactly one is non-None.
     """
-    profile = UserProfile.objects(id=user_id).first()
+    try:
+        profile = UserProfile.objects(id=user_id).first()
+    except ValidationError:
+        # user_id was not a valid ObjectId.
+        profile = None
     if profile is None:
         return None, Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
     if profile.username != getattr(request_user, "username", None):
@@ -110,7 +114,10 @@ def token_refresh(request):
     if claims.get("type") != "refresh":
         return Response({"error": "Not a refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
 
-    user = User.objects(id=claims.get("sub")).first()
+    try:
+        user = User.objects(id=claims.get("sub")).first()
+    except ValidationError:
+        user = None
     if user is None or not user.is_active:
         return Response({"error": "User not found or inactive."}, status=status.HTTP_401_UNAUTHORIZED)
 

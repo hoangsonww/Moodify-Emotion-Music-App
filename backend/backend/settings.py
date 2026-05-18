@@ -34,10 +34,15 @@ if _MONGO_URI:
         password=config("MONGO_DB_PASSWORD", default=None),
         authentication_source="admin",
         ssl=True,
+        uuidRepresentation="standard",
     )
 else:
     # Local development / CI fallback.
-    connect(db="emotion_based_music_db", host="mongodb://localhost:27017/emotion_based_music_db")
+    connect(
+        db="emotion_based_music_db",
+        host="mongodb://localhost:27017/emotion_based_music_db",
+        uuidRepresentation="standard",
+    )
 
 # --- Applications ---------------------------------------------------------
 # No admin/sessions/messages/allauth. django.contrib.auth + contenttypes are

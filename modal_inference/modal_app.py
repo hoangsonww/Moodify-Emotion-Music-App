@@ -56,15 +56,12 @@ inference_image = (
     .add_local_dir("assets", "/assets")
     # Local Python source so the container can import our packages.
     .add_local_python_source(
-        "config", "auth", "schemas", "download_models", "inference", "recommendation"
+        "config", "auth", "schemas", "service", "download_models", "inference", "recommendation"
     )
 )
 
 # --- Model weights volume -------------------------------------------------
 models_volume = modal.Volume.from_name(config.MODELS_VOLUME_NAME, create_if_missing=True)
-
-# Max upload size accepted on the media endpoints (defence-in-depth).
-_MAX_UPLOAD_BYTES = 12 * 1024 * 1024
 
 
 @app.function(
@@ -126,105 +123,6 @@ class InferenceService:
     @modal.asgi_app()
     def web(self):
         """Build and return the FastAPI app served by this container."""
-        import os
-        import tempfile
+        from service import build_app
 
-        from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
-        from fastapi.middleware.cors import CORSMiddleware
-
-        from auth import AuthError, authenticate
-        from recommendation.music_recommendation import get_music_recommendation
-        from schemas import (
-            EmotionResponse,
-            HealthResponse,
-            MusicRecommendationRequest,
-            TextEmotionRequest,
-        )
-
-        web_app = FastAPI(title="Moodify Inference", version="1.0.0")
-        web_app.add_middleware(
-            CORSMiddleware,
-            allow_origins=config.ALLOWED_ORIGINS or ["*"],
-            allow_methods=["POST", "GET", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type"],
-        )
-
-        def require_auth(authorization: str | None = Header(default=None)) -> dict:
-            """FastAPI dependency: accept an end-user JWT or the service token."""
-            try:
-                return authenticate(authorization)
-            except AuthError as exc:
-                raise HTTPException(status_code=401, detail=str(exc)) from exc
-
-        def _require_loaded(model, name: str) -> None:
-            if not model.loaded:
-                raise HTTPException(status_code=503, detail=f"{name} model is unavailable")
-
-        @web_app.get("/health", response_model=HealthResponse)
-        def health() -> HealthResponse:
-            return HealthResponse(
-                status="ok",
-                models_loaded={
-                    "text": self.text_model.loaded,
-                    "speech": self.speech_model.loaded,
-                    "facial": self.facial_model.loaded,
-                },
-            )
-
-        @web_app.post("/text_emotion", response_model=EmotionResponse)
-        def text_emotion(body: TextEmotionRequest, _ctx: dict = Depends(require_auth)):
-            _require_loaded(self.text_model, "text")
-            emotion = self.text_model.predict(body.text)
-            return EmotionResponse(
-                emotion=emotion,
-                recommendations=get_music_recommendation(emotion),
-            )
-
-        @web_app.post("/music_recommendation", response_model=EmotionResponse)
-        def music_recommendation(
-            body: MusicRecommendationRequest, _ctx: dict = Depends(require_auth)
-        ):
-            return EmotionResponse(
-                emotion=body.emotion,
-                market=body.market,
-                recommendations=get_music_recommendation(body.emotion, body.market),
-            )
-
-        def _infer_from_upload(file: UploadFile, model, name: str) -> EmotionResponse:
-            """Save an upload to a unique temp file, infer, always clean up."""
-            _require_loaded(model, name)
-            data = file.file.read(_MAX_UPLOAD_BYTES + 1)
-            if len(data) > _MAX_UPLOAD_BYTES:
-                raise HTTPException(status_code=413, detail="Uploaded file is too large")
-            if not data:
-                raise HTTPException(status_code=400, detail="Empty upload")
-
-            suffix = os.path.splitext(file.filename or "")[1] or ".bin"
-            tmp_path = None
-            try:
-                with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                    tmp.write(data)
-                    tmp_path = tmp.name
-                result = model.predict(tmp_path)
-                return EmotionResponse(
-                    emotion=result.emotion,
-                    recommendations=get_music_recommendation(result.emotion),
-                    degraded=result.degraded,
-                )
-            finally:
-                if tmp_path and os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
-
-        @web_app.post("/speech_emotion", response_model=EmotionResponse)
-        def speech_emotion(
-            file: UploadFile = File(...), _ctx: dict = Depends(require_auth)
-        ):
-            return _infer_from_upload(file, self.speech_model, "speech")
-
-        @web_app.post("/facial_emotion", response_model=EmotionResponse)
-        def facial_emotion(
-            file: UploadFile = File(...), _ctx: dict = Depends(require_auth)
-        ):
-            return _infer_from_upload(file, self.facial_model, "facial")
-
-        return web_app
+        return build_app(self.text_model, self.speech_model, self.facial_model)

@@ -14,6 +14,17 @@ from api.services.inference_client import InferenceServiceError
 factory = APIRequestFactory()
 
 
+class TestHealth:
+    def test_health_ok(self):
+        resp = views.health(factory.get("/api/health/"))
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["status"] == "ok"
+
+    def test_health_routed(self, api_client):
+        resp = api_client.get("/api/health/")
+        assert resp.status_code == status.HTTP_200_OK
+
+
 class TestTextEmotion:
     def test_400_if_no_text(self):
         resp = views.text_emotion(factory.post("/api/text_emotion/", data={}))

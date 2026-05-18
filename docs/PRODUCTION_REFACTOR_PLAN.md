@@ -10,11 +10,17 @@
 > - Modal service (`modal_inference/`): all three models load once per
 >   container; speech reads any audio container via librosa/ffmpeg; the
 >   facial detector uses the `fer` package's bundled weights directly
->   (the legacy `.pt` was just a pickled `FER` object — see §4.2).
-> - Django (`backend/`): no ML dependencies; MongoDB-only; JWT auth; all
->   14 API tests pass and `manage.py check` is clean.
+>   (the legacy `.pt` was just a pickled `FER` object — see §4.2). The
+>   FastAPI surface is extracted into `service.py` for testability.
+> - Django (`backend/`): no ML dependencies; MongoDB-only; JWT auth;
+>   `manage.py check` is clean.
 > - Frontend + mobile: API base URLs centralised in `config.js`,
 >   env-driven; speech/facial now upload directly to Modal.
+> - **Test coverage: 130 tests, all passing** — 76 backend (auth, JWT,
+>   profile/history with ownership checks, inference proxy, the Modal
+>   HTTP client) on an in-memory mongomock DB, and 54 for the Modal
+>   service (config, schemas, auth, Spotify client, inference wrappers,
+>   and the full FastAPI surface via `TestClient`). Both suites run in CI.
 
 ---
 

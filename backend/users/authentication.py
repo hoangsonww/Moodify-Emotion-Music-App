@@ -40,7 +40,10 @@ class MongoJWTAuthentication(authentication.BaseAuthentication):
         if claims.get("type") != "access":
             raise exceptions.AuthenticationFailed("Not an access token")
 
-        user = User.objects(id=claims.get("sub")).first()
+        try:
+            user = User.objects(id=claims.get("sub")).first()
+        except Exception:  # noqa: BLE001 -- malformed subject id -> fail closed
+            user = None
         if user is None or not user.is_active:
             raise exceptions.AuthenticationFailed("User not found or inactive")
 

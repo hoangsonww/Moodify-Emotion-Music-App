@@ -16,3 +16,13 @@
 .env.test.local
 .env.production.local
 .env.production
+/mobile/node_modules/
+
+# Python build / test artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+coverage.xml
+/backend/staticfiles/
