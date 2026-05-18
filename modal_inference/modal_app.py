@@ -89,16 +89,23 @@ def download_models() -> None:
     secrets=[modal.Secret.from_name(config.SECRET_NAME)],
     cpu=config.CONTAINER_CPU,
     memory=config.CONTAINER_MEMORY_MB,
-    # Keep one container warm so the hot path never pays a cold start.
+    # Scale to zero when idle (no idle billing); a request spins a container
+    # up. scaledown_window keeps it warm briefly so bursts reuse it.
     min_containers=config.MIN_CONTAINERS,
     scaledown_window=config.SCALEDOWN_WINDOW,
+    # Snapshot the container after the models are loaded, so a cold start
+    # restores in seconds instead of re-importing torch/TF and re-loading
+    # every model. This is what keeps "scale to zero" fast enough for good
+    # UX. If cold starts ever misbehave, remove this line and `snap=True`
+    # below -- the service still works, just with slower cold starts.
+    enable_memory_snapshot=True,
     # NVIDIA GPU flip (future): add `gpu="T4"` here and build from
     # requirements-gpu.txt -- see plan §7.
 )
 class InferenceService:
     """Loads all emotion models once per container; serves a FastAPI app."""
 
-    @modal.enter()
+    @modal.enter(snap=True)
     def load_models(self) -> None:
         """Runs once on container start -- fixes per-request model loading.
 

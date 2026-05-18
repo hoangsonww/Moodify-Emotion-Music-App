@@ -61,13 +61,17 @@ MODAL_SERVICE_TOKEN = os.getenv("MODAL_SERVICE_TOKEN")
 # Comma-separated list of allowed browser origins for CORS.
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 
-# --- Keep-warm / scaling tuning -------------------------------------------
+# --- Scaling / cost tuning ------------------------------------------------
+# Scale to zero: no container runs (and nothing is billed) while the
+# service is idle. You only pay for actual request-handling time plus the
+# short scaledown tail -- which keeps Modal usage well inside its free
+# monthly compute credit. Cold starts are kept fast by memory snapshotting
+# (enable_memory_snapshot in modal_app.py).
 # NOTE: Modal >= 0.64 uses `min_containers` / `scaledown_window`.
-# Older SDKs: `keep_warm` / `container_idle_timeout`.
-MIN_CONTAINERS = 1          # keep one container warm -> no cold starts
-SCALEDOWN_WINDOW = 300      # seconds an idle container lingers
-CONTAINER_CPU = 2.0
-CONTAINER_MEMORY_MB = 8192  # headroom for PyTorch + TensorFlow (FER) together
+MIN_CONTAINERS = 0          # 0 = scale to zero when idle (cheapest)
+SCALEDOWN_WINDOW = 300      # keep a container warm 5 min after the last request
+CONTAINER_CPU = 1.0         # ample for these small models
+CONTAINER_MEMORY_MB = 4096  # fits PyTorch + TensorFlow + the models
 
 
 def require(name: str) -> str:

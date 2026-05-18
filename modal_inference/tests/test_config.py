@@ -24,6 +24,9 @@ def test_default_emotion_is_neutral():
     assert config.DEFAULT_EMOTION == "neutral"
 
 
-def test_keep_warm_configuration():
-    assert config.MIN_CONTAINERS >= 1
+def test_scaling_configuration():
+    # 0 = scale to zero when idle (cheapest); a warm tail still applies.
+    assert config.MIN_CONTAINERS >= 0
     assert config.SCALEDOWN_WINDOW > 0
+    assert config.CONTAINER_CPU > 0
+    assert config.CONTAINER_MEMORY_MB >= 2048
