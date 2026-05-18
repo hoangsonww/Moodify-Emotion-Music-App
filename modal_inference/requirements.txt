@@ -26,14 +26,21 @@ soundfile==0.12.1
 audioread==3.0.1
 
 # --- Facial emotion (FER detector) ---
-# FER uses facenet-pytorch's MTCNN for face detection and runs its emotion
-# CNN on Keras/TensorFlow. tf-keras + TF_USE_LEGACY_KERAS=1 (set on the
-# image in modal_app.py) keep FER's bundled .h5 model loadable under TF 2.17.
-# FER also transitively pulls opencv-contrib-python, moviepy, Pillow, etc.
-fer==22.5.1
+# `fer` is installed separately in modal_app.py with `--no-deps`, because
+# its metadata pins `ffmpeg==1.4` -- an abandoned package that fails to
+# build on modern setuptools and which `fer` never actually imports. Its
+# real runtime dependencies are pinned here explicitly. FER runs its
+# emotion CNN on Keras/TensorFlow (tf-keras + TF_USE_LEGACY_KERAS=1 keep
+# the bundled .h5 model loadable under TF 2.17) and uses facenet-pytorch's
+# MTCNN for face detection.
 facenet-pytorch==2.6.0
 tensorflow-cpu==2.17.0
 tf-keras==2.17.0
+opencv-contrib-python-headless==4.10.0.84
+moviepy==1.0.3
+pandas==2.2.3
+tqdm==4.66.5
+Pillow==10.2.0
 
 # --- Auth + outbound HTTP ---
 PyJWT==2.9.0

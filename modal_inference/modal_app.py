@@ -47,6 +47,10 @@ inference_image = (
         index_url="https://download.pytorch.org/whl/cpu",
     )
     .pip_install_from_requirements("requirements.txt")
+    # `fer` is installed last with --no-deps: its metadata pins the
+    # unbuildable, never-imported `ffmpeg==1.4`. Its real deps are already
+    # installed from requirements.txt above.
+    .pip_install("fer==22.5.1", extra_options="--no-deps")
     # FER runs on TensorFlow; force the legacy-Keras path so its bundled
     # .h5 model loads under TF 2.17. Quiet the TF/transformers logs.
     .env(
