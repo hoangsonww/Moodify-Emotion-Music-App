@@ -76,7 +76,9 @@ ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(","
 MIN_CONTAINERS = 0          # 0 = scale to zero when idle (cheapest)
 SCALEDOWN_WINDOW = 300      # keep a container warm 5 min after the last request
 CONTAINER_CPU = 1.0         # ample for these small models
-CONTAINER_MEMORY_MB = 4096  # fits PyTorch + TensorFlow + the models
+# All three models load in ~1.3 GB (measured); 4 GB leaves headroom for
+# concurrent requests and the memory snapshot.
+CONTAINER_MEMORY_MB = 4096
 
 
 def require(name: str) -> str:

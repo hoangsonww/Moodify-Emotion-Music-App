@@ -124,10 +124,19 @@ export function installAuthInterceptor() {
         return Promise.reject(error);
       }
 
-      original.headers = {
-        ...(original.headers || {}),
-        Authorization: `Bearer ${getToken()}`,
-      };
+      // Drop a possibly-stale Content-Type before replaying the request.
+      // A retried multipart upload must get a fresh boundary, which axios
+      // re-derives only when Content-Type is unset; the request
+      // interceptor re-attaches the refreshed Authorization header.
+      const headers = original.headers;
+      if (headers) {
+        if (typeof headers.delete === "function") {
+          headers.delete("Content-Type");
+        } else {
+          delete headers["Content-Type"];
+          delete headers["content-type"];
+        }
+      }
       return axios(original);
     },
   );
