@@ -1,9 +1,9 @@
 # Moodify Modal inference service -- CPU dependency set.
 #
-# PyTorch CPU wheels are installed separately in modal_app.py via
+# PyTorch CPU wheels (torch + torchvision, the latter required by
+# facenet-pytorch) are installed separately in modal_app.py via
 #   .pip_install(..., index_url="https://download.pytorch.org/whl/cpu")
-# to keep the container image small. Do NOT add torch/torchvision/
-# torchaudio here.
+# to keep the container image small. Do NOT add torch/torchvision here.
 #
 # For the NVIDIA GPU variant see requirements-gpu.txt.
 
@@ -25,14 +25,15 @@ librosa==0.10.2.post1
 soundfile==0.12.1
 audioread==3.0.1
 
-# --- Facial emotion (FER bundled detector) ---
-# FER pulls in opencv-contrib-python + mtcnn; it runs on TensorFlow, which
-# is pinned to the legacy-Keras stack so the bundled .h5 model loads
-# cleanly (TF_USE_LEGACY_KERAS=1 is set on the image in modal_app.py).
+# --- Facial emotion (FER detector) ---
+# FER uses facenet-pytorch's MTCNN for face detection and runs its emotion
+# CNN on Keras/TensorFlow. tf-keras + TF_USE_LEGACY_KERAS=1 (set on the
+# image in modal_app.py) keep FER's bundled .h5 model loadable under TF 2.17.
+# FER also transitively pulls opencv-contrib-python, moviepy, Pillow, etc.
 fer==22.5.1
+facenet-pytorch==2.6.0
 tensorflow-cpu==2.17.0
 tf-keras==2.17.0
-mtcnn==0.1.1
 
 # --- Auth + outbound HTTP ---
 PyJWT==2.9.0

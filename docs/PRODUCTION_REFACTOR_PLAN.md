@@ -462,9 +462,22 @@ backend/
 
 ---
 
-## 13. Out of Scope (this pass)
+## 13. Status of follow-up items
 
-Full implementation of every skeleton, the SQLite→Mongo migration script,
-frontend/mobile edits, CI/CD updates (`.github/workflows`,
-`docker-compose.yml`, `render.yaml`, k8s/helm), and load testing — all
-deferred until this plan is approved.
+Done in the implementation passes:
+- All skeletons fully implemented; frontend + mobile migrated.
+- `docker-compose.yml`, `.devcontainer/docker-compose.yml`, `render.yaml`
+  and `backend/Dockerfile` modernised for the new architecture (the
+  retired Flask app and its Dockerfile are removed).
+- CI runs the backend and Modal test suites.
+- Verified: the Modal app builds against the real SDK, the Modal
+  dependency set resolves, the React app builds clean, both test suites
+  pass, `manage.py check` is clean.
+
+Still operational / deferred (need production credentials or a live
+environment):
+- Phase 5: deploy to Modal + Vercel, run `download_models`, and the
+  one-off SQLite→MongoDB user migration.
+- Kubernetes / Helm / ArgoCD / per-cloud manifests still describe the old
+  monolith — update them only if those deploy targets are still used.
+- Load testing and the GPU/Triton flip (§7) when traffic warrants it.

@@ -1,9 +1,22 @@
+# Render deployment for the Moodify Django API.
+#
+# This is an alternative to the Vercel deployment (docs/
+# PRODUCTION_REFACTOR_PLAN.md §5) -- Render runs Django as a long-lived
+# gunicorn process. ML inference is NOT here; it runs on Modal.
+#
+# Set the secret env vars (MONGO_DB_URI, JWT_SIGNING_KEY,
+# MODAL_INFERENCE_URL, MODAL_SERVICE_TOKEN, CORS_ALLOWED_ORIGINS, ...) in
+# the Render dashboard -- see backend/.env.example.
 services:
   - type: web
-    name: ai-ml-backend
+    name: moodify-backend
     runtime: python
-    buildCommand: |
-      pip install -r requirements.txt
-      python backend/download_models.py
-    startCommand: gunicorn backend.wsgi:application --log-file -
+    rootDir: backend
     plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DEBUG
+        value: "False"

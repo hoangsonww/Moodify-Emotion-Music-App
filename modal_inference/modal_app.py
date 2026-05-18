@@ -40,7 +40,12 @@ inference_image = (
     modal.Image.debian_slim(python_version="3.11")
     # ffmpeg/libsndfile -> audio decoding; libgl/libglib -> OpenCV (FER).
     .apt_install("ffmpeg", "libsndfile1", "libgl1", "libglib2.0-0")
-    .pip_install("torch==2.2.2", index_url="https://download.pytorch.org/whl/cpu")
+    # torchvision is required by facenet-pytorch (FER's face detector).
+    .pip_install(
+        "torch==2.2.2",
+        "torchvision==0.17.2",
+        index_url="https://download.pytorch.org/whl/cpu",
+    )
     .pip_install_from_requirements("requirements.txt")
     # FER runs on TensorFlow; force the legacy-Keras path so its bundled
     # .h5 model loads under TF 2.17. Quiet the TF/transformers logs.

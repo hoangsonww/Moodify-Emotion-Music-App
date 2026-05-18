@@ -1,50 +1,50 @@
-version: '3.8'
-
+# Local development stack for Moodify.
+#
+# ML inference is NOT in this stack -- it runs on Modal. For local
+# inference run `modal serve modal_app.py` from modal_inference/ and point
+# MODAL_INFERENCE_URL at the URL it prints.
 services:
-  ai_ml:
-    build:
-      context: .  # Set the build context to the root directory
-      dockerfile: ./ai_ml/Dockerfile  # Reference the Dockerfile within ai_ml
-    container_name: ai_ml_service
+  mongodb:
+    image: mongo:7
+    container_name: moodify_mongodb
     ports:
-      - "5000:5000"
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
     restart: unless-stopped
-    depends_on:
-      - mongodb
 
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile  # Specify the Dockerfile path relative to the root
-    container_name: backend_service
+      dockerfile: backend/Dockerfile
+    container_name: moodify_backend
     ports:
       - "8000:8000"
     environment:
-      - AI_ML_URL=http://ai_ml:5000 # Ensure backend points to ai_ml service
+      - DEBUG=True
+      - MONGO_DB_URI=mongodb://mongodb:27017/emotion_based_music_db
+      - SECRET_KEY=local-dev-secret-key
+      - JWT_SIGNING_KEY=local-dev-jwt-key
+      # Point these at a `modal serve` URL for local inference.
+      - MODAL_INFERENCE_URL=${MODAL_INFERENCE_URL:-}
+      - MODAL_SERVICE_TOKEN=${MODAL_SERVICE_TOKEN:-local-dev-service-token}
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
     depends_on:
-      - ai_ml
       - mongodb
     restart: unless-stopped
 
   frontend:
     build:
       context: ./frontend
-    container_name: frontend_service
+    container_name: moodify_frontend
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_BACKEND_URL=http://backend:8000 # Ensure frontend points to backend service
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_MODAL_API_URL=${MODAL_INFERENCE_URL:-}
     depends_on:
       - backend
     restart: unless-stopped
-
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
 
 volumes:
   mongo_data:

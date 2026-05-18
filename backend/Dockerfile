@@ -1,21 +1,24 @@
-FROM python:3.10-slim
+# Moodify Django API image.
+#
+# Build context is the repository root (see docker-compose.yml / CI):
+#   docker build -f backend/Dockerfile -t moodify-backend .
+#
+# There is no SQL database (MongoDB only), so no `migrate` step is needed.
+FROM python:3.11-slim
+
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt ./requirements.txt
-
-# Install the dependencies
+# Slim, ML-free dependency set (see backend/requirements.txt).
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the backend application code
-COPY . .
+# Application code.
+COPY backend/ .
 
-# Expose Django port
+# Collect static assets for drf-yasg (best effort -- WhiteNoise also serves
+# them via finders at runtime).
+RUN python manage.py collectstatic --noinput || true
+
 EXPOSE 8000
 
-# Run migrations and start the Django server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
