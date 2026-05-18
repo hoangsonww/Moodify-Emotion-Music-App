@@ -160,7 +160,16 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
     X_FRAME_OPTIONS = "DENY"
+
+# `manage.py check --deploy` warnings that do not apply to this deployment:
+#  - security.W003 (CSRF middleware): this is a stateless JWT API. Auth
+#    travels in the Authorization header, never in cookies, so there is no
+#    CSRF attack surface and CsrfViewMiddleware is intentionally omitted.
+#  - security.W008 (SSL redirect): HTTPS is terminated and enforced at the
+#    hosting edge (Vercel / Render); a Django-level redirect is redundant.
+SILENCED_SYSTEM_CHECKS = ["security.W003", "security.W008"]
 
 # --- Swagger / drf-yasg ---------------------------------------------------
 SWAGGER_SETTINGS = {
