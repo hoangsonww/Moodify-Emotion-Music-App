@@ -1,25 +1,22 @@
 """HTTP client for the Moodify Modal inference service.
 
-After the refactor, Django no longer imports torch/transformers/etc. The
-``text_emotion`` and ``music_recommendation`` views call the functions here,
-which proxy to the Modal service. Speech/facial traffic does NOT pass
-through Django -- the browser uploads media directly to Modal (plan §3).
+Django no longer imports torch/transformers/etc. The ``text_emotion`` and
+``music_recommendation`` views call the functions here, which proxy to the
+Modal service. Speech/facial traffic does NOT pass through Django -- the
+browser uploads media directly to Modal (plan §3).
 """
 
 import logging
+import time
 
 import requests
-from decouple import config
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-# Base URL of the deployed Modal service, e.g. https://<org>--moodify-...modal.run
-MODAL_INFERENCE_URL = config("MODAL_INFERENCE_URL", default="")
-# Shared secret authenticating Django -> Modal proxy calls.
-MODAL_SERVICE_TOKEN = config("MODAL_SERVICE_TOKEN", default="")
-
 _TIMEOUT_SECONDS = 15
 _MAX_RETRIES = 1
+_RETRY_BACKOFF_SECONDS = 1.0
 
 
 class InferenceServiceError(Exception):
@@ -27,12 +24,13 @@ class InferenceServiceError(Exception):
 
 
 def _post(path: str, json_body: dict) -> dict:
-    """POST to the Modal service with the service token, one retry, timeout."""
-    if not MODAL_INFERENCE_URL:
+    """POST to the Modal service with the service token, with one retry."""
+    base_url = getattr(settings, "MODAL_INFERENCE_URL", "")
+    if not base_url:
         raise InferenceServiceError("MODAL_INFERENCE_URL is not configured")
 
-    url = f"{MODAL_INFERENCE_URL.rstrip('/')}{path}"
-    headers = {"Authorization": f"Bearer {MODAL_SERVICE_TOKEN}"}
+    url = f"{base_url.rstrip('/')}{path}"
+    headers = {"Authorization": f"Bearer {getattr(settings, 'MODAL_SERVICE_TOKEN', '')}"}
 
     last_exc: Exception | None = None
     for attempt in range(_MAX_RETRIES + 1):
@@ -42,7 +40,9 @@ def _post(path: str, json_body: dict) -> dict:
             return resp.json()
         except requests.RequestException as exc:
             last_exc = exc
-            logger.warning("Modal inference call %s failed (attempt %s): %s", path, attempt + 1, exc)
+            logger.warning("Modal call %s failed (attempt %s/%s): %s", path, attempt + 1, _MAX_RETRIES + 1, exc)
+            if attempt < _MAX_RETRIES:
+                time.sleep(_RETRY_BACKOFF_SECONDS * (attempt + 1))
 
     raise InferenceServiceError(f"Modal inference service call to {path} failed") from last_exc
 

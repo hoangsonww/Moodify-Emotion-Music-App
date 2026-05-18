@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Paper, Typography, Box, CircularProgress, Card, CardContent } from '@mui/material';
 import axios from 'axios';
+import { API_URL } from '../../config';
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
@@ -19,7 +20,7 @@ const ProfilePage = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+      const response = await axios.get(`${API_URL}/users/user/profile/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

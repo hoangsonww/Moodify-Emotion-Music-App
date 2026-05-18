@@ -12,6 +12,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DarkModeContext } from "../../context/DarkModeContext";
+import { API_URL } from "../../config";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -44,7 +45,7 @@ const Register = () => {
     try {
       // Sending username, email, and password to the backend
       const response = await axios.post(
-        "https://moodify-emotion-music-app.onrender.com/users/register/",
+        `${API_URL}/users/register/`,
         {
           username,
           email,

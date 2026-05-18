@@ -1,140 +1,75 @@
-import io
-import tempfile
-import mimetypes
+"""Tests for the refactored emotion/recommendation API views.
+
+These views proxy to the Modal inference service; the proxy calls are
+mocked by the autouse ``mock_inference`` fixture in conftest.py.
+"""
 
 import pytest
-from django.contrib.auth.models import User
 from rest_framework import status
-from rest_framework.test import APIRequestFactory, force_authenticate
-from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework.test import APIRequestFactory
 
-from api.views import (
-    text_emotion,
-    speech_emotion,
-    facial_emotion,
-    music_recommendation,
-)
+from api import views
+from api.services.inference_client import InferenceServiceError
 
 factory = APIRequestFactory()
 
-@pytest.mark.django_db
-class TestAPIViews:
-    def test_text_emotion_400_if_no_text(self):
-        req = factory.post("/text_emotion/", data={})
-        resp = text_emotion(req)
+
+class TestTextEmotion:
+    def test_400_if_no_text(self):
+        resp = views.text_emotion(factory.post("/api/text_emotion/", data={}))
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert "error" in resp.data
 
-    def test_text_emotion_200_and_payload(self):
-        req = factory.post("/text_emotion/", data={"text": "hello"})
-        resp = text_emotion(req)
+    def test_200_and_payload(self):
+        resp = views.text_emotion(
+            factory.post("/api/text_emotion/", {"text": "I feel great"}, format="json")
+        )
         assert resp.status_code == status.HTTP_200_OK
         assert resp.data["emotion"] == "neutral"
         assert isinstance(resp.data["recommendations"], list)
 
-    def test_speech_emotion_400_if_no_file(self):
-        req = factory.post("/speech_emotion/", data={})
-        resp = speech_emotion(req)
+    @pytest.mark.parametrize("txt", ["hello", "こんにちは", "12345", "MiXeD!!!"])
+    def test_various_inputs(self, txt):
+        resp = views.text_emotion(factory.post("/api/text_emotion/", {"text": txt}, format="json"))
+        assert resp.status_code == status.HTTP_200_OK
+
+    def test_502_when_inference_unavailable(self, monkeypatch):
+        def boom(_text):
+            raise InferenceServiceError("modal down")
+
+        monkeypatch.setattr(views, "modal_text", boom)
+        resp = views.text_emotion(factory.post("/api/text_emotion/", {"text": "hi"}, format="json"))
+        assert resp.status_code == status.HTTP_502_BAD_GATEWAY
+
+
+class TestMusicRecommendation:
+    def test_400_if_no_emotion(self):
+        resp = views.music_recommendation(factory.post("/api/music_recommendation/", data={}))
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
         assert "error" in resp.data
 
-    def test_speech_emotion_200_with_wav_file(self, tmp_path):
-        # write minimal WAV header
-        wav = tmp_path / "t.wav"
-        wav.write_bytes(b"RIFF....WAVEfmt ")
-        content = wav.read_bytes()
-        f = SimpleUploadedFile("t.wav", content, content_type="audio/wav")
-
-        req = factory.post("/speech_emotion/", data={"file": f}, format="multipart")
-        resp = speech_emotion(req)
+    def test_200_and_payload(self):
+        resp = views.music_recommendation(
+            factory.post("/api/music_recommendation/", {"emotion": "joy"}, format="json")
+        )
         assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["emotion"] == "neutral"
-
-    def test_facial_emotion_401_if_not_authenticated(self):
-        img = SimpleUploadedFile("i.jpg", b"\xff\xd8\xff", content_type="image/jpeg")
-        req = factory.post("/facial_emotion/", data={"file": img}, format="multipart")
-        resp = facial_emotion(req)
-        assert resp.status_code == status.HTTP_401_UNAUTHORIZED
-
-    def test_facial_emotion_200_if_authenticated(self):
-        user = User.objects.create_user(username="u", password="p")
-        img = SimpleUploadedFile("i.jpg", b"\xff\xd8\xff", content_type="image/jpeg")
-        req = factory.post("/facial_emotion/", data={"file": img}, format="multipart")
-        force_authenticate(req, user=user)
-        resp = facial_emotion(req)
-        assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["emotion"] == "neutral"
-
-    def test_music_recommendation_400_if_no_emotion(self):
-        req = factory.post("/music_recommendation/", data={})
-        resp = music_recommendation(req)
-        assert resp.status_code == status.HTTP_400_BAD_REQUEST
-        assert "error" in resp.data
-
-    def test_music_recommendation_200_and_payload(self):
-        req = factory.post("/music_recommendation/", data={"emotion": "anything"})
-        resp = music_recommendation(req)
-        assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["emotion"] == "anything"
+        assert resp.data["emotion"] == "joy"
         assert isinstance(resp.data["recommendations"], list)
-
-    @pytest.mark.parametrize("txt", [
-        "hello",
-        "こんにちは",
-        "12345",
-        "Mixed CASE and punctuation!!!"
-    ])
-    def test_text_emotion_various_inputs(self, txt):
-        req = factory.post("/text_emotion/", data={"text": txt})
-        resp = text_emotion(req)
-        assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["emotion"] == "neutral"
-
-    # text_emotion: repeated error-case loops
-    def test_text_emotion_error_repeats(self):
-        for _ in range(3):
-            req = factory.post("/text_emotion/", data={})
-            resp = text_emotion(req)
-            assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
-    @pytest.mark.parametrize("hdr", [
-        b"RIFF....WAVEfmt ",
-        b"RIFF\x00\x00\x00\x00WAVEfmt ",
-    ])
-    def test_speech_emotion_header_variants(self, tmp_path, hdr):
-        wav = tmp_path / "v.wav"
-        wav.write_bytes(hdr)
-        f = SimpleUploadedFile("v.wav", wav.read_bytes(), content_type="audio/wav")
-        req = factory.post("/speech_emotion/", data={"file": f}, format="multipart")
-        resp = speech_emotion(req)
-        assert resp.status_code == status.HTTP_200_OK
-        assert resp.data["emotion"] == "neutral"
-
-    def test_speech_emotion_error_repeats(self):
-        for _ in range(3):
-            req = factory.post("/speech_emotion/", data={})
-            resp = speech_emotion(req)
-            assert resp.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_facial_emotion_two_requests_same_user(self):
-        user = User.objects.create_user("repeat", "r@example.com", "pw")
-        img = SimpleUploadedFile("i3.jpg", b"\xff\xd8\xff", content_type="image/jpeg")
-        for _ in range(2):
-            req = factory.post("/facial_emotion/", data={"file": img}, format="multipart")
-            force_authenticate(req, user=user)
-            resp = facial_emotion(req)
-            assert resp.status_code == status.HTTP_200_OK
-            assert resp.data["emotion"] == "neutral"
 
     @pytest.mark.parametrize("emo", ["happy", "sad", "CONFUSED", "🙂"])
-    def test_music_recommendation_various_emotions(self, emo):
-        req = factory.post("/music_recommendation/", data={"emotion": emo})
-        resp = music_recommendation(req)
+    def test_various_emotions(self, emo):
+        resp = views.music_recommendation(
+            factory.post("/api/music_recommendation/", {"emotion": emo}, format="json")
+        )
         assert resp.status_code == status.HTTP_200_OK
         assert resp.data["emotion"] == emo
 
-    def test_music_recommendation_error_repeats(self):
-        for _ in range(3):
-            req = factory.post("/music_recommendation/", data={})
-            resp = music_recommendation(req)
-            assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    def test_502_when_inference_unavailable(self, monkeypatch):
+        def boom(_emotion, _market=None):
+            raise InferenceServiceError("modal down")
+
+        monkeypatch.setattr(views, "modal_music", boom)
+        resp = views.music_recommendation(
+            factory.post("/api/music_recommendation/", {"emotion": "joy"}, format="json")
+        )
+        assert resp.status_code == status.HTTP_502_BAD_GATEWAY

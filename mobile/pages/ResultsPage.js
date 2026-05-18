@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Box, Card, CardContent, Typography, Paper, Button, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -32,7 +33,7 @@ const ResultsPage = () => {
 
     try {
       // Call the API with the selected mood
-      const response = await axios.post('http://127.0.0.1:8000/api/music_recommendation/', {
+      const response = await axios.post(`${API_URL}/api/music_recommendation/`, {
         "emotion": newMood.toLowerCase(),
       });
 

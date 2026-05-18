@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://moodify-emotion-music-app.onrender.com";
+import { API_URL } from "../config";
 
 export const register = async (username, password, email) => {
   try {

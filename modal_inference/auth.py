@@ -9,8 +9,8 @@ endpoint must authenticate the caller. Two credentials are accepted on the
 2. The ``MODAL_SERVICE_TOKEN`` shared secret -- used for trusted
    Django -> Modal proxy calls (text / music).
 
-TODO(impl): wire `require_auth` as a FastAPI dependency on the protected
-routes in modal_app.py, and add per-IP rate limiting.
+``authenticate`` is wired as the ``require_auth`` FastAPI dependency on
+every write endpoint in modal_app.py.
 """
 
 import hmac
@@ -64,6 +64,8 @@ def authenticate(authorization_header: str | None) -> dict:
     if _is_service_token(token):
         return {"kind": "service"}
 
-    # TODO(impl): fall through to JWT verification for end-user calls.
+    # Otherwise it must be a valid end-user access JWT.
     claims = _verify_jwt(token)
+    if claims.get("type") not in (None, "access"):
+        raise AuthError("An access token is required")
     return {"kind": "user", "claims": claims}

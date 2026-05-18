@@ -5,9 +5,8 @@ Standalone ML inference service for Moodify, deployed on
 legacy Flask app (`ai_ml/src/api/emotion_api.py`).
 
 See [`docs/PRODUCTION_REFACTOR_PLAN.md`](../docs/PRODUCTION_REFACTOR_PLAN.md)
-for the full architecture. **This directory is currently scaffolding** —
-the model classes and the Spotify recommendation function still contain
-`TODO(impl)` markers (plan §10, Phase 1).
+for the full architecture. The service is fully implemented; the only
+deploy-time step is running `download_models` once (see below).
 
 ## Layout
 

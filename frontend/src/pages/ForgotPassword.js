@@ -12,6 +12,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DarkModeContext } from "../context/DarkModeContext";
+import { API_URL } from "../config";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
@@ -35,7 +36,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://moodify-emotion-music-app.onrender.com/users/verify-username-email/",
+        `${API_URL}/users/verify-username-email/`,
         { username, email },
       );
       if (response.status === 200) {
@@ -62,7 +63,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://moodify-emotion-music-app.onrender.com/users/reset-password/",
+        `${API_URL}/users/reset-password/`,
         { username, new_password: newPassword },
       );
       if (response.status === 200) {

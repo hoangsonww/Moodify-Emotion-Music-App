@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../../context/DarkModeContext";
+import { API_URL } from "../../config";
 
 const CACHE_KEY = "userProfileCache";
 
@@ -78,7 +79,7 @@ const ProfilePage = () => {
 
     try {
       const response = await axios.get(
-        "https://moodify-emotion-music-app.onrender.com/users/user/profile/",
+        `${API_URL}/users/user/profile/`,
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 60000, // 60 seconds timeout
@@ -119,7 +120,7 @@ const ProfilePage = () => {
       setIsLoading(true);
       const response = await Promise.race([
         axios.post(
-          "https://moodify-emotion-music-app.onrender.com/api/music_recommendation/",
+          `${API_URL}/api/music_recommendation/`,
           { emotion: mood.toLowerCase() }, // Pass the mood as a parameter
           {
             headers: {

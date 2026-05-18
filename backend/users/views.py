@@ -1,607 +1,320 @@
+"""User account and profile endpoints.
+
+Authentication is JWT-only, backed by the mongoengine ``User`` document
+(users/documents.py). There is no SQL database and no Django session/auth.
+"""
+
+import logging
+
+import jwt
+from mongoengine.errors import DoesNotExist, NotUniqueError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-from .models import UserProfile
-from django.http import JsonResponse
-from mongoengine.errors import DoesNotExist
 
-import json
+from api.models import UserProfile
 
-from django.views.decorators.csrf import csrf_exempt
-from .serializers import UserSerializer, UserProfileSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from django.contrib.auth.hashers import make_password
+from .documents import User
+from .tokens import decode_token, issue_tokens
+
+logger = logging.getLogger(__name__)
+
+MIN_PASSWORD_LENGTH = 8
 
 
-@swagger_auto_schema(
-    method='get',
-    responses={
-        200: openapi.Response('Token is valid.'),
-        401: openapi.Response('Unauthorized. Token is invalid or expired.'),
-    },
-)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])  # Only authenticated users can access this
+def _profile_for(request_user, user_id: str):
+    """Return the UserProfile for ``user_id`` if it belongs to the caller.
+
+    Returns (profile, error_response). Exactly one is non-None.
+    """
+    profile = UserProfile.objects(id=user_id).first()
+    if profile is None:
+        return None, Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    if profile.username != getattr(request_user, "username", None):
+        return None, Response({"error": "Forbidden."}, status=status.HTTP_403_FORBIDDEN)
+    return profile, None
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def validate_token(request):
-    """
-    Validates the token and returns a response indicating whether the token is valid.
-
-    :param request: Request object
-    :return: Response object
-    """
-    # If the token is valid, this view will automatically be called.
-    # No additional checks are necessary because IsAuthenticated handles token validation.
-    return Response({"message": "Token is valid."}, status=status.HTTP_200_OK)
+    """Return 200 if the supplied access token is valid."""
+    return Response({"message": "Token is valid.", "username": request.user.username})
 
 
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username for registration'),
-            'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password for registration'),
-            'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email address for registration'),
-        },
-        required=['username', 'password', 'email'],
-    ),
-    responses={
-        201: openapi.Response('User created successfully.'),
-        400: openapi.Response('All fields are required.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('URL not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
-    """
-    Registers a new user with the given username, password, and email.
+    """Register a new user and create their profile."""
+    username = (request.data.get("username") or "").strip()
+    password = request.data.get("password") or ""
+    email = (request.data.get("email") or "").strip()
 
-    :param request: Request object
-    :return: Response object
-    """
-    if request.method == 'POST':
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email')
+    if not username or not password or not email:
+        return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return Response(
+            {"error": f"Password must be at least {MIN_PASSWORD_LENGTH} characters."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    if User.objects(username=username).first() is not None:
+        return Response({"error": "Username already taken."}, status=status.HTTP_409_CONFLICT)
 
-        if not username or not password or not email:
-            return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+    user = User(username=username, email=email)
+    user.set_password(password)
+    try:
+        user.save()
+    except NotUniqueError:
+        return Response({"error": "Username already taken."}, status=status.HTTP_409_CONFLICT)
 
+    # Create the profile; roll back the user if that fails.
+    if UserProfile.objects(username=username).first() is None:
         try:
-            user = User.objects.create_user(username=username, password=password, email=email)
             UserProfile(username=username).save()
-            user.save()
-            return Response({"message": "User created successfully."}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception:  # noqa: BLE001
+            logger.exception("Profile creation failed for %s; rolling back user", username)
+            user.delete()
+            return Response(
+                {"error": "Could not create user profile."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    return Response({"message": "User created successfully."}, status=status.HTTP_201_CREATED)
 
 
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username for login'),
-            'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password for login'),
-        },
-        required=['username', 'password'],
-    ),
-    responses={
-        200: openapi.Response('Tokens generated successfully.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('URL not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['POST'])
-@permission_classes([AllowAny])  # Allow any user to access this view
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def login(request):
-    """
-    Logs in the user with the given username and password.
+    """Authenticate a user and return an access/refresh token pair."""
+    username = (request.data.get("username") or "").strip()
+    password = request.data.get("password") or ""
 
-    :param request: Request object
-    :return: Response object
-    """
-    username = request.data.get('username')
-    password = request.data.get('password')
+    user = User.objects(username=username).first()
+    if user is None or not user.is_active or not user.check_password(password):
+        return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        })
-    return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response(issue_tokens(user), status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username to verify'),
-            'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email to verify'),
-        },
-        required=['username', 'email'],
-    ),
-    responses={
-        200: openapi.Response('Username and email combination verified.'),
-        404: openapi.Response('User not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['POST'])
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def token_refresh(request):
+    """Exchange a valid refresh token for a fresh access/refresh pair."""
+    token = request.data.get("refresh") or ""
+    try:
+        claims = decode_token(token)
+    except jwt.InvalidTokenError:
+        return Response({"error": "Invalid or expired refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    if claims.get("type") != "refresh":
+        return Response({"error": "Not a refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    user = User.objects(id=claims.get("sub")).first()
+    if user is None or not user.is_active:
+        return Response({"error": "User not found or inactive."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    return Response(issue_tokens(user), status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_username_email(request):
-    """
-    Verifies if a combination of username and email exists in the User model.
-
-    :param request: Request object
-    :return: Response object
-    """
-    username = request.data.get('username')
-    email = request.data.get('email')
+    """Verify that a username/email combination exists."""
+    username = (request.data.get("username") or "").strip()
+    email = (request.data.get("email") or "").strip()
 
     if not username or not email:
         return Response({"error": "Username and email are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        # Find the user in the Django User model (not in UserProfile)
-        user = User.objects.get(username=username, email=email)
-        return Response({"message": "Username and email combination verified."}, status=status.HTTP_200_OK)
-    except User.DoesNotExist:
-        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    if User.objects(username=username, email=email).first() is not None:
+        return Response({"message": "Username and email combination verified."})
+    return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username to reset password for'),
-            'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='New password'),
-        },
-        required=['username', 'new_password'],
-    ),
-    responses={
-        200: openapi.Response('Password reset successfully.'),
-        404: openapi.Response('User not found.'),
-        400: openapi.Response('Bad request.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([AllowAny])
-@csrf_exempt
 def reset_password(request):
-    """
-    Resets the password for the given username.
-
-    :param request: Request object
-    :return: Response object
-    """
-    username = request.data.get('username')
-    new_password = request.data.get('new_password')
+    """Reset a user's password (used by the forgot-password flow)."""
+    username = (request.data.get("username") or "").strip()
+    new_password = request.data.get("new_password") or ""
 
     if not username or not new_password:
-        return Response({"error": "Username and new password are required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Username and new password are required."}, status=status.HTTP_400_BAD_REQUEST
+        )
+    if len(new_password) < MIN_PASSWORD_LENGTH:
+        return Response(
+            {"error": f"Password must be at least {MIN_PASSWORD_LENGTH} characters."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-    try:
-        # Find the user in the Django User model
-        user = User.objects.get(username=username)
-
-        # Update password (Django's set_password method hashes the password before saving)
-        user.set_password(new_password)
-        user.save()
-
-        return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
-    except User.DoesNotExist:
+    user = User.objects(username=username).first()
+    if user is None:
         return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    user.set_password(new_password)
+    user.save()
+    return Response({"message": "Password reset successfully."})
 
 
-@swagger_auto_schema(
-    method='get',
-    responses={
-        200: openapi.Response('User profile retrieved successfully.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('User profile not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
-    """
-    Retrieve the user profile associated with the authenticated user.
-
-    :param request: Request object
-    :return: Response object
-    """
-    try:
-        # Retrieve the UserProfile associated with the authenticated user
-        user_profile = UserProfile.objects.get(username=request.user.username)
-
-        return Response({
-            "id": str(user_profile.id),
-            "username": user_profile.username,
-            "email": request.user.email,
-            "listening_history": user_profile.listening_history,
-            "mood_history": user_profile.mood_history,
-            "recommendations": user_profile.recommendations,
-        }, status=status.HTTP_200_OK)
-
-    except DoesNotExist:
+    """Return the authenticated user's profile."""
+    profile = UserProfile.objects(username=request.user.username).first()
+    if profile is None:
         return Response({"error": "User profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    return Response(
+        {
+            "id": str(profile.id),
+            "username": profile.username,
+            "email": request.user.email,
+            "listening_history": profile.listening_history,
+            "mood_history": profile.mood_history,
+            "recommendations": profile.recommendations,
+        }
+    )
 
-@swagger_auto_schema(
-    method='put',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={},
-    ),
-    responses={
-        200: openapi.Response('Profile updated successfully.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('URL not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['PUT'])
+
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def user_profile_update(request):
-    """
-    Update the user profile based on the request data.
+    """Update mutable fields on the authenticated user's profile."""
+    profile = UserProfile.objects(username=request.user.username).first()
+    if profile is None:
+        return Response({"error": "User profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    :param request: Request object
-    :return: Response object
-    """
-    user = request.user
-    profile = UserProfile.objects.get(username=user.username)
+    email = request.data.get("email")
+    if email:
+        request.user.email = email.strip()
+        request.user.save()
 
-    # Update profile fields based on request data
     profile.save()
     return Response({"message": "Profile updated successfully."})
 
 
-@swagger_auto_schema(
-    method='delete',
-    responses={
-        200: openapi.Response('Profile deleted successfully.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('URL not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def user_profile_delete(request):
-    """
-    Delete the user profile associated with the authenticated user.
-
-    :param request: Request object
-    :return: Response object
-    """
-    user = request.user
-    profile = UserProfile.objects.get(username=user.username)
-    profile.delete()
+    """Delete the authenticated user's account and profile."""
+    profile = UserProfile.objects(username=request.user.username).first()
+    if profile is not None:
+        profile.delete()
+    request.user.delete()
     return Response({"message": "Profile deleted successfully."})
 
 
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'recommendations': openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'name': openapi.Schema(type=openapi.TYPE_STRING, description='Name of the song'),
-                        'artist': openapi.Schema(type=openapi.TYPE_STRING, description='Name of the artist'),
-                        'preview_url': openapi.Schema(type=openapi.TYPE_STRING, nullable=True, description='Preview URL of the song'),
-                        'external_url': openapi.Schema(type=openapi.TYPE_STRING, description='External URL of the song'),
-                    },
-                ),
-                description='List of music recommendations'
-            ),
-        },
-        required=['recommendations'],
-    ),
-    responses={
-        201: openapi.Response('Recommendations saved successfully.'),
-        400: openapi.Response('Recommendations are required.'),
-        404: openapi.Response('User not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def save_recommendations(request, user_id):
-    """
-    Save music recommendations for the user with the given user ID.
+    """Append recommendations to a user's profile."""
+    profile, error = _profile_for(request.user, user_id)
+    if error:
+        return error
 
-    :param request: The request object containing the music recommendations.
-    :param user_id: The user ID to save the recommendations for.
-    :return: The response object indicating the status of the operation.
-    """
-    try:
-        recommendations = request.data.get("recommendations")
+    recommendations = request.data.get("recommendations")
+    if not recommendations:
+        return Response({"error": "Recommendations are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not recommendations:
-            return Response({"error": "Recommendations are required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user_profile = UserProfile.objects(id=user_id).first()
-        if not user_profile:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        user_profile.recommendations.extend(recommendations)
-        user_profile.save()
-
-        return Response({"message": "Recommendations saved successfully"}, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    profile.recommendations.extend(recommendations)
+    profile.save()
+    return Response({"message": "Recommendations saved successfully."}, status=status.HTTP_201_CREATED)
 
 
-@swagger_auto_schema(
-    method='get',
-    responses={
-        200: openapi.Response('Recommendations retrieved successfully.'),
-        404: openapi.Response('User not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_recommendations(request, user_id):
-    """
-    Retrieve music recommendations for the user with the given user ID.
-
-    :param request: The request object containing the user ID.
-    :param user_id: The user ID to retrieve recommendations for.
-    :return: The response object containing the music recommendations.
-    """
-    try:
-        # Retrieve user profile using MongoDB ObjectId
-        user_profile = UserProfile.objects(id=user_id).first()
-
-        if not user_profile:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response({"recommendations": user_profile.recommendations}, status=status.HTTP_200_OK)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    """Return a user's saved recommendations."""
+    profile, error = _profile_for(request.user, user_id)
+    if error:
+        return error
+    return Response({"recommendations": profile.recommendations})
 
 
-@swagger_auto_schema(
-    method='delete',
-    manual_parameters=[
-        openapi.Parameter('user_id', openapi.IN_PATH, description='User ID to delete recommendations for', type=openapi.TYPE_STRING),
-    ],
-    responses={
-        200: openapi.Response('All recommendations deleted successfully.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('User not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['DELETE'])
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def delete_all_recommendations(request, user_id):
-    """
-    Delete all music recommendations for the user with the given user ID.
-
-    :param request: The request object containing the user ID.
-    :param user_id: The user ID to delete recommendations for.
-    :return: The response object indicating the status of the operation.
-    """
-    try:
-        # Retrieve user profile by MongoDB ObjectId
-        user_profile = UserProfile.objects(id=user_id).first()
-
-        if not user_profile:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Explicitly set recommendations to an empty list
-        user_profile.recommendations = []
-        user_profile.save()
-
-        return Response({"message": "All recommendations deleted"}, status=status.HTTP_200_OK)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    """Clear all of a user's saved recommendations."""
+    profile, error = _profile_for(request.user, user_id)
+    if error:
+        return error
+    profile.recommendations = []
+    profile.save()
+    return Response({"message": "All recommendations deleted."})
 
 
-@csrf_exempt
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'recommendations': openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'name': openapi.Schema(type=openapi.TYPE_STRING),
-                        'artist': openapi.Schema(type=openapi.TYPE_STRING),
-                        'preview_url': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
-                        'external_url': openapi.Schema(type=openapi.TYPE_STRING),
-                    },
-                ),
-            ),
-        },
-        required=['recommendations'],
-    ),
-    responses={
-        201: openapi.Response('Recommendations saved successfully.'),
-        400: openapi.Response('Recommendations are required.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('User not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['POST', 'GET', 'DELETE'])
+@api_view(["GET", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
 def user_recommendations(request, user_id):
-    """
-    This function allows users to save, retrieve, and delete music recommendations.
+    """Get, append to, or clear a user's saved recommendations."""
+    profile, error = _profile_for(request.user, user_id)
+    if error:
+        return error
 
-    :param request: The request object containing the music recommendations.
-    :param user_id: The user ID to save the recommendations for.
-    :return: The response object indicating the status of the operation.
-    """
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        try:
-            user_profile = UserProfile.objects.get(id=user_id)
-            user_profile.recommendations.extend(data.get('recommendations', []))
-            user_profile.save()
-            return Response({"message": "Recommendations saved successfully."}, status=status.HTTP_201_CREATED)
-        except DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == "GET":
+        return Response({"recommendations": profile.recommendations})
 
-    elif request.method == 'GET':
-        try:
-            user_profile = UserProfile.objects.get(id=user_id)
-            return Response({"recommendations": user_profile.recommendations}, status=status.HTTP_200_OK)
-        except DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == "POST":
+        profile.recommendations.extend(request.data.get("recommendations", []))
+        profile.save()
+        return Response({"message": "Recommendations saved successfully."}, status=status.HTTP_201_CREATED)
 
-    elif request.method == 'DELETE':
-        try:
-            user_profile = UserProfile.objects.get(id=user_id)
-            user_profile.recommendations.clear()  # Clear all recommendations
-            user_profile.save()
-            return Response({"message": "All recommendations deleted."}, status=status.HTTP_204_NO_CONTENT)
-        except DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    profile.recommendations = []
+    profile.save()
+    return Response({"message": "All recommendations deleted."})
 
 
-@csrf_exempt
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'mood': openapi.Schema(type=openapi.TYPE_STRING, description='Detected mood'),
-        },
-        required=['mood'],
-    ),
-    responses={
-        201: openapi.Response('Mood history updated successfully.'),
-        400: openapi.Response('Mood is required.'),
-        401: openapi.Response('Unauthorized.'),
-        404: openapi.Response('User not found.'),
-        500: openapi.Response('Internal server error.'),
-    },
-)
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(["GET", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
 def user_mood_history(request, user_id):
-    """
-    This function allows users to retrieve, add, and delete moods from their mood history.
+    """Get, append to, or remove an entry from a user's mood history."""
+    profile, error = _profile_for(request.user, user_id)
+    if error:
+        return error
 
-    :param request: The request object containing the mood data.
-    :param user_id: The user ID to update the mood history for.
-    :return: The response object indicating the status of the operation.
-    """
-    if request.method == 'GET':
-        try:
-            user = UserProfile.objects.get(id=user_id)
-            return JsonResponse({"mood_history": user.mood_history}, status=200)
-        except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+    if request.method == "GET":
+        return Response({"mood_history": profile.mood_history})
 
-    elif request.method == 'POST':
-        data = json.loads(request.body)
-        try:
-            user = UserProfile.objects.get(id=user_id)
-            mood = data.get('mood')
-            if mood:
-                user.mood_history.append(mood)
-                user.save()
-                return JsonResponse({"message": "Mood history updated."}, status=201)
-            else:
-                return JsonResponse({"error": "Mood is required."}, status=400)
-        except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+    if request.method == "POST":
+        mood = request.data.get("mood")
+        if not mood:
+            return Response({"error": "Mood is required."}, status=status.HTTP_400_BAD_REQUEST)
+        profile.mood_history.append(mood)
+        profile.save()
+        return Response({"message": "Mood history updated."}, status=status.HTTP_201_CREATED)
 
-    elif request.method == 'DELETE':
-        data = json.loads(request.body)
-        try:
-            user = UserProfile.objects.get(id=user_id)
-            mood_to_delete = data.get('mood')
-            if mood_to_delete in user.mood_history:
-                user.mood_history.remove(mood_to_delete)
-                user.save()
-                return JsonResponse({"message": "Mood deleted."}, status=204)
-            else:
-                return JsonResponse({"error": "Mood not found in history."}, status=404)
-        except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+    mood = request.data.get("mood")
+    if mood not in profile.mood_history:
+        return Response({"error": "Mood not found in history."}, status=status.HTTP_404_NOT_FOUND)
+    profile.mood_history.remove(mood)
+    profile.save()
+    return Response({"message": "Mood deleted."})
 
 
-@csrf_exempt
-@swagger_auto_schema(
-    method='get',
-    responses={
-        200: openapi.Response('Listening history retrieved successfully.'),
-        404: openapi.Response('User not found.'),
-    },
-)
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(["GET", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
 def user_listening_history(request, user_id):
-    """
-    This function allows users to retrieve, add, and delete tracks from their listening history.
+    """Get, append to, or remove an entry from a user's listening history."""
+    profile, error = _profile_for(request.user, user_id)
+    if error:
+        return error
 
-    :param request: The request object containing the track data.
-    :param user_id: The user ID to update the listening history for.
-    :return: The response object indicating the status of the operation.
-    """
-    if request.method == 'GET':
-        try:
-            user = UserProfile.objects.get(id=user_id)
-            return JsonResponse({"listening_history": user.listening_history}, status=200)
-        except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+    if request.method == "GET":
+        return Response({"listening_history": profile.listening_history})
 
-    elif request.method == 'POST':
-        data = json.loads(request.body)
-        try:
-            user = UserProfile.objects.get(id=user_id)
-            track = data.get('track')
-            if track:
-                user.listening_history.append(track)
-                user.save()
-                return JsonResponse({"message": "Listening history updated."}, status=201)
-            else:
-                return JsonResponse({"error": "Track is required."}, status=400)
-        except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+    if request.method == "POST":
+        track = request.data.get("track")
+        if not track:
+            return Response({"error": "Track is required."}, status=status.HTTP_400_BAD_REQUEST)
+        profile.listening_history.append(track)
+        profile.save()
+        return Response({"message": "Listening history updated."}, status=status.HTTP_201_CREATED)
 
-    elif request.method == 'DELETE':
-        data = json.loads(request.body)
-        try:
-            user = UserProfile.objects.get(id=user_id)
-            track_to_delete = data.get('track')
-            if track_to_delete in user.listening_history:
-                user.listening_history.remove(track_to_delete)
-                user.save()
-                return JsonResponse({"message": "Track deleted."}, status=204)
-            else:
-                return JsonResponse({"error": "Track not found in history."}, status=404)
-        except DoesNotExist:
-            return JsonResponse({"error": "User not found."}, status=404)
+    track = request.data.get("track")
+    if track not in profile.listening_history:
+        return Response({"error": "Track not found in history."}, status=status.HTTP_404_NOT_FOUND)
+    profile.listening_history.remove(track)
+    profile.save()
+    return Response({"message": "Track deleted."})

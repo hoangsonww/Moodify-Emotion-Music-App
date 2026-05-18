@@ -12,6 +12,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DarkModeContext } from "../../context/DarkModeContext";
+import { API_URL } from "../../config";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -34,7 +35,7 @@ const Login = () => {
     try {
       // Make the login request
       const response = await axios.post(
-        "https://moodify-emotion-music-app.onrender.com/users/login/",
+        `${API_URL}/users/login/`,
         { username, password },
       );
       const { access } = response.data; // Extract the access token from the response

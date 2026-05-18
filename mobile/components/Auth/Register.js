@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../../config';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -23,7 +24,7 @@ const Register = () => {
 
     try {
       // Sending username, email, and password to the backend
-      const response = await axios.post('http://127.0.0.1:8000/users/register/', {
+      const response = await axios.post(`${API_URL}/users/register/`, {
         username,
         email,
         password

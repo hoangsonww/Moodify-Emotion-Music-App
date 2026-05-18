@@ -23,7 +23,7 @@ class Track(BaseModel):
     name: str
     artist: str
     preview_url: Optional[str] = None
-    external_url: str
+    external_url: Optional[str] = None
     image_url: Optional[str] = None
 
 

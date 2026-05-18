@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../../config';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -16,7 +17,7 @@ const Login = () => {
 
     try {
       // Make the login request
-      const response = await axios.post('http://127.0.0.1:8000/users/login/', { username, password });
+      const response = await axios.post(`${API_URL}/users/login/`, { username, password });
       const { access } = response.data; // Extract the access token from the response
 
       if (access) {

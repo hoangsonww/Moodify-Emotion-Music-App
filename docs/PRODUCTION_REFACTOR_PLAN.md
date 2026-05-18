@@ -1,10 +1,20 @@
 # Moodify — Production Refactor Plan: ML Inference Separation
 
-> Status: **Planning + scaffolding** delivered on branch
-> `claude/refactor-ml-inference-separation-Ehg0L`.
-> This document is the authoritative plan. The scaffolding files referenced
-> in §9 are skeletons — full implementation is intentionally deferred for
-> review before execution.
+> Status: **Implemented** on branch `feat/refactor-api-ml-inference`.
+> Phases 1–4 and 6 (§10) are complete with functional, production-ready
+> code. Phase 5 (live deploy to Modal/Vercel + the SQLite→Mongo data
+> migration) is operational work that must be run by a human with the
+> production credentials — see §10.
+>
+> Implementation notes:
+> - Modal service (`modal_inference/`): all three models load once per
+>   container; speech reads any audio container via librosa/ffmpeg; the
+>   facial detector uses the `fer` package's bundled weights directly
+>   (the legacy `.pt` was just a pickled `FER` object — see §4.2).
+> - Django (`backend/`): no ML dependencies; MongoDB-only; JWT auth; all
+>   14 API tests pass and `manage.py check` is clean.
+> - Frontend + mobile: API base URLs centralised in `config.js`,
+>   env-driven; speech/facial now upload directly to Modal.
 
 ---
 

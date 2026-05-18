@@ -9,11 +9,9 @@ the Django project already has an app package named ``api/``, and Vercel's
 default ``api/`` function directory would collide with it.
 
 Deploy notes (see docs/PRODUCTION_REFACTOR_PLAN.md §5.2):
-  * Vercel's ``@vercel/python`` installs from ``requirements.txt`` adjacent
-    to this file. Use the slim ``requirements-vercel.txt`` for that build
-    (rename it to ``requirements.txt`` for the Vercel deploy, or set a
-    custom install command). The ML-heavy root requirements.txt must NOT
-    be installed here.
+  * Vercel's ``@vercel/python`` installs from the slim ``backend/
+    requirements.txt`` adjacent to this file (NOT the ML-heavy root
+    requirements.txt).
   * Static assets for drf-yasg need ``collectstatic`` at build time;
     WhiteNoise then serves them.
 """

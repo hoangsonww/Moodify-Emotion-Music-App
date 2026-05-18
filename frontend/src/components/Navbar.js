@@ -27,6 +27,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import axios from "axios";
 import { DarkModeContext } from "../context/DarkModeContext";
+import { API_URL } from "../config";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const Navbar = () => {
 
     try {
       const response = await axios.get(
-        "https://moodify-emotion-music-app.onrender.com/users/validate_token/",
+        `${API_URL}/users/validate_token/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

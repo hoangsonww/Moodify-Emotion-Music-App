@@ -1,12 +1,14 @@
-"""Facial emotion inference -- PyTorch model + OpenCV preprocessing.
+"""Facial emotion inference -- the FER library's pretrained detector.
 
 Refactored from ai_ml/src/models/facial_emotion.py.
 
-VERIFICATION ITEM (plan §4.2 / §12): the legacy code does
-``model = torch.load(path)`` then ``model.top_emotion(image)``. The
-``.top_emotion()`` method belongs to the `fer` library's FER class. Before
-finalizing requirements.txt, confirm what the .pt actually deserializes to
-and pin exactly one of: fer / facenet-pytorch / (none, plain nn.Module).
+The legacy ``trained_facial_emotion_model.pt`` was simply a pickled
+``fer.FER(mtcnn=True)`` instance (see
+ai_ml/src/models/train_facial_emotion_model.py) -- not a custom-trained
+model. Re-pickling a FER object (which wraps Keras models) through
+``torch.save`` is fragile, so this service constructs the detector directly
+from the ``fer`` package's bundled weights. This removes the weight
+download entirely and is far more robust.
 """
 
 import logging
@@ -15,9 +17,20 @@ import config
 
 logger = logging.getLogger(__name__)
 
+# FER emits Ekman labels; normalise them to Moodify's emotion vocabulary.
+_FER_LABEL_MAP = {
+    "angry": "anger",
+    "disgust": "disgust",
+    "fear": "fear",
+    "happy": "joy",
+    "sad": "sadness",
+    "surprise": "surprised",
+    "neutral": "neutral",
+}
+
 
 class FacialInferenceResult:
-    """Result of a facial inference: emotion + whether a fallback was used."""
+    """Result of a facial inference."""
 
     def __init__(self, emotion: str, degraded: bool = False) -> None:
         self.emotion = emotion
@@ -25,7 +38,7 @@ class FacialInferenceResult:
 
 
 class FacialEmotionModel:
-    """Loads the facial emotion model once, then infers."""
+    """Builds the FER detector once, then infers."""
 
     def __init__(self) -> None:
         self._model = None
@@ -35,23 +48,30 @@ class FacialEmotionModel:
         return self._model is not None
 
     def load(self) -> None:
-        """Load the .pt model from the mounted Modal Volume."""
-        import torch
+        """Construct the FER detector from the library's bundled weights."""
+        from fer import FER
 
-        logger.info("Loading facial emotion model from %s", config.FACIAL_MODEL_PATH)
-        # TODO(impl): confirm map_location / weights_only and the wrapper
-        # type once the facial-model dependency is verified.
-        self._model = torch.load(config.FACIAL_MODEL_PATH, map_location="cpu")
+        logger.info("Initialising FER facial emotion detector (mtcnn=True)")
+        self._model = FER(mtcnn=True)
 
     def predict(self, image_path: str) -> FacialInferenceResult:
-        """Infer emotion from an image file path.
+        """Infer the dominant facial emotion from an image file path."""
+        if not self.loaded:
+            raise RuntimeError("FacialEmotionModel.load() was not called")
 
-        TODO(impl):
-          * read + preprocess the image with OpenCV (see legacy
-            preprocess_image: resize 48x48, normalize, channel handling);
-          * run the model (legacy calls model.top_emotion(image));
-          * on failure log it and return FacialInferenceResult(
-            emotion=<neutral default>, degraded=True) -- never a silent
-            random emotion.
-        """
-        raise NotImplementedError("TODO(impl): port from ai_ml/src/models/facial_emotion.py")
+        try:
+            import cv2
+
+            image = cv2.imread(image_path)
+            if image is None:
+                raise ValueError("unreadable or corrupt image")
+
+            emotion, score = self._model.top_emotion(image)
+            if not emotion or score is None:
+                logger.info("No face / emotion detected in image")
+                return FacialInferenceResult(emotion=config.DEFAULT_EMOTION, degraded=True)
+
+            return FacialInferenceResult(emotion=_FER_LABEL_MAP.get(emotion.lower(), emotion.lower()))
+        except Exception:  # noqa: BLE001 -- degrade gracefully, never 500
+            logger.exception("Facial emotion inference failed for %s", image_path)
+            return FacialInferenceResult(emotion=config.DEFAULT_EMOTION, degraded=True)

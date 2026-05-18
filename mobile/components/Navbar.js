@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Navbar = () => {
 
     try {
       // Make an authenticated request to check the token validity
-      const response = await axios.get('http://127.0.0.1:8000/users/user/profile/', {
+      const response = await axios.get(`${API_URL}/users/user/profile/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
