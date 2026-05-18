@@ -25,7 +25,16 @@ JWT_SIGNING_KEY = config("JWT_SIGNING_KEY", default=SECRET_KEY)
 
 # --- MongoDB (the only datastore) -----------------------------------------
 # connect() is lazy -- it does not open a socket until the first query.
+# maxPoolSize is kept small: on a serverless host each instance keeps its
+# own pool, so a large pool x many instances would exhaust Atlas's
+# connection limit.
 _MONGO_URI = config("MONGO_DB_URI", default="")
+_MONGO_KWARGS = dict(
+    uuidRepresentation="standard",
+    maxPoolSize=config("MONGO_MAX_POOL_SIZE", default=10, cast=int),
+    serverSelectionTimeoutMS=config("MONGO_SERVER_SELECTION_TIMEOUT_MS", default=5000, cast=int),
+    retryWrites=True,
+)
 if _MONGO_URI:
     connect(
         db=config("MONGO_DB_NAME", default="emotion_based_music_db"),
@@ -34,14 +43,14 @@ if _MONGO_URI:
         password=config("MONGO_DB_PASSWORD", default=None),
         authentication_source="admin",
         ssl=True,
-        uuidRepresentation="standard",
+        **_MONGO_KWARGS,
     )
 else:
     # Local development / CI fallback.
     connect(
         db="emotion_based_music_db",
         host="mongodb://localhost:27017/emotion_based_music_db",
-        uuidRepresentation="standard",
+        **_MONGO_KWARGS,
     )
 
 # --- Applications ---------------------------------------------------------
