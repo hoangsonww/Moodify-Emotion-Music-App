@@ -124,12 +124,17 @@ MODAL_INFERENCE_URL = config("MODAL_INFERENCE_URL", default="")
 MODAL_SERVICE_TOKEN = config("MODAL_SERVICE_TOKEN", default="")
 
 # --- CORS -----------------------------------------------------------------
+# All origins are allowed by default: the API is public and authenticates
+# via a JWT in the Authorization header (not cookies). To lock it down
+# later, set CORS_ALLOW_ALL_ORIGINS=False and provide CORS_ALLOWED_ORIGINS.
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=True, cast=bool)
 CORS_ALLOWED_ORIGINS = [
     o.strip() for o in config("CORS_ALLOWED_ORIGINS", default="").split(",") if o.strip()
 ]
-# Allow every origin only in local development.
-CORS_ALLOW_ALL_ORIGINS = DEBUG and not CORS_ALLOWED_ORIGINS
-CORS_ALLOW_CREDENTIALS = True
+# Must stay False while all origins are allowed -- the CORS spec forbids
+# "Access-Control-Allow-Origin: *" together with credentials. Header-based
+# JWT auth does not need credentialed (cookie) requests.
+CORS_ALLOW_CREDENTIALS = False
 CORS_ALLOW_HEADERS = ["Authorization", "Content-Type", "X-CSRFToken"]
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
