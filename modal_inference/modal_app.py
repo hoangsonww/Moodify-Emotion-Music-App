@@ -53,12 +53,13 @@ inference_image = (
     .pip_install("fer==22.5.1", extra_options="--no-deps")
     # FER runs on TensorFlow; force the legacy-Keras path so its bundled
     # .h5 model loads under TF 2.17. Quiet the TF/transformers logs.
+    # (No HF_HUB_OFFLINE here: download_models needs Hugging Face access,
+    # and runtime loads the text model from a local Volume path -- which
+    # never hits the network regardless.)
     .env(
         {
             "TF_USE_LEGACY_KERAS": "1",
             "TF_CPP_MIN_LOG_LEVEL": "3",
-            "HF_HUB_OFFLINE": "1",
-            "TRANSFORMERS_OFFLINE": "1",
         }
     )
     # Bundled small model assets (tokenizer/config + speech pickles).

@@ -38,7 +38,8 @@ def fetch_all(models_dir: str) -> None:
         repo_id=repo,
         local_dir=dest,
         token=config.HF_TOKEN or None,
-        # Pull only what transformers needs to load the model.
-        allow_patterns=["*.json", "*.txt", "*.safetensors", "*.model"],
+        # Pull what transformers needs (config, tokenizer, weights in
+        # either safetensors or .bin form) and nothing else.
+        allow_patterns=["*.json", "*.txt", "*.safetensors", "*.bin", "*.model"],
     )
     print(f"Text-emotion model ready at {dest}")
