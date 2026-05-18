@@ -1,145 +1,49 @@
-# **Moodify Mobile - Emotion-Based Music Recommendation App**
+# Moodify Mobile
 
-The **Moodify Mobile** application is a **React Native-based** version of the Moodify project, allowing users to access emotion-based music recommendations directly from their mobile devices. It integrates with the backend API to analyze user inputs such as text, speech, or facial expressions to provide personalized music recommendations based on the detected emotions.
+A native **React Native (Expo)** app for Moodify — detect your mood from
+text, voice, or a photo and get matching music recommendations.
 
-## **Table of Contents**
+## Stack
 
-- [Overview](#overview)
-- [Features](#features)
-- [Technologies](#technologies)
-- [Installation and Setup](#installation-and-setup)
-- [Directory Structure](#directory-structure)
-- [Screenshots](#screenshots)
-- [Running the App](#running-the-app)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+- **Expo SDK 51** / React Native 0.74
+- **React Navigation** (native stack)
+- **expo-camera** (facial mood) and **expo-av** (voice mood)
+- **axios** + JWT auth with silent token refresh
+- **AsyncStorage** for token persistence
 
-## **Overview**
+## Architecture
 
-The Moodify Mobile app brings the emotion-based music recommendation experience to mobile devices. With a seamless and intuitive user interface, the app allows users to detect emotions through text, speech, and facial expressions, offering real-time music recommendations that align with their mood.
+The app talks to the same two backends as the web frontend:
 
-## **Features**
+- **Django API** (`EXPO_PUBLIC_API_URL`) — register, login, token refresh,
+  profile and mood/listening history.
+- **Modal inference service** (`EXPO_PUBLIC_MODAL_API_URL`) — text, speech
+  and facial emotion detection and music recommendations, called directly.
 
-- **User Authentication:** Registration and login functionality using JWT tokens.
-- **Emotion Detection:** Analyze emotions using:
-    - Text input
-    - Speech input (recording or file upload)
-    - Facial expressions captured via the device camera
-- **Music Recommendations:** Real-time recommendations based on detected emotions.
-- **User Profile Management:** Access listening history, mood history, and personalized music recommendations.
-- **Offline Mode:** Cached recommendations are stored locally for offline access.
-- **Responsive and Interactive UI:** Intuitive design for seamless user experience on both Android and iOS devices.
-- And all the features available in the web version of Moodify!
+`src/services/auth.js` installs global axios interceptors: every request
+carries the JWT, and a `401` triggers one silent refresh + retry.
 
-## **Technologies**
+## Project layout
 
-- **React Native**: Framework for building mobile apps using React.
-- **Expo**: Toolchain for building React Native apps.
-- **Axios**: For making HTTP requests to the backend API.
-- **React Navigation**: For handling navigation between screens.
-- **Styled Components**: For styling components in React Native.
-
-## **Installation and Setup**
-
-### Prerequisites
-
-- **Node.js** (v14 or higher)
-- **Yarn**: Install Yarn by running:
-  ```bash
-  npm install --global yarn
-  ```
-- **Expo CLI**: Install Expo CLI by running:
-  ```bash
-  yarn global add expo-cli
-  ```
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/hoangsonww/Moodify-Emotion-Music-App.git
-   ```
-
-2. **Navigate to the mobile directory:**
-   ```bash
-   cd Moodify/mobile
-   ```
-
-3. **Install dependencies using Yarn:**
-   ```bash
-   yarn install
-   ```
-
-## **Directory Structure**
-
-```plaintext
-mobile/
-│
-├── assets/                    # Images, fonts, and other assets
-│
-├── components/                # React Native components
-│   ├── Auth/                  # Authentication components (e.g., Login, Register)
-│   ├── MoodInput/             # Components for facial, text, and speech inputs
-│   ├── Profile/               # Profile-related components
-│   └── Recommendations/       # Recommendation-related components
-│
-├── pages/                     # Main pages of the app
-│   ├── HomePage.js           # Home page component
-│   ├── ProfilePage.js         # Profile page component
-│   ├── ResultsPage.js         # Results page component
-│   └── NotFoundPage.js        # 404 page component
-│
-├── styles/                    # Styling files (similar to CSS for web)
-│   ├── globalStyles.js        # Global styles for the app
-│   └── theme.js               # Theme configuration
-│
-├── App.js                     # Main entry point for the React Native app
-├── index.js                   # App registry for React Native
-├── app.json                   # Expo configuration
-├── babel.config.js            # Babel configuration
-├── .gitignore                 # Git ignore file
-├── package.json               # Dependencies and scripts
-└── README.md                  # Mobile app documentation
+```
+App.js                 navigation + auth-gated stacks
+config.js              API base URLs (from EXPO_PUBLIC_* env)
+theme.js               dark theme tokens
+src/
+  context/AuthContext  app-wide auth state
+  services/auth.js     token storage, login/register/refresh, interceptors
+  services/emotion.js  inference + profile/history API calls
+  components/          Screen, AppButton, TextField, TrackCard
+  screens/             Login, Register, Home, Results, Profile
 ```
 
-## **Screenshots**
+## Running it
 
-<p align="center">
-  <img src="../images/mobile-ui.png" alt="Mobile Home Page" width="300" style="border-radius: 10px">
-</p>
+```bash
+cd mobile
+npm install
+cp .env.example .env        # set EXPO_PUBLIC_API_URL / EXPO_PUBLIC_MODAL_API_URL
+npm start                   # then press i / a, or scan with Expo Go
+```
 
-## **Running the App**
-
-### Using Expo
-
-1. **Start the Expo development server:**
-   ```bash
-   yarn start
-   ```
-
-2. **Scan the QR code:** Once the Expo server is running, scan the QR code using the Expo Go app on your mobile device (available on the App Store and Google Play Store).
-
-3. **Start using the Moodify app:** The app will automatically load on your device, allowing you to interact with all the features.
-
-## **Contributing**
-
-Contributions to the Moodify Mobile app are welcome! To contribute:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Commit your changes and submit a pull request.
-
-## **License**
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## **Contact**
-
-If you have any questions or need further assistance, feel free to reach out to the project maintainer at [hoangson091104@gmail.com](mailto:hoangson091104@gmail.com).
-
----
-
-**Happy Coding and Enjoy the Music! 🎶**
-
-[🔝 Back to Top](#moodify-mobile---emotion-based-music-recommendation-app)
+Camera and microphone permissions are requested on first use.
