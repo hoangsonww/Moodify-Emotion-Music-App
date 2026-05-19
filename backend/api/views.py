@@ -51,11 +51,15 @@ def music_recommendation(request):
     """Return music recommendations for a given emotion."""
     emotion = (request.data.get("emotion") or "") if request.data else ""
     market = request.data.get("market") if request.data else None
+    history = (request.data.get("history") or []) if request.data else []
     if not emotion:
         return Response({"error": "No emotion provided"}, status=status.HTTP_400_BAD_REQUEST)
 
+    if not isinstance(history, list):
+        history = []
+
     try:
-        result = modal_music(emotion, market)
+        result = modal_music(emotion, market, history)
     except InferenceServiceError:
         logger.exception("music_recommendation proxy call failed")
         return Response(_BAD_GATEWAY, status=status.HTTP_502_BAD_GATEWAY)

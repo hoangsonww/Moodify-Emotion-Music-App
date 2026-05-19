@@ -175,6 +175,53 @@ def test_refreshes_token_and_retries_on_401(monkeypatch):
     assert calls["playlist_search"] == 2  # 401 -> refresh -> retry
 
 
+# --- history-aware blending ----------------------------------------------
+def test_history_blends_a_recurring_mood(monkeypatch):
+    monkeypatch.setattr(requests, "post", _token_response)
+
+    def fake_get(url, **kwargs):
+        params = kwargs.get("params", {})
+        query = params.get("q", "")
+        if "/search" in url and params.get("type") == "playlist":
+            if query == "happy feel good":
+                return _FakeResponse({"playlists": {"items": [{"id": "joy_pl"}]}})
+            if query == "sad songs":
+                return _FakeResponse({"playlists": {"items": [{"id": "sad_pl"}]}})
+            return _FakeResponse({"playlists": {"items": []}})
+        if "/playlists/joy_pl/tracks" in url:
+            return _FakeResponse({"items": [{"track": _track(f"Joy{i}")} for i in range(6)]})
+        if "/playlists/sad_pl/tracks" in url:
+            return _FakeResponse({"items": [{"track": _track(f"Sad{i}")} for i in range(6)]})
+        raise AssertionError(f"unexpected GET {url}")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+
+    recs = mr.get_music_recommendation("joy", history=["sadness", "sadness", "joy"])
+    names = [r["name"] for r in recs]
+    # The current mood stays the backbone; the recurring mood is interleaved.
+    assert names[:5] == ["Joy0", "Joy1", "Sad0", "Joy2", "Joy3"]
+    assert {n for n in names if n.startswith("Sad")}  # recurring mood present
+
+
+def test_history_of_only_the_current_mood_does_not_blend(monkeypatch):
+    monkeypatch.setattr(requests, "post", _token_response)
+
+    def fake_get(url, **kwargs):
+        params = kwargs.get("params", {})
+        if "/search" in url and params.get("type") == "playlist":
+            # "happy" maps to the same query as "joy" -- no second search.
+            assert params.get("q") == "happy feel good"
+            return _FakeResponse({"playlists": {"items": [{"id": "joy_pl"}]}})
+        if "/playlists/joy_pl/tracks" in url:
+            return _FakeResponse({"items": [{"track": _track(f"Joy{i}")} for i in range(6)]})
+        raise AssertionError(f"unexpected GET {url}")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+
+    recs = mr.get_music_recommendation("joy", history=["joy", "happy"])
+    assert all(r["name"].startswith("Joy") for r in recs)
+
+
 # --- always returns something (never an empty list / surfaced error) -----
 def test_empty_emotion_still_returns_fallback():
     assert len(mr.get_music_recommendation("")) > 0

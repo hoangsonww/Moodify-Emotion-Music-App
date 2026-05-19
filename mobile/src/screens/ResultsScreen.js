@@ -74,7 +74,12 @@ function deviceMarket() {
 }
 
 export default function ResultsScreen({ route, navigation }) {
-  const { emotion = 'neutral', recommendations = [], degraded = false } = route.params || {};
+  const {
+    emotion = 'neutral',
+    recommendations = [],
+    degraded = false,
+    history = [],
+  } = route.params || {};
 
   const [tracks, setTracks] = useState(recommendations);
   const [sortKey, setSortKey] = useState('recommended');
@@ -85,15 +90,17 @@ export default function ResultsScreen({ route, navigation }) {
 
   const loadFor = async (mkt) => {
     setLoading(true);
-    const data = await getRecommendations(emotion, mkt);
+    const data = await getRecommendations(emotion, mkt, history);
     setTracks(data.recommendations || []);
     setVisible(PAGE);
     setLoading(false);
   };
 
-  // If the device has a recognised region, scope the initial list to it.
+  // Re-fetch on mount when we can do better than the initial list: a
+  // recognised device region scopes results, and a non-empty mood history
+  // lets the recommender blend in the user's recurring mood.
   useEffect(() => {
-    if (market) loadFor(market);
+    if (market || history.length) loadFor(market);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

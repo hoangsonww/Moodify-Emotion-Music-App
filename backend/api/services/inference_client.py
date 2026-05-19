@@ -52,6 +52,11 @@ def text_emotion(text: str) -> dict:
     return _post("/text_emotion", {"text": text})
 
 
-def music_recommendation(emotion: str, market: str | None = None) -> dict:
+def music_recommendation(
+    emotion: str, market: str | None = None, history: list[str] | None = None
+) -> dict:
     """Proxy a music-recommendation request."""
-    return _post("/music_recommendation", {"emotion": emotion, "market": market})
+    return _post(
+        "/music_recommendation",
+        {"emotion": emotion, "market": market, "history": history or []},
+    )

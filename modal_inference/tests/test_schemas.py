@@ -3,7 +3,13 @@
 import pytest
 from pydantic import ValidationError
 
-from schemas import EmotionResponse, HealthResponse, TextEmotionRequest, Track
+from schemas import (
+    EmotionResponse,
+    HealthResponse,
+    MusicRecommendationRequest,
+    TextEmotionRequest,
+    Track,
+)
 
 
 def test_text_request_accepts_valid_text():
@@ -18,6 +24,20 @@ def test_text_request_rejects_empty_text():
 def test_text_request_rejects_overlong_text():
     with pytest.raises(ValidationError):
         TextEmotionRequest(text="x" * 5001)
+
+
+def test_music_request_defaults_history_to_empty():
+    assert MusicRecommendationRequest(emotion="joy").history == []
+
+
+def test_music_request_accepts_history():
+    req = MusicRecommendationRequest(emotion="joy", history=["sad", "calm"])
+    assert req.history == ["sad", "calm"]
+
+
+def test_music_request_rejects_overlong_history():
+    with pytest.raises(ValidationError):
+        MusicRecommendationRequest(emotion="joy", history=["x"] * 51)
 
 
 def test_emotion_response_defaults():

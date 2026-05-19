@@ -38,12 +38,16 @@ export default function HomeScreen({ navigation }) {
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [profileId, setProfileId] = useState(null);
+  const [moodHistory, setMoodHistory] = useState([]);
 
   const recordingRef = useRef(null);
 
   useEffect(() => {
     getProfile()
-      .then((p) => setProfileId(p.id))
+      .then((p) => {
+        setProfileId(p.id);
+        setMoodHistory(Array.isArray(p.mood_history) ? p.mood_history : []);
+      })
       .catch(() => {});
   }, []);
 
@@ -55,9 +59,16 @@ export default function HomeScreen({ navigation }) {
         saveMood(profileId, emotion).catch(() => {});
         if (recommendations.length) saveRecommendations(profileId, recommendations).catch(() => {});
       }
-      navigation.navigate('Results', { emotion, recommendations, degraded: !!data.degraded });
+      navigation.navigate('Results', {
+        emotion,
+        recommendations,
+        degraded: !!data.degraded,
+        // The moods detected before this one -- the Results screen passes
+        // them to the recommender so it can blend in the recurring mood.
+        history: moodHistory,
+      });
     },
-    [navigation, profileId],
+    [navigation, profileId, moodHistory],
   );
 
   const runAnalysis = useCallback(

@@ -86,12 +86,21 @@ export function analyzeFace(uri) {
   return analyzeMedia('/facial_emotion', uri, 'image/jpeg', 'photo.jpg');
 }
 
-/** Fetch recommendations for an emotion (optionally market-scoped). */
-export async function getRecommendations(emotion, market) {
+/**
+ * Fetch recommendations for an emotion (optionally market-scoped).
+ *
+ * `history` is the user's recent detected moods (oldest first); when given,
+ * the service blends in tracks for their recurring mood.
+ */
+export async function getRecommendations(emotion, market, history) {
   try {
     const { data } = await axios.post(
       `${MODAL_API_URL}/music_recommendation`,
-      { emotion, market: market || undefined },
+      {
+        emotion,
+        market: market || undefined,
+        history: Array.isArray(history) ? history.slice(-50) : [],
+      },
       { timeout: TIMEOUT },
     );
     return data;

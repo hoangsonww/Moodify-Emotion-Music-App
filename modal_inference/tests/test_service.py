@@ -134,6 +134,22 @@ class TestMusicRecommendation:
         assert resp.status_code == 200
         assert resp.json()["market"] == "US"
 
+    def test_history_forwarded_to_recommender(self, monkeypatch):
+        captured = {}
+
+        def fake_reco(emotion, market=None, history=None):
+            captured["history"] = history
+            return []
+
+        monkeypatch.setattr(service, "get_music_recommendation", fake_reco)
+        resp = _client().post(
+            "/music_recommendation",
+            json={"emotion": "joy", "history": ["sad", "calm"]},
+            headers=AUTH,
+        )
+        assert resp.status_code == 200
+        assert captured["history"] == ["sad", "calm"]
+
 
 class TestMediaEndpoints:
     def test_speech_success(self):

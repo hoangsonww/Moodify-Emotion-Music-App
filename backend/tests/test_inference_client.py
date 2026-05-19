@@ -53,13 +53,31 @@ def test_text_emotion_returns_payload(settings, monkeypatch):
 
 def test_music_recommendation_returns_payload(settings, monkeypatch):
     settings.MODAL_INFERENCE_URL = "https://modal.example"
-    monkeypatch.setattr(
-        inference_client.requests,
-        "post",
-        lambda *a, **k: _FakeResponse({"emotion": "sad", "recommendations": []}),
-    )
-    result = inference_client.music_recommendation("sad", market="US")
+    captured = {}
+
+    def fake_post(url, json=None, headers=None, timeout=None):
+        captured["json"] = json
+        return _FakeResponse({"emotion": "sad", "recommendations": []})
+
+    monkeypatch.setattr(inference_client.requests, "post", fake_post)
+
+    result = inference_client.music_recommendation("sad", market="US", history=["joy", "calm"])
     assert result["emotion"] == "sad"
+    assert captured["json"] == {"emotion": "sad", "market": "US", "history": ["joy", "calm"]}
+
+
+def test_music_recommendation_defaults_history_to_empty(settings, monkeypatch):
+    settings.MODAL_INFERENCE_URL = "https://modal.example"
+    captured = {}
+
+    def fake_post(url, json=None, headers=None, timeout=None):
+        captured["json"] = json
+        return _FakeResponse({"emotion": "sad", "recommendations": []})
+
+    monkeypatch.setattr(inference_client.requests, "post", fake_post)
+
+    inference_client.music_recommendation("sad")
+    assert captured["json"]["history"] == []
 
 
 def test_post_retries_then_raises(settings, monkeypatch):

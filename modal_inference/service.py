@@ -103,7 +103,9 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
         return EmotionResponse(
             emotion=body.emotion,
             market=body.market,
-            recommendations=get_music_recommendation(body.emotion, body.market),
+            recommendations=get_music_recommendation(
+                body.emotion, body.market, body.history
+            ),
         )
 
     def _infer_from_upload(file: UploadFile, model, name: str) -> EmotionResponse:

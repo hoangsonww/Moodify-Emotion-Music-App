@@ -76,7 +76,7 @@ class TestMusicRecommendation:
         assert resp.data["emotion"] == emo
 
     def test_502_when_inference_unavailable(self, monkeypatch):
-        def boom(_emotion, _market=None):
+        def boom(_emotion, _market=None, _history=None):
             raise InferenceServiceError("modal down")
 
         monkeypatch.setattr(views, "modal_music", boom)

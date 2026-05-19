@@ -50,7 +50,7 @@ def mock_inference(monkeypatch):
     monkeypatch.setattr(
         views,
         "modal_music",
-        lambda emotion, market=None: {
+        lambda emotion, market=None, history=None: {
             "emotion": emotion,
             "market": market,
             "recommendations": [],

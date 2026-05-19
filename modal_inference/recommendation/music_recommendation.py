@@ -24,6 +24,7 @@ import random
 import threading
 import time
 import urllib.parse
+from collections import Counter
 
 import requests
 
@@ -39,6 +40,7 @@ _HTTP_TIMEOUT = 10
 _MAX_RESULTS = 60          # upper bound on tracks returned (client paginates)
 _MIN_USABLE_TRACKS = 4     # minimum before the playlist path is accepted
 _PLAYLIST_PAGE = 50        # tracks fetched per playlist
+_BLEND_EVERY = 2           # insert one history-mood track per N current-mood tracks
 
 # Detected emotion -> a search phrase that matches well-curated mood
 # playlists. Covers every label the text, speech and facial models emit,
@@ -251,43 +253,112 @@ def _fallback_recommendations() -> list[dict]:
     ]
 
 
-def get_music_recommendation(emotion: str, market: str | None = None) -> list[dict]:
+def _query_for(emotion: str) -> str:
+    """Map a detected emotion to its mood-playlist search phrase."""
+    return EMOTION_TO_QUERY.get((emotion or "").strip().lower(), _DEFAULT_QUERY)
+
+
+def _collect_for_query(query: str, market: str | None) -> list[dict]:
+    """Gather mood-matched tracks for one query (may return an empty list).
+
+    Tries curated playlists first, then a keyword track search. Tracks are
+    de-duplicated by external_url and kept in the playlists' curated order.
+    """
+    collected: list[dict] = []
+    seen: set[str] = set()
+    for playlist_id in _search_playlist_ids(query, market):
+        try:
+            tracks = _playlist_track_dicts(playlist_id, market)
+        except requests.RequestException:
+            continue  # e.g. a Spotify-owned playlist that is not accessible
+        for track in tracks:
+            url = track.get("external_url")
+            if url and url not in seen:
+                seen.add(url)
+                collected.append(track)
+        if len(collected) >= _MAX_RESULTS:
+            break
+    if len(collected) >= _MIN_USABLE_TRACKS:
+        return collected
+
+    # No usable playlist -- fall back to a plain keyword track search.
+    return _search_track_dicts(query, market)
+
+
+def _history_query(emotion: str, history: list[str] | None) -> str | None:
+    """Pick a search phrase for the user's recurring recent mood.
+
+    Returns the query for the most frequent mood in ``history`` that maps
+    to a *different* phrase than the current emotion, or None when history
+    is empty or only repeats the current mood.
+    """
+    if not history:
+        return None
+    current_query = _query_for(emotion)
+    counts = Counter(_query_for(mood) for mood in history if mood)
+    for query, _ in counts.most_common():
+        if query != current_query:
+            return query
+    return None
+
+
+def _blend(primary: list[dict], secondary: list[dict]) -> list[dict]:
+    """Interleave secondary tracks into primary -- one per _BLEND_EVERY.
+
+    Primary stays the backbone (it matches the just-detected mood); the
+    secondary list seeds the user's recurring mood. De-duplicated by url.
+    """
+    seen: set[str] = set()
+    out: list[dict] = []
+
+    def _add(track: dict) -> None:
+        url = track.get("external_url")
+        if url and url not in seen:
+            seen.add(url)
+            out.append(track)
+
+    rest = iter(secondary)
+    for index, track in enumerate(primary):
+        _add(track)
+        if index % _BLEND_EVERY == _BLEND_EVERY - 1:
+            nxt = next(rest, None)
+            if nxt is not None:
+                _add(nxt)
+    for track in rest:
+        _add(track)
+    return out
+
+
+def get_music_recommendation(
+    emotion: str, market: str | None = None, history: list[str] | None = None
+) -> list[dict]:
     """Return mood-matched tracks for the given emotion.
+
+    When ``history`` (recent detected moods) is supplied, tracks for the
+    user's recurring mood are blended in alongside the current emotion's,
+    so recommendations reflect both the moment and the longer-term pattern.
 
     Returns up to _MAX_RESULTS de-duplicated tracks in curated order. The
     list is ALWAYS non-empty: on any Spotify failure it returns a curated
     fallback set, so a caller never surfaces an error or an empty result.
     """
     market = market if (market and len(market) == 2) else None
-    query = EMOTION_TO_QUERY.get((emotion or "").strip().lower(), _DEFAULT_QUERY)
 
     try:
-        # 1. Collect tracks from curated mood playlists.
-        collected: list[dict] = []
-        seen: set[str] = set()
-        for playlist_id in _search_playlist_ids(query, market):
-            try:
-                tracks = _playlist_track_dicts(playlist_id, market)
-            except requests.RequestException:
-                continue  # e.g. a Spotify-owned playlist that is not accessible
-            for track in tracks:
-                url = track.get("external_url")
-                if url and url not in seen:
-                    seen.add(url)
-                    collected.append(track)
-            if len(collected) >= _MAX_RESULTS:
-                break
-        if len(collected) >= _MIN_USABLE_TRACKS:
-            return collected[:_MAX_RESULTS]
+        primary = _collect_for_query(_query_for(emotion), market)
 
-        # 2. Keyword track search (no playlist matched).
-        tracks = _search_track_dicts(query, market)
-        if tracks:
-            return tracks[:_MAX_RESULTS]
+        secondary_query = _history_query(emotion, history)
+        if secondary_query:
+            primary = _blend(primary, _collect_for_query(secondary_query, market))
+
+        if len(primary) >= _MIN_USABLE_TRACKS:
+            return primary[:_MAX_RESULTS]
+        if primary:
+            return primary
     except requests.RequestException:
         logger.warning("Spotify request failed for emotion=%s", emotion)
     except Exception:  # noqa: BLE001 -- e.g. missing-credentials RuntimeError
         logger.exception("Unexpected recommendation error for emotion=%s", emotion)
 
-    # 3. Last resort -- always hand back something listenable.
+    # Last resort -- always hand back something listenable.
     return _fallback_recommendations()

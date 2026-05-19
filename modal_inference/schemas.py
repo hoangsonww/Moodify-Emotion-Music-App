@@ -17,6 +17,10 @@ class TextEmotionRequest(BaseModel):
 class MusicRecommendationRequest(BaseModel):
     emotion: str = Field(..., min_length=1)
     market: Optional[str] = None
+    # Recent detected moods, oldest first. Used to blend in tracks for the
+    # user's recurring mood alongside the current one. Capped to bound the
+    # payload; extra entries are ignored.
+    history: list[str] = Field(default_factory=list, max_length=50)
 
 
 class Track(BaseModel):
