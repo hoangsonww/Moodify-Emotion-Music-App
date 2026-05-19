@@ -36,17 +36,48 @@ const ResultsPage = () => {
   // Use DarkModeContext for dark mode state
   const { isDarkMode } = useContext(DarkModeContext);
 
-  // Load the signed-in user's mood history once, to personalise re-fetches.
+  // On mount, load the signed-in user's mood history and -- when there is
+  // some -- immediately re-fetch a personalised list, so the first view is
+  // already history-aware rather than the generic list from the analysis
+  // call. Mirrors the mobile app's Results screen behaviour.
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    axios
-      .get(`${API_URL}/users/user/profile/`)
-      .then((response) => {
-        const history = response.data && response.data.mood_history;
-        setMoodHistory(Array.isArray(history) ? history : []);
-      })
-      .catch(() => {});
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const profile = await axios.get(`${API_URL}/users/user/profile/`);
+        const history = Array.isArray(profile.data && profile.data.mood_history)
+          ? profile.data.mood_history
+          : [];
+        if (cancelled) return;
+        setMoodHistory(history);
+        if (history.length === 0) return;
+
+        setLoading(true);
+        const response = await axios.post(
+          `${MODAL_API_URL}/music_recommendation`,
+          {
+            emotion: (emotion || "None").toLowerCase(),
+            history: history.slice(-50),
+          },
+        );
+        if (!cancelled) {
+          setDisplayRecommendations(response.data.recommendations || []);
+        }
+      } catch (error) {
+        // Keep the non-personalised list already on screen.
+        console.error("Error personalising recommendations:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Function to handle market change

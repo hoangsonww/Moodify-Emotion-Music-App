@@ -55,8 +55,11 @@ def music_recommendation(request):
     if not emotion:
         return Response({"error": "No emotion provided"}, status=status.HTTP_400_BAD_REQUEST)
 
+    # Keep only recent moods, as strings -- the inference service caps the
+    # history at 50 entries and rejects a longer or malformed list.
     if not isinstance(history, list):
         history = []
+    history = [str(mood) for mood in history[-50:]]
 
     try:
         result = modal_music(emotion, market, history)

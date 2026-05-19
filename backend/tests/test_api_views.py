@@ -75,6 +75,43 @@ class TestMusicRecommendation:
         assert resp.status_code == status.HTTP_200_OK
         assert resp.data["emotion"] == emo
 
+    def test_history_is_capped_and_stringified(self, monkeypatch):
+        captured = {}
+
+        def capture(emotion, market=None, history=None):
+            captured["history"] = history
+            return {"emotion": emotion, "recommendations": []}
+
+        monkeypatch.setattr(views, "modal_music", capture)
+        resp = views.music_recommendation(
+            factory.post(
+                "/api/music_recommendation/",
+                {"emotion": "joy", "history": ["sad"] * 60 + [123]},
+                format="json",
+            )
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        assert len(captured["history"]) == 50
+        assert all(isinstance(mood, str) for mood in captured["history"])
+
+    def test_malformed_history_is_ignored(self, monkeypatch):
+        captured = {}
+
+        def capture(emotion, market=None, history=None):
+            captured["history"] = history
+            return {"emotion": emotion, "recommendations": []}
+
+        monkeypatch.setattr(views, "modal_music", capture)
+        resp = views.music_recommendation(
+            factory.post(
+                "/api/music_recommendation/",
+                {"emotion": "joy", "history": "not-a-list"},
+                format="json",
+            )
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        assert captured["history"] == []
+
     def test_502_when_inference_unavailable(self, monkeypatch):
         def boom(_emotion, _market=None, _history=None):
             raise InferenceServiceError("modal down")

@@ -46,6 +46,10 @@ describe("<ResultsPage />", () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
   it("renders detected mood and initial recommendation cards", () => {
     setup();
 
@@ -122,5 +126,43 @@ describe("<ResultsPage />", () => {
 
     expect(await screen.findByText("Song D")).toBeInTheDocument();
     expect(screen.getByText("Artist D")).toBeInTheDocument();
+  });
+
+  it("re-fetches a personalized list on mount when the user has mood history", async () => {
+    window.localStorage.setItem("token", "token123");
+    axios.get.mockResolvedValueOnce({
+      data: { mood_history: ["sad", "calm", "sad"] },
+    });
+    axios.post.mockResolvedValueOnce({
+      data: {
+        recommendations: [
+          {
+            name: "Personalized Song",
+            artist: "Artist P",
+            image_url: "",
+            preview_url: null,
+            external_url: "",
+          },
+        ],
+      },
+    });
+
+    setup();
+
+    expect(await screen.findByText("Personalized Song")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining("/music_recommendation"),
+        { emotion: "happy", history: ["sad", "calm", "sad"] },
+      ),
+    );
+  });
+
+  it("does not re-fetch on mount when the user is signed out", async () => {
+    setup();
+
+    expect(screen.getByText("Song A")).toBeInTheDocument();
+    expect(axios.get).not.toHaveBeenCalled();
+    expect(axios.post).not.toHaveBeenCalled();
   });
 });
