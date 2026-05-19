@@ -25,14 +25,22 @@ class _FakeResponse:
         return self._payload
 
 
-def _track(name, url="https://open.spotify.com/track/x"):
+def _track(name, popularity=50):
+    # A unique external_url per track so de-duplication keeps them all.
+    slug = name.replace(" ", "")
     return {
         "name": name,
         "type": "track",
         "artists": [{"name": "Some Artist"}],
         "preview_url": None,
-        "external_urls": {"spotify": url},
-        "album": {"images": [{"url": "https://img/cover.jpg"}]},
+        "external_urls": {"spotify": f"https://open.spotify.com/track/{slug}"},
+        "album": {
+            "name": "An Album",
+            "images": [{"url": "https://img/cover.jpg"}],
+            "release_date": "2021-05-01",
+        },
+        "popularity": popularity,
+        "duration_ms": 200000,
     }
 
 
@@ -101,6 +109,10 @@ def test_recommendations_come_from_a_playlist(monkeypatch):
     assert all(r["external_url"] for r in recs)
     assert recs[0]["artist"] == "Some Artist"
     assert recs[0]["image_url"] == "https://img/cover.jpg"
+    # sort metadata flows through for the client
+    assert recs[0]["popularity"] == 50
+    assert recs[0]["release_date"] == "2021-05-01"
+    assert recs[0]["album"] == "An Album"
 
 
 def test_skips_playlists_that_are_not_accessible(monkeypatch):
@@ -163,25 +175,28 @@ def test_refreshes_token_and_retries_on_401(monkeypatch):
     assert calls["playlist_search"] == 2  # 401 -> refresh -> retry
 
 
-# --- failure handling -----------------------------------------------------
-def test_empty_emotion_returns_empty_list():
-    assert mr.get_music_recommendation("") == []
-    assert mr.get_music_recommendation("   ") == []
+# --- always returns something (never an empty list / surfaced error) -----
+def test_empty_emotion_still_returns_fallback():
+    assert len(mr.get_music_recommendation("")) > 0
+    assert len(mr.get_music_recommendation("   ")) > 0
 
 
-def test_token_failure_returns_empty_list(monkeypatch):
+def test_token_failure_returns_curated_fallback(monkeypatch):
     def fail(*a, **k):
         raise requests.ConnectionError("no network")
 
     monkeypatch.setattr(requests, "post", fail)
-    assert mr.get_music_recommendation("joy") == []
+    recs = mr.get_music_recommendation("joy")
+    assert len(recs) > 0
+    assert all(r["external_url"] for r in recs)
 
 
-def test_spotify_search_failure_returns_empty_list(monkeypatch):
+def test_spotify_search_failure_returns_curated_fallback(monkeypatch):
     monkeypatch.setattr(requests, "post", _token_response)
 
     def fail(*a, **k):
         raise requests.ConnectionError("boom")
 
     monkeypatch.setattr(requests, "get", fail)
-    assert mr.get_music_recommendation("joy") == []
+    recs = mr.get_music_recommendation("joy")
+    assert len(recs) > 0

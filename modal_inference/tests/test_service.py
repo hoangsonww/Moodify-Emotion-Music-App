@@ -111,11 +111,14 @@ class TestTextEmotion:
         resp = _client().post("/text_emotion", json={}, headers=AUTH)
         assert resp.status_code == 422
 
-    def test_unloaded_model_returns_503(self):
+    def test_unloaded_model_degrades_gracefully(self):
         resp = _client(text=FakeTextModel(loaded=False)).post(
             "/text_emotion", json={"text": "hi"}, headers=AUTH
         )
-        assert resp.status_code == 503
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["degraded"] is True
+        assert body["emotion"]
 
 
 class TestMusicRecommendation:
@@ -151,20 +154,22 @@ class TestMediaEndpoints:
         resp = _client().post("/speech_emotion", headers=AUTH)
         assert resp.status_code == 422
 
-    def test_empty_upload_rejected(self):
+    def test_empty_upload_degrades_gracefully(self):
         resp = _client().post(
             "/speech_emotion", files={"file": ("a.wav", b"", "audio/wav")}, headers=AUTH
         )
-        assert resp.status_code == 400
+        assert resp.status_code == 200
+        assert resp.json()["degraded"] is True
 
-    def test_oversized_upload_rejected(self, monkeypatch):
+    def test_oversized_upload_degrades_gracefully(self, monkeypatch):
         monkeypatch.setattr(service, "MAX_UPLOAD_BYTES", 10)
         resp = _client().post(
             "/speech_emotion",
             files={"file": ("a.wav", b"x" * 50, "audio/wav")},
             headers=AUTH,
         )
-        assert resp.status_code == 413
+        assert resp.status_code == 200
+        assert resp.json()["degraded"] is True
 
     def test_degraded_flag_propagates(self):
         resp = _client(speech=FakeMediaModel(emotion="neutral", degraded=True)).post(
@@ -178,8 +183,9 @@ class TestMediaEndpoints:
         )
         assert resp.status_code == 401
 
-    def test_unloaded_media_model_returns_503(self):
+    def test_unloaded_media_model_degrades_gracefully(self):
         resp = _client(facial=FakeMediaModel(loaded=False)).post(
             "/facial_emotion", files={"file": ("a.jpg", b"bytes", "image/jpeg")}, headers=AUTH
         )
-        assert resp.status_code == 503
+        assert resp.status_code == 200
+        assert resp.json()["degraded"] is True

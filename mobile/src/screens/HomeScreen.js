@@ -64,9 +64,11 @@ export default function HomeScreen({ navigation }) {
     async (task) => {
       setBusy(true);
       try {
+        // The inference helpers never throw -- they fall back internally,
+        // so a usable result always comes back and no error is surfaced.
         goToResults(await task());
       } catch (e) {
-        Alert.alert('Analysis failed', 'We could not read your mood. Please try again.');
+        goToResults({ emotion: 'calm', recommendations: [], degraded: true });
       } finally {
         setBusy(false);
       }

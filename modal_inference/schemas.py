@@ -22,9 +22,14 @@ class MusicRecommendationRequest(BaseModel):
 class Track(BaseModel):
     name: str
     artist: str
+    album: Optional[str] = None
     preview_url: Optional[str] = None
     external_url: Optional[str] = None
     image_url: Optional[str] = None
+    # Sort metadata for the client (popularity 0-100; release_date "YYYY..").
+    popularity: int = 0
+    duration_ms: int = 0
+    release_date: Optional[str] = None
 
 
 class EmotionResponse(BaseModel):

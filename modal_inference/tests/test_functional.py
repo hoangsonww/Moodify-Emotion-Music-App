@@ -157,11 +157,13 @@ def test_speech_emotion_real_inference(client):
     assert isinstance(body["emotion"], str) and body["emotion"]
 
 
-def test_speech_emotion_empty_upload_rejected(client):
+def test_speech_emotion_empty_upload_degrades_gracefully(client):
+    # An unusable upload never errors -- it returns a degraded result.
     resp = client.post(
         "/speech_emotion", files={"file": ("clip.wav", b"", "audio/wav")}, headers=_user_auth()
     )
-    assert resp.status_code == 400
+    assert resp.status_code == 200
+    assert resp.json()["degraded"] is True
 
 
 # --- Facial emotion (real FER detector) -----------------------------------

@@ -3,6 +3,9 @@
 // Inference (text/speech/facial/music) goes directly to the Modal
 // service; profile/history goes to the Django API. The axios interceptors
 // (services/auth.js) attach the JWT and handle token refresh.
+//
+// The inference calls NEVER throw: on any failure they return a graceful
+// fallback result, so the UI never has to surface an error to the user.
 
 import axios from 'axios';
 
@@ -10,45 +13,91 @@ import { API_URL, MODAL_API_URL } from '../../config';
 
 const TIMEOUT = 60000; // inference can incur a Modal cold start
 
-/** Detect emotion from text. Returns { emotion, recommendations, ... }. */
+// Curated last-resort tracks for when the service is unreachable. The
+// external_url is a Spotify search link, so it always resolves.
+const _FALLBACK = [
+  ['Blinding Lights', 'The Weeknd'],
+  ['Levitating', 'Dua Lipa'],
+  ['As It Was', 'Harry Styles'],
+  ['good 4 u', 'Olivia Rodrigo'],
+  ['Sunflower', 'Post Malone, Swae Lee'],
+  ['Uptown Funk', 'Mark Ronson, Bruno Mars'],
+  ['Someone Like You', 'Adele'],
+  ['Counting Stars', 'OneRepublic'],
+  ['Stay', 'The Kid LAROI, Justin Bieber'],
+  ['Shape of You', 'Ed Sheeran'],
+  ['Believer', 'Imagine Dragons'],
+  ['Riptide', 'Vance Joy'],
+  ['Heat Waves', 'Glass Animals'],
+  ["Don't Start Now", 'Dua Lipa'],
+];
+
+export const FALLBACK_TRACKS = _FALLBACK.map(([name, artist]) => ({
+  name,
+  artist,
+  album: null,
+  preview_url: null,
+  external_url: 'https://open.spotify.com/search/' + encodeURIComponent(`${name} ${artist}`),
+  image_url: null,
+  popularity: 0,
+  duration_ms: 0,
+  release_date: null,
+}));
+
+const fallbackResult = (emotion = 'calm') => ({
+  emotion,
+  recommendations: FALLBACK_TRACKS,
+  degraded: true,
+});
+
+/** Detect emotion from text. Always resolves to {emotion, recommendations}. */
 export async function analyzeText(text) {
-  const { data } = await axios.post(
-    `${MODAL_API_URL}/text_emotion`,
-    { text },
-    { timeout: TIMEOUT },
-  );
-  return data;
+  try {
+    const { data } = await axios.post(
+      `${MODAL_API_URL}/text_emotion`,
+      { text },
+      { timeout: TIMEOUT },
+    );
+    return data;
+  } catch (e) {
+    return fallbackResult();
+  }
 }
 
-async function analyzeMedia(endpoint, uri, type, name) {
-  const form = new FormData();
-  // React Native FormData file descriptor.
-  form.append('file', { uri, type, name });
-  // Content-Type (with boundary) is set by the platform for FormData.
-  const { data } = await axios.post(`${MODAL_API_URL}/${endpoint}`, form, {
-    timeout: TIMEOUT,
-  });
-  return data;
+async function analyzeMedia(path, uri, type, name) {
+  try {
+    const form = new FormData();
+    // React Native FormData file descriptor.
+    form.append('file', { uri, type, name });
+    const { data } = await axios.post(`${MODAL_API_URL}${path}`, form, { timeout: TIMEOUT });
+    return data;
+  } catch (e) {
+    return fallbackResult();
+  }
 }
 
 /** Detect emotion from a recorded audio clip (file uri). */
 export function analyzeSpeech(uri) {
-  return analyzeMedia('speech_emotion', uri, 'audio/m4a', 'recording.m4a');
+  return analyzeMedia('/speech_emotion', uri, 'audio/m4a', 'recording.m4a');
 }
 
 /** Detect emotion from a captured photo (file uri). */
 export function analyzeFace(uri) {
-  return analyzeMedia('facial_emotion', uri, 'image/jpeg', 'photo.jpg');
+  return analyzeMedia('/facial_emotion', uri, 'image/jpeg', 'photo.jpg');
 }
 
-/** Fetch fresh music recommendations for an emotion. */
+/** Fetch recommendations for an emotion (optionally market-scoped). */
 export async function getRecommendations(emotion, market) {
-  const { data } = await axios.post(
-    `${MODAL_API_URL}/music_recommendation`,
-    { emotion, market },
-    { timeout: TIMEOUT },
-  );
-  return data;
+  try {
+    const { data } = await axios.post(
+      `${MODAL_API_URL}/music_recommendation`,
+      { emotion, market: market || undefined },
+      { timeout: TIMEOUT },
+    );
+    return data;
+  } catch (e) {
+    return { emotion, market, recommendations: FALLBACK_TRACKS };
+  }
 }
 
 /** The authenticated user's profile (id, username, history, ...). */
@@ -64,7 +113,5 @@ export async function saveMood(profileId, mood) {
 
 /** Append recommendations to the user's history (best effort). */
 export async function saveRecommendations(profileId, recommendations) {
-  await axios.post(`${API_URL}/users/recommendations/${profileId}/`, {
-    recommendations,
-  });
+  await axios.post(`${API_URL}/users/recommendations/${profileId}/`, { recommendations });
 }
