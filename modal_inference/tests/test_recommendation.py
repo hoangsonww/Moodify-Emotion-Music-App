@@ -198,9 +198,13 @@ def test_history_blends_a_recurring_mood(monkeypatch):
 
     recs = mr.get_music_recommendation("joy", history=["sadness", "sadness", "joy"])
     names = [r["name"] for r in recs]
-    # The current mood stays the backbone; the recurring mood is interleaved.
-    assert names[:5] == ["Joy0", "Joy1", "Sad0", "Joy2", "Joy3"]
-    assert {n for n in names if n.startswith("Sad")}  # recurring mood present
+    joy = [n for n in names if n.startswith("Joy")]
+    sad = [n for n in names if n.startswith("Sad")]
+    assert names[0] == "Joy0"        # the current mood anchors the top
+    assert joy and sad               # both moods are represented
+    assert len(joy) >= len(sad)      # the current mood stays the backbone
+    # the recurring mood is interleaved, not merely appended at the end
+    assert any(n.startswith("Sad") for n in names[:4])
 
 
 def test_history_of_only_the_current_mood_does_not_blend(monkeypatch):
@@ -220,6 +224,28 @@ def test_history_of_only_the_current_mood_does_not_blend(monkeypatch):
 
     recs = mr.get_music_recommendation("joy", history=["joy", "happy"])
     assert all(r["name"].startswith("Joy") for r in recs)
+
+
+def test_history_blend_failure_keeps_current_mood_result(monkeypatch):
+    monkeypatch.setattr(requests, "post", _token_response)
+
+    def fake_get(url, **kwargs):
+        params = kwargs.get("params", {})
+        query = params.get("q", "")
+        if "/search" in url and params.get("type") == "playlist":
+            if query == "happy feel good":
+                return _FakeResponse({"playlists": {"items": [{"id": "joy_pl"}]}})
+            # The recurring-mood search fails -- must not sink the result.
+            raise requests.ConnectionError("history mood search failed")
+        if "/playlists/joy_pl/tracks" in url:
+            return _FakeResponse({"items": [{"track": _track(f"Joy{i}")} for i in range(6)]})
+        raise AssertionError(f"unexpected GET {url}")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+
+    recs = mr.get_music_recommendation("joy", history=["sadness", "sadness"])
+    # The current-mood tracks survive; no curated-fallback degradation.
+    assert [r["name"] for r in recs] == [f"Joy{i}" for i in range(6)]
 
 
 # --- always returns something (never an empty list / surfaced error) -----

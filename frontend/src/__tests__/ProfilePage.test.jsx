@@ -104,8 +104,8 @@ describe("<ProfilePage />", () => {
 
     await waitFor(() =>
       expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining("/api/music_recommendation/"),
-        { emotion: "happy" },
+        expect.stringContaining("/music_recommendation"),
+        { emotion: "happy", history: ["Happy", "Sad"] },
         expect.any(Object),
       ),
     );

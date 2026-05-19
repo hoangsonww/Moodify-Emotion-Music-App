@@ -121,7 +121,12 @@ const ProfilePage = () => {
       const response = await Promise.race([
         axios.post(
           `${MODAL_API_URL}/music_recommendation`,
-          { emotion: mood.toLowerCase() }, // Pass the mood as a parameter
+          {
+            emotion: mood.toLowerCase(), // Pass the mood as a parameter
+            // The user's recent moods, so the recommender can blend in
+            // their recurring mood alongside the one just clicked.
+            history: (userData?.mood_history || []).slice(-50),
+          },
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -24,11 +24,11 @@ import random
 import threading
 import time
 import urllib.parse
-from collections import Counter
 
 import requests
 
 import config
+from recommendation import personalization
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ _HTTP_TIMEOUT = 10
 _MAX_RESULTS = 60          # upper bound on tracks returned (client paginates)
 _MIN_USABLE_TRACKS = 4     # minimum before the playlist path is accepted
 _PLAYLIST_PAGE = 50        # tracks fetched per playlist
-_BLEND_EVERY = 2           # insert one history-mood track per N current-mood tracks
+_HISTORY_BLEND_LIMIT = 30  # cap on recurring-mood tracks fetched (bounds latency)
 
 # Detected emotion -> a search phrase that matches well-curated mood
 # playlists. Covers every label the text, speech and facial models emit,
@@ -258,11 +258,14 @@ def _query_for(emotion: str) -> str:
     return EMOTION_TO_QUERY.get((emotion or "").strip().lower(), _DEFAULT_QUERY)
 
 
-def _collect_for_query(query: str, market: str | None) -> list[dict]:
+def _collect_for_query(
+    query: str, market: str | None, limit: int = _MAX_RESULTS
+) -> list[dict]:
     """Gather mood-matched tracks for one query (may return an empty list).
 
-    Tries curated playlists first, then a keyword track search. Tracks are
-    de-duplicated by external_url and kept in the playlists' curated order.
+    Stops once ``limit`` tracks are gathered. Tries curated playlists
+    first, then a keyword track search. Tracks are de-duplicated by
+    external_url and kept in the playlists' curated order.
     """
     collected: list[dict] = []
     seen: set[str] = set()
@@ -276,7 +279,7 @@ def _collect_for_query(query: str, market: str | None) -> list[dict]:
             if url and url not in seen:
                 seen.add(url)
                 collected.append(track)
-        if len(collected) >= _MAX_RESULTS:
+        if len(collected) >= limit:
             break
     if len(collected) >= _MIN_USABLE_TRACKS:
         return collected
@@ -285,48 +288,45 @@ def _collect_for_query(query: str, market: str | None) -> list[dict]:
     return _search_track_dicts(query, market)
 
 
-def _history_query(emotion: str, history: list[str] | None) -> str | None:
-    """Pick a search phrase for the user's recurring recent mood.
+def _personalize(
+    emotion: str, history: list[str], primary: list[dict], market: str | None
+) -> list[dict]:
+    """Blend the user's recurring mood into ``primary`` via the model.
 
-    Returns the query for the most frequent mood in ``history`` that maps
-    to a *different* phrase than the current emotion, or None when history
-    is empty or only repeats the current mood.
+    The lightweight personalization model (recommendation/personalization)
+    turns the mood history into a taste profile, picks the recurring mood,
+    fetches its tracks, and interleaves them at an affinity-driven rate.
+    Both mood sets are quality-ranked first so their best tracks surface.
+
+    Fetching the recurring-mood tracks is best-effort: a Spotify failure
+    there must not discard the (good) current-mood result, so it falls
+    back to quality-ranking ``primary`` alone.
     """
-    if not history:
-        return None
-    current_query = _query_for(emotion)
-    counts = Counter(_query_for(mood) for mood in history if mood)
-    for query, _ in counts.most_common():
-        if query != current_query:
-            return query
-    return None
+    affinity = personalization.mood_affinity(emotion, history)
+    recurring = personalization.recurring_mood(emotion, affinity)
 
+    # No distinct recurring taste (or it maps to the same playlists as the
+    # current mood) -- nothing to blend, just quality-rank what we have.
+    if not recurring or _query_for(recurring) == _query_for(emotion):
+        return personalization.rank_by_quality(primary)
 
-def _blend(primary: list[dict], secondary: list[dict]) -> list[dict]:
-    """Interleave secondary tracks into primary -- one per _BLEND_EVERY.
+    try:
+        secondary = _collect_for_query(
+            _query_for(recurring), market, limit=_HISTORY_BLEND_LIMIT
+        )
+    except requests.RequestException:
+        logger.warning("history blend skipped; Spotify request failed")
+        return personalization.rank_by_quality(primary)
 
-    Primary stays the backbone (it matches the just-detected mood); the
-    secondary list seeds the user's recurring mood. De-duplicated by url.
-    """
-    seen: set[str] = set()
-    out: list[dict] = []
+    if not secondary:
+        return personalization.rank_by_quality(primary)
 
-    def _add(track: dict) -> None:
-        url = track.get("external_url")
-        if url and url not in seen:
-            seen.add(url)
-            out.append(track)
-
-    rest = iter(secondary)
-    for index, track in enumerate(primary):
-        _add(track)
-        if index % _BLEND_EVERY == _BLEND_EVERY - 1:
-            nxt = next(rest, None)
-            if nxt is not None:
-                _add(nxt)
-    for track in rest:
-        _add(track)
-    return out
+    every = personalization.blend_ratio(emotion, recurring, affinity)
+    return personalization.interleave(
+        personalization.rank_by_quality(primary),
+        personalization.rank_by_quality(secondary),
+        every,
+    )
 
 
 def get_music_recommendation(
@@ -334,22 +334,23 @@ def get_music_recommendation(
 ) -> list[dict]:
     """Return mood-matched tracks for the given emotion.
 
-    When ``history`` (recent detected moods) is supplied, tracks for the
-    user's recurring mood are blended in alongside the current emotion's,
-    so recommendations reflect both the moment and the longer-term pattern.
+    When ``history`` (recent detected moods) is supplied, a lightweight
+    personalization model blends in tracks for the user's recurring mood
+    and quality-ranks the result, so recommendations reflect both the
+    moment and the longer-term pattern. Without history the curated
+    playlist order is returned unchanged.
 
-    Returns up to _MAX_RESULTS de-duplicated tracks in curated order. The
-    list is ALWAYS non-empty: on any Spotify failure it returns a curated
-    fallback set, so a caller never surfaces an error or an empty result.
+    Returns up to _MAX_RESULTS de-duplicated tracks. The list is ALWAYS
+    non-empty: on any Spotify failure it returns a curated fallback set,
+    so a caller never surfaces an error or an empty result.
     """
     market = market if (market and len(market) == 2) else None
 
     try:
         primary = _collect_for_query(_query_for(emotion), market)
 
-        secondary_query = _history_query(emotion, history)
-        if secondary_query:
-            primary = _blend(primary, _collect_for_query(secondary_query, market))
+        if history:
+            primary = _personalize(emotion, history, primary, market)
 
         if len(primary) >= _MIN_USABLE_TRACKS:
             return primary[:_MAX_RESULTS]

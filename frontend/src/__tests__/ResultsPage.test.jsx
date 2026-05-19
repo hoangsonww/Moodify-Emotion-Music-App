@@ -83,8 +83,8 @@ describe("<ResultsPage />", () => {
 
     await waitFor(() =>
       expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining("/api/music_recommendation/"),
-        { emotion: "joy", market: undefined },
+        expect.stringContaining("/music_recommendation"),
+        { emotion: "joy", market: undefined, history: [] },
       ),
     );
 
@@ -115,8 +115,8 @@ describe("<ResultsPage />", () => {
 
     await waitFor(() =>
       expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining("/api/music_recommendation/"),
-        { emotion: "happy", market: "US" },
+        expect.stringContaining("/music_recommendation"),
+        { emotion: "happy", market: "US", history: [] },
       ),
     );
 

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Box,
@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { DarkModeContext } from "../context/DarkModeContext";
-import { MODAL_API_URL } from "../config";
+import { API_URL, MODAL_API_URL } from "../config";
 
 const ResultsPage = () => {
   const location = useLocation();
@@ -29,9 +29,25 @@ const ResultsPage = () => {
     recommendations || [],
   );
   const [selectedMarket, setSelectedMarket] = useState("");
+  // The user's recent moods, so the recommender can blend in their
+  // recurring mood alongside the one currently selected.
+  const [moodHistory, setMoodHistory] = useState([]);
 
   // Use DarkModeContext for dark mode state
   const { isDarkMode } = useContext(DarkModeContext);
+
+  // Load the signed-in user's mood history once, to personalise re-fetches.
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    axios
+      .get(`${API_URL}/users/user/profile/`)
+      .then((response) => {
+        const history = response.data && response.data.mood_history;
+        setMoodHistory(Array.isArray(history) ? history : []);
+      })
+      .catch(() => {});
+  }, []);
 
   // Function to handle market change
   const handleMarketChange = async (event) => {
@@ -45,6 +61,7 @@ const ResultsPage = () => {
         {
           emotion: selectedMood.toLowerCase(), // Keep the current mood
           market: newMarket || undefined, // Pass market if selected, else undefined
+          history: moodHistory.slice(-50),
         },
       );
 
@@ -69,6 +86,7 @@ const ResultsPage = () => {
         {
           emotion: newMood.toLowerCase(),
           market: selectedMarket || undefined, // Pass market if selected, else undefined
+          history: moodHistory.slice(-50),
         },
       );
 
