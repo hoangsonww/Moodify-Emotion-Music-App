@@ -21,14 +21,17 @@ import config
 
 def fetch_all(models_dir: str) -> None:
     """Download the text-emotion model from Hugging Face into the Volume."""
-    from huggingface_hub import snapshot_download
-
     repo = config.HF_TEXT_MODEL_REPO
     if not repo:
         raise RuntimeError(
             "HF_TEXT_MODEL_REPO is not set -- point it at the Hugging Face "
             "repo that holds the fine-tuned text-emotion model."
         )
+
+    # Imported lazily so the lightweight CI suite (which only exercises the
+    # config check above via test_download_models) does not need the
+    # huggingface_hub dependency installed.
+    from huggingface_hub import snapshot_download
 
     dest = os.path.join(models_dir, "text_emotion_model")
     os.makedirs(dest, exist_ok=True)
