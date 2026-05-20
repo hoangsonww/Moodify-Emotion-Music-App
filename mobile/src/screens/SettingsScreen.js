@@ -2,7 +2,7 @@
 // delete account. Everything here calls a deployed backend endpoint --
 // nothing is local-only.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +13,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import Screen from '../components/Screen';
@@ -44,9 +45,11 @@ export default function SettingsScreen({ navigation }) {
     }
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   const confirmDestructive = (title, message, onConfirm) =>
     Alert.alert(title, message, [
@@ -232,6 +235,16 @@ export default function SettingsScreen({ navigation }) {
                 <AppButton title="Update password" onPress={onSavePassword} loading={busy} />
               </>
             )}
+            <AppButton
+              title="Cancel"
+              variant="ghost"
+              onPress={() => {
+                setEditor(null);
+                setPassword('');
+                setConfirm('');
+              }}
+              style={{ marginTop: spacing.sm }}
+            />
           </Pressable>
         </Pressable>
       </Modal>

@@ -1,6 +1,15 @@
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import Screen from '../components/Screen';
@@ -100,11 +109,19 @@ export default function ProfileScreen({ navigation }) {
               .slice(-15)
               .reverse()
               .map((track, index) => (
-                <View key={`${track}-${index}`} style={[styles.chip, styles.trackChip]}>
+                <Pressable
+                  key={`${track}-${index}`}
+                  onPress={() => openInSpotify(track)}
+                  style={({ pressed }) => [
+                    styles.chip,
+                    styles.trackChip,
+                    pressed && styles.chipPressed,
+                  ]}
+                >
                   <Text style={styles.chipText} numberOfLines={1}>
                     {track}
                   </Text>
-                </View>
+                </Pressable>
               ))}
           </View>
         ) : (
@@ -120,6 +137,11 @@ export default function ProfileScreen({ navigation }) {
       </ScrollView>
     </Screen>
   );
+}
+
+function openInSpotify(entry) {
+  const url = `https://open.spotify.com/search/${encodeURIComponent(entry)}`;
+  Linking.openURL(url).catch(() => {});
 }
 
 function Stat({ label, value }) {
@@ -179,6 +201,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
   },
   trackChip: { maxWidth: '100%' },
+  chipPressed: { opacity: 0.7 },
   chipText: { color: colors.text, fontSize: 13, fontWeight: '600', textTransform: 'capitalize' },
   empty: { color: colors.textMuted, fontSize: 14 },
 });

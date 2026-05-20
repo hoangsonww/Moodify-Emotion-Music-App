@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Audio } from 'expo-av';
@@ -42,14 +43,23 @@ export default function HomeScreen({ navigation }) {
 
   const recordingRef = useRef(null);
 
-  useEffect(() => {
-    getProfile()
-      .then((p) => {
-        setProfileId(p.id);
-        setMoodHistory(Array.isArray(p.mood_history) ? p.mood_history : []);
-      })
-      .catch(() => {});
-  }, []);
+  // Refresh on focus so the just-analyzed mood (saved on the previous
+  // visit) is included in the history sent to the recommender next time.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getProfile()
+        .then((p) => {
+          if (!active) return;
+          setProfileId(p.id);
+          setMoodHistory(Array.isArray(p.mood_history) ? p.mood_history : []);
+        })
+        .catch(() => {});
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   const goToResults = useCallback(
     (data) => {
