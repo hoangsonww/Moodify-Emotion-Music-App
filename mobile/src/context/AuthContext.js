@@ -35,6 +35,17 @@ export function AuthProvider({ children }) {
       await auth.logout();
       setStatus('signedOut');
     },
+    updateProfile: auth.updateProfile,
+    changePassword: async (newPassword) => {
+      await auth.changePassword(newPassword);
+      setStatus('signedOut');
+    },
+    deleteAccount: async () => {
+      await auth.deleteAccount();
+      setStatus('signedOut');
+    },
+    verifyUsernameEmail: auth.verifyUsernameEmail,
+    resetPassword: auth.resetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

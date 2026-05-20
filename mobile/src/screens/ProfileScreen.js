@@ -9,8 +9,8 @@ import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../services/emotion';
 import { colors, gradient, radius, spacing } from '../../theme';
 
-export default function ProfileScreen() {
-  const { signOut, user } = useAuth();
+export default function ProfileScreen({ navigation }) {
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -93,11 +93,28 @@ export default function ProfileScreen() {
           <Text style={styles.empty}>No moods logged yet — analyze one from the home screen.</Text>
         )}
 
+        <Text style={styles.section}>Recent tracks</Text>
+        {(profile?.listening_history || []).length ? (
+          <View style={styles.chips}>
+            {(profile.listening_history || [])
+              .slice(-15)
+              .reverse()
+              .map((track, index) => (
+                <View key={`${track}-${index}`} style={[styles.chip, styles.trackChip]}>
+                  <Text style={styles.chipText} numberOfLines={1}>
+                    {track}
+                  </Text>
+                </View>
+              ))}
+          </View>
+        ) : (
+          <Text style={styles.empty}>No tracks played yet — open one from the Results screen.</Text>
+        )}
+
         <AppButton
-          title="Log out"
-          icon="log-out-outline"
-          variant="danger"
-          onPress={signOut}
+          title="Settings"
+          icon="settings-outline"
+          onPress={() => navigation.navigate('Settings')}
           style={{ marginTop: spacing.xl }}
         />
       </ScrollView>
@@ -161,6 +178,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 7,
   },
+  trackChip: { maxWidth: '100%' },
   chipText: { color: colors.text, fontSize: 13, fontWeight: '600', textTransform: 'capitalize' },
   empty: { color: colors.textMuted, fontSize: 14 },
 });

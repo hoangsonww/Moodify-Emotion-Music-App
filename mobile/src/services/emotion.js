@@ -124,3 +124,41 @@ export async function saveMood(profileId, mood) {
 export async function saveRecommendations(profileId, recommendations) {
   await axios.post(`${API_URL}/users/recommendations/${profileId}/`, { recommendations });
 }
+
+/**
+ * Log that the user opened/played a track. The backend stores listening
+ * history as strings, so the track is serialised as "Name — Artist".
+ */
+export async function saveListening(profileId, track) {
+  if (!profileId || !track?.name) return;
+  const entry = track.artist ? `${track.name} — ${track.artist}` : track.name;
+  await axios.post(`${API_URL}/users/listening_history/${profileId}/`, { track: entry });
+}
+
+/**
+ * Clear all entries from one of the per-user history lists.
+ *
+ * `recommendations` has a bulk DELETE endpoint; `mood_history` and
+ * `listening_history` only delete one entry at a time, so we fetch the
+ * current list and issue one DELETE per entry (typical histories are
+ * small enough that this is fine).
+ */
+export async function clearHistory(profileId, kind) {
+  if (!profileId) return;
+  if (kind === 'recommendations') {
+    await axios.delete(`${API_URL}/users/recommendations/${profileId}/`);
+    return;
+  }
+  const profile = await getProfile();
+  const entryKey = kind === 'mood_history' ? 'mood' : 'track';
+  const items = profile?.[kind] || [];
+  for (const item of items) {
+    try {
+      await axios.delete(`${API_URL}/users/${kind}/${profileId}/`, {
+        data: { [entryKey]: item },
+      });
+    } catch {
+      // best-effort: keep clearing the rest
+    }
+  }
+}

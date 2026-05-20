@@ -8,7 +8,7 @@ import Screen from '../components/Screen';
 import AppButton from '../components/AppButton';
 import TrackCard from '../components/TrackCard';
 import OptionSheet from '../components/OptionSheet';
-import { getRecommendations } from '../services/emotion';
+import { getRecommendations, saveListening } from '../services/emotion';
 import { colors, gradient, radius, spacing } from '../../theme';
 
 const EMOJI = {
@@ -79,7 +79,12 @@ export default function ResultsScreen({ route, navigation }) {
     recommendations = [],
     degraded = false,
     history = [],
+    profileId = null,
   } = route.params || {};
+
+  const onPlay = (track) => {
+    if (profileId) saveListening(profileId, track).catch(() => {});
+  };
 
   const [tracks, setTracks] = useState(recommendations);
   const [sortKey, setSortKey] = useState('recommended');
@@ -115,7 +120,7 @@ export default function ResultsScreen({ route, navigation }) {
       <FlatList
         data={shown}
         keyExtractor={(item, index) => `${item.external_url || item.name || 'track'}-${index}`}
-        renderItem={({ item }) => <TrackCard track={item} />}
+        renderItem={({ item }) => <TrackCard track={item} onPlay={onPlay} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         onEndReachedThreshold={0.5}

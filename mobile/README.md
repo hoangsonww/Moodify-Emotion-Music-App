@@ -46,4 +46,21 @@ cp .env.example .env        # set EXPO_PUBLIC_API_URL / EXPO_PUBLIC_MODAL_API_UR
 npm start                   # then press i / a, or scan with Expo Go
 ```
 
+`config.js` reads those two `EXPO_PUBLIC_*` URLs at build time -- they are
+the only deployment-specific values the app needs. For EAS / production
+builds, set them as project secrets (`eas env:create EXPO_PUBLIC_API_URL ...`)
+or pass them inline (`EXPO_PUBLIC_API_URL=... npx expo start`).
+
 Camera and microphone permissions are requested on first use.
+
+## Screens
+
+- **Login / Register** -- account creation and sign-in.
+- **Forgot password** -- two-step reset: verify username + email, then set
+  a new password.
+- **Home** -- text, voice, or face mood detection.
+- **Results** -- mood + recommendations, sortable, market-aware, history
+  -personalized; tapping a track logs it to listening history.
+- **Profile** -- avatar, stats, recent moods, recent tracks.
+- **Settings** -- update email, change password, clear mood / saved
+  recommendations / listening history, or delete the account.

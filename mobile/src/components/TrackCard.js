@@ -5,8 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../theme';
 
 /** A single recommended track; tapping opens it in Spotify. */
-export default function TrackCard({ track }) {
+export default function TrackCard({ track, onPlay }) {
   const open = () => {
+    if (onPlay) onPlay(track);
     if (track.external_url) Linking.openURL(track.external_url).catch(() => {});
   };
   return (

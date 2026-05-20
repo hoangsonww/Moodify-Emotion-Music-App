@@ -79,6 +79,13 @@ export default function LoginScreen({ navigation }) {
             onSubmitEditing={onLogin}
           />
           <AppButton title="Sign in" onPress={onLogin} loading={loading} style={styles.cta} />
+          <Pressable
+            onPress={() => navigation.navigate('ForgotPassword')}
+            style={styles.forgotRow}
+            hitSlop={8}
+          >
+            <Text style={styles.link}>Forgot password?</Text>
+          </Pressable>
         </View>
 
         <Pressable onPress={() => navigation.navigate('Register')} style={styles.linkRow}>
@@ -116,6 +123,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   cta: { marginTop: spacing.sm },
+  forgotRow: { alignItems: 'center', marginTop: spacing.md },
   linkRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.xl },
   linkMuted: { color: colors.textMuted, fontSize: 14 },
   link: { color: colors.primary, fontSize: 14, fontWeight: '800' },

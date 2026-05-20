@@ -66,6 +66,8 @@ export default function HomeScreen({ navigation }) {
         // The moods detected before this one -- the Results screen passes
         // them to the recommender so it can blend in the recurring mood.
         history: moodHistory,
+        // Used by the Results screen to log tapped tracks as listening history.
+        profileId,
       });
     },
     [navigation, profileId, moodHistory],

@@ -89,6 +89,53 @@ export async function logout() {
   await clearTokens();
 }
 
+/** Update mutable profile fields (currently just email) for the signed-in user. */
+export async function updateProfile(fields) {
+  await axios.put(`${API_URL}/users/user/profile/update/`, fields);
+}
+
+/**
+ * Change the signed-in user's password.
+ *
+ * Backed by the same reset-password endpoint as the forgot-password flow
+ * (the username is taken from the current JWT). After a change we drop
+ * the local tokens so the next request forces a fresh sign-in.
+ */
+export async function changePassword(newPassword) {
+  const claims = getCurrentUser();
+  if (!claims?.username) throw new Error('Not signed in');
+  await axios.post(
+    `${API_URL}/users/reset-password/`,
+    { username: claims.username, new_password: newPassword },
+    { _skipAuth: true },
+  );
+  await clearTokens();
+}
+
+/** Permanently delete the signed-in user's account and profile. */
+export async function deleteAccount() {
+  await axios.delete(`${API_URL}/users/user/profile/delete/`);
+  await clearTokens();
+}
+
+/** Verify a username + email pair matches an existing account. */
+export async function verifyUsernameEmail(username, email) {
+  await axios.post(
+    `${API_URL}/users/verify-username-email/`,
+    { username, email },
+    { _skipAuth: true },
+  );
+}
+
+/** Reset a password after verifying the username + email above. */
+export async function resetPassword(username, newPassword) {
+  await axios.post(
+    `${API_URL}/users/reset-password/`,
+    { username, new_password: newPassword },
+    { _skipAuth: true },
+  );
+}
+
 let refreshInFlight = null;
 
 function refreshSession() {

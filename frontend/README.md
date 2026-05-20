@@ -431,6 +431,21 @@ sequenceDiagram
    npm install
    ```
 
+4. Point the app at your backends. Copy `frontend/.env.example` to
+   `frontend/.env` and fill in the two URLs:
+
+   ```bash
+   cp .env.example .env
+   # then edit:
+   #   REACT_APP_API_URL=https://<your-django-api>
+   #   REACT_APP_MODAL_API_URL=https://<your-modal-inference-app>
+   ```
+
+   These are the only deployment-specific values the app needs. When
+   deploying to Vercel, set the same two variables in the project's
+   Environment Variables panel (Production / Preview / Development) and
+   redeploy — `frontend/src/config.js` reads them at build time.
+
 ### Running the Application
 
 To start the development server, run the following command:
