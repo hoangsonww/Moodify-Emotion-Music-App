@@ -194,8 +194,11 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-# Serve static via the staticfiles finders so swagger assets work on a
-# read-only serverless filesystem even without a collectstatic step.
+# Use the finders so any remaining static asset is served straight from
+# the source tree -- the API itself does not ship any (the Swagger / Redoc
+# UI and favicon all load from a CDN, see backend/swagger.py), but this
+# keeps the admin / DRF browsable API working on a serverless filesystem
+# even without a collectstatic step.
 WHITENOISE_USE_FINDERS = True
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
