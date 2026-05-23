@@ -12,7 +12,7 @@ Realizing this need, **Moodify** is being developed by **[Son Nguyen](https://gi
 The **Moodify** project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes **text, speech, or facial expressions** and suggests music that aligns with the detected emotions.
 
 Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. **Data analytics** scripts and **Apache Spark and Hadoop** 
-are also used to visualize emotion trends and model performance. Users will be directed to Spotify to listen to the recommended music, and they can save their favorite tracks to their Spotify account 🎸🥁🎹.
+are also used to visualize emotion trends and model performance. Users open recommended tracks in Deezer's free web player straight from the Results page 🎸🥁🎹.
 
 <p align="center">
   <!-- Frontend -->
@@ -29,7 +29,7 @@ are also used to visualize emotion trends and model performance. Users will be d
   <img src="https://img.shields.io/badge/DRF-ff1709?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework" />
   <img src="https://img.shields.io/badge/MongoEngine-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoEngine" />
   <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
-  <img src="https://img.shields.io/badge/Spotify-1DB954?style=for-the-badge&logo=spotify&logoColor=white" alt="Spotify" />
+  <img src="https://img.shields.io/badge/Deezer-FF6600?style=for-the-badge&logo=deezer&logoColor=white" alt="Deezer" />
   <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger" />
   <img src="https://img.shields.io/badge/Redoc-EB222A?style=for-the-badge&logo=googledocs&logoColor=white" alt="Redoc" />
   <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
@@ -37,8 +37,6 @@ are also used to visualize emotion trends and model performance. Users will be d
   <!-- Databases -->
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
-  <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
-
   <!-- AI/ML -->
   <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
   <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow" />
@@ -73,7 +71,7 @@ are also used to visualize emotion trends and model performance. Users will be d
   <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes" />
   <img src="https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white" alt="Terraform" />
   <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins" />
-  <img src="https://img.shields.io/badge/Render-152535?style=for-the-badge&logo=render&logoColor=white" alt="Render" />
+  <img src="https://img.shields.io/badge/Modal-Inference-7B68EE?style=for-the-badge" alt="Modal" />
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
   <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify" />
   <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" />
@@ -153,13 +151,13 @@ graph TB
     end
 
     subgraph "External Services"
-        I[Spotify API]
+        I[Deezer Search API]
     end
 
     subgraph "Data Layer"
         J[(MongoDB)]
         K[(Redis Cache)]
-        L[(SQLite)]
+        L[(MongoDB Atlas)]
     end
 
     subgraph "Analytics Layer"
@@ -208,7 +206,7 @@ sequenceDiagram
     participant BE as Backend API
     participant AI as AI/ML Service
     participant DB as MongoDB
-    participant SP as Spotify API
+    participant SP as Deezer API
     participant CH as Redis Cache
 
     U->>FE: Input (Text/Speech/Image)
@@ -234,15 +232,15 @@ sequenceDiagram
 
 The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: **[https://moodify-app.vercel.app](https://moodify-app.vercel.app).**
 
-Feel free to also visit the backend at [Moodify Backend API](https://moodify-emotion-music-app.onrender.com/).
+Feel free to also visit the backend at [Moodify Backend API](https://moodify-backend-api.vercel.app/).
 
 For your information, the front-end's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
 > [!IMPORTANT]
-> **Disclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
+> **Note:** The Django API is deployed to Vercel and the ML inference service runs on Modal with memory snapshots + scale-to-zero, so the first request after idle may take ~1-2 s while a container is restored. Subsequent calls hit a warm container.
 
 > [!IMPORTANT]
-> **Note**: The amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. **Also**, the facial and speech emotion detection models may also **cause the server to crash** due to memory constraints and the heavy processing required by AI applications, so please be patient if the server crashes and restarts. I'd also recommend that you clone the repository and replace the URLs with your own local backend server for a more stable experience.
+> **Cold-start note:** Modal scales to zero when idle, so the very first inference call after a quiet period may take a couple of seconds while a memory snapshot restores. The text/speech/facial endpoints never fail closed -- a model failure returns the neutral fallback emotion + a curated track list instead of a 500.
 
 > [!NOTE]
 > There is no guarantee of uptime or performance with the current deployment, unless I have more resources _(money)_ to upgrade the server :( Feel free to [contact me](#contact) if you encounter any issues or need further assistance.
@@ -250,7 +248,8 @@ For your information, the front-end's production (deployment) branch is `fronten
 ### Live Statuses
 
 [![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green?logo=vercel)](https://moodify-emotion-music-app.vercel.app/)
-[![Deployed with Render](https://img.shields.io/badge/Deployed%20with-Render-green?logo=render)](https://moodify-emotion-music-app.onrender.com/)
+[![Django on Vercel](https://img.shields.io/badge/Django-Vercel-000000?logo=vercel&logoColor=white)](https://moodify-backend-api.vercel.app/)
+[![Inference on Modal](https://img.shields.io/badge/Inference-Modal-7B68EE?logo=modal&logoColor=white)](https://modal.com)
 [![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen?logo=ai)](ai_ml)
 [![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen?logo=netlify)](https://moodify-emotion-music-app.netlify.app/)
 [![Docker Container OK](https://img.shields.io/badge/Docker%20Container-OK-brightgreen?logo=docker)](docker-compose.yml)
@@ -292,7 +291,7 @@ Here is the list of technologies used in the Moodify project:
 - **Django REST Framework (DRF)**: For creating RESTful APIs.
 - **MongoEngine**: For MongoDB integration with Django.
 - **JWT**: For user authentication and authorization.
-- **Spotify API**: For fetching music recommendations.
+- **Deezer API**: For fetching music recommendations (free, keyless).
 - **Swagger**: For API documentation.
 - **Redoc**: For API documentation.
 - **Flask**: For serving the AI/ML models as APIs.
@@ -302,7 +301,6 @@ Here is the list of technologies used in the Moodify project:
 ### **Databases**:
 - **MongoDB**: For storing user data and music recommendations.
 - **Redis**: For caching and session management.
-- **SQLite**: For development and testing purposes.
 - **PostgreSQL**: For production database (optional, can be configured).
 
 ### **AI/ML Models**:
@@ -331,7 +329,8 @@ Here is the list of technologies used in the Moodify project:
 - **Docker**: For containerizing the application.
 - **Kubernetes**: For orchestrating the containers.
 - **Jenkins**: For continuous integration and deployment.
-- **Render**: For hosting the backend API.
+- **Vercel**: For hosting the Django API and React frontend.
+- **Modal**: For hosting the ML inference service (memory snapshots, scale-to-zero).
 - **Vercel**: For hosting the frontend application.
 - **Netlify**: For hosting the frontend application (backup).
 - **GitHub Actions**: For automating workflows and deployments.
@@ -514,7 +513,6 @@ Moodify-Emotion-Music-App/
 │   │
 │   ├── .gitignore                 # Git ignore file
 │   ├── Dockerfile                 # Dockerfile for containerization
-│   └── db.sqlite3                 # SQLite database (if used)
 │
 ├── ai_ml/                         # AI/ML models for emotion detection
 │   ├── data/                      # Datasets for training and testing
@@ -619,7 +617,7 @@ Or, you can download the pre-trained models from the Google Drive links provided
    ```
 
 5. **Edit the configurations in the `src/config.py` file:**
-    - Visit the `src/config.py` file and update the configurations as needed, especially your Spotify API keys and configure ALL the paths.
+    - Visit `modal_inference/config.py` if you need to override defaults. Music recommendations come from Deezer's public, keyless API -- no Spotify credential is required.
     - Visit the individual model training scripts in the `src/models` directory and update the paths to the datasets and output paths as needed.
     - Ensure all paths are correctly set before training the models!
 
@@ -773,8 +771,8 @@ Finally, set up the frontend to interact with the backend.
 <h2 id="-backend-apis-documentation">🚀 Backend APIs Documentation</h2>
 
 Our backend APIs are all well-documented using Swagger UI and Redoc. You can access the API documentation at the following URLs:
-- **Swagger UI**: `https://moodify-emotion-music-app.onrender.com/swagger`.
-- **Redoc**: `https://moodify-emotion-music-app.onrender.com/redoc`.
+- **Swagger UI**: `https://moodify-backend-api.vercel.app/swagger/`.
+- **Redoc**: `https://moodify-backend-api.vercel.app/redoc/`.
 
 > [!IMPORTANT]
 > Our backend server may spin down after a period of inactivity, so it may take a few seconds to load initially!
@@ -1291,7 +1289,7 @@ graph LR
         K[Kubernetes Cluster]
         L[AWS/GCP]
         M[Vercel Frontend]
-        N[Render Backend]
+        N[Vercel Backend]
     end
 
     subgraph "Monitoring"

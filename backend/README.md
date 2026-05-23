@@ -1,557 +1,516 @@
-# Moodify - Emotion-Based Music App Backend
-
-This repository contains the backend for the Emotion-Based Music App named **Moodify**, built using Django and MongoDB. The backend allows users to manage their mood and listening history and receive personalized music recommendations based on their emotional state.
-
-## Table of Contents
-
-- [Getting Started](#getting-started)
-- [File Structure](#file-structure)
-- [Before Running the Backend](#before-running-the-backend)
-- [API Endpoints](#api-endpoints)
-  - [User Endpoints](#user-endpoints)
-  - [Emotion Detection Endpoints](#emotion-detection-endpoints)
-  - [Admin Interface Endpoints](#admin-interface-endpoints)
-- [Testing the APIs](#testing-the-apis)
-- [Using Postman](#using-postman)
-- [API Documentation](#api-documentation)
-  - [Swagger UI](#swagger-ui)
-  - [Redoc](#redoc)
-- [Using the Admin Panel](#using-the-admin-panel)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Getting Started
-
-### Prerequisites
-
-Before running the backend, ensure you have the following installed:
-
-- Python 3.8 or later
-- Pip (Python package installer)
-- MongoDB
-
-### Installation
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/hoangsonww/Moodify-Emotion-Based-Music-App.git
-   cd Moodify-Emotion-Based-Music-App/backend
-   ```
-
-2. **Create a Virtual Environment**:
-   ```bash
-   python -m venv venv
-   ```
-
-3. **Activate the Virtual Environment**:
-   - **Windows**:
-     ```bash
-     .\venv\Scripts\activate
-     ```
-   - **Mac**:
-     ```bash
-     source venv/bin/activate
-     ```
-
-4. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. **Run MongoDB**: Ensure your MongoDB service is running. You can start MongoDB with the following command:
-   ```bash
-   mongod
-   ```
-
-6. **Run the Django Server**:
-   ```bash
-   python manage.py runserver
-   ```
-
-The server should now be running at `http://127.0.0.1:8000/`.
-
-## Backend Architecture Overview
-
-```mermaid
-graph TB
-    subgraph "Client Layer"
-        A[Web Frontend]
-        B[Mobile App]
-    end
-
-    subgraph "API Gateway"
-        C[NGINX<br/>Load Balancer]
-    end
-
-    subgraph "Django Application"
-        D[URL Router<br/>urls.py]
-
-        subgraph "Apps"
-            E[Users App<br/>Authentication & Profiles]
-            F[API App<br/>Emotion Detection]
-        end
-
-        subgraph "Middleware"
-            G[CORS Middleware]
-            H[JWT Authentication]
-            I[Rate Limiting]
-        end
-
-        subgraph "Views & Serializers"
-            J[DRF ViewSets]
-            K[Serializers]
-        end
-
-        subgraph "Business Logic"
-            L[User Management]
-            M[Emotion Processing]
-            N[Recommendation Logic]
-        end
-    end
-
-    subgraph "External Services"
-        O[AI/ML Service<br/>Flask API]
-        P[Spotify API]
-    end
-
-    subgraph "Data Layer"
-        Q[(MongoDB<br/>User Data)]
-        R[(Redis<br/>Session Cache)]
-        S[(SQLite<br/>Dev Database)]
-    end
-
-    subgraph "Documentation"
-        T[Swagger UI]
-        U[ReDoc]
-    end
-
-    A & B --> C
-    C --> D
-    D --> G
-    G --> H
-    H --> I
-    I --> E & F
-    E & F --> J
-    J --> K
-    K --> L & M & N
-    M --> O
-    N --> P
-    L & M & N --> Q
-    H --> R
-    E --> S
-    D --> T & U
-
-    style C fill:#009639
-    style D fill:#092E20
-    style E fill:#092E20
-    style F fill:#092E20
-    style O fill:#000000
-    style P fill:#1DB954
-    style Q fill:#47A248
-    style R fill:#DC382D
-```
-
-### API Request Flow
-
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant N as NGINX
-    participant D as Django
-    participant M as Middleware Stack
-    participant V as View
-    participant S as Serializer
-    participant AI as AI/ML Service
-    participant DB as MongoDB
-    participant SP as Spotify
-    participant RD as Redis
-
-    C->>N: HTTP Request
-    N->>D: Forward Request
-    D->>M: Process through Middleware
-    M->>M: CORS Check
-    M->>M: JWT Validation
-    M->>M: Rate Limit Check
-
-    alt Authenticated & Valid
-        M->>V: Route to View
-        V->>S: Validate Input
-        S->>V: Validated Data
-
-        alt Emotion Detection Request
-            V->>AI: POST /emotion_detection
-            AI-->>V: Emotion Result
-            V->>SP: GET /recommendations
-            SP-->>V: Track List
-        else User Data Request
-            V->>DB: Query User Data
-            DB-->>V: User Information
-        end
-
-        V->>RD: Cache Result
-        V->>DB: Store History
-        V->>S: Serialize Response
-        S-->>C: JSON Response
-    else Unauthorized
-        M-->>C: 401 Unauthorized
-    else Rate Limit Exceeded
-        M-->>C: 429 Too Many Requests
-    end
-```
-
-### Database Schema
-
-```mermaid
-erDiagram
-    USER ||--o{ MOOD_HISTORY : has
-    USER ||--o{ LISTENING_HISTORY : has
-    USER ||--o{ RECOMMENDATIONS : receives
-    USER {
-        ObjectId _id PK
-        string username UK
-        string email UK
-        string password_hash
-        datetime created_at
-        datetime updated_at
-        string profile_picture
-        json preferences
-    }
-
-    MOOD_HISTORY {
-        ObjectId _id PK
-        ObjectId user_id FK
-        string emotion
-        float confidence
-        string input_type
-        datetime timestamp
-        json metadata
-    }
-
-    LISTENING_HISTORY {
-        ObjectId _id PK
-        ObjectId user_id FK
-        string track_id
-        string track_name
-        string artist
-        string album
-        datetime played_at
-        int duration_ms
-        string emotion_context
-    }
-
-    RECOMMENDATIONS {
-        ObjectId _id PK
-        ObjectId user_id FK
-        string emotion
-        json tracks
-        datetime generated_at
-        float relevance_score
-        boolean saved
-    }
-
-    SESSION {
-        string session_id PK
-        ObjectId user_id FK
-        string jwt_token
-        datetime expires_at
-        json metadata
-    }
-
-    USER ||--o{ SESSION : authenticates
-```
-
-## File Structure
-
-Here is the detailed file structure of the backend:
-
-```
-Moodify-Emotion-Based-Music-App/
-├── backend/
-│   ├── manage.py                   # Django's command-line utility for administrative tasks
-│   ├── requirements.txt            # Project dependencies
-│   ├── db.sqlite3                  # SQLite database file (if used)
-│   ├── backend/
-│   │   ├── __init__.py             # Empty file to mark the directory as a Python package
-│   │   ├── settings.py             # Django settings for the project
-│   │   ├── urls.py                 # URL declarations for the project
-│   │   ├── wsgi.py                 # WSGI application for deployment
-│   │   ├── users/
-│   │   │   ├── __init__.py         # Empty file to mark the directory as a Python package
-│   │   │   ├── models.py           # MongoDB models for user profiles
-│   │   │   ├── views.py            # API views for handling user-related requests
-│   │   │   └── urls.py             # URL declarations for user-related endpoints
-│   │   └── api/
-│   │       ├── __init__.py         # Empty file to mark the directory as a Python package
-│   │       ├── views.py            # API views for handling emotion-related requests
-│   │       └── urls.py             # URL declarations for emotion-related endpoints
-└── README.md                       # This README file
-```
-
-## Before Running the Backend
-
-Before running the backend, ensure that you have trained all the emotion detection models and saved them in the `models` directory (they should be automatically saved in their respective directories). 
-
-Refer to the [README](../ai_ml/README.md) in the `ai_ml` directory for more information on training the models.
-
-If you'd prefer quickstart, you can run the following command to train all the models:
-
-1. **Train the Speech Emotion Detection Model**:
-   ```bash
-   python ai_ml/src/models/train_speech_emotion.py
-   ```
-   
-2. **Train the Facial Emotion Detection Model**:
-   ```bash
-    python ai_ml/src/models/train_facial_emotion.py
-    ```
-   
-3. **Train the Text Emotion Detection Model**:
-    ```bash
-    python ai_ml/src/models/train_text_emotion.py
-    ```
-
-Ensure that you have configured the paths, especially those to the data sets for training, properly in the `config.py`, `train_speech_emotion.py`, `train_facial_emotion.py`, and `train_text_emotion.py` files.
-
-Once you have trained the models, you can run the backend server using the steps mentioned in the [Getting Started](#getting-started) section.
-
-## API Endpoints
-
-### User Endpoints
-
-| HTTP Method | Endpoint                                                         | Description                                     |
-|-------------|------------------------------------------------------------------|-------------------------------------------------|
-| `POST`      | `/users/register/`                                               | Register a new user                             |
-| `POST`      | `/users/login/`                                                  | Login a user and obtain a JWT token             |
-| `GET`       | `/users/user/profile/`                                           | Retrieve the authenticated user's profile       |
-| `PUT`       | `/users/user/profile/update/`                                    | Update the authenticated user's profile         |
-| `DELETE`    | `/users/user/profile/delete/`                                    | Delete the authenticated user's profile         |
-| `POST`      | `/users/recommendations/`                                        | Save recommendations for a user                 |
-| `GET`       | `/users/recommendations/<str:username>/`                         | Retrieve recommendations for a user by username |
-| `DELETE`    | `/users/recommendations/<str:username>/<str:recommendation_id>/` | Delete a specific recommendation for a user     |
-| `DELETE`    | `/users/recommendations/<str:username>/`                         | Delete all recommendations for a user           |
-| `POST`      | `/users/mood_history/<str:user_id>/`                             | Add a mood to the user's mood history           |
-| `GET`       | `/users/mood_history/<str:user_id>/`                             | Retrieve mood history for a user                |
-| `DELETE`    | `/users/mood_history/<str:user_id>/`                             | Delete a specific mood from the user's history  |
-| `POST`      | `/users/listening_history/<str:user_id>/`                        | Add a track to the user's listening history     |
-| `GET`       | `/users/listening_history/<str:user_id>/`                        | Retrieve listening history for a user           |
-| `DELETE`    | `/users/listening_history/<str:user_id>/`                        | Delete a specific track from the user's history |
-| `POST`      | `/users/user_recommendations/<str:user_id>/`                     | Save a user's recommendations                   |
-| `GET`       | `/users/user_recommendations/<str:user_id>/`                     | Retrieve a user's recommendations               |
-| `DELETE`    | `/users/user_recommendations/<str:user_id>/`                     | Delete all recommendations for a user           |
-
-### Emotion Detection Endpoints
-
-| HTTP Method | Endpoint                     | Description                                |
-|-------------|------------------------------|--------------------------------------------|
-| `POST`      | `/api/text_emotion/`         | Analyze text for emotional content         |
-| `POST`      | `/api/speech_emotion/`       | Analyze speech for emotional content       |
-| `POST`      | `/api/facial_emotion/`       | Analyze facial expressions for emotions    |
-| `POST`      | `/api/music_recommendation/` | Get music recommendations based on emotion |
-
-### Admin Interface Endpoints
-
-| HTTP Method | Endpoint                     | Description                                  |
-|-------------|------------------------------|----------------------------------------------|
-| `GET`       | `/admin/`                    | Access the Django Admin interface            |
-
-
-## Testing the APIs
-
-You can use tools like Postman or CURL to test the API endpoints. **Make sure to register a user first to obtain the Bearer JWT token. This token will be required for accessing most of the other endpoints.**
-
-### Obtaining the Bearer JWT Token
-
-1. **Register a User**:
-   - **Method:** POST
-   - **URL:** `http://127.0.0.1:8000/users/register/`
-   - **Body (JSON)**:
-     ```json
-     {
-         "username": "testuser",
-         "password": "password123",
-         "email": "example@email.com"
-     }
-     ```
-   - **Response**: If successful, you will receive a response containing the user details and a token.
-   
-2. **Login to Obtain JWT Token**:
-   - **Method:** POST
-   - **URL:** `http://127.0.0.1:8000/users/login/`
-   - **Body (JSON)**:
-     ```json
-     {
-         "username": "testuser",
-         "password": "password123"
-     }
-     ```
-   - **Response**: You will receive a response with a Bearer JWT token. For example:
-     ```json
-     {
-       "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcyNzQ5NTM4OCwiaWF0IjoxNzI3NDA4OTg4LCJqdGkiOiIzNWE1MDM2NGZmMWE0MTc3ODI4ZGEwZWQ3YzJlZTdkMyIsInVzZXJfaWQiOjN9.7o-AEBJB1zRuZBstWv7Ou6eCGZHUEs6XpeIQQP8rSlc",
-       "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI3NDEyNTg4LCJpYXQiOjE3Mjc0MDg5ODgsImp0aSI6IjRiMmI4ZGYyYjJlOTQyNWRhODM1ODgyMDEyN2RhMjJkIiwidXNlcl9pZCI6M30.J6lHhff29Tpz8APFlqjmJJHTMco39nxhOzhiqqAv01I"
-     }
-     ```
-   - **Note**: The `access` token is the Bearer JWT token that you will use for accessing protected endpoints.
-
-### Using Postman
-
-1. **Open Postman**: Download and install Postman from [here](https://www.postman.com/downloads/).
-
-2. **Set Up Your Requests**: Use the following configurations for each endpoint, ensuring to include the Bearer token in the authorization header for protected endpoints:
-
-   #### User Endpoints
-
-   - **Register User**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/users/register/`
-     - **Body (JSON)**:
-       ```json
-       {
-           "username": "testuser",
-           "password": "password123"
-       }
-       ```
-
-   - **Login User**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/users/login/`
-     - **Body (JSON)**:
-       ```json
-       {
-           "username": "testuser",
-           "password": "password123"
-       }
-       ```
-
-   - **Get User Profile**
-     - **Method:** GET
-     - **URL:** `http://127.0.0.1:8000/users/user/profile/`
-     - **Headers**:
-       - `Authorization`: `Bearer your_jwt_token_here`
-
-   - **Update User Profile**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/users/user/profile/update/`
-     - **Headers**:
-       - `Authorization`: `Bearer your_jwt_token_here`
-     - **Body (JSON)**:
-       ```json
-       {
-           "new_username": "newuser"
-       }
-       ```
-
-   - **Delete User Profile**
-     - **Method:** DELETE
-     - **URL:** `http://127.0.0.1:8000/users/user/profile/delete/`
-     - **Headers**:
-       - `Authorization`: `Bearer your_jwt_token_here`
-
-   - **Add Recommendations**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/users/recommendations/`
-     - **Headers**:
-       - `Authorization`: `Bearer your_jwt_token_here
-
-`
-     - **Body (JSON)**:
-       ```json
-       {
-           "recommendation": "Song Title"
-       }
-       ```
-
-   #### Emotion Detection Endpoints
-
-   - **Text Emotion Analysis**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/api/text_emotion/`
-     - **Body (JSON)**:
-       ```json
-       {
-           "text": "I am feeling great today!"
-       }
-       ```
-
-   - **Speech Emotion Analysis**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/api/speech_emotion/`
-     - **Body (JSON)**:
-       ```json
-       {
-           "audio_file": "path_to_audio_file"
-       }
-       ```
-
-   - **Facial Emotion Analysis**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/api/facial_emotion/`
-     - **Body (JSON)**:
-       ```json
-       {
-           "image_file": "path_to_image_file"
-       }
-       ```
-
-   - **Music Recommendation Based on Emotion**
-     - **Method:** POST
-     - **URL:** `http://127.0.0.1:8000/api/music_recommendation/`
-     - **Body (JSON)**:
-       ```json
-       {
-           "emotion": "happy"
-       }
-       ```
-
-3. **Check Responses**: Monitor the response status and body to ensure correct functionality.
-
-## API Documentation
-
-### Swagger UI
-
-The API documentation is available in the Swagger UI format. You can access the Swagger UI by navigating to `http://127.0.0.1:8000/swagger/`.
-
-You should see a page like this:
-
-![Swagger UI](../images/swagger-ui.png)
-
-### Redoc
-
-The API documentation is also available in the Redoc format. You can access the Redoc documentation by navigating to `http://127.0.0.1:8000/redoc/`.
-
-You should see a page like this:
-
-![Redoc](../images/redoc-ui.png)
-
-## Using the Admin Panel
-
-Django provides an admin panel for managing the database and user profiles. You can access the admin panel by following these steps:
-
-1. **Create a Superuser**:
-   ```bash
-   python manage.py createsuperuser
-   ```
-    Follow the prompts to create a superuser account.
-
-2. **Run the Django Server**:
-   ```bash
-   python manage.py runserver
-   ```
-
-3. **Access the Admin Panel**: Open your browser and navigate to `http://127.0.0.1:8000/admin/`. Log in with the superuser credentials you created. Yours should look like this:
-
-   ![Django Admin Panel](../images/admin-panel.png)
-
-4. **Manage User Profiles**: You can view, add, update, and delete user profiles from the admin panel.
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request for any improvements or fixes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+# Moodify Backend (Django API)
+
+<p align="center">
+  <img src="../images/moodify-logo.png" alt="Moodify" width="160" />
+</p>
+
+<p align="center">
+  Serverless <strong>Django REST API</strong> for Moodify. Owns
+  authentication, user profiles, mood / listening history, and proxies
+  inference requests to the Modal ML service. Runs on Vercel against
+  MongoDB Atlas — no SQL database, no in-process ML.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Django-5.1-092E20?style=for-the-badge&logo=django&logoColor=white" />
+  <img src="https://img.shields.io/badge/DRF-3.15-A30000?style=for-the-badge&logo=django&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/mongoengine-0.29-589636?style=for-the-badge&logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vercel-Serverless-000000?style=for-the-badge&logo=vercel&logoColor=white" />
+  <img src="https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+  <img src="https://img.shields.io/badge/Modal-Proxy-7B68EE?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Tests-80_passing-34d399?style=for-the-badge" />
+</p>
 
 ---
 
-Happy coding! 🎵🎶
+## Table of contents
+
+1. [What it is](#what-it-is)
+2. [Why it looks the way it does](#why-it-looks-the-way-it-does)
+3. [Architecture](#architecture)
+4. [Request lifecycle](#request-lifecycle)
+5. [Data model](#data-model)
+6. [Authentication](#authentication)
+7. [Endpoint reference](#endpoint-reference)
+8. [Project layout](#project-layout)
+9. [Environment variables](#environment-variables)
+10. [Running locally](#running-locally)
+11. [Testing](#testing)
+12. [OpenAPI / Swagger / Redoc](#openapi--swagger--redoc)
+13. [Deployment (Vercel)](#deployment-vercel)
+14. [Resilience + serverless gotchas](#resilience--serverless-gotchas)
+15. [Troubleshooting](#troubleshooting)
+16. [FAQ](#faq)
+
+---
+
+## What it is
+
+A small, slim Django REST API. The deliberate design constraints:
+
+- **No SQL database.** All persistence is MongoDB Atlas via
+  `mongoengine`. `DATABASES = {}` in `settings.py` — Django 5 permits
+  it. The `auth` app is installed only because DRF + drf-yasg import
+  from it; no SQL tables are ever queried.
+- **No machine learning code.** Inference (text / speech / face /
+  recommendation) lives in the Modal service. This tier proxies to it
+  and never imports torch / transformers / fer / librosa / opencv.
+  That's what makes the Vercel bundle small enough to ship.
+- **Stateless JWT auth** against a Mongo `User` document — no sessions,
+  no cookies, no CSRF surface.
+- **Always-on Swagger / Redoc**, loaded from a CDN so the docs page
+  works on Vercel without `collectstatic`.
+
+---
+
+## Why it looks the way it does
+
+The previous backend was a heavyweight Django + SQLite app that imported
+torch, transformers, fer, librosa, opencv, moviepy, facenet-pytorch,
+and spotipy at startup. It worked on a Render dyno; it could not deploy
+to Vercel. The refactor split the responsibilities cleanly:
+
+```mermaid
+flowchart LR
+    subgraph Old["Old (Render)"]
+        OldD["Django + torch + tf + fer + sqlite +<br/>moviepy + opencv + spotipy"]
+    end
+
+    subgraph New["New"]
+        NewD["Django<br/>(slim, serverless)"]
+        Modal["Modal inference"]
+        Atlas[("MongoDB Atlas")]
+    end
+
+    Old -- "refactor" --> New
+    NewD <--> Atlas
+    NewD <-->|JWT + service token| Modal
+
+    style Old fill:#a8a8c0,stroke:#fff,color:#fff
+    style New fill:#34d399,stroke:#fff,color:#fff
+    style Modal fill:#7B68EE,stroke:#fff,color:#fff
+    style Atlas fill:#47A248,stroke:#fff,color:#fff
+```
+
+Result: Vercel bundle dropped from 600+ MB to ~20 MB, cold start went
+from 30-60 s to 1-2 s, idle memory from 2-4 GB to 0.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Edge["Vercel edge (serverless function)"]
+        Vw["vercel_wsgi.py<br/>(@vercel/python entry)"]
+        Wn["WhiteNoise"]
+        Mw["MongoJWTAuthentication"]
+    end
+
+    subgraph Apps["Django apps"]
+        ApiV["api/views.py<br/>(text + music proxy)"]
+        UsersV["users/views.py<br/>(register/login/refresh/profile/history)"]
+    end
+
+    Vw --> Wn --> Mw --> ApiV
+    Mw --> UsersV
+
+    subgraph Store["MongoDB Atlas"]
+        UColl[("users")]
+        PColl[("user_profile")]
+    end
+
+    UsersV <--> UColl
+    UsersV <--> PColl
+
+    Modal["Modal inference<br/>(separate service)"]
+    ApiV -- "MODAL_SERVICE_TOKEN" --> Modal
+
+    Clients["Web / Mobile clients"]
+    Clients -. "Bearer JWT" .-> Vw
+
+    style Vw fill:#000,stroke:#fff,color:#fff
+    style Modal fill:#7B68EE,stroke:#fff,color:#fff
+    style Store fill:#47A248,stroke:#fff,color:#fff
+```
+
+The web frontend and mobile app call the Modal service *directly* with
+a user JWT — Django doesn't sit in the data path for media uploads (a
+Vercel function would time out on a 12 MB audio file anyway). Django
+*can* proxy text + music recommendation through `api/views.py`
+(`/api/text_emotion/`, `/api/music_recommendation/`), using the
+`MODAL_SERVICE_TOKEN`; this exists for server-to-server calls and tests.
+
+All user state — mood history, listening history, saved recommendations
+— is read and written here, via `mongoengine`.
+
+---
+
+## Request lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant V as Vercel function
+    participant DRF as DRF dispatcher
+    participant Auth as MongoJWTAuthentication
+    participant View as view
+    participant Mongo as MongoDB Atlas
+    participant Modal as Modal inference
+
+    C->>V: POST /users/login/ {username, password}
+    V->>DRF: dispatch
+    DRF->>View: users.views.login(request)
+    View->>Mongo: User.objects(username=...).first()
+    Mongo-->>View: User doc
+    View-->>C: 200 {access, refresh}
+
+    Note over C,View: -- protected call --
+
+    C->>V: GET /users/user/profile/<br/>Authorization: Bearer <JWT>
+    V->>DRF: dispatch
+    DRF->>Auth: decode JWT (HS256) -> sub
+    Auth->>Mongo: User.objects(id=sub).first()
+    Mongo-->>Auth: User doc
+    Auth-->>DRF: (user, token)
+    DRF->>View: users.views.user_profile(request)
+    View->>Mongo: UserProfile.objects(username=user.username)
+    Mongo-->>View: profile doc
+    View-->>C: 200 {id, username, email, mood_history, ...}
+
+    Note over C,View: -- recommendation proxy (rare path) --
+
+    C->>V: POST /api/music_recommendation/ {emotion, history}
+    V->>DRF: dispatch
+    DRF->>View: api.views.music_recommendation
+    View->>Modal: POST /music_recommendation<br/>Authorization: Bearer MODAL_SERVICE_TOKEN
+    Modal-->>View: {emotion, recommendations, degraded}
+    View-->>C: 200 {...}
+```
+
+---
+
+## Data model
+
+Two MongoDB documents, both via `mongoengine`. Indexes managed in Atlas
+(the app sets `auto_create_index=False`, which is the right pattern for
+serverless — see [serverless gotchas](#resilience--serverless-gotchas)).
+
+```mermaid
+erDiagram
+    USERS ||--|| USER_PROFILE : "1:1 via username"
+
+    USERS {
+        ObjectId _id
+        string username "unique"
+        string email "unique"
+        string password "PBKDF2 hash"
+        bool is_active
+        datetime created_at "tz-aware UTC"
+    }
+
+    USER_PROFILE {
+        ObjectId _id
+        string username "FK by value"
+        list~string~ mood_history "append-only"
+        list~string~ listening_history "append-only"
+        list~dict~ recommendations "rich track objects"
+        datetime created_at
+    }
+```
+
+| Collection | Defined in | Notes |
+|---|---|---|
+| `users` | `users/documents.py` | Auth-bearing; replaces `django.contrib.auth.models.User`. Password hashing reuses `django.contrib.auth.hashers` (pure functions). |
+| `user_profile` | `api/models.py` | Re-exported from `users/models.py` so both apps share one definition. |
+
+---
+
+## Authentication
+
+```mermaid
+flowchart TD
+    A["POST /users/login/<br/>{username, password}"] --> V{"verify"}
+    V -- "ok" --> M["mint access (7d) + refresh (14d)"]
+    V -- "fail" --> R1["401"]
+    M --> Tok["{access, refresh}"]
+
+    Tok --> Use["Subsequent requests:<br/>Authorization: Bearer <access>"]
+    Use --> D["MongoJWTAuthentication"]
+    D -->|valid + type=access| OK["allow + request.user = User"]
+    D -->|expired| R2["401"]
+    Use -- "401" --> Ref["POST /users/token/refresh/<br/>{refresh}"]
+    Ref --> M2["mint new access"]
+    M2 --> Use
+
+    style M fill:#34d399,stroke:#fff,color:#fff
+    style OK fill:#34d399,stroke:#fff,color:#fff
+    style R1 fill:#ef4444,stroke:#fff,color:#fff
+    style R2 fill:#ef4444,stroke:#fff,color:#fff
+```
+
+- **HS256 JWTs** signed with `JWT_SIGNING_KEY` — the same key the Modal
+  inference service uses to verify them. Django signs; Modal verifies.
+- **Custom auth class** (`users/authentication.py`) replaces
+  `rest_framework_simplejwt` + the SQL `auth_user` table. It decodes
+  the token, looks up the Mongo `User` by `sub`, and attaches it as
+  `request.user`.
+- **No sessions, no CSRF.** Auth travels in the header.
+  `CsrfViewMiddleware` is intentionally omitted (silenced via
+  `SILENCED_SYSTEM_CHECKS`).
+
+---
+
+## Endpoint reference
+
+### Auth + account management — `/users/`
+
+| Method | Path | Auth | Body | Effect |
+|---|---|---|---|---|
+| `POST` | `/users/register/` | none | `{username, email, password}` | Creates `User` + empty `UserProfile`. |
+| `POST` | `/users/login/` | none | `{username, password}` | Returns `{access, refresh}`. |
+| `POST` | `/users/token/refresh/` | none | `{refresh}` | Returns a fresh access token. |
+| `GET`  | `/users/validate_token/` | bearer | — | 200 if the access token is valid. |
+| `POST` | `/users/verify-username-email/` | none | `{username, email}` | First step of forgot-password (proves identity). |
+| `POST` | `/users/reset-password/` | none | `{username, new_password}` | Second step; resets password. |
+| `GET`  | `/users/user/profile/` | bearer | — | Returns the signed-in user's profile. |
+| `PUT`  | `/users/user/profile/update/` | bearer | `{email}` | Updates mutable profile fields. |
+| `DELETE` | `/users/user/profile/delete/` | bearer | — | Permanently deletes the account + profile. |
+
+### History — `/users/{kind}/<user_id>/`
+
+| Kind | Methods | Body |
+|---|---|---|
+| `mood_history` | `GET`, `POST` (append), `DELETE` (single entry) | `{mood}` |
+| `listening_history` | `GET`, `POST` (append), `DELETE` (single entry) | `{track}` |
+| `recommendations` | `GET`, `POST` (append), `DELETE` (clear all) | `{recommendations: [...]}` |
+
+### Inference proxy — `/api/`
+
+| Method | Path | Auth | Body | What it does |
+|---|---|---|---|---|
+| `GET` | `/api/health/` | none | — | `{status: ok}`. |
+| `POST` | `/api/text_emotion/` | none | `{text}` | Proxies to Modal `/text_emotion`. |
+| `POST` | `/api/music_recommendation/` | none | `{emotion, market?, history?}` | Proxies to Modal `/music_recommendation`. |
+
+The proxy paths exist for server-to-server use; the web + mobile
+clients usually call Modal directly with their own user JWT.
+
+### Docs
+
+| Path | Body |
+|---|---|
+| `/` | 302 to `/swagger/`. |
+| `/swagger/` | Swagger UI (CDN-loaded, see `backend/swagger.py`). |
+| `/redoc/` | Redoc UI (CDN-loaded). |
+| `/swagger.json` & `/swagger.yaml` | OpenAPI schema. |
+| `/favicon.ico` | 302 to a music-note SVG on jsDelivr. |
+
+---
+
+## Project layout
+
+```
+backend/
+├── manage.py
+├── vercel_wsgi.py          @vercel/python entrypoint (uses backend.wsgi:application)
+├── vercel.json             routes everything to vercel_wsgi.py
+├── requirements.txt        slim deps -- NO ML packages
+├── backend/
+│   ├── settings.py         JWT + MongoDB + CORS + drf-yasg
+│   ├── urls.py             /, /users/, /api/, /swagger/, /redoc/, /favicon.ico
+│   ├── swagger.py          CDN-loaded Swagger + Redoc + schema endpoints
+│   └── wsgi.py             standard Django WSGI application
+├── api/
+│   ├── views.py            health, text_emotion proxy, music_recommendation proxy
+│   ├── urls.py
+│   ├── models.py           UserProfile (mood/listening/recommendations history)
+│   └── services/
+│       └── inference_client.py    HTTP client to Modal, with retry
+├── users/
+│   ├── views.py            register, login, refresh, profile, password-reset, history
+│   ├── urls.py
+│   ├── authentication.py   MongoJWTAuthentication (replaces SQL auth)
+│   ├── documents.py        User (Mongo, with PBKDF2 hashing)
+│   └── tokens.py           jwt encode/decode wrappers
+├── tests/                  80 tests, runs against mongomock
+└── .env.example
+```
+
+---
+
+## Environment variables
+
+Copy `.env.example` → `backend/.env` for local dev; set the same names
+in your Vercel project's Environment Variables for production.
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `SECRET_KEY` | yes | Django secret (use `openssl rand -hex 32`) |
+| `DEBUG` | no | Default `False`; do **not** set true in prod |
+| `ALLOWED_HOSTS` | no | Default `*`. `.vercel.app,localhost,127.0.0.1` is reasonable |
+| `MONGO_DB_URI` | yes | Atlas connection string (`mongodb+srv://...`) |
+| `MONGO_DB_NAME` | no | Default `emotion_based_music_db` |
+| `MONGO_DB_USERNAME` / `MONGO_DB_PASSWORD` | sometimes | Only if not embedded in the URI |
+| `MONGO_MAX_POOL_SIZE` | no | Default `10`; small for serverless |
+| `JWT_SIGNING_KEY` | yes | **Must match Modal**'s `JWT_SIGNING_KEY` |
+| `JWT_ACCESS_TOKEN_DAYS` | no | Default 7 |
+| `JWT_REFRESH_TOKEN_DAYS` | no | Default 14 |
+| `MODAL_INFERENCE_URL` | yes | URL printed by `modal deploy modal_app.py` |
+| `MODAL_SERVICE_TOKEN` | yes | **Must match Modal**'s `MODAL_SERVICE_TOKEN` |
+| `CORS_ALLOW_ALL_ORIGINS` | no | Default `True`; flip to lock down |
+| `CORS_ALLOWED_ORIGINS` | no | When the above is `False` |
+| `CACHE_REDIS_URL` | no | If set, use Redis (e.g. Upstash) instead of LocMem cache |
+
+---
+
+## Running locally
+
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+cp .env.example .env                # fill in MONGO_DB_URI, JWT_SIGNING_KEY, ...
+python manage.py runserver
+
+# Sanity:
+curl http://127.0.0.1:8000/api/health/        # {"status":"ok"}
+curl -I http://127.0.0.1:8000/                # 302 -> /swagger/
+open http://127.0.0.1:8000/swagger/           # CDN-loaded Swagger UI
+```
+
+No `migrate` step — there's no SQL database. The first request that
+needs the Mongo `User` collection will simply hit Atlas.
+
+---
+
+## Testing
+
+```bash
+pip install -r requirements.txt
+pytest -q                                     # 80 tests, runs against mongomock
+```
+
+The whole suite is offline — `conftest.py` swaps the live mongoengine
+connection for a `mongomock.MongoClient`, so no real Atlas cluster is
+needed.
+
+| File | Tests | Covers |
+|---|---|---|
+| `test_api_views.py` | 12 | `/api/health/`, text-emotion proxy, music-recommendation proxy (including history cap + sanitization) |
+| `test_auth_endpoints.py` | 17 | register, login, refresh, validate, forgot-password (verify + reset) |
+| `test_history_endpoints.py` | 14 | mood / listening / recommendations CRUD |
+| `test_inference_client.py` | 8 | HTTP client to Modal, retry behaviour, missing-URL guard |
+| `test_profile_endpoints.py` | 5 | profile read, email update, account delete |
+| `test_functional_journey.py` | 1 | end-to-end: register → login → analyse → save → fetch |
+| `test_users.py` | 23 | document-level checks for `User` + `UserProfile` |
+
+---
+
+## OpenAPI / Swagger / Redoc
+
+`backend/swagger.py` returns hand-rolled HTML for the UI pages with
+Swagger UI / Redoc loaded from jsDelivr. That sidesteps Django's
+`staticfiles` pipeline entirely — the docs render correctly on Vercel
+without ever running `collectstatic`. The OpenAPI schema itself is
+still produced by `drf_yasg` and served at `/swagger.json` and
+`/swagger.yaml`.
+
+A music-note SVG favicon (Twemoji on jsDelivr) is referenced by both
+docs pages and served from `/favicon.ico` so browser tabs and request
+logs stop showing 404s.
+
+---
+
+## Deployment (Vercel)
+
+```bash
+cd backend
+vercel link                                   # name the project, e.g. moodify-api
+
+# Set every required env var. CLI prompts for the value of each.
+for v in SECRET_KEY DEBUG ALLOWED_HOSTS \
+         MONGO_DB_URI MONGO_DB_NAME MONGO_DB_USERNAME MONGO_DB_PASSWORD \
+         JWT_SIGNING_KEY MODAL_INFERENCE_URL MODAL_SERVICE_TOKEN; do
+    vercel env add "$v" production
+done
+
+vercel --prod
+```
+
+`vercel.json` routes every request to `vercel_wsgi.py`, which the
+`@vercel/python` runtime detects and serves. The `staticfiles/`
+directory is not generated at build time — WhiteNoise serves from the
+source tree via `WHITENOISE_USE_FINDERS = True`, and the doc pages
+load assets from a CDN so there's nothing to collect anyway.
+
+After deploy:
+
+```bash
+curl https://<YOUR_DJANGO_VERCEL_URL>/api/health/           # {"status":"ok"}
+curl -I https://<YOUR_DJANGO_VERCEL_URL>/                   # 302 -> /swagger/
+open https://<YOUR_DJANGO_VERCEL_URL>/swagger/
+```
+
+---
+
+## Resilience + serverless gotchas
+
+| Gotcha | Why it bites on serverless | Fix in this codebase |
+|---|---|---|
+| **`pkg_resources` missing on Python 3.12** | `drf_yasg` still imports `pkg_resources` at module load | `setuptools<81` pinned in `requirements.txt` |
+| **Index conflicts on first request** | Every cold start would call `ensure_indexes()`, which 500s if Atlas already has a conflicting / dirty spec | `auto_create_index=False` on both documents; indexes managed in Atlas |
+| **Mongo connection storms** | Each warm pod opens its own pool; many pods × big pool = Atlas connection limit hit | `MONGO_MAX_POOL_SIZE=10` |
+| **`staticfiles/` doesn't exist** | Vercel build doesn't run `collectstatic` | WhiteNoise `USE_FINDERS=True`; docs load from CDN |
+| **No SQL** | Django insists on SQL by default | `DATABASES = {}` (Django 5 allows this) |
+| **CSRF** | Browsers don't send a CSRF token to a JWT API | `CsrfViewMiddleware` omitted, `security.W003` silenced |
+
+---
+
+## Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| 500 on every request after deploy | `pkg_resources` missing (Python 3.12) | Confirm `setuptools<81` in `requirements.txt` |
+| 500 on first login after deploy | Atlas has a stale unique index from an older schema | Re-set indexes in Atlas, or just drop the affected collection (start fresh) |
+| 401 on every authenticated call from clients | `JWT_SIGNING_KEY` mismatch between Django and Modal | Set both to the same value, redeploy both |
+| `/swagger/` renders blank | Wrong code path — make sure you're on the CDN-loaded `swagger.py` | `git pull`, redeploy |
+| Cold start > 5 s | Mongo connection cold + lambda init | Acceptable; warms up after one request |
+| `INFRA: connection limit` from Atlas | Too many warm pods × pool size | Lower `MONGO_MAX_POOL_SIZE`, or bump the Atlas tier |
+
+---
+
+## FAQ
+
+**Why MongoDB instead of Postgres?** Atlas's free tier is generous, the
+data model is a few document types with very list-shaped relations
+(history arrays inside profiles), and Vercel's serverless model fits
+mongoengine's stateless usage well. There's no relational join in the
+app's hot paths.
+
+**Why not put inference *behind* Django?** Two reasons: (1) Vercel
+functions time out before a 12 MB audio file finishes uploading, and
+(2) Modal's GPU access and memory snapshots are not available through
+a Django bundle. The current split — clients call Modal directly with
+their JWT — avoids both ceilings.
+
+**Why no admin app?** No SQL → no Django admin. We never needed one;
+all state is per-user history.
+
+**Can I run this against a local MongoDB?** Yes — set
+`MONGO_DB_URI=mongodb://localhost:27017/emotion_based_music_db` and
+remove `ssl=True` from `settings.py` if your local instance is plain.
+The test suite uses `mongomock` anyway, so this only matters for
+manual smoke-testing.
+
+---
+
+> Part of the [Moodify](../README.md) monorepo.
+> Inference: [`../modal_inference/README.md`](../modal_inference/README.md).
+> Web client: [`../frontend/README.md`](../frontend/README.md).
+> Mobile client: [`../mobile/README.md`](../mobile/README.md).
+> Full architecture: [`../ARCHITECTURE.md`](../ARCHITECTURE.md).

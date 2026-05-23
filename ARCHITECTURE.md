@@ -21,7 +21,7 @@
 
 ## 1. Executive Summary
 
-Moodify is a sophisticated emotion-based music recommendation system that combines modern web technologies, advanced AI/ML models, and cloud infrastructure to deliver personalized music experiences. The system analyzes user emotions through three modalities (text, speech, and facial expressions) and provides curated music recommendations via Spotify integration.
+Moodify is a sophisticated emotion-based music recommendation system that combines modern web technologies, advanced AI/ML models, and cloud infrastructure to deliver personalized music experiences. The system analyzes user emotions through three modalities (text, speech, and facial expressions) and provides curated music recommendations via Deezer's public Search API. (The recommender ran on Spotify in earlier iterations; Spotify locked down /v1/search for client-credentials apps and the service was migrated to Deezer, which is free and keyless.)
 
 ### Key Capabilities
 
@@ -44,13 +44,13 @@ C4Context
 
     System(moodify, "Moodify Platform", "Emotion-based music recommendation system")
 
-    System_Ext(spotify, "Spotify API", "Music streaming service")
+    System_Ext(deezer, "Deezer API", "Music search + previews (free, keyless)")
     System_Ext(mongodb, "MongoDB Atlas", "Cloud database")
     System_Ext(redis, "Redis Cloud", "Caching layer")
 
     Rel(user, moodify, "Uses", "HTTPS")
     Rel(admin, moodify, "Manages", "HTTPS")
-    Rel(moodify, spotify, "Fetches music", "REST API")
+    Rel(moodify, deezer, "Fetches music", "REST API")
     Rel(moodify, mongodb, "Stores data", "MongoDB Protocol")
     Rel(moodify, redis, "Caches data", "Redis Protocol")
 ```
@@ -66,7 +66,7 @@ C4Context
   - Infrastructure orchestration (Kubernetes, Docker)
 
 - **Out of Scope**:
-  - Music playback functionality (delegated to Spotify)
+  - Music playback functionality (delegated to Deezer's web player)
   - Music content creation
   - Payment processing
   - Email/SMS notification services
@@ -156,7 +156,7 @@ graph TB
     end
 
     subgraph "External Services"
-        SPOT[Spotify API]
+        DEEZER[Deezer API]
         MAIL[Email Service<br/>SendGrid]
     end
 
@@ -326,7 +326,7 @@ graph TB
 
         subgraph "Integration Layer"
             IN1[ML Client]
-            IN2[Spotify Client]
+            IN2[Deezer Client]
             IN3[Cache Manager]
         end
 
@@ -436,7 +436,7 @@ erDiagram
         string profile_picture_url
         boolean email_verified
         boolean is_active
-        json spotify_profile
+        json deezer_profile
     }
 
     MOOD_HISTORY {
@@ -454,7 +454,7 @@ erDiagram
     LISTENING_HISTORY {
         ObjectId _id PK
         ObjectId user_id FK
-        string spotify_track_id
+        string deezer_track_id
         string track_name
         string artist_name
         string album_name
@@ -1063,7 +1063,7 @@ sequenceDiagram
     participant BE as Backend
     participant ML as ML Service
     participant DB as Database
-    participant SP as Spotify
+    participant SP as Deezer
 
     Note over U,SP: Trace ID: abc123xyz
 
@@ -1148,7 +1148,8 @@ sequenceDiagram
 | | AWS | - | Primary cloud |
 | | GCP | - | Alternative cloud |
 | | Vercel | - | Frontend hosting |
-| | Render | - | Backend hosting |
+| | Vercel | - | Backend (Django) + frontend hosting |
+| | Modal | - | ML inference service (memory snapshots, scale-to-zero) |
 
 ---
 
