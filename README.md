@@ -126,6 +126,27 @@ are also used to visualize emotion trends and model performance. Users open reco
 > 
 > • If you have any questions or concerns, please [contact me](mailto:hoangson091104@gmail.com) directly, before taking any action.
 
+## Single-command developer entry point
+
+This repo ships a [`Makefile`](Makefile) that wraps every common dev / ops
+task. From the repo root:
+
+```bash
+make help               # menu of every target
+make install            # install all four workspaces
+make dev                # run backend + frontend together
+make test               # run jest + django + pytest
+make deploy-prod        # Modal deploy + Vercel deploy (web + api)
+make perf-smoke         # k6 smoke against prod
+```
+
+Self-host paths (Kubernetes, AWS / GCP / OCI, Argo CD, Helm) live under
+[`terraform/`](terraform/), [`helm/`](helm/), [`kubernetes/`](kubernetes/),
+[`argocd/`](argocd/), [`k8s-addons/`](k8s-addons/), [`aws/`](aws/),
+[`gcp/`](gcp/), [`oracle-cloud/`](oracle-cloud/). Each directory has its
+own README. The canonical production path is **Vercel + Modal** — see
+[`DEPLOYMENT.md`](DEPLOYMENT.md).
+
 ## **Table of Contents**
 
 - [**🎵 Overview**](#-overview)

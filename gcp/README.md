@@ -2,6 +2,12 @@
 
 Complete production-ready deployment guide for Moodify on Google Cloud Platform (GCP).
 
+> ⚠️ **Optional self-host path.** The canonical Moodify production runs
+> on **Vercel** (web + Django API) and **Modal** (ML inference) — see
+> [`../DEPLOYMENT.md`](../DEPLOYMENT.md). Use this directory only if you
+> need to drop the whole stack onto a GKE cluster you control (data
+> residency, compliance, or org-mandated GCP usage).
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)

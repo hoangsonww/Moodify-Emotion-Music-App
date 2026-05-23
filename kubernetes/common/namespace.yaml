@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: moodify
+  labels:
+    app.kubernetes.io/name: moodify
+    app.kubernetes.io/part-of: moodify
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: moodify-staging
+  labels:
+    app.kubernetes.io/name: moodify
+    app.kubernetes.io/part-of: moodify
+    pod-security.kubernetes.io/enforce: restricted

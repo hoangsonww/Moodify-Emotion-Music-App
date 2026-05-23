@@ -2,6 +2,39 @@
 
 Complete guide for setting up the production-ready deployment infrastructure for Moodify.
 
+> 💡 **Heads up — this guide covers the self-host path.** If you're
+> running Moodify on Vercel + Modal (the canonical production path),
+> none of this is needed — skip to [`DEPLOYMENT.md`](DEPLOYMENT.md)
+> instead. The infra below is for clusters you own, on AWS / GCP /
+> Oracle Cloud / Azure.
+
+## At a glance — what gets built
+
+```
+                          ┌──────────────────────┐
+                          │  Terraform (root +   │
+                          │  per-env tfvars)     │
+                          └──────────┬───────────┘
+                                     ▼
+       ┌───────────────────────────────────────────────────┐
+       │  Cloud foundation (VPC, IAM, KMS, secrets store)  │
+       └───────────────────────────────────────────────────┘
+                                     │
+   ┌────────────┬─────────────┬──────┴──────┬────────────────┬──────────────┐
+   ▼            ▼             ▼             ▼                ▼              ▼
+ EKS/GKE/    Managed       Managed       Object         Notification     CDN +
+ AKS/OKE     Postgres      Redis         storage        topics (alarms)  WAF
+   │
+   ├──────► Helm install (helm/moodify-backend/)
+   │
+   ├──────► Argo CD bootstrap (argocd/install-argocd.yaml + applications/)
+   │
+   ├──────► Add-ons (k8s-addons/)  — External Secrets, OPA, Velero, Chaos Mesh
+   │
+   └──────► Monitoring (kube-prometheus-stack + Loki + Jaeger via
+                       terraform/modules/monitoring/)
+```
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)

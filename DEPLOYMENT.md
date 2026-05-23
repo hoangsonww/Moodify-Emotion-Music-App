@@ -2,6 +2,80 @@
 
 Comprehensive deployment procedures, runbooks, and operational guidelines for Moodify production environments.
 
+> ## Two production paths
+>
+> Moodify supports two production deployment topologies. Pick the one
+> that matches your environment — they don't overlap.
+>
+> | Path                          | When to use                                                                                            | Where it lives in this repo                                          |
+> | ----------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+> | **🟢 Vercel + Modal (canonical)** | Default. Zero-ops, scale-to-zero, what the public Moodify deployment uses.                          | `make deploy-prod` (orchestrates `deploy-modal` + `deploy-vercel-*`)   |
+> | **🔵 Self-host on Kubernetes**    | Compliance, data residency, air-gapped, or org-mandated cloud (AWS / GCP / OCI / Azure).            | `terraform/` + `helm/` + `kubernetes/` + `argocd/`                    |
+>
+> Sections **Quick Start** below cover the Vercel + Modal path. Sections
+> **Blue-Green Deployment**, **Canary Deployment**, **CI/CD Pipeline**,
+> **Operational Runbooks** target the Kubernetes self-host path.
+
+## Vercel + Modal quick start (canonical)
+
+```bash
+# Modal inference (one-time models bootstrap, then deploy)
+cd modal_inference
+modal run modal_app.py::download_models    # first time only
+modal deploy modal_app.py
+
+# Vercel projects (backend Django API + frontend SPA)
+vercel link              # link both backend/ and frontend/ to your Vercel projects
+vercel env add EXPO_PUBLIC_API_URL       # set per-project envs (see below)
+vercel env add EXPO_PUBLIC_MODAL_API_URL
+
+# Deploy both
+( cd backend  && vercel deploy --prod --yes )
+( cd frontend && vercel deploy --prod --yes )
+
+# Or from repo root via Makefile
+make deploy-prod
+```
+
+Required envs for the **frontend** Vercel project (CRA build-time):
+
+* `REACT_APP_API_URL` → `https://moodify-backend-api.vercel.app`
+* `REACT_APP_MODAL_API_URL` → Modal service URL printed by `modal deploy`
+
+Required envs for the **backend** Vercel project:
+
+* `MONGO_URI`, `JWT_SIGNING_KEY`, `MODAL_INFERENCE_URL`,
+  `MODAL_SERVICE_TOKEN`, `CORS_ALLOWED_ORIGINS`.
+
+Required envs for the **mobile** Expo app (set via `eas env:create` or
+in `mobile/.env`):
+
+* `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_MODAL_API_URL`.
+
+## Vercel + Modal smoke verify
+
+```bash
+curl -fsS https://moodify-backend-api.vercel.app/users/health/        # Django
+curl -fsS https://hoangsonww--moodify-inference-inferenceservice-web.modal.run/health  # Modal
+make perf-smoke API_URL=https://moodify-backend-api.vercel.app        # k6 smoke
+```
+
+Roll back with the Vercel CLI:
+
+```bash
+vercel rollback --token=$VERCEL_TOKEN  # picks the previous deployment
+```
+
+Roll back Modal by re-deploying a prior tag:
+
+```bash
+cd modal_inference
+git checkout v1.2.3
+modal deploy modal_app.py
+```
+
+---
+
 ## Table of Contents
 
 - [Deployment Overview](#deployment-overview)

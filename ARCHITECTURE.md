@@ -21,6 +21,21 @@ A comprehensive overview of the architecture of the Moodify platform, detailing 
 
 Moodify is a sophisticated emotion-based music recommendation system that combines modern web technologies, advanced AI/ML models, and cloud infrastructure to deliver personalized music experiences. The system analyzes user emotions through three modalities (text, speech, and facial expressions) and provides curated music recommendations via Deezer's public Search API. (The recommender ran on Spotify in earlier iterations; Spotify locked down /v1/search for client-credentials apps and the service was migrated to Deezer, which is free and keyless.)
 
+### Two deployment topologies
+
+This document describes the system architecture **independent of deploy target**. Two production topologies are supported:
+
+| Topology                           | Frontend          | Backend                 | ML inference     | Data store          |
+| ---------------------------------- | ----------------- | ----------------------- | ---------------- | ------------------- |
+| 🟢 **Vercel + Modal (canonical)** | Vercel (SPA)      | Vercel (Django)         | Modal serverless | MongoDB Atlas       |
+| 🔵 **Self-host on Kubernetes**    | nginx + Helm chart | Helm chart (`helm/moodify-backend`) | Modal OR in-cluster GPU | Managed Postgres + Mongo OR self-host |
+
+Component contracts (REST API surface, JWT auth flow, model interfaces,
+recommender output shape) are identical across both topologies. See
+[`DEPLOYMENT.md`](DEPLOYMENT.md) for deploy steps and
+[`INFRASTRUCTURE_SETUP.md`](INFRASTRUCTURE_SETUP.md) for the self-host
+infra bootstrap.
+
 ### Key Capabilities
 
 - **Multi-Modal Emotion Detection**: Text, speech, and facial expression analysis

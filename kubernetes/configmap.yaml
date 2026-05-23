@@ -1,7 +1,52 @@
+# =============================================================================
+# Moodify shared ConfigMap
+# =============================================================================
+# Non-secret configuration. Pair with `moodify-secrets` for sensitive
+# values (JWT signing key, Mongo URI, Modal service token, etc.). For a
+# production deploy, prefer External Secrets Operator (see
+# `k8s-addons/external-secrets/`) so secret material flows from Vault /
+# AWS Secrets Manager / GCP Secret Manager instead of plain Kubernetes
+# secrets.
+# =============================================================================
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: moodify-config
+  labels:
+    app.kubernetes.io/part-of: moodify
 data:
-  NODE_ENV: "production"
-  REACT_APP_BACKEND_URL: "http://backend-service:3000"
+  # ---- Django backend ----
+  DJANGO_SETTINGS_MODULE: "api.settings"
+  DEBUG: "false"
+  ALLOWED_HOSTS: "moodify.example.com,api.moodify.example.com"
+  CORS_ALLOWED_ORIGINS: "https://moodify.example.com"
+  LOG_LEVEL: "INFO"
+  GUNICORN_WORKERS: "4"
+  GUNICORN_THREADS: "2"
+  GUNICORN_TIMEOUT: "60"
+
+  # ---- External services ----
+  MODAL_INFERENCE_URL: "https://hoangsonww--moodify-inference-inferenceservice-web.modal.run"
+
+  # ---- React frontend (NGINX serving the build) ----
+  # The CRA build inlines REACT_APP_* at compile time, so these are mostly
+  # informational at runtime — change them at build time, not here.
+  REACT_APP_API_URL: "https://api.moodify.example.com"
+  REACT_APP_MODAL_API_URL: "https://hoangsonww--moodify-inference-inferenceservice-web.modal.run"
+---
+# Sealed Secret placeholder. Real values come from External Secrets
+# (preferred) or `kubectl create secret generic moodify-secrets …`.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: moodify-secrets
+  labels:
+    app.kubernetes.io/part-of: moodify
+type: Opaque
+stringData:
+  # WARNING: do not commit real values. Override in CI or via External
+  # Secrets. The values below are placeholders so manifests apply cleanly
+  # in dev / test environments.
+  MONGO_URI: "mongodb://moodify:password@mongo.moodify.svc.cluster.local:27017/moodify?authSource=admin"
+  JWT_SIGNING_KEY: "REPLACE_ME_WITH_A_32_BYTE_RANDOM_VALUE"
+  MODAL_SERVICE_TOKEN: "REPLACE_ME_WITH_MODAL_TOKEN"

@@ -1,12 +1,20 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
+  name: moodify-frontend
+  labels:
+    app.kubernetes.io/name: moodify-frontend
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: moodify
 spec:
+  # ClusterIP — expose via Ingress / IngressRoute rather than LoadBalancer
+  # directly. Switch to LoadBalancer only for single-VM clusters that
+  # don't have an ingress controller installed.
+  type: ClusterIP
   selector:
-    app: frontend
+    app.kubernetes.io/name: moodify-frontend
   ports:
-    - protocol: TCP
-      port: 3001
-      targetPort: 3001
-  type: NodePort  # Expose frontend for external access
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

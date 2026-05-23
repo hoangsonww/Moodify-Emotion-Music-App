@@ -1,12 +1,47 @@
-version: '3.8'
+# =============================================================================
+# Moodify NGINX edge — local docker-compose for self-host smoke testing
+# =============================================================================
+# Use this when you want to validate the edge image against a locally
+# running Django/Modal stack (or just point upstream at the prod URLs to
+# confirm headers, rate limits and CSP).
+# =============================================================================
 
 services:
   nginx:
     build:
       context: .
       dockerfile: Dockerfile
+    image: moodify-nginx:dev
+    container_name: moodify-nginx
+    restart: unless-stopped
     ports:
-      - "80:80"  # Map host port 80 to container port 80
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf  # Mount custom nginx config file
-    restart: always  # Automatically restart container if it crashes
+      # Live-edit the config without rebuilding.
+      - ./nginx.conf:/etc/nginx/conf.d/moodify.conf:ro
+      # Mount your local cert pair (self-signed for dev is fine).
+      - ./tls:/etc/nginx/tls:ro
+      # Pre-built React SPA, optional.
+      - ../frontend/build:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETGID
+      - SETUID

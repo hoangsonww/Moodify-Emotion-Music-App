@@ -1,0 +1,124 @@
+# =============================================================================
+# Network policies — default-deny + explicit allow lists
+# =============================================================================
+# Requires a CNI that supports NetworkPolicy (Calico, Cilium, AWS VPC CNI
+# with policy add-on). Order:
+#   1. default-deny-ingress      → block everything to start.
+#   2. default-deny-egress       → block everything outbound.
+#   3. allow-dns                 → re-allow CoreDNS (53/udp,tcp).
+#   4. allow-frontend-to-backend → SPA pod can reach backend on 8000.
+#   5. allow-ingress-to-edges    → ingress-nginx → frontend + backend.
+#   6. allow-backend-egress      → backend can reach Mongo, Modal, Deezer.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: moodify
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress"]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: moodify
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: moodify
+spec:
+  podSelector: {}
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: moodify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: moodify-backend
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: moodify-frontend
+      ports:
+        - port: 8000
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-edges
+  namespace: moodify
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values: ["moodify-frontend", "moodify-backend"]
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8000
+          protocol: TCP
+        - port: 80
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-egress
+  namespace: moodify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: moodify-backend
+  policyTypes: ["Egress"]
+  egress:
+    # Mongo (in-cluster)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: mongo
+      ports:
+        - port: 27017
+          protocol: TCP
+    # External egress (Modal + Deezer) — restrict to 443
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP

@@ -1,59 +1,88 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# Moodify NGINX edge — convenience wrapper around docker compose
+# =============================================================================
+# Usage: ./start_nginx.sh <build|start|stop|restart|logs|status|reload|clean|test>
+# -----------------------------------------------------------------------------
+set -euo pipefail
 
-# Define the docker-compose file location
-COMPOSE_FILE="docker-compose.yml"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.yml"
+readonly SERVICE_NAME="nginx"
 
-# Display help message
-function show_help() {
-    echo "Usage: $0 [option]"
-    echo "Options:"
-    echo "  build    Build the Nginx Docker image"
-    echo "  start    Start the Nginx container"
-    echo "  stop     Stop the Nginx container"
-    echo "  restart  Restart the Nginx container"
-    echo "  logs     Show logs of the Nginx container"
-    echo "  clean    Stop and remove the container"
-    echo "  help     Display this help message"
-}
-
-# Check if docker-compose file exists
-if [ ! -f "$COMPOSE_FILE" ]; then
-    echo "Error: $COMPOSE_FILE not found!"
-    exit 1
+# Pick the right compose binary: prefer Docker CLI plugin (v2), fall back
+# to legacy docker-compose, fail loudly if neither is installed.
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE=(docker-compose)
+else
+  echo "✗ Neither 'docker compose' nor 'docker-compose' is installed." >&2
+  exit 1
 fi
 
-# Handle script arguments
-case "$1" in
-    build)
-        echo "Building the Nginx Docker image..."
-        docker-compose -f $COMPOSE_FILE build
-        ;;
-    start)
-        echo "Starting the Nginx container..."
-        docker-compose -f $COMPOSE_FILE up -d
-        ;;
-    stop)
-        echo "Stopping the Nginx container..."
-        docker-compose -f $COMPOSE_FILE down
-        ;;
-    restart)
-        echo "Restarting the Nginx container..."
-        docker-compose -f $COMPOSE_FILE down
-        docker-compose -f $COMPOSE_FILE up -d
-        ;;
-    logs)
-        echo "Displaying logs of the Nginx container..."
-        docker-compose -f $COMPOSE_FILE logs -f
-        ;;
-    clean)
-        echo "Cleaning up: stopping and removing the container..."
-        docker-compose -f $COMPOSE_FILE down -v
-        ;;
-    help)
-        show_help
-        ;;
-    *)
-        echo "Invalid option!"
-        show_help
-        ;;
+usage() {
+  cat <<EOF
+Moodify NGINX edge — Docker compose wrapper
+
+Usage: $(basename "$0") <command>
+
+Commands:
+  build      Build the image
+  start      Start the container (detached)
+  stop       Stop and remove the container
+  restart    stop + start
+  logs       Tail logs (Ctrl-C to detach)
+  status     Show container + health status
+  reload     Hot-reload nginx config inside the running container
+  test       'nginx -t' inside the container to validate the config
+  clean      Stop + remove container and volumes (destructive)
+  help       This message
+EOF
+}
+
+if [[ ! -f "${COMPOSE_FILE}" ]]; then
+  echo "✗ ${COMPOSE_FILE} not found" >&2
+  exit 1
+fi
+
+cmd="${1:-help}"
+case "${cmd}" in
+  build)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" build --pull
+    ;;
+  start)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" up -d --remove-orphans
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" ps
+    ;;
+  stop)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" down
+    ;;
+  restart)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" down
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" up -d --remove-orphans
+    ;;
+  logs)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" logs -f --tail=200
+    ;;
+  status)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" ps
+    ;;
+  reload)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" exec "${SERVICE_NAME}" nginx -s reload
+    ;;
+  test)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" exec "${SERVICE_NAME}" nginx -t
+    ;;
+  clean)
+    "${COMPOSE[@]}" -f "${COMPOSE_FILE}" down -v --remove-orphans
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    echo "✗ Unknown command: ${cmd}" >&2
+    usage
+    exit 2
+    ;;
 esac

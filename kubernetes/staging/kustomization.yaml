@@ -1,0 +1,83 @@
+# =============================================================================
+# Staging overlay (Kustomize)
+# =============================================================================
+# Re-uses the prod manifests in ../ and patches the env-specific fields
+# (image tag, replicas, namespace, env vars).
+#
+# Apply with the load-restrictor flag because we reference paths above
+# this directory's root:
+#   kubectl kustomize --load-restrictor=LoadRestrictionsNone kubernetes/staging/ \
+#     | kubectl apply -f -
+#
+# OR apply ../common/ separately first, then this overlay without it:
+#   kubectl apply -f kubernetes/common/
+#   kubectl apply -k kubernetes/staging/
+# =============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: moodify-staging
+
+# Only files inside this directory (or sub-dirs). Apply the shared
+# resources under ../common/ once per cluster before this overlay.
+resources:
+  - ../configmap.yaml
+  - ../backend-deployment.yaml
+  - ../backend-service.yaml
+  - ../frontend-deployment.yaml
+  - ../frontend-service.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: moodify
+      environment: staging
+    includeSelectors: false
+
+images:
+  - name: ghcr.io/hoangsonww/moodify-backend
+    newTag: staging
+  - name: ghcr.io/hoangsonww/moodify-frontend
+    newTag: staging
+
+replicas:
+  - name: moodify-backend
+    count: 2
+  - name: moodify-frontend
+    count: 1
+
+patches:
+  # Smaller resource asks for staging.
+  - target:
+      kind: Deployment
+      name: moodify-backend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 128Mi
+  # Different hostnames on staging.
+  - target:
+      kind: Ingress
+      name: moodify
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts
+        value:
+          - staging.moodify.example.com
+          - api-staging.moodify.example.com
+      - op: replace
+        path: /spec/rules/0/host
+        value: api-staging.moodify.example.com
+      - op: replace
+        path: /spec/rules/1/host
+        value: staging.moodify.example.com
+
+configMapGenerator:
+  - name: moodify-config
+    behavior: merge
+    literals:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - REACT_APP_API_URL=https://api-staging.moodify.example.com

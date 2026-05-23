@@ -1,0 +1,135 @@
+{{- define "moodify-backend.podTemplate" -}}
+metadata:
+  labels:
+    {{- include "moodify-backend.selectorLabels" . | nindent 4 }}
+    {{- if .color }}
+    color: {{ .color }}
+    {{- end }}
+  {{- with .Values.podAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  serviceAccountName: {{ include "moodify-backend.serviceAccountName" . }}
+  automountServiceAccountToken: false
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.podSecurityContext }}
+  securityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 30 }}
+  containers:
+    - name: backend
+      image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+      imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+      ports:
+        - name: http
+          containerPort: {{ .Values.service.targetPort | default 8000 }}
+          protocol: TCP
+      envFrom:
+        {{- if and .Values.configMap .Values.configMap.data }}
+        - configMapRef:
+            name: {{ include "moodify-backend.fullname" . }}-config
+        {{- end }}
+        {{- if and .Values.secrets .Values.secrets.create }}
+        - secretRef:
+            name: {{ include "moodify-backend.fullname" . }}-secrets
+        {{- end }}
+        {{- range .Values.envFrom }}
+        - {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- with .Values.env }}
+      env:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      resources:
+        {{- toYaml .Values.resources | nindent 8 }}
+      livenessProbe:
+        {{- toYaml .Values.livenessProbe | nindent 8 }}
+      readinessProbe:
+        {{- toYaml .Values.readinessProbe | nindent 8 }}
+      {{- with .Values.startupProbe }}
+      startupProbe:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+  volumes:
+    - name: tmp
+      emptyDir: {}
+    - name: cache
+      emptyDir: {}
+  {{- with .Values.nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.affinity }}
+  affinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          {{- include "moodify-backend.selectorLabels" . | nindent 10 }}
+{{- end -}}
+
+{{- if .Values.blueGreen.enabled -}}
+{{- /* Blue + green pair */ -}}
+{{- range $color := list "blue" "green" }}
+{{- if or (eq $color $.Values.blueGreen.activeEnvironment) $.Values.blueGreen.keepInactive }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "moodify-backend.fullname" $ }}-{{ $color }}
+  labels:
+    {{- include "moodify-backend.labels" $ | nindent 4 }}
+    color: {{ $color }}
+spec:
+  replicas: {{ $.Values.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    {{- toYaml $.Values.deploymentStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "moodify-backend.selectorLabels" $ | nindent 6 }}
+      color: {{ $color }}
+  template:
+    {{- include "moodify-backend.podTemplate" (merge (dict "color" $color) $) | nindent 4 }}
+---
+{{- end }}
+{{- end }}
+{{- else }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "moodify-backend.fullname" . }}
+  labels:
+    {{- include "moodify-backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    {{- toYaml .Values.deploymentStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "moodify-backend.selectorLabels" . | nindent 6 }}
+  template:
+    {{- include "moodify-backend.podTemplate" . | nindent 4 }}
+{{- end }}
