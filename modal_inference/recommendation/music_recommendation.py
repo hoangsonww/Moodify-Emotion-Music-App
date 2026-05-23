@@ -356,8 +356,13 @@ def get_music_recommendation(
             return primary[:_MAX_RESULTS]
         if primary:
             return primary
-    except requests.RequestException:
-        logger.warning("Spotify request failed for emotion=%s", emotion)
+    except requests.RequestException as exc:
+        # Include the full exception detail so operators can tell apart
+        # bad credentials (401 from /api/token), throttling (429), and
+        # connectivity issues from the generic "request failed" line.
+        logger.warning(
+            "Spotify request failed for emotion=%s: %s", emotion, exc, exc_info=True
+        )
     except Exception:  # noqa: BLE001 -- e.g. missing-credentials RuntimeError
         logger.exception("Unexpected recommendation error for emotion=%s", emotion)
 
