@@ -125,8 +125,8 @@ export default function ForgotPasswordScreen({ navigation }) {
     }
   };
 
-  const haloScale = halo.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1.18] });
-  const haloOpacity = halo.interpolate({ inputRange: [0, 1], outputRange: [0.45, 0.85] });
+  const haloScale = halo.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1.06] });
+  const haloOpacity = halo.interpolate({ inputRange: [0, 1], outputRange: [0.12, 0.22] });
   const orbATranslate = orbA.interpolate({ inputRange: [0, 1], outputRange: [0, -24] });
   const orbAOpacity = orbA.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.55] });
   const orbBTranslate = orbB.interpolate({ inputRange: [0, 1], outputRange: [0, 22] });

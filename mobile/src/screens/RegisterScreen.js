@@ -119,8 +119,8 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
-  const haloScale = halo.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1.18] });
-  const haloOpacity = halo.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0.9] });
+  const haloScale = halo.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1.06] });
+  const haloOpacity = halo.interpolate({ inputRange: [0, 1], outputRange: [0.12, 0.22] });
   const orbATranslate = orbA.interpolate({ inputRange: [0, 1], outputRange: [0, -26] });
   const orbAOpacity = orbA.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.6] });
   const orbBTranslate = orbB.interpolate({ inputRange: [0, 1], outputRange: [0, 24] });

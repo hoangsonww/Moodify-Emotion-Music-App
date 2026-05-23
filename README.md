@@ -900,30 +900,78 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
 
 <h2 id="-mobile-app-version">📱 Mobile App Version</h2>
 
-There is also a mobile version of the Moodify app built using React Native and Expo. You can find the mobile app in the `mobile` directory.
+There is also a fully-featured **native mobile app** built with **React
+Native (Expo SDK 51)**. It runs from a single codebase on **iOS 18+** and
+**Android 15+**, talks to the same Django REST API and Modal inference
+service as the web client, and ships with JWT auth, silent token
+refresh, mood-tinted theming, and graceful offline-degraded inference.
 
-1. **Navigate to the mobile directory:**
-   ```bash
-   cd ../mobile
-   ```
+> 📘 **Deep dive:** see [`MOBILE_APPS.md`](MOBILE_APPS.md)
+> for every screen, every diagram, and side-by-side iOS + Android
+> captures. The short tour and dev setup live in
+> [`mobile/README.md`](mobile/README.md).
 
-2. **Install dependencies using Yarn:**
-   ```bash
-    yarn install
-    ```
+### Highlights
 
-3. **Start the Expo development server:**
-    ```bash
-    yarn start
-    ```
+- **Three inference modes** — text, voice (`.m4a`), front-camera selfie.
+- **JWT auth with silent refresh** — collapsed concurrent 401s, single
+  in-flight refresh.
+- **Graceful degradation** — Modal cold start or network failure still
+  yields a curated fallback playlist (`degraded: true`).
+- **Auto-detected market** from device locale (16 countries + Global).
+- **Per-mood gradient theming** with 13 distinct mood palettes.
+- **Custom blurred pill tab bar** floating above the content.
 
-4. **Scan the QR code using the Expo Go app on your mobile device to run the app.**
+### Screen tour — iOS + Android side-by-side
 
-If successful, you should see the following home screen:
+| Login | Home — Text | Home — Voice | Home — Face |
+|:---:|:---:|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/01-login.png" width="190" /> | <img src="mobile/docs/screenshots/android/02-home-text.png" width="190" /> | <img src="mobile/docs/screenshots/ios/03-home-voice.png" width="190" /> | <img src="mobile/docs/screenshots/android/04-home-face.png" width="190" /> |
 
-<p align="center">
-  <img src="images/mobile-ui.png" alt="Mobile Home" width="50%" style="border-radius: 10px">
-</p>
+| Results | Sort sheet | Market sheet | Profile |
+|:---:|:---:|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/05-results.png" width="190" /> | <img src="mobile/docs/screenshots/android/06-sort-sheet.png" width="190" /> | <img src="mobile/docs/screenshots/ios/07-market-sheet.png" width="190" /> | <img src="mobile/docs/screenshots/android/08-profile.png" width="190" /> |
+
+| Settings | Edit email | Change password | Register |
+|:---:|:---:|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/09-settings.png" width="190" /> | <img src="mobile/docs/screenshots/android/10-edit-email.png" width="190" /> | <img src="mobile/docs/screenshots/ios/11-change-password.png" width="190" /> | <img src="mobile/docs/screenshots/android/12-register.png" width="190" /> |
+
+| Forgot — Verify | Forgot — Reset |
+|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/13-forgot-verify.png" width="190" /> | <img src="mobile/docs/screenshots/android/14-forgot-reset.png" width="190" /> |
+
+### Mobile architecture
+
+```mermaid
+flowchart LR
+    subgraph Device[📱 iOS / Android]
+        UI[React Native UI]
+        Ctx[AuthContext]
+        Store[(AsyncStorage)]
+        Cam[expo-camera]
+        Mic[expo-av]
+    end
+    UI --> Ax[Axios + interceptors]
+    Ctx <--> Store
+    Cam --> UI
+    Mic --> UI
+    Ax -- "auth, profile, history" --> API[Django REST API]
+    Ax -- "text, audio, image" --> Modal[Modal inference]
+    UI -- "open URL" --> Deezer[(Deezer search)]
+```
+
+### Run it
+
+```bash
+cd mobile
+npm install                              # or yarn install
+cp .env.example .env                     # set EXPO_PUBLIC_API_URL / EXPO_PUBLIC_MODAL_API_URL
+npx expo start                           # press i (iOS), a (Android), w (web), or scan the QR with Expo Go
+# port collision?  npx expo start --port 8083
+```
+
+For production builds, use **EAS Build** — see
+[`mobile/README.md`](mobile/README.md#running-it) for the full flow.
 
 Feel free to explore the mobile app and test its functionalities!
 
