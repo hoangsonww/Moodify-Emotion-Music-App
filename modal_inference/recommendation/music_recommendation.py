@@ -1,21 +1,25 @@
 """Spotify-backed music recommendation.
 
-Recommendations are built from *curated mood playlists*: for a detected
-emotion we search Spotify for matching playlists and collect tracks from
-them. This produces genuinely mood-matched results -- far better than a
-plain keyword track search.
+For a detected emotion we collect tracks from Spotify and return up to
+_MAX_RESULTS de-duplicated results so the client can paginate and sort
+them; each track carries popularity / release-date / duration so the
+client can offer meaningful sort orders.
 
-A large set (up to _MAX_RESULTS) is returned so the client can paginate
-and sort it; each track carries popularity / release-date / duration so
-the client can offer meaningful sort orders. Results are de-duplicated
-and kept in the playlists' curated order (that order is the "Recommended"
-sort on the client).
+Sourcing strategy, in order of preference:
+
+  1. Curated mood playlists -- a search for playlists matching the mood
+     query, then the tracks of each. Produces genuinely mood-matched
+     results far better than a plain keyword search. Spotify restricts
+     ``/v1/search?type=playlist`` to apps with a user OAuth context, so
+     this path 403s for client-credentials apps; when that happens we
+     fall through to step 2 instead of failing.
+  2. Keyword track search -- ``/v1/search?type=track`` is still allowed
+     for client-credentials apps and serves as the live fallback.
+  3. Curated static list -- last resort when Spotify is unreachable, so
+     a non-empty result is *always* returned.
 
 This deliberately does NOT use Spotify's ``/v1/recommendations`` or
-audio-features endpoints -- Spotify deprecated those (Nov 2024). Playlist
-search + playlist tracks are core, still-supported endpoints. A keyword
-track search is the first fallback; a curated static list is the last
-resort, so a non-empty result is *always* returned.
+audio-features endpoints -- Spotify deprecated those in Nov 2024.
 """
 
 import base64
@@ -266,10 +270,22 @@ def _collect_for_query(
     Stops once ``limit`` tracks are gathered. Tries curated playlists
     first, then a keyword track search. Tracks are de-duplicated by
     external_url and kept in the playlists' curated order.
+
+    Spotify restricts ``/v1/search?type=playlist`` to apps with a user
+    OAuth context (client-credentials apps get 403). When that happens we
+    silently fall through to the track-search path rather than discarding
+    the whole result and dropping to the static fallback.
     """
     collected: list[dict] = []
     seen: set[str] = set()
-    for playlist_id in _search_playlist_ids(query, market):
+
+    try:
+        playlist_ids = _search_playlist_ids(query, market)
+    except requests.RequestException as exc:
+        logger.info("Playlist search unavailable (%s); falling back to track search", exc)
+        playlist_ids = []
+
+    for playlist_id in playlist_ids:
         try:
             tracks = _playlist_track_dicts(playlist_id, market)
         except requests.RequestException:

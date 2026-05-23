@@ -153,6 +153,26 @@ def test_falls_back_to_track_search_when_no_playlist_matches(monkeypatch):
     assert [r["name"] for r in recs] == ["Fallback Hit"]
 
 
+def test_playlist_search_forbidden_falls_back_to_track_search(monkeypatch):
+    """Spotify now returns 403 on /search?type=playlist for client-credentials
+    apps -- the recommender must fall through to /search?type=track instead
+    of dropping all the way to the curated static fallback."""
+    monkeypatch.setattr(requests, "post", _token_response)
+
+    def fake_get(url, **kwargs):
+        params = kwargs.get("params", {})
+        if "/search" in url and params.get("type") == "playlist":
+            return _FakeResponse({}, status=403)  # the production failure mode
+        if "/search" in url and params.get("type") == "track":
+            return _FakeResponse({"tracks": {"items": [_track("Live Track")]}})
+        raise AssertionError(f"unexpected GET {url}")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+
+    recs = mr.get_music_recommendation("joy")
+    assert [r["name"] for r in recs] == ["Live Track"]
+
+
 def test_refreshes_token_and_retries_on_401(monkeypatch):
     monkeypatch.setattr(requests, "post", _token_response)
     calls = {"playlist_search": 0}
@@ -235,7 +255,11 @@ def test_history_blend_failure_keeps_current_mood_result(monkeypatch):
         if "/search" in url and params.get("type") == "playlist":
             if query == "happy feel good":
                 return _FakeResponse({"playlists": {"items": [{"id": "joy_pl"}]}})
-            # The recurring-mood search fails -- must not sink the result.
+            # The recurring-mood playlist + track searches both fail --
+            # the blend must skip without sinking the primary result.
+            raise requests.ConnectionError("history mood search failed")
+        if "/search" in url and params.get("type") == "track":
+            # Recurring-mood track search also fails for the same reason.
             raise requests.ConnectionError("history mood search failed")
         if "/playlists/joy_pl/tracks" in url:
             return _FakeResponse({"items": [{"track": _track(f"Joy{i}")} for i in range(6)]})
