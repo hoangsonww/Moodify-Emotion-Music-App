@@ -5,17 +5,39 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../../theme';
 
 /** Labelled text input styled for the dark theme, with a focus accent.
- *  When `secureTextEntry` is set, renders an eye toggle that flips visibility. */
-export default function TextField({ label, style, multiline, secureTextEntry, ...inputProps }) {
+ *  When `secureTextEntry` is set, renders an eye toggle that flips visibility.
+ *  Optional `leftIcon` + `iconTint` renders a small colored icon tile inside the field. */
+export default function TextField({
+  label,
+  style,
+  multiline,
+  secureTextEntry,
+  leftIcon,
+  iconTint,
+  iconTintSoft,
+  ...inputProps
+}) {
   const [focused, setFocused] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const isSecure = !!secureTextEntry;
   const hideText = isSecure && !revealed;
+  const hasIcon = !!leftIcon;
 
   return (
     <View style={[styles.wrap, style]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <View style={styles.inputRow}>
+        {hasIcon ? (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.iconTile,
+              { backgroundColor: iconTintSoft || colors.primarySoft },
+            ]}
+          >
+            <Ionicons name={leftIcon} size={16} color={iconTint || colors.primary} />
+          </View>
+        ) : null}
         <TextInput
           placeholderTextColor={colors.textFaint}
           style={[
@@ -23,6 +45,7 @@ export default function TextField({ label, style, multiline, secureTextEntry, ..
             multiline && styles.multiline,
             focused && styles.inputFocused,
             isSecure && styles.inputWithToggle,
+            hasIcon && styles.inputWithIcon,
           ]}
           autoCapitalize="none"
           autoCorrect={false}
@@ -74,6 +97,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   inputWithToggle: { paddingRight: 44 },
+  inputWithIcon: { paddingLeft: 52 },
   inputFocused: { borderColor: colors.primary },
   multiline: { minHeight: 120, textAlignVertical: 'top', paddingTop: spacing.md },
   toggle: {
@@ -84,5 +108,17 @@ const styles = StyleSheet.create({
     width: 36,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  iconTile: {
+    position: 'absolute',
+    left: 10,
+    top: '50%',
+    marginTop: -16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
   },
 });

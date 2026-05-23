@@ -1,6 +1,5 @@
 // Account management actions: edit email, change password, clear history,
-// delete account. Everything here calls a deployed backend endpoint --
-// nothing is local-only.
+// delete account.
 
 import React, { useCallback, useState } from 'react';
 import {
@@ -14,21 +13,28 @@ import {
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 
 import Screen from '../components/Screen';
 import AppButton from '../components/AppButton';
 import TextField from '../components/TextField';
+import SectionHeader from '../components/SectionHeader';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+import { error as hapticError, success as hapticSuccess, tapLight } from '../util/haptics';
 import { getProfile, clearHistory } from '../services/emotion';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, shadows, spacing, typography } from '../../theme';
 
-export default function SettingsScreen({ navigation }) {
+const TAB_BAR_BOTTOM = 110;
+
+export default function SettingsScreen() {
   const { signOut, updateProfile, changePassword, deleteAccount } = useAuth();
+  const toast = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [editor, setEditor] = useState(null); // 'email' | 'password' | null
+  const [editor, setEditor] = useState(null);
   const [emailValue, setEmailValue] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -39,7 +45,7 @@ export default function SettingsScreen({ navigation }) {
       setProfile(data);
       setEmailValue(data?.email || '');
     } catch {
-      // leave profile null; the screen still renders the action buttons
+      // ignore
     } finally {
       setLoading(false);
     }
@@ -60,17 +66,19 @@ export default function SettingsScreen({ navigation }) {
   const onSaveEmail = async () => {
     const next = emailValue.trim();
     if (!next) {
-      Alert.alert('Missing email', 'Enter a valid email address.');
+      toast.show({ type: 'warning', title: 'Missing email', message: 'Enter a valid email.' });
       return;
     }
     setBusy(true);
     try {
       await updateProfile({ email: next });
-      Alert.alert('Saved', 'Your email has been updated.');
+      hapticSuccess();
+      toast.show({ type: 'success', title: 'Saved', message: 'Email updated.' });
       setEditor(null);
       await refresh();
     } catch {
-      Alert.alert('Update failed', 'Could not update your email. Try again.');
+      hapticError();
+      toast.show({ type: 'error', title: 'Update failed', message: 'Could not update email.' });
     } finally {
       setBusy(false);
     }
@@ -78,21 +86,21 @@ export default function SettingsScreen({ navigation }) {
 
   const onSavePassword = async () => {
     if (password.length < 8) {
-      Alert.alert('Weak password', 'Use at least 8 characters.');
+      toast.show({ type: 'warning', title: 'Weak password', message: 'Use at least 8 characters.' });
       return;
     }
     if (password !== confirm) {
-      Alert.alert('Passwords do not match', 'Re-enter both passwords.');
+      toast.show({ type: 'warning', title: 'Passwords differ', message: 'Re-enter both passwords.' });
       return;
     }
     setBusy(true);
     try {
-      // changePassword clears tokens, so the auth context will route us
-      // back to the login screen automatically.
       await changePassword(password);
-      Alert.alert('Password updated', 'Sign in with your new password.');
+      hapticSuccess();
+      toast.show({ type: 'success', title: 'Password updated', message: 'Sign in with your new password.' });
     } catch {
-      Alert.alert('Update failed', 'Could not change your password. Try again.');
+      hapticError();
+      toast.show({ type: 'error', title: 'Update failed', message: 'Could not change your password.' });
     } finally {
       setBusy(false);
       setEditor(null);
@@ -106,10 +114,12 @@ export default function SettingsScreen({ navigation }) {
       setBusy(true);
       try {
         await clearHistory(profile?.id, kind);
-        Alert.alert('Cleared', `Your ${label} is now empty.`);
+        hapticSuccess();
+        toast.show({ type: 'success', title: 'Cleared', message: `Your ${label} is now empty.` });
         await refresh();
       } catch {
-        Alert.alert('Action failed', `Could not clear your ${label}.`);
+        hapticError();
+        toast.show({ type: 'error', title: 'Action failed', message: `Could not clear your ${label}.` });
       } finally {
         setBusy(false);
       }
@@ -123,8 +133,10 @@ export default function SettingsScreen({ navigation }) {
         setBusy(true);
         try {
           await deleteAccount();
+          hapticSuccess();
         } catch {
-          Alert.alert('Delete failed', 'Could not delete your account.');
+          hapticError();
+          toast.show({ type: 'error', title: 'Delete failed', message: 'Could not delete your account.' });
         } finally {
           setBusy(false);
         }
@@ -144,43 +156,59 @@ export default function SettingsScreen({ navigation }) {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Section title="Account">
+        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.subtitle}>Tune your account, data and session.</Text>
+
+        <SectionHeader title="Account" />
+        <View style={[styles.group, shadows.sm]}>
           <Row
             icon="mail-outline"
+            tint={colors.primary}
+            tintSoft={colors.primarySoft}
             label="Email"
             value={profile?.email || 'Not set'}
-            onPress={() => setEditor('email')}
+            onPress={() => { tapLight(); setEditor('email'); }}
           />
           <Row
             icon="key-outline"
+            tint={colors.accent}
+            tintSoft={colors.accentSoft}
             label="Password"
             value="••••••••"
-            onPress={() => setEditor('password')}
+            onPress={() => { tapLight(); setEditor('password'); }}
           />
-        </Section>
+        </View>
 
-        <Section title="Data">
+        <SectionHeader title="Your data" />
+        <View style={[styles.group, shadows.sm]}>
           <Row
             icon="happy-outline"
+            tint={colors.primary}
+            tintSoft={colors.primarySoft}
             label="Clear mood history"
             value={`${(profile?.mood_history || []).length} entries`}
             onPress={() => onClear('mood_history', 'mood history')}
           />
           <Row
             icon="musical-notes-outline"
+            tint={colors.accent}
+            tintSoft={colors.accentSoft}
             label="Clear saved recommendations"
             value={`${(profile?.recommendations || []).length} tracks`}
             onPress={() => onClear('recommendations', 'saved recommendations')}
           />
           <Row
             icon="play-circle-outline"
+            tint={colors.success}
+            tintSoft={colors.successSoft}
             label="Clear listening history"
             value={`${(profile?.listening_history || []).length} entries`}
             onPress={() => onClear('listening_history', 'listening history')}
           />
-        </Section>
+        </View>
 
-        <Section title="Danger zone">
+        <SectionHeader title="Danger zone" />
+        <View style={styles.dangerWrap}>
           <AppButton
             title="Delete account"
             icon="trash-outline"
@@ -191,15 +219,16 @@ export default function SettingsScreen({ navigation }) {
             title="Log out"
             icon="log-out-outline"
             variant="ghost"
-            onPress={signOut}
+            onPress={() => { tapLight(); signOut(); }}
             style={{ marginTop: spacing.sm }}
           />
-        </Section>
+        </View>
       </ScrollView>
 
       <Modal visible={editor !== null} transparent animationType="slide" onRequestClose={() => setEditor(null)}>
         <Pressable style={styles.backdrop} onPress={() => setEditor(null)}>
-          <Pressable style={styles.sheet} onPress={() => {}}>
+          <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+          <Pressable style={[styles.sheet, shadows.md]} onPress={() => {}}>
             <View style={styles.handle} />
             <Text style={styles.sheetTitle}>
               {editor === 'email' ? 'Update email' : 'Change password'}
@@ -214,7 +243,7 @@ export default function SettingsScreen({ navigation }) {
                   autoCapitalize="none"
                   keyboardType="email-address"
                 />
-                <AppButton title="Save" onPress={onSaveEmail} loading={busy} />
+                <AppButton title="Save" icon="checkmark" onPress={onSaveEmail} loading={busy} />
               </>
             ) : (
               <>
@@ -232,7 +261,7 @@ export default function SettingsScreen({ navigation }) {
                   placeholder="re-enter password"
                   secureTextEntry
                 />
-                <AppButton title="Update password" onPress={onSavePassword} loading={busy} />
+                <AppButton title="Update password" icon="key" onPress={onSavePassword} loading={busy} />
               </>
             )}
             <AppButton
@@ -252,22 +281,15 @@ export default function SettingsScreen({ navigation }) {
   );
 }
 
-function Section({ title, children }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {children}
-    </View>
-  );
-}
-
-function Row({ icon, label, value, onPress }) {
+function Row({ icon, tint, tintSoft, label, value, onPress }) {
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
-      <Ionicons name={icon} size={20} color={colors.textMuted} />
+      <View style={[styles.rowIcon, { backgroundColor: tintSoft }]}>
+        <Ionicons name={icon} size={16} color={tint} />
+      </View>
       <View style={styles.rowText}>
         <Text style={styles.rowLabel}>{label}</Text>
         <Text style={styles.rowValue} numberOfLines={1}>
@@ -280,54 +302,66 @@ function Row({ icon, label, value, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg, paddingBottom: spacing.xl },
+  content: { padding: spacing.lg, paddingTop: spacing.xl, paddingBottom: TAB_BAR_BOTTOM },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  section: { marginBottom: spacing.xl },
-  sectionTitle: {
-    color: colors.textMuted,
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: spacing.sm,
+  title: { ...typography.h1, color: colors.text },
+  subtitle: { color: colors.textMuted, fontSize: 14, marginTop: spacing.xs },
+  group: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
-    marginBottom: spacing.sm,
     gap: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
   },
   rowPressed: { opacity: 0.7 },
+  rowIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   rowText: { flex: 1 },
-  rowLabel: { color: colors.text, fontSize: 15, fontWeight: '700' },
+  rowLabel: { color: colors.text, fontSize: 15, fontWeight: '800' },
   rowValue: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  dangerWrap: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.dangerSoft,
+    padding: spacing.md,
+  },
+  backdrop: { flex: 1, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.bgElevated,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
     paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   handle: {
     alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
+    width: 44,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: colors.borderHi,
     marginBottom: spacing.md,
   },
   sheetTitle: {
+    ...typography.h3,
     color: colors.text,
-    fontSize: 18,
-    fontWeight: '800',
     marginBottom: spacing.md,
   },
 });

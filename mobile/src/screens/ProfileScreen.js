@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
+  Animated,
   Linking,
   Pressable,
   RefreshControl,
@@ -11,18 +12,26 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
 import Screen from '../components/Screen';
 import AppButton from '../components/AppButton';
+import StatCard from '../components/StatCard';
+import SectionHeader from '../components/SectionHeader';
+import EmptyState from '../components/EmptyState';
 import { useAuth } from '../context/AuthContext';
+import { tapLight } from '../util/haptics';
 import { getProfile } from '../services/emotion';
-import { colors, gradient, radius, spacing } from '../../theme';
+import { colors, gradient, moodPaletteFor, radius, shadows, spacing, typography } from '../../theme';
+
+const TAB_BAR_BOTTOM = 110;
 
 export default function ProfileScreen({ navigation }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const fade = useRef(new Animated.Value(0)).current;
 
   const load = useCallback(async () => {
     try {
@@ -32,8 +41,9 @@ export default function ProfileScreen({ navigation }) {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      Animated.timing(fade, { toValue: 1, duration: 360, useNativeDriver: true }).start();
     }
-  }, []);
+  }, [fade]);
 
   useFocusEffect(
     useCallback(() => {
@@ -41,8 +51,10 @@ export default function ProfileScreen({ navigation }) {
     }, [load]),
   );
 
-  const moods = (profile?.mood_history || []).slice(-15).reverse();
+  const moodsAll = profile?.mood_history || [];
+  const moods = moodsAll.slice(-15).reverse();
   const username = profile?.username || user?.username || 'You';
+  const tracksAll = profile?.listening_history || [];
 
   if (loading) {
     return (
@@ -70,140 +82,202 @@ export default function ProfileScreen({ navigation }) {
           />
         }
       >
-        <View style={styles.card}>
-          <LinearGradient
-            colors={gradient.colors}
-            start={gradient.start}
-            end={gradient.end}
-            style={styles.avatar}
-          >
-            <Text style={styles.avatarText}>{username.charAt(0).toUpperCase()}</Text>
-          </LinearGradient>
-          <Text style={styles.name}>{username}</Text>
-          {profile?.email ? <Text style={styles.email}>{profile.email}</Text> : null}
-        </View>
-
-        <View style={styles.stats}>
-          <Stat label="Moods logged" value={(profile?.mood_history || []).length} />
-          <Stat label="Saved tracks" value={(profile?.recommendations || []).length} />
-          <Stat label="Listened" value={(profile?.listening_history || []).length} />
-        </View>
-
-        <Text style={styles.section}>Recent moods</Text>
-        {moods.length ? (
-          <View style={styles.chips}>
-            {moods.map((mood, index) => (
-              <View key={`${mood}-${index}`} style={styles.chip}>
-                <Text style={styles.chipText}>{mood}</Text>
+        <Animated.View style={{ opacity: fade }}>
+          <View style={[styles.card, shadows.md]}>
+            <LinearGradient
+              colors={gradient.colors}
+              start={gradient.start}
+              end={gradient.end}
+              style={styles.avatarRing}
+            >
+              <View style={styles.avatarInner}>
+                <Text style={styles.avatarText}>{username.charAt(0).toUpperCase()}</Text>
               </View>
-            ))}
+            </LinearGradient>
+            <Text style={styles.name}>{username}</Text>
+            {profile?.email ? <Text style={styles.email}>{profile.email}</Text> : null}
+            <View style={styles.cardActions}>
+              <AppButton
+                title="Settings"
+                icon="settings-outline"
+                variant="ghost"
+                size="sm"
+                onPress={() => navigation.navigate('Settings')}
+                style={{ flex: 1 }}
+              />
+            </View>
           </View>
-        ) : (
-          <Text style={styles.empty}>No moods logged yet — analyze one from the home screen.</Text>
-        )}
 
-        <Text style={styles.section}>Recent tracks</Text>
-        {(profile?.listening_history || []).length ? (
-          <View style={styles.chips}>
-            {(profile.listening_history || [])
-              .slice(-15)
-              .reverse()
-              .map((track, index) => (
+          <View style={styles.stats}>
+            <StatCard
+              icon="happy"
+              label="Moods logged"
+              value={moodsAll.length}
+              tint={colors.primary}
+              tintSoft={colors.primarySoft}
+            />
+            <StatCard
+              icon="musical-notes"
+              label="Saved tracks"
+              value={(profile?.recommendations || []).length}
+              tint={colors.accent}
+              tintSoft={colors.accentSoft}
+            />
+            <StatCard
+              icon="play-circle"
+              label="Listened"
+              value={tracksAll.length}
+              tint={colors.success}
+              tintSoft={colors.successSoft}
+            />
+          </View>
+
+          <SectionHeader title="Recent moods" subtitle="Tap a mood to fetch new tracks." />
+          {moods.length ? (
+            <View style={styles.chips}>
+              {moods.map((mood, index) => {
+                const palette = moodPaletteFor(mood);
+                return (
+                  <Pressable
+                    key={`${mood}-${index}`}
+                    onPress={() => {
+                      tapLight();
+                      navigation.navigate('Results', {
+                        emotion: mood,
+                        recommendations: [],
+                        history: moodsAll,
+                        profileId: profile?.id || null,
+                      });
+                    }}
+                    style={({ pressed }) => [styles.moodChip, pressed && { opacity: 0.7 }]}
+                  >
+                    <LinearGradient
+                      pointerEvents="none"
+                      colors={palette.colors}
+                      style={styles.moodChipTint}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                    <Text style={styles.moodChipEmoji}>{palette.emoji}</Text>
+                    <Text style={styles.moodChipText}>{palette.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : (
+            <EmptyState
+              icon="happy-outline"
+              title="No moods yet"
+              message="Analyze your first mood from the Home tab to start your history."
+            />
+          )}
+
+          <SectionHeader title="Recent tracks" subtitle="Recently opened from your results." />
+          {tracksAll.length ? (
+            <View style={styles.trackList}>
+              {tracksAll.slice(-15).reverse().map((track, index) => (
                 <Pressable
                   key={`${track}-${index}`}
                   onPress={() => openInPlayer(track)}
-                  style={({ pressed }) => [
-                    styles.chip,
-                    styles.trackChip,
-                    pressed && styles.chipPressed,
-                  ]}
+                  style={({ pressed }) => [styles.trackRow, pressed && { opacity: 0.7 }]}
                 >
-                  <Text style={styles.chipText} numberOfLines={1}>
+                  <View style={styles.trackIcon}>
+                    <Ionicons name="musical-note" size={16} color={colors.primary} />
+                  </View>
+                  <Text style={styles.trackText} numberOfLines={1}>
                     {track}
                   </Text>
+                  <Ionicons name="open-outline" size={16} color={colors.textMuted} />
                 </Pressable>
               ))}
-          </View>
-        ) : (
-          <Text style={styles.empty}>No tracks played yet — open one from the Results screen.</Text>
-        )}
-
-        <AppButton
-          title="Settings"
-          icon="settings-outline"
-          onPress={() => navigation.navigate('Settings')}
-          style={{ marginTop: spacing.xl }}
-        />
+            </View>
+          ) : (
+            <EmptyState
+              icon="musical-notes-outline"
+              title="No tracks played"
+              message="Open a recommendation from the Results screen and it will show up here."
+            />
+          )}
+        </Animated.View>
       </ScrollView>
     </Screen>
   );
 }
 
 function openInPlayer(entry) {
-  // Resolve the stored "Name — Artist" string via a Deezer search;
-  // works in the browser without an account.
+  tapLight();
   const url = `https://www.deezer.com/search/${encodeURIComponent(entry)}`;
   Linking.openURL(url).catch(() => {});
 }
 
-function Stat({ label, value }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg },
+  content: { padding: spacing.lg, paddingTop: spacing.xl, paddingBottom: TAB_BAR_BOTTOM },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.xl,
+    padding: spacing.lg,
     alignItems: 'center',
   },
-  avatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
+  avatarRing: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    padding: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  avatarInner: {
+    flex: 1,
+    alignSelf: 'stretch',
+    borderRadius: 45,
+    backgroundColor: colors.surfaceAlt,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff', fontSize: 34, fontWeight: '900' },
-  name: { color: colors.text, fontSize: 22, fontWeight: '900', marginTop: spacing.md },
-  email: { color: colors.textMuted, fontSize: 14, marginTop: 3 },
+  avatarText: { color: colors.text, fontSize: 38, fontWeight: '900' },
+  name: { ...typography.h2, color: colors.text },
+  email: { color: colors.textMuted, fontSize: 14, marginTop: 4 },
+  cardActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, alignSelf: 'stretch' },
   stats: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  stat: {
-    flex: 1,
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  moodChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  statValue: { color: colors.primary, fontSize: 22, fontWeight: '900' },
-  statLabel: { color: colors.textMuted, fontSize: 11, marginTop: 3, textAlign: 'center' },
-  section: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-    marginTop: spacing.xl,
-    marginBottom: spacing.md,
-  },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  chip: {
-    backgroundColor: colors.surfaceAlt,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: 7,
+    gap: 6,
+    overflow: 'hidden',
   },
-  trackChip: { maxWidth: '100%' },
-  chipPressed: { opacity: 0.7 },
-  chipText: { color: colors.text, fontSize: 13, fontWeight: '600', textTransform: 'capitalize' },
-  empty: { color: colors.textMuted, fontSize: 14 },
+  moodChipTint: { ...StyleSheet.absoluteFillObject, opacity: 0.18 },
+  moodChipEmoji: { fontSize: 14 },
+  moodChipText: { color: colors.text, fontSize: 13, fontWeight: '700', textTransform: 'capitalize' },
+  trackList: { gap: spacing.xs },
+  trackRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    gap: spacing.md,
+  },
+  trackIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  trackText: { flex: 1, color: colors.text, fontSize: 14, fontWeight: '700' },
 });
