@@ -1,140 +1,108 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useContext,
+} from "react";
 import {
-  Alert,
   Box,
   Button,
-  Chip,
-  CircularProgress,
-  Container,
-  IconButton,
-  Stack,
-  TextField,
   Typography,
+  Paper,
+  TextField,
+  Modal,
+  CircularProgress,
 } from "@mui/material";
 import Webcam from "react-webcam";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-import KeyboardIcon from "@mui/icons-material/Keyboard";
-import MicIcon from "@mui/icons-material/Mic";
-import StopIcon from "@mui/icons-material/Stop";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import FaceRetouchingNaturalIcon from "@mui/icons-material/FaceRetouchingNatural";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import RefreshIcon from "@mui/icons-material/Refresh";
-
+import { DarkModeContext } from "../context/DarkModeContext";
 import { API_URL, MODAL_API_URL } from "../config";
-import { gradients, shadows, tokens } from "../theme";
 
-// Mode metadata. Labels are EXACT and load-bearing -- tests assert these
-// button names and the "Choose an input mode (X)" prompt below.
-const MODES = [
-  {
-    key: "text",
-    label: "Text",
-    icon: KeyboardIcon,
-    accent: "#8b5cf6",
-    accentSoft: "rgba(139, 92, 246, 0.18)",
-    description: "Type a few words about how you feel.",
-  },
-  {
-    key: "face",
-    label: "Face",
-    icon: FaceRetouchingNaturalIcon,
-    accent: "#ec4899",
-    accentSoft: "rgba(236, 72, 153, 0.18)",
-    description: "Snap a selfie — we read your expression.",
-  },
-  {
-    key: "speech",
-    label: "Speech",
-    icon: MicIcon,
-    accent: "#22d3ee",
-    accentSoft: "rgba(34, 211, 238, 0.18)",
-    description: "Record your voice — tone tells the rest.",
-  },
-];
-
-export default function HomePage() {
-  const navigate = useNavigate();
-
-  // Active mode -- exact string ('text'|'face'|'speech') so the prompt
-  // text below matches the test assertion exactly.
+const HomePage = () => {
   const [activeTab, setActiveTab] = useState("text");
-
-  // Per-mode state.
-  const [text, setText] = useState("");
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [audioFile, setAudioFile] = useState(null);
-  const [audioUrl, setAudioUrl] = useState(null);
-  const [recording, setRecording] = useState(false);
-
-  // UI state.
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  // eslint-disable-next-line no-unused-vars
+  const [file, setFile] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const webcamRef = useRef(null);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // Camera + audio refs.
-  const [showCamera, setShowCamera] = useState(false);
-  const webcamRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordedChunks = useRef([]);
-  const micStreamRef = useRef(null);
-
   const token = localStorage.getItem("token");
+  const { isDarkMode } = useContext(DarkModeContext);
 
-  // ---- profile fetch (test relies on a single GET) ---------------------
   useEffect(() => {
-    if (!token) return;
-    axios
-      .get(`${API_URL}/users/user/profile/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        const profile = res?.data;
-        if (profile?.id) setUserData({ ...profile, id: profile.id });
-      })
-      .catch(() => {});
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/users/user/profile/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const userProfile = response.data;
+        const userId = userProfile.id;
+
+        if (!userId) {
+          console.error("MongoDB User ID is missing:", userProfile);
+          return;
+        }
+
+        setUserData({ ...userProfile, id: userId });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (token) {
+      fetchUserData();
+    } else {
+      console.error("No token available.");
+    }
   }, [token]);
 
-  // ---- helpers ----------------------------------------------------------
-  const reset = () => {
-    setText("");
-    setImageFile(null);
-    setImagePreview(null);
-    setAudioFile(null);
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
-    setAudioUrl(null);
-    setRecording(false);
-    setShowCamera(false);
-    setError("");
-  };
-
-  const handleTabChange = (key) => {
-    reset();
-    setActiveTab(key);
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setFile(null);
+    setInputValue("");
+    setShowModal(false);
+    setCapturedImage(null);
+    setAudioBlob(null);
   };
 
   const saveToHistory = async (mood, recommendations) => {
-    if (!userData?.id) return;
-    const auth = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    };
     try {
+      // Check if userData is available and has a valid id
+      if (!userData || !userData.id) {
+        console.error("User data or user ID is not available.");
+        return;
+      }
+
+      // Save mood history
       if (mood) {
         await axios.post(
           `${API_URL}/users/mood_history/${userData.id}/`,
           { mood },
-          auth,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
         );
       }
-      if (recommendations?.length) {
+
+      // Save recommendations history
+      if (recommendations && recommendations.length > 0) {
         await axios.post(
           `${API_URL}/users/recommendations/${userData.id}/`,
           {
@@ -146,524 +114,1209 @@ export default function HomePage() {
               image_url: rec.image_url,
             })),
           },
-          auth,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
         );
       }
-    } catch {
-      // Best-effort; we still navigate to /results.
+
+      // Refresh user data to reflect the updated history
+      const updatedUserData = await axios.get(
+        `${API_URL}/users/user/profile/`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      setUserData(updatedUserData.data);
+    } catch (error) {
+      console.error("Error saving history:", error);
     }
   };
 
-  const goToResults = (emotion, recommendations) => {
-    navigate("/results", { state: { emotion, recommendations } });
-  };
+  const handleFileUpload = async (e) => {
+    const uploadedFile = e.target.files[0];
+    if (uploadedFile && uploadedFile.size > 10 * 1024 * 1024) {
+      console.log("File size must be under 10MB");
+      return;
+    }
 
-  // ---- submit per mode --------------------------------------------------
-  const submit = async () => {
-    setError("");
-    setBusy(true);
+    setFile(uploadedFile);
+
+    const formData = new FormData();
+    formData.append("file", uploadedFile);
+
+    if (!token) {
+      console.log("User is not authenticated. Please log in.");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
       let response;
+
+      // Race the file upload request against a 1-minute timeout
       if (activeTab === "text") {
-        if (!text.trim()) {
-          setError("Type a few words about how you feel.");
-          setBusy(false);
-          return;
-        }
-        response = await axios.post(`${MODAL_API_URL}/text_emotion`, {
-          text: text.trim(),
-        });
+        const textContent = await uploadedFile.text();
+        response = await Promise.race([
+          axios.post(
+            `${MODAL_API_URL}/text_emotion`,
+            { text: textContent },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          ),
+          timeout(60000), // Timeout set to 1 minute
+        ]);
       } else if (activeTab === "face") {
-        if (!imageFile) {
-          setError("Upload an image or capture one with the camera.");
-          setBusy(false);
-          return;
-        }
-        const formData = new FormData();
-        formData.append("file", imageFile);
-        response = await axios.post(
-          `${MODAL_API_URL}/facial_emotion`,
-          formData,
-        );
+        response = await Promise.race([
+          axios.post(
+            `${MODAL_API_URL}/facial_emotion`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          ),
+          timeout(60000),
+        ]);
       } else if (activeTab === "speech") {
-        if (!audioFile) {
-          setError("Upload an audio clip or record one to continue.");
-          setBusy(false);
-          return;
-        }
-        const formData = new FormData();
-        formData.append("file", audioFile);
-        response = await axios.post(
-          `${MODAL_API_URL}/speech_emotion`,
-          formData,
-        );
+        response = await Promise.race([
+          axios.post(
+            `${MODAL_API_URL}/speech_emotion`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          ),
+          timeout(60000),
+        ]);
       }
 
       const { emotion, recommendations } = response.data;
+
+      // Save both mood and recommendations to history
       await saveToHistory(emotion, recommendations);
-      goToResults(emotion, recommendations);
-    } catch (err) {
-      setError(
-        "We couldn't read your mood right now. Try again or switch input modes.",
+
+      navigate("/results", { state: { emotion, recommendations } });
+    } catch (error) {
+      console.error(
+        `Error uploading ${activeTab} file or request timed out:`,
+        error,
       );
+
+      // Fallback to a random mood in case of an error
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the randomly selected mood
+        const response = await axios.post(
+          `${MODAL_API_URL}/music_recommendation`,
+          {
+            emotion: newMood.toLowerCase(),
+          },
+        );
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: newRecommendations },
+        });
+      } catch (recommendationError) {
+        console.error("Error fetching recommendations:", recommendationError);
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: [] },
+        });
+      }
     } finally {
-      setBusy(false);
+      handleModalClose();
+      setIsLoading(false);
     }
   };
 
-  // ---- webcam capture ---------------------------------------------------
-  const captureFromWebcam = useCallback(() => {
-    if (!webcamRef.current) return;
-    const dataUrl = webcamRef.current.getScreenshot();
-    if (!dataUrl) return;
-    fetch(dataUrl)
-      .then((r) => r.blob())
-      .then((blob) => {
-        const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
-        setImageFile(file);
-        setImagePreview(dataUrl);
-        setShowCamera(false);
-      });
-  }, []);
+  const handleModalClose = () => {
+    setShowModal(false);
+    setCapturedImage(null);
+    setAudioBlob(null);
+  };
 
-  // ---- audio recording --------------------------------------------------
+  const captureImage = useCallback(() => {
+    const imageSrc = webcamRef.current.getScreenshot();
+    setCapturedImage(imageSrc);
+  }, [webcamRef]);
+
+  const retakeImage = () => {
+    setCapturedImage(null);
+  };
+
+  const timeout = (ms) => {
+    return new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error("Request timed out"));
+      }, ms);
+    });
+  };
+
+  const confirmImage = async () => {
+    try {
+      const base64Response = await fetch(capturedImage);
+      const blob = await base64Response.blob();
+
+      setIsLoading(true);
+
+      if (blob.size === 0) {
+        console.log("Captured image is invalid.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", blob, "captured_image.jpg");
+
+      if (!token) {
+        console.log("User is not authenticated. Please log in.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Race between the API request and a timeout of 1 minute (60000 ms)
+      const response = await Promise.race([
+        axios.post(
+          `${MODAL_API_URL}/facial_emotion`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        ),
+        timeout(60000), // Timeout set to 1 minute
+      ]);
+
+      const { emotion, recommendations } = response.data;
+
+      // Save both mood and recommendations to history
+      await saveToHistory(emotion, recommendations);
+
+      navigate("/results", { state: { emotion, recommendations } });
+    } catch (error) {
+      console.error("Error or timeout occurred:", error);
+
+      // Fallback to a random mood in case of an error or timeout
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the randomly selected mood
+        const response = await axios.post(
+          `${MODAL_API_URL}/music_recommendation`,
+          {
+            emotion: newMood.toLowerCase(),
+          },
+        );
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: newRecommendations },
+        });
+      } catch (recommendationError) {
+        console.error("Error fetching recommendations:", recommendationError);
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: [] },
+        });
+      }
+    } finally {
+      handleModalClose();
+      setIsLoading(false);
+    }
+  };
+
+  const handleTextSubmit = async () => {
+    if (!inputValue.trim()) {
+      console.log("Please enter some text.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Race the text submission request against a 1-minute timeout
+      const response = await Promise.race([
+        axios.post(
+          `${MODAL_API_URL}/text_emotion`,
+          { text: inputValue.trim() },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        ),
+        timeout(60000), // Timeout set to 1 minute
+      ]);
+
+      const { emotion, recommendations } = response.data;
+
+      // Save both mood and recommendations to history
+      await saveToHistory(emotion, recommendations);
+
+      // Navigate to the results page with the response data
+      navigate("/results", { state: { emotion, recommendations } });
+    } catch (error) {
+      console.error("Error processing text or request timed out:", error);
+
+      // Fallback to a random mood in case of an error
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the randomly selected mood
+        const response = await axios.post(
+          `${MODAL_API_URL}/music_recommendation`,
+          {
+            emotion: newMood.toLowerCase(),
+          },
+        );
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: newRecommendations },
+        });
+      } catch (recommendationError) {
+        console.error("Error fetching recommendations:", recommendationError);
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: [] },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+      setInputValue("");
+      handleModalClose();
+    }
+  };
+
+  const [audioUrl, setAudioUrl] = useState(null);
+  const mediaRecorderRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl); // Clean up the blob URL when the component unmounts
+      }
+    };
+  }, [audioUrl]);
+
+  const [isShowingRecordingDots, setIsShowingRecordingDots] = useState(false);
+  const [dotAnimation, setDotAnimation] = useState("");
+  const [micStream, setMicStream] = useState(null);
+  const [isRecordingReady, setIsRecordingReady] = useState(false);
+
+  // Animated "Recording..." effect (adds dots at regular intervals)
+  useEffect(() => {
+    if (isShowingRecordingDots) {
+      const interval = setInterval(() => {
+        setDotAnimation((prev) => (prev.length < 3 ? prev + "." : ""));
+      }, 500); // Update every 500ms
+      return () => clearInterval(interval);
+    }
+  }, [isShowingRecordingDots]);
+
   const startRecording = async () => {
-    setError("");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      micStreamRef.current = stream;
-      const recorder = new MediaRecorder(stream);
-      recordedChunks.current = [];
-      recorder.ondataavailable = (e) => recordedChunks.current.push(e.data);
-      recorder.onstop = () => {
-        const blob = new Blob(recordedChunks.current, { type: "audio/wav" });
-        if (audioUrl) URL.revokeObjectURL(audioUrl);
-        const url = URL.createObjectURL(blob);
-        const file = new File([blob], "recording.wav", { type: "audio/wav" });
-        setAudioFile(file);
-        setAudioUrl(url);
+      const mediaRecorder = new MediaRecorder(stream);
+      let chunks = [];
+
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const wavBlob = new Blob(chunks, { type: "audio/wav" });
+        const newAudioUrl = URL.createObjectURL(wavBlob);
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl); // Clean up old object URL
+        }
+        setAudioBlob(wavBlob);
+        setAudioUrl(newAudioUrl);
+        setIsRecordingReady(true);
+        console.log(isRecordingReady);
       };
-      recorder.start();
-      mediaRecorderRef.current = recorder;
-      setRecording(true);
-    } catch {
-      setError("Could not access the microphone.");
+
+      mediaRecorder.start();
+      setMicStream(stream); // Store the stream to stop the mic later
+      setIsRecording(true);
+      setIsShowingRecordingDots(true);
+      setIsRecordingReady(false);
+      mediaRecorderRef.current = mediaRecorder;
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      alert("Could not access the microphone. Please try again.");
     }
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
-    micStreamRef.current?.getTracks().forEach((t) => t.stop());
-    micStreamRef.current = null;
-    setRecording(false);
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+    setIsShowingRecordingDots(false);
+
+    // Stop the microphone stream
+    if (micStream) {
+      micStream.getTracks().forEach((track) => track.stop());
+      setMicStream(null); // Clear the stream
+    }
   };
 
-  // ---- file picker handlers --------------------------------------------
-  const onImagePick = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setImageFile(f);
-    setImagePreview(URL.createObjectURL(f));
-  };
-  const onAudioPick = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setAudioFile(f);
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
-    setAudioUrl(URL.createObjectURL(f));
+  const moodMap = {
+    joy: "hip-hop",
+    happy: "happy",
+    sadness: "sad",
+    anger: "metal",
+    love: "romance",
+    fear: "sad",
+    neutral: "pop",
+    calm: "chill",
+    disgust: "blues",
+    surprised: "party",
+    surprise: "party",
+    excited: "party",
+    bored: "pop",
+    tired: "chill",
+    relaxed: "chill",
+    stressed: "chill",
+    anxious: "chill",
+    depressed: "sad",
+    lonely: "sad",
+    energetic: "hip-hop",
+    nostalgic: "pop",
+    confused: "pop",
+    frustrated: "metal",
+    hopeful: "romance",
+    proud: "hip-hop",
+    guilty: "blues",
+    jealous: "pop",
+    ashamed: "blues",
+    disappointed: "pop",
+    content: "chill",
+    insecure: "pop",
+    embarrassed: "blues",
+    overwhelmed: "chill",
+    amused: "party",
   };
 
-  const activeMode = MODES.find((m) => m.key === activeTab) || MODES[0];
+  const getRandomMood = () => {
+    const moods = Object.keys(moodMap);
+    const randomIndex = Math.floor(Math.random() * moods.length);
+    return moods[randomIndex];
+  };
+
+  const handleAudioUpload = async () => {
+    if (!audioBlob) {
+      console.log("No audio blob available for upload.");
+      return;
+    }
+
+    console.log("Uploading audio...");
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", audioBlob, "recorded_audio.wav");
+
+    if (!token) {
+      console.log("User is not authenticated. Please log in.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Race the audio upload request against a 1-minute timeout
+      const response = await Promise.race([
+        axios.post(
+          `${MODAL_API_URL}/speech_emotion`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        ),
+        timeout(60000), // Timeout set to 1 minute
+      ]);
+
+      const { emotion, recommendations } = response.data;
+      navigate("/results", { state: { emotion, recommendations } });
+    } catch (error) {
+      console.error("Error uploading audio or request timed out:", error);
+
+      // Fallback to a random mood in case of an error or timeout
+      const randomMood = getRandomMood();
+      const newMood = moodMap[randomMood];
+      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
+
+      try {
+        // Call the API with the randomly selected mood
+        const response = await axios.post(
+          `${MODAL_API_URL}/music_recommendation`,
+          {
+            emotion: newMood.toLowerCase(),
+          },
+        );
+
+        const newRecommendations = response.data.recommendations || [];
+
+        // Navigate to the results page with the fallback mood and recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: newRecommendations },
+        });
+      } catch (recommendationError) {
+        console.error(
+          "Error fetching fallback recommendations:",
+          recommendationError,
+        );
+
+        // In case of failure, navigate with the fallback mood and empty recommendations
+        navigate("/results", {
+          state: { emotion: randomMood, recommendations: [] },
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const [dotCount, setDotCount] = useState(0); // State to track number of dots
+
+  useEffect(() => {
+    // Create an interval that updates the dot count every 500ms
+    const intervalId = setInterval(() => {
+      setDotCount((prevCount) => (prevCount + 1) % 4);
+    }, 500);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const loadingText = `Processing, please wait${".".repeat(dotCount)}`;
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        minHeight: "calc(100vh - 80px)",
-        backgroundImage: gradients.aurora,
-        py: { xs: 6, md: 10 },
+    <div
+      style={{
+        ...styles.container,
+        backgroundColor: isDarkMode ? "#121212" : "#f5f5f5", // Dark mode background
+        color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
       }}
     >
-      <Container maxWidth="md">
-        {/* hero */}
-        <Box sx={{ textAlign: "center", mb: 5 }}>
-          <Chip
-            icon={<AutoAwesomeIcon sx={{ fontSize: 16 }} />}
-            label={userData?.username ? `Welcome back, ${userData.username}` : "Tell us how you feel"}
-            sx={{
-              mb: 2.5,
-              px: 1.5,
-              background: gradients.primarySoft,
-              border: `1px solid ${tokens.primarySoft}`,
-              color: "primary.main",
-              fontWeight: 700,
-              "& .MuiChip-icon": { color: "primary.main" },
-            }}
-          />
+      {isLoading && (
+        <Box sx={styles.loadingOverlay}>
+          <CircularProgress sx={{ color: "#ff4d4d" }} />
           <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 900,
-              fontSize: { xs: 34, md: 52 },
-              letterSpacing: "-0.03em",
-              lineHeight: 1.05,
-              mb: 1.5,
+            variant="h6"
+            style={{ marginTop: "10px", color: "white", font: "inherit" }}
+          >
+            {loadingText}
+          </Typography>
+          <Typography
+            variant="h6"
+            style={{
+              marginTop: "10px",
+              color: "white",
+              font: "inherit",
+              textAlign: "center",
+              fontSize: "14px",
+              padding: "0 2rem",
             }}
           >
-            How are you{" "}
-            <Box
-              component="span"
-              sx={{
-                background: gradients.primary,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              feeling today?
-            </Box>
-          </Typography>
-          <Typography sx={{ color: "text.secondary", fontSize: { xs: 15, md: 17 } }}>
-            Choose an input mode ({activeTab}) and we'll tune the music to it.
+            Note that our servers might be slow or experience downtime due to
+            high traffic, or they may spin down after periods of inactivity. It
+            may take up to 2 minutes to process during these times. We
+            appreciate your patience, and apologize for any inconvenience.
           </Typography>
         </Box>
-
-        {/* mode tabs */}
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          sx={{
-            p: 1,
-            mb: 3,
-            background: "background.paper",
-            border: `1px solid ${tokens.border}`,
-            borderRadius: 999,
-            maxWidth: 560,
-            mx: "auto",
+      )}
+      <Paper
+        elevation={4}
+        style={{
+          ...styles.formContainer,
+          backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode container background
+          color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+        }}
+      >
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <Button
+            onClick={() => handleTabChange("text")}
+            sx={{
+              ...styles.tabButton,
+              borderRadius: "12px 0 0 12px",
+              backgroundColor:
+                activeTab === "text"
+                  ? "#ff4d4d"
+                  : isDarkMode
+                    ? "#333"
+                    : "white",
+              color:
+                activeTab === "text"
+                  ? "white"
+                  : isDarkMode
+                    ? "#ffffff"
+                    : "black",
+            }}
+          >
+            Text
+          </Button>
+          <Button
+            onClick={() => handleTabChange("face")}
+            sx={{
+              ...styles.tabButton,
+              borderRadius: "0",
+              backgroundColor:
+                activeTab === "face"
+                  ? "#ff4d4d"
+                  : isDarkMode
+                    ? "#333"
+                    : "white",
+              color:
+                activeTab === "face"
+                  ? "white"
+                  : isDarkMode
+                    ? "#ffffff"
+                    : "black",
+            }}
+          >
+            Face
+          </Button>
+          <Button
+            onClick={() => handleTabChange("speech")}
+            sx={{
+              ...styles.tabButton,
+              borderRadius: "0 12px 12px 0",
+              backgroundColor:
+                activeTab === "speech"
+                  ? "#ff4d4d"
+                  : isDarkMode
+                    ? "#333"
+                    : "white",
+              color:
+                activeTab === "speech"
+                  ? "white"
+                  : isDarkMode
+                    ? "#ffffff"
+                    : "black",
+            }}
+          >
+            Speech
+          </Button>
+        </Box>
+        <Typography
+          variant="h6"
+          align="center"
+          style={{
+            marginBottom: "20px",
+            fontFamily: "Poppins",
+            fontSize: "16px",
+            color: isDarkMode ? "#fff" : "#000",
           }}
         >
-          {MODES.map((m) => {
-            const Icon = m.icon;
-            const active = m.key === activeTab;
-            return (
-              <Button
-                key={m.key}
-                onClick={() => handleTabChange(m.key)}
-                startIcon={<Icon sx={{ fontSize: 18 }} />}
+          Choose an input mode ({activeTab})
+        </Typography>
+
+        <Button onClick={() => setShowModal(true)} style={styles.captureButton}>
+          {activeTab === "text"
+            ? "Add Text"
+            : activeTab === "face"
+              ? "Capture Image"
+              : "Record Audio"}
+        </Button>
+
+        <Typography
+          variant="h6"
+          align="center"
+          style={{
+            marginTop: "20px",
+            fontFamily: "Poppins",
+            fontSize: "16px",
+            color: isDarkMode ? "#fff" : "#000",
+          }}
+        >
+          OR
+        </Typography>
+
+        <input
+          accept={
+            activeTab === "text"
+              ? ".txt"
+              : activeTab === "speech"
+                ? ".wav, .mp4"
+                : "image/*"
+          }
+          style={{ display: "none" }}
+          id="upload-file"
+          type="file"
+          onChange={handleFileUpload}
+        />
+        <label htmlFor="upload-file">
+          <Button
+            variant="contained"
+            color="secondary"
+            component="span"
+            style={styles.uploadButton}
+          >
+            Upload{" "}
+            {activeTab === "text"
+              ? "Text File"
+              : activeTab === "speech"
+                ? "Audio File"
+                : "Image"}
+          </Button>
+        </label>
+
+        {/* Custom message for audio file requirements */}
+        {activeTab === "speech" && (
+          <Typography
+            variant="body2"
+            align="center"
+            style={{
+              marginTop: "10px",
+              fontFamily: "Poppins",
+              color: isDarkMode ? "#999" : "#777",
+            }}
+          >
+            Acceptable formats: .wav, .mp4
+          </Typography>
+        )}
+
+        {/* Custom message for image file requirements */}
+        {activeTab === "face" && (
+          <Typography
+            variant="body2"
+            align="center"
+            style={{
+              marginTop: "10px",
+              fontFamily: "Poppins",
+              color: isDarkMode ? "#999" : "#777",
+            }}
+          >
+            Acceptable formats: .jpg, .jpeg, .png, .webp
+          </Typography>
+        )}
+
+        {/* Custom message for text file requirements */}
+        {activeTab === "text" && (
+          <Typography
+            variant="body2"
+            align="center"
+            style={{
+              marginTop: "10px",
+              fontFamily: "Poppins",
+              color: isDarkMode ? "#999" : "#777",
+            }}
+          >
+            Acceptable formats: .txt
+          </Typography>
+        )}
+
+        {/* Modal for Speech Input */}
+        {activeTab === "speech" && (
+          <Modal open={showModal} onClose={handleModalClose}>
+            <Box
+              sx={{
+                ...styles.modal,
+                width: { xs: "90%", sm: "80%", md: "60%", lg: "40%" }, // Responsive width
+                maxWidth: "600px",
+                padding: { xs: "16px", sm: "24px", md: "32px" }, // Responsive padding
+                margin: "auto",
+                backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode modal background
+                color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+              }}
+            >
+              <Typography
+                variant="h6"
                 sx={{
-                  flex: 1,
-                  borderRadius: 999,
-                  py: 1.25,
-                  fontWeight: 800,
-                  color: active ? "#fff" : "text.primary",
-                  background: active
-                    ? `linear-gradient(135deg, ${m.accent} 0%, #ec4899 100%)`
-                    : "transparent",
-                  boxShadow: active ? `0 10px 24px ${m.accentSoft}` : "none",
-                  transition: "all .25s",
-                  "&:hover": {
-                    background: active
-                      ? `linear-gradient(135deg, ${m.accent} 0%, #ec4899 100%)`
-                      : m.accentSoft,
-                    color: active ? "#fff" : m.accent,
-                  },
+                  font: "inherit",
+                  fontSize: { xs: "14px", sm: "16px", md: "18px" }, // Responsive font size
+                  textAlign: "center",
+                  color: isDarkMode ? "#ffffff" : "#000000",
                 }}
               >
-                {m.label}
-              </Button>
-            );
-          })}
-        </Stack>
+                Record Your Audio
+              </Typography>
 
-        {/* active panel */}
-        <Box
-          sx={{
-            p: { xs: 3, md: 4 },
-            background: "background.paper",
-            border: `1px solid ${tokens.border}`,
-            borderRadius: 4,
-            boxShadow: shadows.md,
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {/* corner glow keyed to the active mode */}
-          <Box
-            aria-hidden
-            sx={{
-              position: "absolute",
-              top: -80,
-              right: -80,
-              width: 240,
-              height: 240,
-              borderRadius: "50%",
-              background: `radial-gradient(circle, ${activeMode.accent} 0%, transparent 70%)`,
-              opacity: 0.18,
-              filter: "blur(30px)",
-              pointerEvents: "none",
-            }}
-          />
-
-          <Typography sx={{ fontWeight: 700, fontSize: 14, color: activeMode.accent, mb: 0.5 }}>
-            {activeMode.label.toUpperCase()} MODE
-          </Typography>
-          <Typography sx={{ fontWeight: 700, fontSize: 18, mb: 2 }}>
-            {activeMode.description}
-          </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          {/* ---- text mode ---- */}
-          {activeTab === "text" && (
-            <TextField
-              fullWidth
-              multiline
-              minRows={4}
-              placeholder="e.g. I feel calm and a little nostalgic..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-          )}
-
-          {/* ---- face mode ---- */}
-          {activeTab === "face" && (
-            <Box sx={{ mb: 2 }}>
-              {showCamera ? (
-                <Box>
-                  <Box
-                    sx={{
-                      borderRadius: 3,
-                      overflow: "hidden",
-                      border: `1px solid ${tokens.border}`,
-                      mb: 2,
-                    }}
-                  >
-                    <Webcam
-                      ref={webcamRef}
-                      audio={false}
-                      screenshotFormat="image/jpeg"
-                      mirrored
-                      videoConstraints={{ facingMode: "user" }}
-                      style={{ width: "100%", display: "block" }}
-                    />
-                  </Box>
-                  <Stack direction="row" spacing={1.5}>
-                    <Button
-                      onClick={captureFromWebcam}
-                      variant="contained"
-                      color="primary"
-                      startIcon={<CameraAltIcon />}
-                      sx={{ flex: 1, borderRadius: 999, py: 1.25 }}
-                    >
-                      Capture
-                    </Button>
-                    <Button
-                      onClick={() => setShowCamera(false)}
-                      variant="outlined"
-                      sx={{ borderRadius: 999, py: 1.25 }}
-                    >
-                      Cancel
-                    </Button>
-                  </Stack>
-                </Box>
-              ) : imagePreview ? (
-                <Box>
-                  <Box
-                    component="img"
-                    src={imagePreview}
-                    alt="preview"
-                    sx={{
-                      width: "100%",
-                      maxHeight: 360,
-                      objectFit: "cover",
-                      borderRadius: 3,
-                      mb: 2,
-                      border: `1px solid ${tokens.border}`,
-                    }}
-                  />
-                  <Stack direction="row" spacing={1.5}>
-                    <Button
-                      onClick={() => {
-                        setImageFile(null);
-                        setImagePreview(null);
-                      }}
-                      variant="outlined"
-                      startIcon={<RefreshIcon />}
-                      sx={{ flex: 1, borderRadius: 999, py: 1.25 }}
-                    >
-                      Replace
-                    </Button>
-                  </Stack>
-                </Box>
-              ) : (
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={1.5}
-                  alignItems="stretch"
-                >
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    startIcon={<UploadFileIcon />}
-                    sx={{
-                      flex: 1,
-                      py: 1.75,
-                      borderRadius: 3,
-                      borderStyle: "dashed",
-                      borderWidth: 2,
-                      "&:hover": { borderStyle: "dashed", borderWidth: 2 },
-                    }}
-                  >
-                    Upload Image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      aria-label="Upload Image"
-                      onChange={onImagePick}
-                    />
-                  </Button>
-                  <Button
-                    onClick={() => setShowCamera(true)}
-                    variant="outlined"
-                    startIcon={<CameraAltIcon />}
-                    sx={{
-                      flex: 1,
-                      py: 1.75,
-                      borderRadius: 3,
-                      borderColor: activeMode.accent,
-                      color: activeMode.accent,
-                      "&:hover": {
-                        borderColor: activeMode.accent,
-                        background: activeMode.accentSoft,
-                      },
-                    }}
-                  >
-                    Use Camera
-                  </Button>
-                </Stack>
-              )}
-            </Box>
-          )}
-
-          {/* ---- speech mode ---- */}
-          {activeTab === "speech" && (
-            <Box sx={{ mb: 2 }}>
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={1.5}
-                alignItems="stretch"
-                sx={{ mb: audioUrl ? 2 : 0 }}
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" }, // Stack buttons vertically on small screens
+                  justifyContent: "center",
+                  gap: { xs: "10px", sm: "20px" }, // Spacing between buttons
+                }}
               >
                 <Button
-                  component="label"
-                  variant="outlined"
-                  startIcon={<UploadFileIcon />}
+                  onClick={startRecording}
+                  variant="contained"
+                  color="primary"
+                  disabled={isRecording}
                   sx={{
-                    flex: 1,
-                    py: 1.75,
-                    borderRadius: 3,
-                    borderStyle: "dashed",
-                    borderWidth: 2,
-                    "&:hover": { borderStyle: "dashed", borderWidth: 2 },
+                    width: { xs: "100%", sm: "auto" }, // Full width on small screens
+                    font: "inherit",
+                  }}
+                >
+                  Start Recording
+                </Button>
+                <Button
+                  onClick={stopRecording}
+                  variant="contained"
+                  color="secondary"
+                  disabled={!isRecording}
+                  sx={{
+                    width: { xs: "100%", sm: "auto" }, // Full width on small screens
+                    font: "inherit",
+                  }}
+                >
+                  Stop Recording
+                </Button>
+              </Box>
+
+              {/* Animated "Recording..." message */}
+              {isShowingRecordingDots && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    textAlign: "center",
+                    mt: 2,
+                    font: "inherit",
+                  }}
+                >
+                  Recording{dotAnimation}
+                </Typography>
+              )}
+
+              {/* Spacer */}
+              <div style={{ height: "20px" }} />
+
+              {audioBlob && (
+                <>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      marginTop: "10px",
+                      font: "inherit",
+                      textAlign: "center",
+                      color: isDarkMode ? "#ffffff" : "#000000",
+                    }}
+                  >
+                    Review your recording
+                  </Typography>
+
+                  <audio
+                    controls
+                    src={audioUrl}
+                    style={{
+                      marginTop: "20px",
+                      width: "100%", // Full width for responsiveness
+                    }}
+                  />
+                </>
+              )}
+
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" }, // Stack buttons vertically on small screens
+                  justifyContent: "center",
+                  mt: 2,
+                  gap: { xs: "10px", sm: "20px" }, // Spacing between buttons
+                }}
+              >
+                <Button
+                  onClick={handleAudioUpload}
+                  variant="contained"
+                  color="success"
+                  sx={{
+                    width: { xs: "100%", sm: "auto" }, // Full width on small screens
+                    font: "inherit",
                   }}
                 >
                   Upload Audio
-                  <input
-                    type="file"
-                    accept="audio/*"
-                    hidden
-                    aria-label="Upload Audio"
-                    onChange={onAudioPick}
-                  />
                 </Button>
-                {recording ? (
-                  <Button
-                    onClick={stopRecording}
-                    variant="contained"
-                    color="error"
-                    startIcon={<StopIcon />}
-                    sx={{
-                      flex: 1,
-                      py: 1.75,
-                      borderRadius: 3,
-                      animation: "pulse 1.4s ease-in-out infinite",
-                      "@keyframes pulse": {
-                        "0%, 100%": { boxShadow: "0 0 0 0 rgba(239,68,68,0.6)" },
-                        "50%": { boxShadow: "0 0 0 14px rgba(239,68,68,0)" },
-                      },
-                    }}
-                  >
-                    Stop recording
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={startRecording}
-                    variant="outlined"
-                    startIcon={<MicIcon />}
-                    sx={{
-                      flex: 1,
-                      py: 1.75,
-                      borderRadius: 3,
-                      borderColor: activeMode.accent,
-                      color: activeMode.accent,
-                      "&:hover": {
-                        borderColor: activeMode.accent,
-                        background: activeMode.accentSoft,
-                      },
-                    }}
-                  >
-                    Record Audio
-                  </Button>
-                )}
-              </Stack>
-
-              {audioUrl && (
-                <Box
+                <Button
+                  onClick={handleModalClose}
+                  variant="contained"
+                  color="error"
                   sx={{
-                    p: 2,
-                    borderRadius: 3,
-                    background: tokens.surfaceAlt,
-                    border: `1px solid ${tokens.border}`,
+                    width: { xs: "100%", sm: "auto" },
+                    font: "inherit",
                   }}
                 >
-                  <Typography sx={{ fontSize: 13, fontWeight: 700, mb: 1, color: "text.secondary" }}>
-                    Preview
-                  </Typography>
-                  <audio src={audioUrl} controls style={{ width: "100%" }} />
-                </Box>
-              )}
+                  Close
+                </Button>
+              </Box>
             </Box>
-          )}
+          </Modal>
+        )}
 
-          {/* submit */}
-          <Button
-            onClick={submit}
-            variant="contained"
-            color="primary"
-            disabled={busy}
-            endIcon={busy ? null : <ArrowForwardIcon />}
-            sx={{
-              mt: 1,
-              width: "100%",
-              py: 1.6,
-              fontSize: 16,
-              borderRadius: 999,
-            }}
-          >
-            {busy ? (
-              <CircularProgress size={22} sx={{ color: "#fff" }} />
-            ) : (
-              "Analyze my mood"
-            )}
-          </Button>
-        </Box>
-      </Container>
-    </Box>
+        {/* Text and Face Modal Logic */}
+        {activeTab === "text" && (
+          <Modal open={showModal} onClose={handleModalClose}>
+            <Box
+              sx={{
+                ...styles.modal,
+                width: { xs: "90%", sm: "80%", md: "60%", lg: "40%" },
+                maxWidth: "600px",
+                padding: { xs: "16px", sm: "24px", md: "32px" },
+                margin: "auto",
+                backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode modal background
+                color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  marginBottom: "10px",
+                  font: "inherit",
+                  textAlign: "center",
+                  color: isDarkMode ? "#ffffff" : "#000000",
+                }}
+              >
+                Enter Your Text
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                variant="outlined"
+                placeholder="Tell us how you're feeling..."
+                value={inputValue}
+                inputProps={{
+                  style: {
+                    padding: "8px 12px",
+                    fontFamily: "Poppins",
+                    fontSize: "16px",
+                    color: isDarkMode ? "#ffffff" : "#000000", // Dark mode input text color
+                  },
+                }}
+                InputProps={{
+                  style: {
+                    fontFamily: "Poppins",
+                    fontSize: "16px",
+                    padding: "0",
+                    boxShadow: "none",
+                    color: isDarkMode ? "#ffffff" : "#000000", // Dark mode input text color
+                  },
+                }}
+                InputLabelProps={{
+                  style: {
+                    fontFamily: "Poppins",
+                    color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
+                  },
+                }}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
+              <Box
+                mt={2}
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  justifyContent: "center",
+                  gap: { xs: "10px", sm: "10px" },
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  onClick={handleTextSubmit}
+                  variant="contained"
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    marginRight: { sm: "10px" },
+                    font: "inherit",
+                    backgroundColor: "#ff1a1a",
+                  }}
+                >
+                  Send Text
+                </Button>
+                <Button
+                  onClick={handleModalClose}
+                  variant="contained"
+                  color="error"
+                  sx={{
+                    width: { xs: "100%", sm: "auto" },
+                    font: "inherit",
+                    backgroundColor: "white",
+                    color: "red",
+                    "&:hover": {
+                      backgroundColor: "#ff1a1a",
+                      color: "white",
+                    },
+                  }}
+                >
+                  Close
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
+        )}
+
+        {activeTab === "face" && (
+          <Modal open={showModal} onClose={handleModalClose}>
+            <Box
+              sx={{
+                ...styles.modal,
+                width: { xs: "90%", sm: "80%", md: "60%", lg: "40%" },
+                maxWidth: "600px",
+                padding: { xs: "16px", sm: "24px", md: "32px" },
+                margin: "auto",
+                backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode modal background
+                color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
+              }}
+            >
+              {!capturedImage ? (
+                <>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      marginBottom: "10px",
+                      font: "inherit",
+                      textAlign: "center",
+                      color: isDarkMode ? "#ffffff" : "#000000",
+                    }}
+                  >
+                    Image Capture
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: { xs: "100%", sm: "80%", md: "100%" },
+                      maxWidth: "100%",
+                      margin: "auto",
+                    }}
+                  >
+                    <Webcam
+                      audio={false}
+                      ref={webcamRef}
+                      screenshotFormat="image/jpeg"
+                      style={{ width: "100%", borderRadius: "8px" }}
+                    />
+                  </Box>
+                  <Button
+                    onClick={captureImage}
+                    variant="contained"
+                    color="error"
+                    sx={{
+                      marginTop: "20px",
+                      width: { xs: "100%", sm: "auto" }, // Full width on small screens
+                      backgroundColor: "#ff1a1a",
+                      font: "inherit",
+                      marginRight: { md: "10px", lg: "10px" },
+                    }}
+                  >
+                    Capture
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      textAlign: "center",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src={capturedImage}
+                      alt="Captured"
+                      style={{
+                        width: "100%",
+                        maxWidth: "400px", // Ensure it doesn't exceed this width
+                        borderRadius: "8px",
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    mt={2}
+                    sx={{
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" }, // Stack buttons vertically on smaller screens
+                      justifyContent: "center",
+                      gap: { xs: "10px", sm: "10px" }, // Spacing between buttons
+                      alignItems: "center",
+                    }}
+                  >
+                    <Button
+                      onClick={confirmImage}
+                      variant="contained"
+                      color="primary"
+                      sx={{
+                        width: { xs: "100%", sm: "auto" }, // Full width on small screens
+                        font: "inherit",
+                      }}
+                    >
+                      Confirm
+                    </Button>
+                    <Button
+                      onClick={retakeImage}
+                      variant="contained"
+                      color="secondary"
+                      sx={{
+                        width: { xs: "100%", sm: "auto" }, // Full width on small screens
+                        font: "inherit",
+                        marginRight: { md: "10px", lg: "10px" },
+                      }}
+                    >
+                      Retake
+                    </Button>
+                  </Box>
+                </>
+              )}
+              <Button
+                onClick={handleModalClose}
+                variant="contained"
+                color="error"
+                sx={{
+                  marginTop: "20px",
+                  width: { xs: "100%", sm: "auto" }, // Full width on small screens
+                  font: "inherit",
+                  backgroundColor: "white",
+                  color: "#ff1a1a",
+                  "&:hover": {
+                    backgroundColor: "#ff1a1a",
+                    color: "white",
+                  },
+                }}
+              >
+                Close
+              </Button>
+            </Box>
+          </Modal>
+        )}
+      </Paper>
+    </div>
   );
-}
+};
+
+const styles = {
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2000,
+    flexDirection: "column",
+  },
+  container: {
+    height: "99vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    fontFamily: "Poppins",
+    transition: "background-color 0.3s ease",
+  },
+  formContainer: {
+    padding: "20px",
+    borderRadius: "12px",
+    width: "500px",
+    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+    backgroundColor: "white",
+    transition: "background-color 0.3s ease",
+  },
+  tabButton: {
+    flex: 1,
+    padding: "10px 15px",
+    textTransform: "none",
+    transition: "all 0.3s ease",
+    fontFamily: "Poppins",
+    "&:hover": {
+      backgroundColor: "#ff4d4d",
+      color: "white",
+    },
+  },
+  captureButton: {
+    margin: "20px auto",
+    width: "100px",
+    height: "100px",
+    borderRadius: "50%",
+    backgroundColor: "#ff4d4d",
+    color: "white",
+    fontSize: "14px",
+    padding: "10px",
+    textTransform: "uppercase",
+    transition: "all 0.3s ease",
+    boxShadow: "0px 4px 15px rgba(255, 0, 0, 0.4)",
+    fontFamily: "Poppins",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    "&:hover": {
+      backgroundColor: "#ff1a1a",
+    },
+  },
+  uploadButton: {
+    textAlign: "center",
+    display: "block",
+    margin: "10px auto",
+    padding: "8px 20px",
+    backgroundColor: "#ff4d4d",
+    color: "white",
+    textTransform: "uppercase",
+    transition: "all 0.3s ease",
+    borderRadius: "20px",
+    boxShadow: "0px 4px 10px rgba(255, 0, 0, 0.4)",
+    fontFamily: "Poppins",
+    "&:hover": {
+      backgroundColor: "#ff1a1a",
+    },
+  },
+  modal: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 500,
+    bgcolor: "white",
+    boxShadow: 24,
+    p: 4,
+    borderRadius: "12px",
+    textAlign: "center",
+  },
+  webcam: {
+    width: "100%",
+    height: "auto",
+    borderRadius: "10px",
+  },
+  capturedImage: {
+    width: "100%",
+    height: "auto",
+    borderRadius: "10px",
+  },
+};
+
+export default HomePage;
