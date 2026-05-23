@@ -1,0 +1,339 @@
+/* =========================================================================
+ * Moodify wiki — v2 enhancements.
+ * Loaded AFTER packages/styles.css so any selector in here wins by file order.
+ * Deliberately does NOT touch the hero (.hero, .hero-*) -- those classes are
+ * already shipped and should stay visually as-is. Everything else gets a
+ * coherent red-brand glow-up: warmer shadows, tighter cards, smoother hover.
+ * ========================================================================= */
+
+/* ---- Cohesive shared variables (override the prior palette tint) ---- */
+:root {
+    --moodify-red: #ff4d4d;
+    --moodify-red-soft: rgba(255, 77, 77, 0.12);
+    --moodify-red-glow: rgba(255, 77, 77, 0.35);
+    --moodify-orange: #ff7a59;
+    --moodify-gradient: linear-gradient(135deg, #ff4d4d 0%, #ff7a59 100%);
+    --moodify-elevation-lg: 0 28px 60px rgba(255, 77, 77, 0.18);
+    --moodify-elevation-md: 0 16px 36px rgba(255, 77, 77, 0.14);
+    --moodify-elevation-sm: 0 8px 18px rgba(0, 0, 0, 0.08);
+    --moodify-border-soft: rgba(255, 77, 77, 0.18);
+}
+
+/* ---- Smoother global feel ---- */
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+::selection { background: var(--moodify-red); color: #fff; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ff7a59, #ff4d4d); border-radius: 999px; }
+::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
+
+/* ---- Section-level rhythm ---- */
+.section { position: relative; }
+.section:not(.section-dark)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(50% 40% at 80% 0%, rgba(255, 122, 89, 0.05) 0%, transparent 60%),
+        radial-gradient(40% 30% at 0% 100%, rgba(255, 77, 77, 0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+.section > .container { position: relative; z-index: 1; }
+.section-header { margin-bottom: 56px; }
+.section-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--moodify-red-soft);
+    color: var(--moodify-red);
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 11px;
+    border: 1px solid var(--moodify-border-soft);
+    box-shadow: var(--moodify-elevation-sm);
+    backdrop-filter: blur(4px);
+}
+.section-title {
+    background: linear-gradient(135deg, #1a1a1a 0%, #ff4d4d 70%, #ff7a59 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+}
+.section-dark .section-title {
+    background: linear-gradient(135deg, #ffffff 0%, #ff7a59 70%, #ff4d4d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ---- Cards (overview / feature / deployment) ---- */
+.overview-card,
+.feature-card,
+.deployment-card,
+.tech-category {
+    position: relative;
+    border-radius: 22px !important;
+    border: 1px solid var(--moodify-border-soft) !important;
+    transition:
+        transform .35s cubic-bezier(.34, 1.56, .64, 1),
+        box-shadow .35s ease,
+        border-color .35s ease;
+    overflow: hidden;
+    isolation: isolate;
+}
+.overview-card::before,
+.feature-card::before,
+.deployment-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, rgba(255, 77, 77, 0.06) 0%, transparent 35%);
+    opacity: 0;
+    transition: opacity .35s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+.overview-card:hover,
+.feature-card:hover,
+.deployment-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--moodify-elevation-lg) !important;
+    border-color: rgba(255, 77, 77, 0.4) !important;
+}
+.overview-card:hover::before,
+.feature-card:hover::before,
+.deployment-card:hover::before { opacity: 1; }
+
+.card-icon,
+.feature-icon,
+.deployment-icon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px !important;
+    background: var(--moodify-gradient) !important;
+    color: #fff !important;
+    font-size: 30px;
+    box-shadow: 0 12px 26px var(--moodify-red-glow);
+    margin-bottom: 18px;
+    transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
+}
+.overview-card:hover .card-icon,
+.feature-card:hover .feature-icon,
+.deployment-card:hover .deployment-icon {
+    transform: rotate(-6deg) scale(1.06);
+}
+
+.overview-card h3,
+.feature-card h3,
+.deployment-card h3 {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+}
+
+/* ---- Feature tags ---- */
+.feature-tags { gap: 8px; flex-wrap: wrap; }
+.tag {
+    background: var(--moodify-red-soft) !important;
+    color: var(--moodify-red) !important;
+    border: 1px solid var(--moodify-border-soft) !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    letter-spacing: 0.04em;
+    padding: 5px 11px !important;
+    border-radius: 999px !important;
+    transition: transform .2s ease, background .2s ease;
+}
+.tag:hover {
+    background: var(--moodify-gradient) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px);
+}
+
+/* ---- Architecture tab buttons ---- */
+.tab-btn {
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    padding: 10px 22px !important;
+    transition: all .25s ease !important;
+    border: 1px solid transparent !important;
+}
+.tab-btn:not(.active):hover {
+    background: var(--moodify-red-soft) !important;
+    color: var(--moodify-red) !important;
+    border-color: var(--moodify-border-soft) !important;
+    transform: translateY(-1px);
+}
+.tab-btn.active {
+    background: var(--moodify-gradient) !important;
+    color: #fff !important;
+    box-shadow: 0 12px 28px var(--moodify-red-glow) !important;
+}
+
+.diagram-container {
+    border-radius: 22px !important;
+    border: 1px solid var(--moodify-border-soft) !important;
+    box-shadow: var(--moodify-elevation-md) !important;
+    padding: 32px !important;
+    background:
+        radial-gradient(70% 50% at 100% 0%, rgba(255, 122, 89, 0.06) 0%, transparent 60%),
+        radial-gradient(50% 50% at 0% 100%, rgba(255, 77, 77, 0.05) 0%, transparent 60%),
+        #ffffff;
+}
+.section-dark .diagram-container {
+    background:
+        radial-gradient(70% 50% at 100% 0%, rgba(255, 122, 89, 0.10) 0%, transparent 60%),
+        radial-gradient(50% 50% at 0% 100%, rgba(255, 77, 77, 0.08) 0%, transparent 60%),
+        #181818;
+}
+
+/* ---- Tech grid items ---- */
+.tech-category {
+    padding: 28px !important;
+    background:
+        radial-gradient(60% 60% at 100% 0%, rgba(255, 77, 77, 0.06) 0%, transparent 60%),
+        #ffffff;
+}
+.section-dark .tech-category {
+    background:
+        radial-gradient(60% 60% at 100% 0%, rgba(255, 77, 77, 0.08) 0%, transparent 60%),
+        #1f1f1f;
+}
+.tech-category-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--moodify-red-soft);
+    color: var(--moodify-red) !important;
+    border: 1px solid var(--moodify-border-soft);
+    margin-bottom: 18px !important;
+}
+.tech-icon {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.tech-grid {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px !important;
+}
+.tech-item {
+    transition: transform .25s ease;
+    line-height: 0;
+}
+.tech-item:hover { transform: translateY(-3px); }
+.tech-item img {
+    border-radius: 6px;
+    transition: filter .2s ease, box-shadow .2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.tech-item:hover img {
+    filter: saturate(1.15) brightness(1.04);
+    box-shadow: 0 8px 18px var(--moodify-red-glow);
+}
+
+/* ---- Deployment cards: align icons + ticks ---- */
+.deployment-card { padding: 32px !important; }
+.deployment-features { padding-left: 0; list-style: none; margin-top: 16px; }
+.deployment-features li {
+    padding: 6px 0;
+    font-weight: 600;
+    color: inherit;
+}
+
+/* ---- Info banner / disclaimer ---- */
+.info-banner,
+.disclaimer-box {
+    border-radius: 18px !important;
+    border: 1px solid rgba(255, 77, 77, 0.35) !important;
+    background:
+        linear-gradient(135deg, rgba(255, 77, 77, 0.08) 0%, rgba(255, 122, 89, 0.04) 100%) !important;
+    box-shadow: var(--moodify-elevation-sm) !important;
+    padding: 22px !important;
+}
+.disclaimer-box h4 {
+    color: var(--moodify-red) !important;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+.banner-icon { font-size: 24px; }
+
+/* ---- Demo links / CTA buttons ---- */
+.demo-link,
+.cta-button {
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    padding: 12px 26px !important;
+    background: var(--moodify-gradient) !important;
+    color: #fff !important;
+    box-shadow: 0 12px 28px var(--moodify-red-glow) !important;
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    border: none !important;
+}
+.demo-link:hover,
+.cta-button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05) saturate(1.1);
+    box-shadow: 0 18px 36px var(--moodify-red-glow) !important;
+}
+
+/* ---- Footer-style + nav ---- */
+nav a,
+.footer a {
+    transition: color .2s ease, transform .2s ease;
+}
+nav a:hover,
+.footer a:hover {
+    color: var(--moodify-red) !important;
+    transform: translateY(-1px);
+}
+
+/* ---- Subtle reveal on scroll (no JS) for cards already in viewport ---- */
+@media (prefers-reduced-motion: no-preference) {
+    .overview-card,
+    .feature-card,
+    .deployment-card,
+    .tech-category {
+        animation: moodifyRise .6s ease both;
+    }
+    .features-grid > :nth-child(1) { animation-delay: .02s; }
+    .features-grid > :nth-child(2) { animation-delay: .06s; }
+    .features-grid > :nth-child(3) { animation-delay: .10s; }
+    .features-grid > :nth-child(4) { animation-delay: .14s; }
+    .features-grid > :nth-child(5) { animation-delay: .18s; }
+    .features-grid > :nth-child(6) { animation-delay: .22s; }
+    @keyframes moodifyRise {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+}
+
+/* ---- Responsive tightening ---- */
+@media (max-width: 640px) {
+    .section-header { margin-bottom: 36px; }
+    .overview-card,
+    .feature-card,
+    .deployment-card,
+    .tech-category { padding: 22px !important; }
+    .card-icon,
+    .feature-icon,
+    .deployment-icon { width: 56px; height: 56px; font-size: 26px; }
+}

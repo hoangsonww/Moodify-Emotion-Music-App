@@ -10,6 +10,7 @@
     <link rel="icon" type="image/png" href="images/favicon.ico">
     <link rel="apple-touch-icon" href="images/moodify-logo.png">
     <link rel="stylesheet" href="packages/styles.css">
+    <link rel="stylesheet" href="packages/styles.enhance.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </head>
 <body>
@@ -185,7 +186,7 @@
                 <div class="overview-card">
                     <div class="card-icon">💡</div>
                     <h3>Innovation</h3>
-                    <p>Combines three self-trained AI/ML models (BERT, CNN-LSTM, ResNet50) with real-time Spotify integration for seamless music discovery.</p>
+                    <p>Combines three self-trained AI/ML models (BERT, SVC+MFCC, FER) with Deezer's free Search API, served from a memory-snapshot Modal container that scales to zero when idle.</p>
                 </div>
                 <div class="overview-card">
                     <div class="card-icon">🌐</div>
@@ -245,11 +246,12 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🎵</div>
-                    <h3>Spotify Integration</h3>
-                    <p>Seamless integration with Spotify API provides personalized music recommendations based on detected emotions and user preferences.</p>
+                    <h3>Deezer Recommendations</h3>
+                    <p>Free, keyless integration with the Deezer Search API powers every Results page — track previews, album art, popularity rank, and a one-tap web-player link.</p>
                     <div class="feature-tags">
-                        <span class="tag">Spotify API</span>
-                        <span class="tag">OAuth</span>
+                        <span class="tag">Deezer API</span>
+                        <span class="tag">Keyless</span>
+                        <span class="tag">30s Previews</span>
                     </div>
                 </div>
                 <div class="feature-card">
@@ -346,7 +348,7 @@ graph TB
     end
 
     subgraph "External Services"
-        I[Spotify API]
+        I[Deezer Search API]
     end
 
     subgraph "Data Layer"
@@ -416,7 +418,7 @@ sequenceDiagram
     participant BE as Backend API
     participant AI as AI/ML Service
     participant DB as MongoDB
-    participant SP as Spotify API
+    participant SP as Deezer API
     participant CH as Redis Cache
 
     U->>FE: Input (Text/Speech/Image)
@@ -446,7 +448,7 @@ sequenceDiagram
                         <li>Backend checks Redis cache for existing results</li>
                         <li>If cache miss, forwards to AI/ML service for emotion detection</li>
                         <li>ML model processes input and returns emotion with confidence score</li>
-                        <li>Backend queries Spotify API for music recommendations</li>
+                        <li>Inference service queries Deezer Search API for mood-matched tracks</li>
                         <li>Results are cached in Redis and stored in MongoDB</li>
                         <li>Response is returned to user with recommendations</li>
                     </ol>
@@ -693,7 +695,67 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios">
                         </div>
                         <div class="tech-item">
+                            <img src="https://img.shields.io/badge/React_Router-6-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Emotion-D26AC2?style=for-the-badge&logo=emotion&logoColor=white" alt="Emotion">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Webpack-CRA-8DD6F9?style=for-the-badge&logo=webpack&logoColor=black" alt="Webpack">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Babel-F9DC3E?style=for-the-badge&logo=babel&logoColor=black" alt="Babel">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white" alt="ESLint">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black" alt="Prettier">
+                        </div>
+                        <div class="tech-item">
                             <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Testing_Library-E33332?style=for-the-badge&logo=testing-library&logoColor=white" alt="Testing Library">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">🎶</span>
+                        Music + External APIs
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Deezer_API-FF6600?style=for-the-badge&logo=deezer&logoColor=white" alt="Deezer API">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Hugging_Face_Hub-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Hub">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">📱</span>
+                        Mobile
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/React_Native-0.74-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React Native">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Expo_SDK_51-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/EAS_Build-4630EB?style=for-the-badge&logo=expo&logoColor=white" alt="EAS Build">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Hermes-31A8FF?style=for-the-badge" alt="Hermes JS">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/AsyncStorage-FF9F1C?style=for-the-badge" alt="AsyncStorage">
                         </div>
                     </div>
                 </div>
@@ -705,19 +767,40 @@ sequenceDiagram
                     </h3>
                     <div class="tech-grid">
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
+                            <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/DRF-ff1709?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework">
+                            <img src="https://img.shields.io/badge/Django-5.1-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
+                            <img src="https://img.shields.io/badge/DRF-3.15-A30000?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT">
+                            <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Pydantic-2.9-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/MongoEngine-589636?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoEngine">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/PyJWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="PyJWT">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Redoc-EB222A?style=for-the-badge&logo=googledocs&logoColor=white" alt="Redoc">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white" alt="Gunicorn">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/WhiteNoise-3F4F75?style=for-the-badge" alt="WhiteNoise">
                         </div>
                     </div>
                 </div>
@@ -725,26 +808,47 @@ sequenceDiagram
                 <div class="tech-category">
                     <h3 class="tech-category-title">
                         <span class="tech-icon">🤖</span>
-                        AI/ML
+                        AI / ML
                     </h3>
                     <div class="tech-grid">
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
+                            <img src="https://img.shields.io/badge/PyTorch-2.2-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow">
+                            <img src="https://img.shields.io/badge/TensorFlow-2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Keras-D00000?style=for-the-badge&logo=keras&logoColor=white" alt="Keras">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/HuggingFace-FFD54F?style=for-the-badge&logo=huggingface&logoColor=black" alt="HuggingFace">
+                            <img src="https://img.shields.io/badge/Transformers-4.44-FFD43B?style=for-the-badge&logo=huggingface&logoColor=black" alt="Transformers">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Hugging_Face_Hub-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Hub">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" alt="OpenCV">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Scikit_Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="Scikit Learn">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/SciPy-8CAAE6?style=for-the-badge&logo=scipy&logoColor=white" alt="SciPy">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="Pandas">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Librosa-1E1E1E?style=for-the-badge&logo=python&logoColor=white" alt="Librosa">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge" alt="FER">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/MLflow-0194E2?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow">
                         </div>
                     </div>
                 </div>
@@ -762,7 +866,7 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+                            <img src="https://img.shields.io/badge/MongoDB_Atlas-13AA52?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Atlas">
                         </div>
                     </div>
                 </div>
@@ -780,6 +884,12 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes">
                         </div>
                         <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=helm&logoColor=white" alt="Helm">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white" alt="Argo CD">
+                        </div>
+                        <div class="tech-item">
                             <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins">
                         </div>
                         <div class="tech-item">
@@ -787,6 +897,9 @@ sequenceDiagram
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="NGINX">
                         </div>
                     </div>
                 </div>
@@ -807,7 +920,10 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Render-152535?style=for-the-badge&logo=render&logoColor=white" alt="Render">
+                            <img src="https://img.shields.io/badge/Modal-7B68EE?style=for-the-badge" alt="Modal">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle Cloud">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify">
@@ -932,12 +1048,12 @@ sequenceDiagram
                     <div class="demo-icon">🔧</div>
                     <h3>Backend API</h3>
                     <p>RESTful API with comprehensive documentation via Swagger and Redoc.</p>
-                    <a href="https://moodify-emotion-music-app.onrender.com/swagger" class="demo-link" target="_blank">
+                    <a href="https://moodify-backend-api.vercel.app/swagger/" class="demo-link" target="_blank">
                         View API Docs →
                     </a>
                     <div class="status-badge success">
                         <span class="status-dot"></span>
-                        Live on Render
+                        Live on Vercel
                     </div>
                 </div>
 
@@ -958,10 +1074,10 @@ sequenceDiagram
             <div class="disclaimer-box">
                 <h4>⚠️ Important Notes</h4>
                 <ul>
-                    <li>The backend is hosted on Render's free tier (512MB RAM, 0.1 CPU), which may cause slower initial load times and occasional restarts due to memory constraints.</li>
-                    <li>Facial and speech emotion detection models may cause temporary server issues due to heavy processing requirements.</li>
+                    <li>The Django API is deployed to Vercel and the ML inference service runs on Modal with memory snapshots + scale-to-zero, so the first request after idle may take ~1-2 s while a container restores. Subsequent calls hit a warm container.</li>
+                    <li>Facial and speech emotion detection models load on the first cold start; once snapshotted they restore in seconds rather than re-loading from disk.</li>
                     <li>For optimal performance, consider cloning the repository and running locally.</li>
-                    <li>No guarantee of uptime or performance with current free-tier deployment.</li>
+                    <li>Modal scales to zero when idle, so usage cost is essentially free for a personal-traffic app.</li>
                 </ul>
             </div>
 
@@ -1002,7 +1118,7 @@ sequenceDiagram
                     <h4>Resources</h4>
                     <ul>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank">Documentation</a></li>
-                        <li><a href="https://moodify-emotion-music-app.onrender.com/swagger" target="_blank">API Reference</a></li>
+                        <li><a href="https://moodify-backend-api.vercel.app/swagger/" target="_blank">API Reference</a></li>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank">Issue Tracker</a></li>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/main/LICENSE" target="_blank">License</a></li>
                     </ul>
