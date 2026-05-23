@@ -1,8 +1,6 @@
 # Moodify System Architecture Documentation
 
-**Version:** 1.0
-**Last Updated:** 2025-10-07
-**Author:** Son Nguyen
+A comprehensive overview of the architecture of the Moodify platform, detailing the design principles, system components, data flow, security measures, deployment strategy, and monitoring approach. This document serves as a reference for developers, architects, and stakeholders to understand the technical foundation of the system and guide future development and maintenance efforts.
 
 ## Table of Contents
 
