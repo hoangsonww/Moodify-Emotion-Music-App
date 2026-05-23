@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../../context/DarkModeContext";
+import { useToast } from "../Toast";
 import { API_URL, MODAL_API_URL } from "../../config";
 
 const CACHE_KEY = "userProfileCache";
@@ -29,6 +30,7 @@ const ProfilePage = () => {
   const [loadingText, setLoadingText] = useState("Loading...");
   const [randomImage, setRandomImage] = useState("");
   const navigate = useNavigate();
+  const toast = useToast();
   const token = localStorage.getItem("token");
 
   const placeholderImages = [
@@ -62,7 +64,7 @@ const ProfilePage = () => {
     );
 
     if (!token) {
-      alert("You are not authenticated. Please log in.");
+      toast.warning("You are not signed in — sending you to login.");
       navigate("/login");
       return;
     }
@@ -140,7 +142,7 @@ const ProfilePage = () => {
       navigate("/results", { state: { emotion, recommendations } });
     } catch (error) {
       console.error("Error fetching recommendations:", error);
-      alert("Failed to fetch recommendations. Please try again later.");
+      toast.error("Failed to fetch recommendations. Please try again later.");
     } finally {
       setIsLoading(false);
     }

@@ -18,6 +18,7 @@ import Webcam from "react-webcam";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../context/DarkModeContext";
+import { useToast } from "../components/Toast";
 import { API_URL, MODAL_API_URL } from "../config";
 
 const HomePage = () => {
@@ -31,6 +32,7 @@ const HomePage = () => {
   const [audioBlob, setAudioBlob] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const navigate = useNavigate();
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState(null);
 
@@ -473,7 +475,7 @@ const HomePage = () => {
       mediaRecorderRef.current = mediaRecorder;
     } catch (error) {
       console.error("Error accessing microphone:", error);
-      alert("Could not access the microphone. Please try again.");
+      toast.error("Could not access the microphone. Please try again.");
     }
   };
 

@@ -20,6 +20,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import { DarkModeProvider, DarkModeContext } from "./context/DarkModeContext";
+import { ToastProvider } from "./components/Toast";
 import { installAuthInterceptor } from "./services/auth";
 import "./styles/styles.css";
 
@@ -102,7 +103,9 @@ function AppLayout() {
 export default function AppWithProvider() {
   return (
     <DarkModeProvider>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </DarkModeProvider>
   );
 }
