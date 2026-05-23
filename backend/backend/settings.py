@@ -179,11 +179,21 @@ SWAGGER_SETTINGS = {
             "type": "apiKey",
             "in": "header",
             "name": "Authorization",
-            "description": "Enter your token in the format: Bearer {access_token}",
+            "description": "JWT access token from `/users/login/`. Format: `Bearer <token>`.",
         }
     },
-    "APIS_SORTER": "alpha",
-    "OPERATIONS_SORTER": "alpha",
+    # ``alpha`` was sorting the tags alphabetically (api, users) which is
+    # exactly what the new tag taxonomy is replacing. Disable sorting so
+    # the tag order is the one our schema generator emits.
+    "APIS_SORTER": None,
+    "OPERATIONS_SORTER": "method",
+    "DOC_EXPANSION": "list",
+    "DEEP_LINKING": True,
+    "DISPLAY_OPERATION_ID": False,
+    "DEFAULT_MODEL_RENDERING": "example",
+    "DEFAULT_MODEL_DEPTH": 4,
+    "PERSIST_AUTH": True,
+    "REFETCH_SCHEMA_WITH_AUTH": True,
 }
 
 # --- I18N / static --------------------------------------------------------

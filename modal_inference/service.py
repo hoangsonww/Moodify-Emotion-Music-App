@@ -240,6 +240,56 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
             logger.exception("Failed to collect %s stats", label)
             return {"error": type(exc).__name__}
 
+    @web_app.get("/", include_in_schema=False)
+    def root():
+        """Landing JSON for the bare service URL.
+
+        Browsers and curl users hitting the root used to get
+        ``{"detail":"Not Found"}`` from FastAPI. Return something
+        friendlier with pointers to the docs and the rest of the
+        Moodify project so the bare URL is self-describing.
+        """
+        return {
+            "service": "moodify-inference",
+            "version": "1.0.0",
+            "status": "ok",
+            "description": (
+                "Moodify ML inference service -- text / speech / face emotion "
+                "detection + Deezer-backed music recommendations. Scale-to-zero "
+                "FastAPI app on Modal."
+            ),
+            "links": {
+                "openapi_docs": "/docs",
+                "redoc":        "/redoc",
+                "openapi_json": "/openapi.json",
+                "health":       "/health",
+                "frontend":     "https://moodify-emotion-music-app.vercel.app",
+                "backend_api":  "https://moodify-emotion-music-app-backend.vercel.app",
+                "source":       "https://github.com/hoangsonww/Moodify-Emotion-Music-App",
+            },
+            "endpoints": [
+                {"method": "GET",  "path": "/health",
+                 "auth": "none", "summary": "Liveness + cache + rate-limit stats."},
+                {"method": "POST", "path": "/text_emotion",
+                 "auth": "Bearer", "tier": "general",
+                 "summary": "Emotion from a piece of text + Deezer recommendations."},
+                {"method": "POST", "path": "/speech_emotion",
+                 "auth": "Bearer", "tier": "media",
+                 "summary": "Emotion from a voice clip (multipart upload <=12MB)."},
+                {"method": "POST", "path": "/facial_emotion",
+                 "auth": "Bearer", "tier": "media",
+                 "summary": "Emotion from a face photo (multipart upload <=12MB)."},
+                {"method": "POST", "path": "/music_recommendation",
+                 "auth": "Bearer", "tier": "general",
+                 "summary": "Mood-matched Deezer tracks + history blend."},
+            ],
+            "rate_limits": {
+                "general": f"{config.RATE_LIMIT_PER_USER}/{int(config.RATE_LIMIT_WINDOW)}s per user",
+                "media":   f"{config.RATE_LIMIT_MEDIA_PER_USER}/{int(config.RATE_LIMIT_WINDOW)}s per user",
+                "headers": ["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Window", "Retry-After (on 429)"],
+            },
+        }
+
     @web_app.get("/health", response_model=HealthResponse)
     def health(response: Response) -> HealthResponse:
         # /health is the liveness/readiness probe target. It must never

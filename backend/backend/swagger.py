@@ -16,12 +16,14 @@ from django.urls import path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
+from .api_docs import SCHEMA_HEADER, MoodifySchemaGenerator
+
 # --- Schema generator -----------------------------------------------------
 schema_view = get_schema_view(
     openapi.Info(
         title="Moodify Emotion-Based Music API",
         default_version="v1",
-        description="REST API for the Moodify Emotion-Based Music App.",
+        description=SCHEMA_HEADER,
         terms_of_service="https://moodify-emotion-music-app.vercel.app/terms-of-service",
         contact=openapi.Contact(
             email="hoangson091104@gmail.com",
@@ -31,6 +33,7 @@ schema_view = get_schema_view(
         license=openapi.License(name="MIT License"),
     ),
     public=True,
+    generator_class=MoodifySchemaGenerator,
 )
 
 # --- CDN assets -----------------------------------------------------------
