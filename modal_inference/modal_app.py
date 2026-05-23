@@ -66,7 +66,10 @@ inference_image = (
     .add_local_dir("assets", "/assets")
     # Local Python source so the container can import our packages.
     .add_local_python_source(
-        "config", "auth", "schemas", "service", "download_models", "inference", "recommendation"
+        "config", "auth", "schemas", "service", "download_models",
+        "inference", "recommendation",
+        "cache", "rate_limit",
+        "metrics", "metrics_store",
     )
 )
 

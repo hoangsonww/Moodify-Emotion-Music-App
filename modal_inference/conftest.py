@@ -28,6 +28,8 @@ def _reset_caches_and_limiter():
     from inference import text_emotion as _te
     from recommendation import deezer as _dz
     from service import get_media_caches, reset_rate_limiter as _reset_limiter
+    import metrics as _metrics_module
+    import metrics_store as _metrics_store
 
     media = get_media_caches()
 
@@ -36,6 +38,8 @@ def _reset_caches_and_limiter():
             cache.clear()
             cache.reset_stats()
         _reset_limiter()
+        _metrics_module.reset_recorder()
+        _metrics_store.reset_for_tests()
 
     _wipe()
     yield

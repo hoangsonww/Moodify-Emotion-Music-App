@@ -66,6 +66,18 @@ MODAL_SERVICE_TOKEN = os.getenv("MODAL_SERVICE_TOKEN")
 # Comma-separated list of allowed browser origins for CORS.
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 
+# --- SRE metrics persistence ---------------------------------------------
+# Per-request synchronous writes to a MongoDB Atlas time-series
+# collection. See ``modal_inference/metrics_store.py`` for the design.
+# Disabled automatically if ``MONGO_DB_URI`` is empty -- the inference
+# endpoints still serve traffic, just without persisted telemetry.
+METRICS_ENABLED = os.getenv("METRICS_ENABLED", "1").lower() not in ("0", "false", "no")
+MONGO_DB_URI = os.getenv("MONGO_DB_URI", "")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "emotion_based_music_db")
+METRICS_COLLECTION = os.getenv("METRICS_COLLECTION", "inference_metrics")
+# Native time-series TTL -- old samples drop automatically without a cron.
+METRICS_TTL_DAYS = int(os.getenv("METRICS_TTL_DAYS", "30"))
+
 # --- Caching ---------------------------------------------------------------
 # Two caches sit in front of the costly bits of the request path:
 #   * Deezer track search -- mood-keyword queries are highly repeated and

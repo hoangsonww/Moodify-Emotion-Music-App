@@ -53,6 +53,24 @@ else:
         **_MONGO_KWARGS,
     )
 
+# --- SRE metrics persistence ----------------------------------------------
+# Per-request synchronous writes to a Mongo time-series collection; see
+# observability/store.py for the design. Disabled in test envs that don't
+# want network I/O; the middleware no-ops cleanly.
+METRICS_ENABLED = config("METRICS_ENABLED", default=True, cast=bool)
+MONGO_DB_NAME = config("MONGO_DB_NAME", default="emotion_based_music_db")
+METRICS_COLLECTION = config("METRICS_COLLECTION", default="backend_metrics")
+METRICS_TTL_DAYS = config("METRICS_TTL_DAYS", default=30, cast=int)
+
+# Service token that unlocks GET /api/metrics/ -- separate from the
+# user-facing JWT so traffic patterns are operator-only. Falls back to
+# MODAL_SERVICE_TOKEN so the same secret unlocks both /metrics surfaces.
+ADMIN_METRICS_TOKEN = config(
+    "ADMIN_METRICS_TOKEN",
+    default=config("MODAL_SERVICE_TOKEN", default=""),
+)
+MODAL_SERVICE_TOKEN = config("MODAL_SERVICE_TOKEN", default="")
+
 # --- Applications ---------------------------------------------------------
 # No admin/sessions/messages/allauth. django.contrib.auth + contenttypes are
 # kept INSTALLED (but unused and never queried) only because DRF and
@@ -67,6 +85,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "api",
     "users",
+    "observability",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +94,10 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Metrics LAST so it observes the FULL request lifecycle (including
+    # CORS preflight handling, security headers, etc.). The middleware
+    # is fully defensive -- a metrics failure can never break a request.
+    "observability.middleware.MetricsMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"

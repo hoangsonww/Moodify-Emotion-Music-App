@@ -878,10 +878,11 @@ network. The full suite is for local pre-deploy verification.
 | Signal | Where |
 |---|---|
 | Container logs | `modal app logs moodify-inference` |
-| Per-call metrics | Modal dashboard → app → Functions tab |
+| Per-call metrics (Modal-native) | Modal dashboard → app → Functions tab |
 | Cold-start traces | dashboard → "Snapshot created / restored" log lines |
-| Health + cache + rate-limit stats | `GET /health` — see [Caching § Observability](#observability-1) |
+| Health + cache + rate-limit stats | `GET /health` |
 | Per-response rate-limit budget | `X-RateLimit-*` headers on every response |
+| **SRE telemetry** (error rates, p50/p95/p99, throughput) | `GET /metrics` — see [§ SRE metrics](#sre-metrics) |
 
 Useful log greps:
 
@@ -900,6 +901,143 @@ To watch the cache warm up live (useful right after a redeploy):
 ```bash
 watch -n 5 "curl -s https://<YOUR_URL>/health | jq '.caches | map_values({size, hit_ratio})'"
 ```
+
+---
+
+## SRE metrics
+
+Every non-probe request emits **one row** to a MongoDB Atlas
+time-series collection (`inference_metrics`). The persisted data is
+queryable via `GET /metrics` and survives Modal's scale-to-zero — so
+you get real p50/p95/p99 + error-rate dashboards without paying for
+Datadog / Honeycomb.
+
+### Pipeline
+
+```mermaid
+flowchart LR
+    Req[Incoming request] --> MW[Metrics middleware<br/>times the call]
+    MW --> H[Handler]
+    H --> MW
+    MW --> Live[(In-process recorder<br/>ring buffer, ~1000 samples)]
+    MW --> Store[(Mongo Atlas TS<br/>1 doc per request)]
+    Live --> Endpoint["/metrics?window=1h"]
+    Store --> Endpoint
+    Endpoint --> Operator[Operator / dashboard]
+
+    style Live fill:#34d399,stroke:#fff,color:#fff
+    style Store fill:#7c3aed,stroke:#fff,color:#fff
+    style Endpoint fill:#3b82f6,stroke:#fff,color:#fff
+```
+
+### Schema (one doc per request)
+
+```json
+{
+  "ts":         "2026-05-23T14:30:00.123Z",
+  "meta": {
+    "service":      "modal",
+    "endpoint":     "/text_emotion",
+    "method":       "POST",
+    "container":    "modal-task-abc123",
+    "status_class": "2xx"
+  },
+  "status":     200,
+  "latency_ms": 142.3,
+  "degraded":   false
+}
+```
+
+* **Native time-series collection** — Atlas applies columnar
+  compression and bucketing automatically, so 100 k events of this
+  shape compress to ~5 MB on disk.
+* **TTL: 30 days** (env-tunable). Old samples drop automatically;
+  no cron required.
+* **Cardinality control**: the persisted `endpoint` is the FastAPI
+  route template (`/users/{user_id}/profile/`), not the resolved
+  path — high-cardinality params collapse to a single bucket.
+* **Internal paths are skipped** — `/`, `/health`, `/metrics`, the
+  docs URLs — so liveness probes don't drown the time-series.
+
+### Reading: `GET /metrics?window=1h&endpoint=/text_emotion`
+
+```bash
+curl -s -H "Authorization: Bearer $MODAL_SERVICE_TOKEN" \
+     "https://<YOUR_URL>/metrics?window=1h" | jq
+```
+
+**Service-token only** — end-user JWTs are rejected (`401`) even
+when otherwise valid. Traffic patterns are operator-visible only.
+
+`window` accepts: `5m`, `15m`, `1h`, `6h`, `24h`, `7d`, `30d`
+(default `1h`). Unknown values fall back to `1h`. `endpoint`
+optionally narrows the result to one path template.
+
+Response shape:
+
+```json
+{
+  "service": "modal",
+  "window": {"label": "1h", "since": "...", "until": "...", "seconds": 3600},
+  "persisted": {
+    "available": true,
+    "endpoints": [
+      {
+        "endpoint": "/text_emotion", "method": "POST",
+        "count": 412, "error_count": 3, "error_rate": 0.0073,
+        "degraded_count": 0,
+        "latency_ms": {"p50": 102, "p95": 245, "p99": 412, "max": 891, "mean": 134, "samples": 412},
+        "status_codes": {"200": 409, "401": 2, "500": 1}
+      }
+    ]
+  },
+  "live": {
+    "container": "modal-task-abc123",
+    "uptime_seconds": 412.5,
+    "started_at": 1716470400.0,
+    "endpoints": [...]
+  }
+}
+```
+
+* `persisted` aggregates across every container that wrote into the
+  window — the real SRE answer.
+* `live` is just the calling container's in-process counters since
+  startup — handy for verifying behaviour right now without waiting
+  for the next Mongo aggregation tick.
+
+### Resilience
+
+The metrics path is **fully defensive at every layer**:
+
+| Failure mode | Behaviour |
+|---|---|
+| `MONGO_DB_URI` unset | Persistence disabled silently; `/health` still works |
+| Mongo unreachable | Per-request insert fails silently; request returns normally |
+| Bad collection state | Init logs WARNING once, then no-ops for the container's lifetime |
+| `/metrics` aggregation errors | Returns `{"available": false, "reason": "..."}`, no 500 |
+| Recorder bug | `record()` catches everything, request proceeds |
+
+**Metrics MUST NEVER break the request they measure.** This is
+enforced at every call site.
+
+### Configuration
+
+```
+METRICS_ENABLED       # "1" / "0" master switch
+MONGO_DB_URI          # shared with the Django backend
+MONGO_DB_NAME         # default: emotion_based_music_db
+METRICS_COLLECTION    # default: inference_metrics
+METRICS_TTL_DAYS      # default: 30
+```
+
+### Cost
+
+* **Per request**: ~1 ms warm Mongo write (vs. 50–500 ms inference).
+* **Storage**: ~150 B per event compressed; 10 k req/day × 30 d ≈
+  **~45 MB**. Comfortable inside the Atlas free tier (512 MB).
+* **No new bill** — reuses the Atlas cluster the Django backend
+  already uses.
 
 ---
 

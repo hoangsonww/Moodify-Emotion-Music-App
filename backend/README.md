@@ -302,6 +302,95 @@ trade-offs, observability), see
 
 ---
 
+## SRE metrics
+
+A custom Django middleware (`observability.middleware.MetricsMiddleware`)
+records **one row per request** to a MongoDB Atlas time-series
+collection (`backend_metrics`). The aggregated view is queryable via
+`GET /api/metrics/`.
+
+### Schema (one doc per request)
+
+```json
+{
+  "ts":         "2026-05-23T14:30:00.123Z",
+  "meta": {
+    "service":      "django",
+    "endpoint":     "/users/<str:user_id>/profile/",
+    "method":       "GET",
+    "container":    "iad1-...",
+    "status_class": "2xx"
+  },
+  "status":     200,
+  "latency_ms": 18.7
+}
+```
+
+* The `endpoint` is the **URL pattern** (`/users/<str:user_id>/...`),
+  not the resolved path -- a million distinct user IDs collapse to
+  one bucket so the time-series stays sane.
+* **TTL: 30 days** native (env-tunable). No cron required.
+* Internal paths skipped: `/swagger/`, `/redoc/`, `/favicon.ico`,
+  `/api/health/`, `/api/metrics/` itself -- liveness probes would
+  otherwise drown signal in noise.
+
+### Reading: `GET /api/metrics/?window=1h`
+
+**Admin-only**: requires `Authorization: Bearer <ADMIN_METRICS_TOKEN>`
+(falls back to `MODAL_SERVICE_TOKEN` if the dedicated admin secret
+isn't set). End-user JWTs are explicitly rejected -- the endpoint is
+listed in Swagger under the **System** tag.
+
+```bash
+curl -s -H "Authorization: Bearer $ADMIN_METRICS_TOKEN" \
+     "https://<YOUR_URL>/api/metrics/?window=1h" | jq
+```
+
+`window` ∈ `{5m, 15m, 1h, 6h, 24h, 7d, 30d}` (default `1h`).
+`endpoint=` optionally narrows to one URL pattern.
+
+Response shape (identical to the Modal `/metrics` shape, just
+`service: "django"`):
+
+```json
+{
+  "service": "django",
+  "window": {"label": "1h", "since": "...", "until": "...", "seconds": 3600},
+  "persisted": {
+    "available": true,
+    "endpoints": [
+      {
+        "endpoint": "/users/login/", "method": "POST",
+        "count": 412, "error_count": 3, "error_rate": 0.0073,
+        "latency_ms": {"p50": 12, "p95": 31, "p99": 78, "max": 142, "mean": 18, "samples": 412},
+        "status_codes": {"200": 409, "401": 3}
+      }
+    ]
+  },
+  "live": { "container": "...", "uptime_seconds": 412.5, "endpoints": [...] }
+}
+```
+
+### Configuration
+
+```
+METRICS_ENABLED        # default: True
+METRICS_COLLECTION     # default: backend_metrics
+METRICS_TTL_DAYS       # default: 30
+ADMIN_METRICS_TOKEN    # admin bearer for /api/metrics/; falls back to MODAL_SERVICE_TOKEN
+```
+
+### Resilience
+
+The middleware is **fully defensive** -- a Mongo outage, a recorder
+bug, or a stats failure cannot break a request. All exceptions are
+caught locally and logged at WARNING. See `observability/middleware.py`.
+
+For the matching Modal-side design, see
+[`../modal_inference/README.md#sre-metrics`](../modal_inference/README.md#sre-metrics).
+
+---
+
 ## Endpoint reference
 
 ### Auth + account management — `/users/`

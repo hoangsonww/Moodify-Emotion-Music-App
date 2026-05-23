@@ -22,6 +22,7 @@ import hashlib
 import logging
 import os
 import tempfile
+import time
 
 from fastapi import (
     Depends,
@@ -36,9 +37,11 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
-from auth import AuthError, authenticate
+from auth import AuthError, authenticate, authenticate_service_only
 from cache import TTLCache
 from inference import text_emotion as text_emotion_module
+import metrics as metrics_module
+import metrics_store
 from rate_limit import SlidingWindowLimiter, caller_key
 from recommendation import deezer as deezer_module
 from recommendation.music_recommendation import get_music_recommendation
@@ -132,9 +135,74 @@ def _detect(model, name, infer):
         return config.DEFAULT_EMOTION, True
 
 
+def _normalise_endpoint(request) -> str:
+    """Collapse high-cardinality path params to the route template.
+
+    A naked ``request.url.path`` would have one bucket per user_id /
+    track_id, exploding the metrics cardinality. FastAPI exposes the
+    matched route in ``request.scope["route"]`` -- using its path
+    template (``/users/{user_id}/profile/``) collapses every variant
+    to a single key. Falls back to the raw path if no route matched
+    (404 / OPTIONS preflight / etc).
+    """
+    route = request.scope.get("route") if hasattr(request, "scope") else None
+    template = getattr(route, "path", None) if route else None
+    return template or request.url.path or "/"
+
+
 def build_app(text_model, speech_model, facial_model) -> FastAPI:
     """Construct the inference FastAPI app around three loaded models."""
     web_app = FastAPI(title="Moodify Inference", version="1.0.0")
+
+    # --- Metrics middleware ------------------------------------------------
+    # Times every request, records to the in-process recorder AND
+    # persists one event row to Mongo. Wrapped so a metrics failure
+    # CANNOT break the underlying request -- both the record and the
+    # store call are already individually defensive.
+    @web_app.middleware("http")
+    async def _metrics_middleware(request, call_next):
+        # /metrics, /docs, /redoc, /openapi.json, / -- skip to keep the
+        # store cheap and avoid the obvious recursive case.
+        path = request.url.path or "/"
+        # /health is a liveness probe -- uptime monitors hit it every
+        # 10-60 s. Persisting every probe would drown the time-series
+        # in noise without adding signal. Same for the docs URLs.
+        skip = path in ("/", "/health", "/metrics", "/docs", "/redoc", "/openapi.json")
+        start = time.perf_counter()
+        status_code = 500
+        # The ``X-Moodify-Degraded`` header is set by inference handlers
+        # on the model-fallback path; the middleware reads it AFTER the
+        # response object is built but BEFORE it's sent, which is the
+        # only safe place (response.body is a one-shot stream).
+        degraded = False
+        try:
+            response = await call_next(request)
+            status_code = int(getattr(response, "status_code", 500))
+            try:
+                degraded = response.headers.get("x-moodify-degraded") == "1"
+            except Exception:  # noqa: BLE001
+                pass
+            return response
+        finally:
+            if not skip:
+                latency_ms = (time.perf_counter() - start) * 1000.0
+                endpoint = _normalise_endpoint(request)
+                method = request.method
+                metrics_module.get_recorder().record(
+                    endpoint=endpoint,
+                    method=method,
+                    status=status_code,
+                    latency_ms=latency_ms,
+                    degraded=degraded,
+                )
+                metrics_store.insert_event(
+                    endpoint=endpoint,
+                    method=method,
+                    status=status_code,
+                    latency_ms=latency_ms,
+                    container_id=metrics_module.get_recorder().container_id,
+                    degraded=degraded,
+                )
     # CORS: prefer the explicit allow-list from config; only fall back to
     # "*" when nothing was configured (dev). In prod ALLOWED_ORIGINS
     # should always be populated -- log a loud warning if it isn't so
@@ -342,11 +410,78 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
             rate_limit=rate_limit if isinstance(rate_limit, dict) else None,
         )
 
+    def require_admin(authorization: str | None = Header(default=None)) -> dict:
+        """FastAPI dependency: admin-only auth for /metrics.
+
+        Accepts ONLY the shared service token, NOT end-user JWTs --
+        traffic patterns are operator-only and shouldn't be exposed
+        to arbitrary signed-in users.
+        """
+        try:
+            return authenticate_service_only(authorization)
+        except AuthError as exc:
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+    @web_app.get("/metrics")
+    def metrics(
+        window: str = "1h",
+        endpoint: str | None = None,
+        _ctx: dict = Depends(require_admin),
+    ):
+        """SRE telemetry -- error rates + latency percentiles + throughput.
+
+        ``window`` accepts: ``5m``, ``15m``, ``1h``, ``6h``, ``24h``,
+        ``7d``, ``30d`` (default ``1h``). ``endpoint`` optionally
+        narrows the result to one path template (e.g.
+        ``/text_emotion``).
+
+        Response shape:
+
+        ```json
+        {
+          "window": {"label": "1h", "since": "...", "until": "...", "seconds": 3600},
+          "service": "modal",
+          "persisted": {
+            "available": true,
+            "endpoints": [
+              {"endpoint": "/text_emotion", "method": "POST",
+               "count": 412, "error_count": 3, "error_rate": 0.0073,
+               "latency_ms": {"p50": 102, "p95": 245, "p99": 412, "max": 891, "mean": 134, "samples": 412},
+               "status_codes": {"200": 409, "401": 2, "500": 1}}
+            ]
+          },
+          "live": { "container": "...", "uptime_seconds": 412.5, "endpoints": [...] }
+        }
+        ```
+
+        The ``persisted`` block aggregates across every container that
+        wrote into the window (the real SRE answer). The ``live`` block
+        is just the calling container's in-process counters -- handy
+        for verifying behaviour right now without waiting for the next
+        Mongo aggregation tick.
+        """
+        persisted = metrics_store.aggregate_window(window=window, endpoint=endpoint)
+        live = metrics_module.get_recorder().snapshot()
+        return {
+            "service": "modal",
+            "window": persisted.get("window", {"label": window}),
+            "persisted": persisted,
+            "live": live,
+        }
+
     @web_app.post("/text_emotion", response_model=EmotionResponse)
-    def text_emotion(body: TextEmotionRequest, _ctx: dict = Depends(require_auth_and_quota)):
+    def text_emotion(
+        body: TextEmotionRequest,
+        response: Response,
+        _ctx: dict = Depends(require_auth_and_quota),
+    ):
         emotion, degraded = _detect(
             text_model, "text", lambda: (text_model.predict(body.text), False)
         )
+        if degraded:
+            # Surfaced for the metrics middleware -- not part of the
+            # public response contract.
+            response.headers["X-Moodify-Degraded"] = "1"
         return EmotionResponse(
             emotion=emotion,
             recommendations=get_music_recommendation(emotion),
@@ -366,7 +501,8 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
         )
 
     def _infer_from_upload(
-        file: UploadFile, model, name: str, media_cache: TTLCache
+        file: UploadFile, model, name: str, media_cache: TTLCache,
+        response: Response | None = None,
     ) -> EmotionResponse:
         """Save an upload to a temp file and infer. Never raises: an empty,
         oversized or unreadable upload degrades to the fallback emotion.
@@ -420,6 +556,8 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
                 if not degraded:
                     media_cache.set(content_key, emotion)
 
+        if degraded and response is not None:
+            response.headers["X-Moodify-Degraded"] = "1"
         return EmotionResponse(
             emotion=emotion,
             recommendations=get_music_recommendation(emotion),
@@ -428,16 +566,18 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
 
     @web_app.post("/speech_emotion", response_model=EmotionResponse)
     def speech_emotion(
+        response: Response,
         file: UploadFile = File(...),
         _ctx: dict = Depends(require_auth_and_media_quota),
     ):
-        return _infer_from_upload(file, speech_model, "speech", _speech_cache)
+        return _infer_from_upload(file, speech_model, "speech", _speech_cache, response)
 
     @web_app.post("/facial_emotion", response_model=EmotionResponse)
     def facial_emotion(
+        response: Response,
         file: UploadFile = File(...),
         _ctx: dict = Depends(require_auth_and_media_quota),
     ):
-        return _infer_from_upload(file, facial_model, "facial", _facial_cache)
+        return _infer_from_upload(file, facial_model, "facial", _facial_cache, response)
 
     return web_app

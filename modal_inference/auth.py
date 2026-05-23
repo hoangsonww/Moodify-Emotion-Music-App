@@ -69,3 +69,19 @@ def authenticate(authorization_header: str | None) -> dict:
     if claims.get("type") not in (None, "access"):
         raise AuthError("An access token is required")
     return {"kind": "user", "claims": claims}
+
+
+def authenticate_service_only(authorization_header: str | None) -> dict:
+    """Like ``authenticate`` but ONLY accepts the service token.
+
+    Used by admin-only routes (``/metrics``) where traffic-pattern
+    visibility is restricted to operators, not arbitrary signed-in
+    users. End-user JWTs are rejected with 401 even when otherwise
+    valid.
+    """
+    if not authorization_header or not authorization_header.startswith("Bearer "):
+        raise AuthError("Missing or malformed Authorization header")
+    token = authorization_header.removeprefix("Bearer ").strip()
+    if _is_service_token(token):
+        return {"kind": "service"}
+    raise AuthError("Service-token authentication required for this endpoint")

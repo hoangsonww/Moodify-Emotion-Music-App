@@ -46,3 +46,10 @@ Pillow==10.2.0
 PyJWT==2.9.0
 requests==2.32.3
 # huggingface-hub (above) downloads the text model in download_models.py.
+
+# --- SRE metrics persistence (Mongo Atlas time-series collection) ---
+# Per-request write of one telemetry doc to MongoDB Atlas. See
+# modal_inference/metrics_store.py for the design. The store is fully
+# guarded -- if MONGO_DB_URI is unset or Mongo is down, the inference
+# endpoints keep serving traffic without persisted metrics.
+pymongo==4.10.1
