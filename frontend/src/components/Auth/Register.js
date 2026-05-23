@@ -1,275 +1,187 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
+  Alert,
+  Box,
   Button,
-  TextField,
-  Typography,
-  Paper,
   CircularProgress,
   IconButton,
   InputAdornment,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { DarkModeContext } from "../../context/DarkModeContext";
-import { API_URL } from "../../config";
 
-const Register = () => {
+import { API_URL } from "../../config";
+import { setTokens } from "../../services/auth";
+import { AuthShell } from "./Login";
+
+export default function Register() {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
-  // Access the dark mode state from the context
-  const { isDarkMode } = useContext(DarkModeContext);
+  const handleRegister = async (event) => {
+    if (event) event.preventDefault();
+    setError("");
 
-  const handleRegister = async () => {
+    if (!username.trim() || !email.trim() || !password) {
+      setError("Please fill in every field.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Use at least 8 characters for your password.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setLoading(true);
-
-    if (!username || !email || !password || !confirmPassword) {
-      alert("Please fill in all fields");
-      setLoading(false);
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Sending username, email, and password to the backend
-      const response = await axios.post(
-        `${API_URL}/users/register/`,
-        {
-          username,
-          email,
-          password,
-        },
-      );
+      const register = await axios.post(`${API_URL}/users/register/`, {
+        username: username.trim(),
+        email: email.trim(),
+        password,
+      });
 
-      if (response.status === 201) {
-        alert("Registration successful! Please log in.");
-        navigate("/login"); // Redirect to the login page
+      if (register.status === 201) {
+        // Auto sign-in: register + immediately log in for a smoother first run.
+        try {
+          const { data } = await axios.post(`${API_URL}/users/login/`, {
+            username: username.trim(),
+            password,
+          });
+          if (data?.access) {
+            setTokens(data.access, data.refresh);
+            navigate("/home", { replace: true });
+            return;
+          }
+        } catch {
+          // Fall through to the manual sign-in path.
+        }
+        navigate("/login", { replace: true });
+      } else {
+        setError("Registration failed. Please try again.");
       }
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Registration failed:", error);
-      alert(
-        error.response?.data?.error ||
-          "Registration failed due to internal server error. Please try again later.",
+    } catch (err) {
+      const status = err?.response?.status;
+      setError(
+        status === 409 || /already/i.test(err?.response?.data?.error || "")
+          ? "That username or email is already taken."
+          : err?.response?.data?.error ||
+              "Registration failed. Please try again shortly.",
       );
-
+    } finally {
       setLoading(false);
     }
   };
-
-  // Handle "Enter" key press to submit the form
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      handleRegister(); // Call handleRegister when Enter is pressed
-    }
-  };
-
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const handleToggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword((prev) => !prev);
-  };
-
-  const styles = getStyles(isDarkMode); // Dynamically get styles based on dark mode
 
   return (
-    <div style={styles.container}>
-      <Paper elevation={4} style={styles.formContainer}>
-        <Typography
-          variant="h4"
-          align="center"
-          sx={{
-            mb: 3,
-            fontFamily: "Poppins",
-            color: isDarkMode ? "#ffffff" : "#000000",
-          }} // Dynamic color
-        >
-          Register
-        </Typography>
+    <AuthShell
+      title="Create your account"
+      sub="Start getting music tuned to how you feel."
+      eyebrow="Sign up"
+    >
+      <Box component="form" onSubmit={handleRegister} noValidate>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+            {error}
+          </Alert>
+        )}
+
         <TextField
           label="Username"
-          variant="outlined"
           fullWidth
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          onKeyPress={handleKeyPress} // Add key press handler
+          autoComplete="username"
           sx={{ mb: 2 }}
-          InputProps={{
-            style: {
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              color: isDarkMode ? "#ffffff" : "#000000",
-            }, // Dynamic text color
-          }}
-          InputLabelProps={{
-            style: {
-              fontFamily: "Poppins",
-              color: isDarkMode ? "#cccccc" : "#000000",
-            }, // Dynamic label color
-          }}
         />
         <TextField
           label="Email"
-          variant="outlined"
+          type="email"
           fullWidth
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          onKeyPress={handleKeyPress} // Add key press handler
+          autoComplete="email"
           sx={{ mb: 2 }}
-          InputProps={{
-            style: {
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              color: isDarkMode ? "#ffffff" : "#000000",
-            }, // Dynamic text color
-          }}
-          InputLabelProps={{
-            style: {
-              fontFamily: "Poppins",
-              color: isDarkMode ? "#cccccc" : "#000000",
-            }, // Dynamic label color
-          }}
         />
         <TextField
           label="Password"
-          type={showPassword ? "text" : "password"}
-          variant="outlined"
           fullWidth
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          onKeyPress={handleKeyPress} // Add key press handler
-          sx={{ mb: 2 }}
+          autoComplete="new-password"
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  aria-label="toggle password visibility"
-                  onClick={handleTogglePasswordVisibility}
-                  edge="end"
-                  sx={{ color: isDarkMode ? "white" : "#333" }}
-                >
+                <IconButton onClick={() => setShowPassword((s) => !s)} edge="end">
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
             ),
-            style: {
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              color: isDarkMode ? "#ffffff" : "#000000",
-            }, // Dynamic text color
           }}
-          InputLabelProps={{
-            style: {
-              fontFamily: "Poppins",
-              color: isDarkMode ? "#cccccc" : "#000000",
-            }, // Dynamic label color
-          }}
+          sx={{ mb: 2 }}
+          helperText="At least 8 characters."
         />
         <TextField
-          label="Confirm Password"
-          type={showConfirmPassword ? "text" : "password"}
-          variant="outlined"
+          label="Confirm password"
           fullWidth
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          onKeyPress={handleKeyPress} // Add key press handler
-          sx={{ mb: 2 }}
+          type={showConfirm ? "text" : "password"}
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          autoComplete="new-password"
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  aria-label="toggle confirm password visibility"
-                  onClick={handleToggleConfirmPasswordVisibility}
-                  edge="end"
-                  sx={{ color: isDarkMode ? "white" : "#333" }}
-                >
-                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                <IconButton onClick={() => setShowConfirm((s) => !s)} edge="end">
+                  {showConfirm ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
             ),
-            style: {
-              fontFamily: "Poppins",
-              fontSize: "16px",
-              color: isDarkMode ? "#ffffff" : "#000000",
-            }, // Dynamic text color
           }}
-          InputLabelProps={{
-            style: {
-              fontFamily: "Poppins",
-              color: isDarkMode ? "#cccccc" : "#000000",
-            }, // Dynamic label color
-          }}
+          sx={{ mb: 3 }}
         />
+
         <Button
+          type="submit"
           variant="contained"
           color="primary"
           fullWidth
-          onClick={handleRegister}
-          sx={{ mb: 2, backgroundColor: "#ff4d4d", font: "inherit" }}
           disabled={loading}
+          sx={{ py: 1.5, fontSize: 16, borderRadius: 999, mb: 2 }}
         >
-          {loading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            "Register"
-          )}
+          {loading ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : "Create account"}
         </Button>
-        <Typography
-          variant="body2"
-          align="center"
-          sx={{
-            cursor: "pointer",
-            textDecoration: "underline",
-            fontFamily: "Poppins",
-            color: isDarkMode ? "#ffffff" : "#000000", // Dynamic color
-            "&:hover": {
-              color: "#ff4d4d",
-              transition: "color 0.2s",
-            },
-          }}
-          onClick={() => navigate("/login")}
-        >
-          Already have an account? Login
+
+        <Typography sx={{ textAlign: "center", color: "text.secondary", fontSize: 14 }}>
+          Already have an account?{" "}
+          <Box
+            component="span"
+            role="button"
+            onClick={() => navigate("/login")}
+            sx={{
+              color: "primary.main",
+              fontWeight: 800,
+              cursor: "pointer",
+              "&:hover": { textDecoration: "underline" },
+            }}
+          >
+            Sign in
+          </Box>
         </Typography>
-      </Paper>
-    </div>
+      </Box>
+    </AuthShell>
   );
-};
-
-// Function to dynamically return styles based on dark mode
-const getStyles = (isDarkMode) => ({
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9",
-    transition: "background-color 0.3s ease, color 0.3s ease",
-  },
-  formContainer: {
-    padding: "30px",
-    width: "350px",
-    borderRadius: "10px",
-    boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
-    backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dynamic form background color
-    color: isDarkMode ? "#ffffff" : "#000000", // Dynamic text color
-    transition: "background-color 0.3s ease, color 0.3s ease",
-  },
-});
-
-export default Register;
+}

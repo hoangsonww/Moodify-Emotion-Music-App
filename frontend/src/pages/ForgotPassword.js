@@ -1,320 +1,232 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
+  Alert,
+  Box,
   Button,
-  TextField,
-  Typography,
-  Paper,
   CircularProgress,
   IconButton,
   InputAdornment,
+  LinearProgress,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { DarkModeContext } from "../context/DarkModeContext";
-import { API_URL } from "../config";
 
-const ForgotPassword = () => {
+import { API_URL } from "../config";
+import { AuthShell } from "../components/Auth/Login";
+import { tokens } from "../theme";
+
+export default function ForgotPassword() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const { isDarkMode } = useContext(DarkModeContext); // Use DarkModeContext
+  const handleVerify = async (event) => {
+    if (event) event.preventDefault();
+    setError("");
 
-  const handleVerify = async () => {
-    if (!username || !email) {
-      alert("Please fill in all fields");
+    if (!username.trim() || !email.trim()) {
+      setError("Enter your username and email to continue.");
       return;
     }
-
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/users/verify-username-email/`,
-        { username, email },
+      await axios.post(`${API_URL}/users/verify-username-email/`, {
+        username: username.trim(),
+        email: email.trim(),
+      });
+      setStep(2);
+    } catch (err) {
+      setError(
+        err?.response?.status === 404
+          ? "We couldn't find that username and email combination."
+          : "Could not verify your account. Try again shortly.",
       );
-      if (response.status === 200) {
-        setStep(2); // Move to the next step (reset password)
-      }
-    } catch (error) {
-      alert("Verification failed. Please check your details.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResetPassword = async () => {
-    if (!newPassword || !confirmPassword) {
-      alert("Please fill in all fields");
+  const handleReset = async (event) => {
+    if (event) event.preventDefault();
+    setError("");
+
+    if (password.length < 8) {
+      setError("Use at least 8 characters for your password.");
       return;
     }
-
-    if (newPassword !== confirmPassword) {
-      alert("Passwords do not match");
+    if (password !== confirm) {
+      setError("Passwords do not match.");
       return;
     }
-
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/users/reset-password/`,
-        { username, new_password: newPassword },
-      );
-      if (response.status === 200) {
-        alert("Password reset successfully!");
-        navigate("/login");
-      }
-    } catch (error) {
-      alert("Failed to reset password. Please try again.");
+      await axios.post(`${API_URL}/users/reset-password/`, {
+        username: username.trim(),
+        new_password: password,
+      });
+      setSuccess("Password updated — redirecting you to sign in…");
+      setTimeout(() => navigate("/login"), 1100);
+    } catch (err) {
+      setError("Could not reset your password. Try again shortly.");
     } finally {
       setLoading(false);
     }
-  };
-
-  // Function to handle "Enter" key press for form submission
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      step === 1 ? handleVerify() : handleResetPassword();
-    }
-  };
-
-  const handleToggleNewPasswordVisibility = () => {
-    setShowNewPassword((prev) => !prev);
-  };
-
-  const handleToggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword((prev) => !prev);
   };
 
   return (
-    <div
-      style={{
-        ...styles.container,
-        backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dark mode background
-        color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
-      }}
+    <AuthShell
+      title={step === 1 ? "Reset your password" : "Set a new password"}
+      sub={
+        step === 1
+          ? "Confirm your username and email to continue."
+          : "Pick something memorable — at least 8 characters."
+      }
+      eyebrow={`Step ${step} of 2`}
     >
-      <Paper
-        elevation={4}
-        style={{
-          ...styles.formContainer,
-          backgroundColor: isDarkMode ? "#1f1f1f" : "white", // Dark mode form container
-          color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
-        }}
-      >
-        {step === 1 ? (
-          <>
-            <Typography
-              variant="h4"
-              align="center"
-              sx={{
-                mb: 3,
-                fontFamily: "Poppins",
-                color: isDarkMode ? "#ffffff" : "#000000",
-              }} // Dynamic color
-            >
-              Verify Account
-            </Typography>
-            <TextField
-              label="Username"
-              variant="outlined"
-              fullWidth
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyPress={handleKeyPress} // Add key press handler
-              sx={{ mb: 2 }}
-              InputProps={{
-                style: {
-                  fontFamily: "Poppins",
-                  fontSize: "16px",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
-                },
-              }}
-              InputLabelProps={{
-                style: {
-                  fontFamily: "Poppins",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
-                },
-              }}
-            />
-            <TextField
-              label="Email"
-              variant="outlined"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyPress={handleKeyPress} // Add key press handler
-              sx={{ mb: 2 }}
-              InputProps={{
-                style: {
-                  fontFamily: "Poppins",
-                  fontSize: "16px",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
-                },
-              }}
-              InputLabelProps={{
-                style: {
-                  fontFamily: "Poppins",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              color="secondary"
-              fullWidth
-              onClick={handleVerify}
-              sx={{ mb: 2, backgroundColor: "#ff4d4d", font: "inherit" }}
-              disabled={loading}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Verify"
-              )}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Typography
-              variant="h4"
-              align="center"
-              sx={{
-                mb: 3,
-                fontFamily: "Poppins",
-                color: isDarkMode ? "#ffffff" : "#000000",
-              }} // Dynamic color
-            >
-              Reset Password
-            </Typography>
-            <TextField
-              label="New Password"
-              type={showNewPassword ? "text" : "password"}
-              variant="outlined"
-              fullWidth
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              onKeyPress={handleKeyPress} // Add key press handler
-              sx={{ mb: 2 }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle new password visibility"
-                      onClick={handleToggleNewPasswordVisibility}
-                      edge="end"
-                      sx={{ color: isDarkMode ? "white" : "#333" }}
-                    >
-                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                style: {
-                  fontFamily: "Poppins",
-                  fontSize: "16px",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
-                },
-              }}
-              InputLabelProps={{
-                style: {
-                  fontFamily: "Poppins",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
-                },
-              }}
-            />
-            <TextField
-              label="Confirm Password"
-              type={showConfirmPassword ? "text" : "password"}
-              variant="outlined"
-              fullWidth
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              onKeyPress={handleKeyPress} // Add key press handler
-              sx={{ mb: 2 }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle confirm password visibility"
-                      onClick={handleToggleConfirmPasswordVisibility}
-                      edge="end"
-                      sx={{ color: isDarkMode ? "white" : "#333" }}
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                style: {
-                  fontFamily: "Poppins",
-                  fontSize: "16px",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode text color
-                },
-              }}
-              InputLabelProps={{
-                style: {
-                  fontFamily: "Poppins",
-                  color: isDarkMode ? "#ffffff" : "#000000", // Dark mode label color
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              color="secondary"
-              fullWidth
-              onClick={handleResetPassword}
-              sx={{ mb: 2, backgroundColor: "#ff4d4d", font: "inherit" }}
-              disabled={loading}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Reset Password"
-              )}
-            </Button>
-          </>
-        )}
-        <Typography
-          variant="body2"
-          align="center"
+      <Box sx={{ mb: 3 }}>
+        <LinearProgress
+          variant="determinate"
+          value={step === 1 ? 50 : 100}
           sx={{
-            cursor: "pointer",
-            textDecoration: "underline",
-            fontFamily: "Poppins",
-            "&:hover": {
-              color: "#ff4d4d",
-              transition: "color 0.2s",
+            height: 6,
+            borderRadius: 999,
+            background: tokens.border,
+            "& .MuiLinearProgress-bar": {
+              background: "linear-gradient(90deg, #a855f7, #ec4899)",
+              borderRadius: 999,
             },
           }}
+        />
+        <Stack direction="row" justifyContent="space-between" sx={{ mt: 1 }}>
+          <Typography sx={{ fontSize: 12, fontWeight: 700, color: step >= 1 ? "primary.main" : "text.secondary" }}>
+            Verify
+          </Typography>
+          <Typography sx={{ fontSize: 12, fontWeight: 700, color: step >= 2 ? "primary.main" : "text.secondary" }}>
+            Reset
+          </Typography>
+        </Stack>
+      </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
+          {success}
+        </Alert>
+      )}
+
+      {step === 1 ? (
+        <Box component="form" onSubmit={handleVerify} noValidate>
+          <TextField
+            label="Username"
+            fullWidth
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Email"
+            type="email"
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            sx={{ mb: 3 }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ py: 1.5, fontSize: 16, borderRadius: 999, mb: 2 }}
+          >
+            {loading ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : "Verify"}
+          </Button>
+        </Box>
+      ) : (
+        <Box component="form" onSubmit={handleReset} noValidate>
+          <TextField
+            label="New password"
+            fullWidth
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword((s) => !s)} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            label="Confirm new password"
+            fullWidth
+            type={showConfirm ? "text" : "password"}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            autoComplete="new-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowConfirm((s) => !s)} edge="end">
+                    {showConfirm ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 3 }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ py: 1.5, fontSize: 16, borderRadius: 999, mb: 2 }}
+          >
+            {loading ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : "Update password"}
+          </Button>
+        </Box>
+      )}
+
+      <Typography sx={{ textAlign: "center", color: "text.secondary", fontSize: 14 }}>
+        Back to{" "}
+        <Box
+          component="span"
+          role="button"
           onClick={() => navigate("/login")}
+          sx={{
+            color: "primary.main",
+            fontWeight: 800,
+            cursor: "pointer",
+            "&:hover": { textDecoration: "underline" },
+          }}
         >
-          Back to Login
-        </Typography>
-      </Paper>
-    </div>
+          Sign in
+        </Box>
+      </Typography>
+    </AuthShell>
   );
-};
-
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    transition: "background-color 0.3s ease",
-  },
-  formContainer: {
-    padding: "30px",
-    width: "350px",
-    borderRadius: "10px",
-    boxShadow: "0px 4px 15px rgba(0, 0, 0, 0.2)",
-    transition: "background-color 0.3s ease",
-  },
-};
-
-export default ForgotPassword;
+}
