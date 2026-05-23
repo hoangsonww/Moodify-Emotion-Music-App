@@ -14,7 +14,13 @@
   "dir": "ltr",
   "theme_color": "#ff4d4d",
   "background_color": "#0b0b11",
-  "categories": ["music", "lifestyle", "entertainment", "health", "productivity"],
+  "categories": [
+    "music",
+    "lifestyle",
+    "entertainment",
+    "health",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "favicon.ico",
