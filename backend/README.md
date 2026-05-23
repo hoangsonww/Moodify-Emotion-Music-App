@@ -33,16 +33,18 @@
 4. [Request lifecycle](#request-lifecycle)
 5. [Data model](#data-model)
 6. [Authentication](#authentication)
-7. [Endpoint reference](#endpoint-reference)
-8. [Project layout](#project-layout)
-9. [Environment variables](#environment-variables)
-10. [Running locally](#running-locally)
-11. [Testing](#testing)
-12. [OpenAPI / Swagger / Redoc](#openapi--swagger--redoc)
-13. [Deployment (Vercel)](#deployment-vercel)
-14. [Resilience + serverless gotchas](#resilience--serverless-gotchas)
-15. [Troubleshooting](#troubleshooting)
-16. [FAQ](#faq)
+7. [Throttling + cost protection](#throttling--cost-protection)
+8. [Endpoint reference](#endpoint-reference)
+9. [Project layout](#project-layout)
+10. [Environment variables](#environment-variables)
+11. [Running locally](#running-locally)
+12. [Testing](#testing)
+13. [OpenAPI / Swagger / Redoc](#openapi--swagger--redoc)
+14. [Deployment (Vercel)](#deployment-vercel)
+15. [SRE metrics](#sre-metrics)
+16. [Resilience + serverless gotchas](#resilience--serverless-gotchas)
+17. [Troubleshooting](#troubleshooting)
+18. [FAQ](#faq)
 
 ---
 
@@ -415,13 +417,14 @@ For the matching Modal-side design, see
 | `listening_history` | `GET`, `POST` (append), `DELETE` (single entry) | `{track}` |
 | `recommendations` | `GET`, `POST` (append), `DELETE` (clear all) | `{recommendations: [...]}` |
 
-### Inference proxy — `/api/`
+### Inference proxy + system — `/api/`
 
 | Method | Path | Auth | Body | What it does |
 |---|---|---|---|---|
-| `GET` | `/api/health/` | none | — | `{status: ok}`. |
-| `POST` | `/api/text_emotion/` | none | `{text}` | Proxies to Modal `/text_emotion`. |
-| `POST` | `/api/music_recommendation/` | none | `{emotion, market?, history?}` | Proxies to Modal `/music_recommendation`. |
+| `GET`  | `/api/health/`               | none          | —                                  | `{status: ok}`. |
+| `GET`  | `/api/metrics/`              | service token | —                                  | Aggregated p50/p95/p99, error rate, throughput per endpoint. See [§ SRE metrics](#sre-metrics). |
+| `POST` | `/api/text_emotion/`         | none          | `{text}`                           | Proxies to Modal `/text_emotion`. |
+| `POST` | `/api/music_recommendation/` | none          | `{emotion, market?, history?}`     | Proxies to Modal `/music_recommendation`. |
 
 The proxy paths exist for server-to-server use; the web + mobile
 clients usually call Modal directly with their own user JWT.
@@ -463,7 +466,12 @@ backend/
 │   ├── authentication.py   MongoJWTAuthentication (replaces SQL auth)
 │   ├── documents.py        User (Mongo, with PBKDF2 hashing)
 │   └── tokens.py           jwt encode/decode wrappers
-├── tests/                  80 tests, runs against mongomock
+├── observability/
+│   ├── recorder.py         In-process counters + ring-buffer reservoir
+│   ├── store.py            Mongo time-series persistence (backend_metrics)
+│   ├── middleware.py       Per-request timing + insert
+│   └── views.py            GET /api/metrics/ (admin-only)
+├── tests/                  99 tests, runs against mongomock
 └── .env.example
 ```
 
@@ -492,6 +500,10 @@ in your Vercel project's Environment Variables for production.
 | `CORS_ALLOWED_ORIGINS` | no | When the above is `False` |
 | `THROTTLE_ANON` | no | DRF anonymous-user rate. Default `60/min`. |
 | `THROTTLE_USER` | no | DRF authenticated-user rate. Default `240/min`. |
+| `METRICS_ENABLED` | no | Toggle SRE metrics persistence. Default `True`. |
+| `METRICS_COLLECTION` | no | Time-series collection name. Default `backend_metrics`. |
+| `METRICS_TTL_DAYS` | no | Native TTL for raw metric events. Default `30`. |
+| `ADMIN_METRICS_TOKEN` | no | Bearer token that unlocks `GET /api/metrics/`. Falls back to `MODAL_SERVICE_TOKEN` so a single secret unlocks both `/metrics` surfaces. |
 | `CACHE_REDIS_URL` | no | If set, use Redis (e.g. Upstash) instead of LocMem cache |
 
 ---
@@ -521,7 +533,7 @@ needs the Mongo `User` collection will simply hit Atlas.
 
 ```bash
 pip install -r requirements.txt
-pytest -q                                     # 80 tests, runs against mongomock
+pytest -q                                     # 99 tests, runs against mongomock
 ```
 
 The whole suite is offline — `conftest.py` swaps the live mongoengine

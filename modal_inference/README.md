@@ -25,7 +25,8 @@
   <img src="https://img.shields.io/badge/Scale_to_zero-22d3ee?style=for-the-badge" />
   <img src="https://img.shields.io/badge/TTL_cache-LRU-8b5cf6?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Rate_limit-sliding_window-f59e0b?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Tests-151_passing-34d399?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/SRE_metrics-Mongo_TS-22c55e?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Tests-181_passing-34d399?style=for-the-badge" />
 </p>
 
 ---
@@ -51,10 +52,11 @@
 17. [Local development](#local-development)
 18. [Testing](#testing)
 19. [Observability](#observability)
-20. [Cost + scaling notes](#cost--scaling-notes)
-21. [GPU flip](#gpu-flip)
-22. [Troubleshooting](#troubleshooting)
-23. [FAQ](#faq)
+20. [SRE metrics](#sre-metrics)
+21. [Cost + scaling notes](#cost--scaling-notes)
+22. [GPU flip](#gpu-flip)
+23. [Troubleshooting](#troubleshooting)
+24. [FAQ](#faq)
 
 ---
 
@@ -699,19 +701,22 @@ modal_inference/
 ├── assets/                 small files bundled in the image
 │   ├── speech_emotion_model/      pickled SVC + scaler
 │   └── text_emotion_model/        config + tokenizer (weights live on Volume)
-├── tests/                  151 tests; all run offline against fakes
+├── metrics.py              MetricsRecorder (live counters + latency reservoir)
+├── metrics_store.py        Mongo time-series persistence (inference_metrics)
+├── tests/                  181 tests; all run offline against fakes
 │   ├── test_auth.py
 │   ├── test_cache.py              TTLCache + per-endpoint cache integration
 │   ├── test_config.py
 │   ├── test_download_models.py
 │   ├── test_inference_modules.py
+│   ├── test_metrics.py            recorder + store + middleware + /metrics
 │   ├── test_personalization.py
 │   ├── test_rate_limit.py         SlidingWindowLimiter + end-to-end 429
 │   ├── test_recommendation.py
 │   ├── test_schemas.py
 │   ├── test_service.py
 │   └── test_functional.py         real models; auto-skipped if ML stack absent
-├── conftest.py             autouse fixture clears caches + limiters per test
+├── conftest.py             autouse fixture clears caches + limiters + metrics per test
 ├── requirements.txt        CPU dependencies (production)
 ├── requirements-gpu.txt    NVIDIA path (future)
 └── requirements-dev.txt    lightweight test dependencies (no ML)
@@ -841,11 +846,11 @@ production deploy is via `modal deploy`.
 ## Testing
 
 ```bash
-# Lightweight suite -- 141 tests, no ML stack required, runs in <10s.
+# Lightweight suite -- 171 tests, no ML stack required, runs in <10s.
 pip install -r requirements-dev.txt
 pytest tests/ -q -k "not functional"
 
-# Full suite -- 151 tests, including real models (loads weights, slow).
+# Full suite -- 181 tests, including real models (loads weights, slow).
 pip install -r requirements.txt
 pytest tests/ -q
 ```
@@ -859,6 +864,7 @@ pytest tests/ -q
 | `test_inference_modules.py` | 9 | model interface contracts |
 | `test_personalization.py` | 18 | EWMA, Markov, blend ratio, ranker, interleave |
 | `test_rate_limit.py` | 28 | SlidingWindowLimiter, caller_key (incl. non-hashable claims), per-tier limits, /health robustness, Content-Length precheck |
+| `test_metrics.py`    | 30 | MetricsRecorder, time-series store (writes + aggregation), middleware integration, /metrics auth + window filter |
 | `test_recommendation.py` | 15 | Deezer mocks, fallback, history blending |
 | `test_schemas.py` | 10 | Pydantic validation |
 | `test_service.py` | 20 | full FastAPI surface (text/speech/face/music), auth wiring |

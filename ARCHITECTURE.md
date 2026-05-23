@@ -1107,6 +1107,106 @@ graph TB
 | **Database** | Query time, Connections, Cache hit rate | Connections > 90% | Alert |
 | **Business** | User registrations, Emotion detections, Recommendations | - | Dashboard |
 
+### SRE metrics pipeline (as deployed)
+
+The Prometheus/Fluentd/Jaeger stack above describes the aspirational
+long-term observability target. The **current production deployment**
+on Vercel + Modal + Atlas runs a simpler, free-tier-only pipeline
+that backs the live `/metrics` endpoints on both services.
+
+#### Pipeline
+
+```mermaid
+flowchart LR
+    Req[Incoming request] --> MW[Metrics middleware<br/>times the call]
+    MW --> H[Handler]
+    H --> MW
+    MW --> Live[(In-process recorder<br/>~1000 sample reservoir)]
+    MW --> Store[(MongoDB Atlas<br/>time-series collection)]
+    Live --> Endpoint["GET /metrics?window=1h"]
+    Store --> Endpoint
+    Endpoint --> Operator[Operator / dashboard]
+
+    style Live fill:#34d399,stroke:#fff,color:#fff
+    style Store fill:#7c3aed,stroke:#fff,color:#fff
+    style Endpoint fill:#3b82f6,stroke:#fff,color:#fff
+```
+
+#### Collections
+
+| Collection           | Service                | Endpoint to read                |
+|----------------------|------------------------|---------------------------------|
+| `inference_metrics`  | Modal (FastAPI)        | `GET /metrics` (service token)  |
+| `backend_metrics`    | Django (Vercel)        | `GET /api/metrics/` (admin token) |
+
+#### Per-doc schema
+
+```json
+{
+  "ts":         "ISODate (time-series index)",
+  "meta": {
+    "service":      "modal | django",
+    "endpoint":     "/text_emotion | /users/<str:user_id>/profile/ | ...",
+    "method":       "POST",
+    "container":    "modal-task-... | iad1-...",
+    "status_class": "2xx | 3xx | 4xx | 5xx"
+  },
+  "status":     200,
+  "latency_ms": 142.3,
+  "degraded":   false
+}
+```
+
+Native time-series compression brings each doc to roughly **150 B
+on disk**; 10 k req/day × 30 days ≈ **45 MB** -- well inside the
+Atlas free tier (512 MB).
+
+#### Properties
+
+| Property              | Behaviour |
+|-----------------------|-----------|
+| Write pattern         | Per-request synchronous (`~1 ms` warm), failures swallowed |
+| Cardinality           | Path params normalised to the route template; `/health`, `/metrics`, `/swagger/`, `/redoc/`, `/` are skipped |
+| TTL                   | 30 days native (env-tunable via `METRICS_TTL_DAYS`) |
+| Latency percentiles   | Computed Python-side from raw `latency_ms` samples (linear-interp percentile) at query time |
+| Auth on `/metrics`    | **Service token only** -- end-user JWTs explicitly rejected |
+| Resilience            | Metrics MUST NEVER break the request: every layer (recorder, store, middleware) catches its own exceptions |
+| Persistence offline   | If `MONGO_DB_URI` is unset or Atlas is unreachable, persistence silently disables; live in-process counters still work |
+
+#### Response shape (both services)
+
+```json
+{
+  "service": "modal | django",
+  "window":  {"label": "1h", "since": "...", "until": "...", "seconds": 3600},
+  "persisted": {
+    "available": true,
+    "endpoints": [
+      {
+        "endpoint": "/text_emotion", "method": "POST",
+        "count": 412, "error_count": 3, "error_rate": 0.0073,
+        "latency_ms": {"p50": 102, "p95": 245, "p99": 412, "max": 891, "mean": 134, "samples": 412},
+        "status_codes": {"200": 409, "401": 2, "500": 1}
+      }
+    ]
+  },
+  "live": {
+    "container": "...",
+    "uptime_seconds": 412.5,
+    "endpoints": [...]
+  }
+}
+```
+
+The `persisted` block aggregates across every container that wrote
+into the window; the `live` block is the calling container's
+in-process counters since startup, useful for verifying behaviour
+right now without waiting for the next Mongo aggregation tick.
+
+Implementation lives in `modal_inference/metrics{,_store}.py` and
+`backend/observability/` -- see the per-service READMEs for the
+deep dive.
+
 ### Distributed Tracing
 
 ```mermaid

@@ -779,6 +779,28 @@ Finally, set up the frontend to interact with the backend.
 | `POST`      | `/api/facial_emotion/`       | Analyze facial expressions for emotions    |
 | `POST`      | `/api/music_recommendation/` | Get music recommendations based on emotion |
 
+> Speech and facial uploads bypass Django and hit the Modal inference
+> service directly with the user's JWT — see
+> [`modal_inference/README.md`](modal_inference/README.md) for the
+> direct-upload contract.
+
+### **Observability Endpoints**
+
+| HTTP Method | Endpoint                                            | Auth          | Description                                                                  |
+|-------------|-----------------------------------------------------|---------------|------------------------------------------------------------------------------|
+| `GET`       | `/api/health/`                                      | none          | Django liveness probe                                                        |
+| `GET`       | `/api/metrics/?window=1h&endpoint=...`              | service token | Aggregated **error rates + p50/p95/p99 latency + throughput** (Django side)  |
+| `GET`       | Modal `/health`                                     | none          | Modal liveness + cache + rate-limit stats                                    |
+| `GET`       | Modal `/metrics?window=1h&endpoint=...`             | service token | Aggregated SRE metrics from the Modal inference service                      |
+| `GET`       | Modal `/`                                           | none          | Welcome JSON with links + endpoint catalogue + rate-limit ceilings           |
+
+Both `/metrics` endpoints persist one row per request to a MongoDB
+Atlas time-series collection (30-day TTL), so trends survive
+container restarts and scale-to-zero. See
+[`modal_inference/README.md#sre-metrics`](modal_inference/README.md#sre-metrics)
+and [`backend/README.md#sre-metrics`](backend/README.md#sre-metrics)
+for the full design (schema, resilience model, cost math).
+
 ### **Admin Interface Endpoints**
 
 | HTTP Method | Endpoint                     | Description                                  |
