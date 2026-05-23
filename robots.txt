@@ -1,0 +1,67 @@
+# Moodify — marketing landing
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# Don't index repo internals if this directory is served wholesale.
+Disallow: /node_modules/
+Disallow: /backend/
+Disallow: /modal_inference/
+Disallow: /ai_ml/
+Disallow: /kubernetes/
+Disallow: /helm/
+Disallow: /terraform/
+Disallow: /aws/
+Disallow: /gcp/
+Disallow: /oracle-cloud/
+Disallow: /argocd/
+Disallow: /k8s-addons/
+Disallow: /performance-tests/
+Disallow: /data_analytics/
+Disallow: /nginx/
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://moodify-app.vercel.app/sitemap.xml
+Host: https://moodify-app.vercel.app

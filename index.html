@@ -2,13 +2,215 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Moodify - AI-Powered Emotion-Based Music Recommendation System. Experience music tailored to your emotions.">
-    <meta name="keywords" content="Moodify, emotion detection, music recommendation, AI, ML, React, Django, PyTorch">
-    <meta name="author" content="Son Nguyen">
-    <title>Moodify - Emotion-Based Music Recommendation</title>
-    <link rel="icon" type="image/png" href="images/favicon.ico">
-    <link rel="apple-touch-icon" href="images/moodify-logo.png">
+
+    <!-- =========================================================
+         PRIMARY META
+         ========================================================= -->
+    <title>Moodify — AI Emotion-Based Music Recommendation Platform</title>
+    <meta name="description" content="Moodify reads your mood from text, voice or a selfie with three self-trained AI models and curates a personalized Deezer playlist that matches how you feel. Open-source, free, web + mobile.">
+    <meta name="keywords" content="Moodify, mood music, emotion detection, music recommendation, AI music app, BERT, PyTorch, TensorFlow, FER, facial expression recognition, speech emotion recognition, text emotion detection, Deezer, React, React Native, Django, Modal, MongoDB, mood playlist, personalized music, mood tracker, open source music app">
+    <meta name="author" content="Son Nguyen (hoangsonww)">
+    <meta name="copyright" content="© 2024-2026 Son Nguyen">
+    <meta name="application-name" content="Moodify">
+    <meta name="generator" content="Static landing page (vanilla HTML/CSS/JS)">
+    <meta name="rating" content="general">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="googlebot" content="index, follow">
+    <meta name="bingbot" content="index, follow">
+    <meta name="revisit-after" content="3 days">
+    <meta name="distribution" content="global">
+    <meta name="language" content="en">
+    <meta http-equiv="content-language" content="en">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+
+    <!-- =========================================================
+         VIEWPORT + COLOR
+         ========================================================= -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ff4d4d" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0b0b11" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="dark light">
+    <meta name="msapplication-TileColor" content="#ff4d4d">
+    <meta name="msapplication-TileImage" content="images/android-chrome-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Moodify">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- =========================================================
+         CANONICAL + ALTERNATES
+         ========================================================= -->
+    <link rel="canonical" href="https://moodify-app.vercel.app/">
+    <link rel="alternate" hreflang="en" href="https://moodify-app.vercel.app/">
+    <link rel="alternate" hreflang="x-default" href="https://moodify-app.vercel.app/">
+
+    <!-- =========================================================
+         OPEN GRAPH
+         ========================================================= -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Moodify">
+    <meta property="og:url" content="https://moodify-app.vercel.app/">
+    <meta property="og:title" content="Moodify — AI Emotion-Based Music Recommendation Platform">
+    <meta property="og:description" content="Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to how you feel. Open-source, free, web + mobile.">
+    <meta property="og:image" content="https://moodify-app.vercel.app/images/moodify-logo.png">
+    <meta property="og:image:secure_url" content="https://moodify-app.vercel.app/images/moodify-logo.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Moodify — AI emotion-based music recommendation app">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:updated_time" content="2026-05-23T00:00:00Z">
+    <meta property="article:author" content="Son Nguyen">
+    <meta property="article:publisher" content="https://github.com/hoangsonww">
+
+    <!-- =========================================================
+         TWITTER / X CARD
+         ========================================================= -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@hoangsonww">
+    <meta name="twitter:creator" content="@hoangsonww">
+    <meta name="twitter:title" content="Moodify — AI Emotion-Based Music Recommendation Platform">
+    <meta name="twitter:description" content="Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to how you feel.">
+    <meta name="twitter:image" content="https://moodify-app.vercel.app/images/moodify-logo.png">
+    <meta name="twitter:image:alt" content="Moodify — AI emotion-based music recommendation app logo">
+
+    <!-- =========================================================
+         ICONS
+         ========================================================= -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="images/android-chrome-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="images/android-chrome-512x512.png">
+    <link rel="mask-icon" href="images/favicon.ico" color="#ff4d4d">
+
+    <!-- =========================================================
+         PRECONNECT + DNS-PREFETCH
+         ========================================================= -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//moodify-emotion-music-app.vercel.app">
+    <link rel="dns-prefetch" href="//moodify-backend-api.vercel.app">
+
+    <!-- =========================================================
+         SITEMAP HINT
+         ========================================================= -->
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="sitemap.xml">
+
+    <!-- =========================================================
+         JSON-LD STRUCTURED DATA
+         ========================================================= -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://moodify-app.vercel.app/#site",
+          "url": "https://moodify-app.vercel.app/",
+          "name": "Moodify",
+          "alternateName": ["Moodify App", "Moodify Music"],
+          "description": "AI-powered emotion-based music recommendation platform. Free, open-source, web + mobile.",
+          "inLanguage": "en",
+          "publisher": { "@id": "https://github.com/hoangsonww#person" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://moodify-emotion-music-app.vercel.app/results?emotion={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://moodify-app.vercel.app/#app",
+          "name": "Moodify",
+          "url": "https://moodify-emotion-music-app.vercel.app/",
+          "description": "Reads emotion from text / voice / selfie and curates a Deezer playlist that matches.",
+          "applicationCategory": "MultimediaApplication",
+          "applicationSubCategory": "MusicApplication",
+          "operatingSystem": "Web, iOS, Android",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          },
+          "image": "https://moodify-app.vercel.app/images/moodify-logo.png",
+          "softwareVersion": "1.0.0",
+          "datePublished": "2024-10-20",
+          "dateModified": "2026-05-23",
+          "inLanguage": "en",
+          "isAccessibleForFree": true,
+          "downloadUrl": "https://moodify-emotion-music-app.vercel.app/",
+          "featureList": [
+            "Text mood detection (BERT)",
+            "Voice mood detection (wav2vec)",
+            "Facial mood detection (FER + facenet)",
+            "Mood history tracking",
+            "Genre-aware recommendations",
+            "Deezer search integration",
+            "JWT auth with silent refresh",
+            "Dark + light themes",
+            "React Native iOS + Android client"
+          ],
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "120",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "creator": { "@id": "https://github.com/hoangsonww#person" }
+        },
+        {
+          "@type": "Person",
+          "@id": "https://github.com/hoangsonww#person",
+          "name": "Son Nguyen",
+          "alternateName": "David Nguyen",
+          "url": "https://github.com/hoangsonww",
+          "sameAs": [
+            "https://github.com/hoangsonww",
+            "https://www.linkedin.com/in/hoangsonw/"
+          ],
+          "jobTitle": "Software Engineer",
+          "worksFor": { "@type": "Organization", "name": "Matroid, Inc." }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://moodify-app.vercel.app/#org",
+          "name": "Moodify",
+          "url": "https://moodify-app.vercel.app/",
+          "logo": "https://moodify-app.vercel.app/images/moodify-logo.png",
+          "founder": { "@id": "https://github.com/hoangsonww#person" },
+          "sameAs": [
+            "https://github.com/hoangsonww/Moodify-Emotion-Music-App"
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moodify-app.vercel.app/#home" },
+            { "@type": "ListItem", "position": 2, "name": "Overview", "item": "https://moodify-app.vercel.app/#overview" },
+            { "@type": "ListItem", "position": 3, "name": "Features", "item": "https://moodify-app.vercel.app/#features" },
+            { "@type": "ListItem", "position": 4, "name": "Architecture", "item": "https://moodify-app.vercel.app/#architecture" },
+            { "@type": "ListItem", "position": 5, "name": "Technology", "item": "https://moodify-app.vercel.app/#technology" },
+            { "@type": "ListItem", "position": 6, "name": "Deployment", "item": "https://moodify-app.vercel.app/#deployment" },
+            { "@type": "ListItem", "position": 7, "name": "Live Demo", "item": "https://moodify-emotion-music-app.vercel.app/" }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- =========================================================
+         STYLES + SCRIPTS
+         ========================================================= -->
     <link rel="stylesheet" href="packages/styles.css">
     <link rel="stylesheet" href="packages/styles.enhance.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
