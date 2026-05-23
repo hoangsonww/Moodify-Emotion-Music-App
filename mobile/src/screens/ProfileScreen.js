@@ -111,7 +111,7 @@ export default function ProfileScreen({ navigation }) {
               .map((track, index) => (
                 <Pressable
                   key={`${track}-${index}`}
-                  onPress={() => openInSpotify(track)}
+                  onPress={() => openInPlayer(track)}
                   style={({ pressed }) => [
                     styles.chip,
                     styles.trackChip,
@@ -139,8 +139,10 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
-function openInSpotify(entry) {
-  const url = `https://open.spotify.com/search/${encodeURIComponent(entry)}`;
+function openInPlayer(entry) {
+  // Resolve the stored "Name — Artist" string via a Deezer search;
+  // works in the browser without an account.
+  const url = `https://www.deezer.com/search/${encodeURIComponent(entry)}`;
   Linking.openURL(url).catch(() => {});
 }
 

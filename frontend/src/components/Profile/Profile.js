@@ -292,9 +292,9 @@ const ProfilePage = () => {
                         target="_blank"
                         variant="contained"
                         color="primary"
-                        style={styles.spotifyButton}
+                        style={styles.playerButton}
                       >
-                        Listen on Spotify
+                        Listen on Deezer
                       </Button>
                     </CardContent>
                   </Box>
@@ -463,7 +463,7 @@ const getStyles = (isDarkMode) => ({
     width: "100%",
     marginBottom: "10px",
   },
-  spotifyButton: {
+  playerButton: {
     fontFamily: "Poppins, sans-serif",
   },
 });

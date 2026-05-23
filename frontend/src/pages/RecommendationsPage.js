@@ -25,8 +25,8 @@ const RecommendationsPage = () => {
             <source src="track1.mp3" type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
-          <a href="https://open.spotify.com" target="_blank" rel="noreferrer">
-            Listen on Spotify
+          <a href="https://www.deezer.com" target="_blank" rel="noreferrer">
+            Listen on Deezer
           </a>
         </div>
 
@@ -45,8 +45,8 @@ const RecommendationsPage = () => {
             <source src="track2.mp3" type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
-          <a href="https://open.spotify.com" target="_blank" rel="noreferrer">
-            Listen on Spotify
+          <a href="https://www.deezer.com" target="_blank" rel="noreferrer">
+            Listen on Deezer
           </a>
         </div>
 
@@ -65,8 +65,8 @@ const RecommendationsPage = () => {
             <source src="track3.mp3" type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
-          <a href="https://open.spotify.com" target="_blank" rel="noreferrer">
-            Listen on Spotify
+          <a href="https://www.deezer.com" target="_blank" rel="noreferrer">
+            Listen on Deezer
           </a>
         </div>
       </div>

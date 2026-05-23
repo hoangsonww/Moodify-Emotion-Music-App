@@ -78,7 +78,7 @@ describe("<ProfilePage />", () => {
     expect(screen.getByText("Artist X")).toBeInTheDocument();
 
     // Spotify link via text
-    const link = screen.getByText(/Listen on Spotify/i).closest("a");
+    const link = screen.getByText(/Listen on Deezer/i).closest("a");
     expect(link).toHaveAttribute("href", "https://spotify.com/x");
     expect(link).toHaveAttribute("target", "_blank");
   });

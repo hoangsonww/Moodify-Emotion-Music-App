@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { colors, radius, spacing } from '../../theme';
 
-/** A single recommended track; tapping opens it in Spotify. */
+/** A single recommended track; tapping opens it in Deezer's web player. */
 export default function TrackCard({ track, onPlay }) {
   const open = () => {
     if (onPlay) onPlay(track);

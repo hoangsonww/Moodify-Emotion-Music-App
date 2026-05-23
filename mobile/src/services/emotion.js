@@ -14,7 +14,7 @@ import { API_URL, MODAL_API_URL } from '../../config';
 const TIMEOUT = 60000; // inference can incur a Modal cold start
 
 // Curated last-resort tracks for when the service is unreachable. The
-// external_url is a Spotify search link, so it always resolves.
+// external_url is a Deezer search link, so it always resolves.
 const _FALLBACK = [
   ['Blinding Lights', 'The Weeknd'],
   ['Levitating', 'Dua Lipa'],
@@ -37,7 +37,7 @@ export const FALLBACK_TRACKS = _FALLBACK.map(([name, artist]) => ({
   artist,
   album: null,
   preview_url: null,
-  external_url: 'https://open.spotify.com/search/' + encodeURIComponent(`${name} ${artist}`),
+  external_url: 'https://www.deezer.com/search/' + encodeURIComponent(`${name} ${artist}`),
   image_url: null,
   popularity: 0,
   duration_ms: 0,

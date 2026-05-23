@@ -403,9 +403,9 @@ const ResultsPage = () => {
           marginBottom: "20px",
         }}
       >
-        Recommendations are based on the mood you inputted and songs recommended
-        by Spotify users in the region you selected. Click on the "Listen on
-        Spotify" button to listen to the song on Spotify.
+        Recommendations are based on the mood you inputted, sourced from
+        Deezer. Click on the "Listen on Deezer" button to open the track in
+        the Deezer web player.
       </Typography>
 
       <Paper elevation={4} style={styles.resultsContainer}>
@@ -543,9 +543,9 @@ const ResultsPage = () => {
                       target="_blank"
                       variant="contained"
                       color="primary"
-                      style={styles.spotifyButton}
+                      style={styles.playerButton}
                     >
-                      Listen on Spotify
+                      Listen on Deezer
                     </Button>
                   </CardContent>
                 </Box>
@@ -565,7 +565,7 @@ const ResultsPage = () => {
               No recommendations available. Try inputting a new image, changing
               the mood, entering some texts, or recording something. If the
               error persists, it may be that our servers are down and it may
-              take up to 3 minutes to restart, or it may be that Spotify's API
+              take up to 3 minutes to restart, or it may be that Deezer's API
               is down.
             </Typography>
           )}
@@ -709,15 +709,16 @@ const getStyles = (isDarkMode) => ({
     marginTop: "10px",
     borderRadius: "5px",
   },
-  spotifyButton: {
+  playerButton: {
     marginTop: "10px",
-    backgroundColor: "#1DB954",
+    // Deezer brand accent (Magenta) instead of the old Spotify green.
+    backgroundColor: "#EF5466",
     color: "#fff",
     textTransform: "none",
     font: "inherit",
     fontWeight: "normal",
     "&:hover": {
-      backgroundColor: "#1ed760",
+      backgroundColor: "#FF6B7B",
     },
     transition: "background-color 0.3s ease",
   },

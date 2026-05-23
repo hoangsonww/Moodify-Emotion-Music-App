@@ -1,54 +1,39 @@
-"""Spotify-backed music recommendation.
+"""Deezer-backed music recommendation.
 
-For a detected emotion we collect tracks from Spotify and return up to
-_MAX_RESULTS de-duplicated results so the client can paginate and sort
-them; each track carries popularity / release-date / duration so the
+For a detected emotion we collect tracks via a Deezer keyword search and
+return up to _MAX_RESULTS de-duplicated results so the client can
+paginate and sort them. Each track carries popularity / duration so the
 client can offer meaningful sort orders.
 
 Sourcing strategy, in order of preference:
 
-  1. Curated mood playlists -- a search for playlists matching the mood
-     query, then the tracks of each. Produces genuinely mood-matched
-     results far better than a plain keyword search. Spotify restricts
-     ``/v1/search?type=playlist`` to apps with a user OAuth context, so
-     this path 403s for client-credentials apps; when that happens we
-     fall through to step 2 instead of failing.
-  2. Keyword track search -- ``/v1/search?type=track`` is still allowed
-     for client-credentials apps and serves as the live fallback.
-  3. Curated static list -- last resort when Spotify is unreachable, so
-     a non-empty result is *always* returned.
+  1. Deezer search for the mood query (free, keyless, rich metadata --
+     30s preview, album cover, popularity rank, Deezer track URL).
+  2. Curated static list, last resort when Deezer is unreachable so a
+     non-empty result is *always* returned.
 
-This deliberately does NOT use Spotify's ``/v1/recommendations`` or
-audio-features endpoints -- Spotify deprecated those in Nov 2024.
+Spotify is intentionally NOT used: Spotify locked down /v1/search for
+client-credentials apps (every request 403s), making it unusable here.
 """
 
-import base64
 import logging
 import random
-import threading
-import time
 import urllib.parse
 
 import requests
 
-import config
-from recommendation import personalization
+from recommendation import deezer, personalization
 
 logger = logging.getLogger(__name__)
 
-_TOKEN_URL = "https://accounts.spotify.com/api/token"
-_SEARCH_URL = "https://api.spotify.com/v1/search"
-_PLAYLIST_TRACKS_URL = "https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
-_HTTP_TIMEOUT = 10
-
 _MAX_RESULTS = 60          # upper bound on tracks returned (client paginates)
-_MIN_USABLE_TRACKS = 4     # minimum before the playlist path is accepted
-_PLAYLIST_PAGE = 50        # tracks fetched per playlist
+_MIN_USABLE_TRACKS = 4     # minimum before a live result is preferred to the fallback
+_SEARCH_LIMIT = 50         # tracks fetched per Deezer search call
 _HISTORY_BLEND_LIMIT = 30  # cap on recurring-mood tracks fetched (bounds latency)
 
-# Detected emotion -> a search phrase that matches well-curated mood
-# playlists. Covers every label the text, speech and facial models emit,
-# plus common synonyms; anything unmapped falls back to _DEFAULT_QUERY.
+# Detected emotion -> a search phrase that surfaces mood-matched tracks.
+# Covers every label the text, speech and facial models emit, plus common
+# synonyms; anything unmapped falls back to _DEFAULT_QUERY.
 EMOTION_TO_QUERY = {
     "joy": "happy feel good",
     "happy": "happy feel good",
@@ -85,9 +70,9 @@ EMOTION_TO_QUERY = {
 }
 _DEFAULT_QUERY = "popular hits"
 
-# Last-resort recommendations, used only when Spotify is unreachable or
+# Last-resort recommendations, used only when Deezer is unreachable or
 # returns nothing. Curated, broadly-loved tracks; the external_url is a
-# Spotify search link so it always resolves even without a track id.
+# Deezer search link so it always resolves even without a track id.
 _FALLBACK_TRACKS = [
     {"name": "Blinding Lights", "artist": "The Weeknd"},
     {"name": "Levitating", "artist": "Dua Lipa"},
@@ -105,207 +90,41 @@ _FALLBACK_TRACKS = [
     {"name": "Don't Start Now", "artist": "Dua Lipa"},
 ]
 
-# --- token cache ----------------------------------------------------------
-_token_lock = threading.Lock()
-_token_value: str | None = None
-_token_expires_at: float = 0.0
-
-
-def get_spotify_access_token() -> str:
-    """Return a cached Spotify access token, refreshing only when expired."""
-    global _token_value, _token_expires_at
-
-    with _token_lock:
-        if _token_value and time.time() < _token_expires_at:
-            return _token_value
-
-        client_id = config.require("SPOTIFY_CLIENT_ID")
-        client_secret = config.require("SPOTIFY_CLIENT_SECRET")
-        encoded = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
-
-        resp = requests.post(
-            _TOKEN_URL,
-            headers={"Authorization": f"Basic {encoded}"},
-            data={"grant_type": "client_credentials"},
-            timeout=_HTTP_TIMEOUT,
-        )
-        resp.raise_for_status()
-        payload = resp.json()
-
-        _token_value = payload["access_token"]
-        # Refresh 60s before the real expiry to avoid edge-of-window 401s.
-        _token_expires_at = time.time() + payload.get("expires_in", 3600) - 60
-        return _token_value
-
-
-def _invalidate_token() -> None:
-    """Drop the cached token so the next call fetches a fresh one."""
-    global _token_value, _token_expires_at
-    with _token_lock:
-        _token_value = None
-        _token_expires_at = 0.0
-
-
-def _authorized_get(url: str, params: dict) -> dict:
-    """GET a Spotify endpoint with the bearer token.
-
-    Refreshes the token once on 401 and backs off once on 429. Raises a
-    ``requests.RequestException`` (incl. HTTPError) on a hard failure.
-    """
-    response = None
-    for attempt in (1, 2):
-        token = get_spotify_access_token()
-        response = requests.get(
-            url,
-            headers={"Authorization": f"Bearer {token}"},
-            params=params,
-            timeout=_HTTP_TIMEOUT,
-        )
-        if attempt == 1 and response.status_code == 401:
-            _invalidate_token()
-            continue
-        if attempt == 1 and response.status_code == 429:
-            retry_after = response.headers.get("Retry-After", "1")
-            try:
-                delay = min(int(retry_after), 5)
-            except (TypeError, ValueError):
-                delay = 1
-            time.sleep(delay)
-            continue
-        response.raise_for_status()
-        return response.json()
-
-    response.raise_for_status()
-    return response.json()
-
-
-def _parse_track(track: dict) -> dict:
-    """Normalise a Spotify track object to the app's track shape.
-
-    Includes popularity / release date / duration so the client can sort.
-    """
-    album = track.get("album") or {}
-    images = album.get("images") or []
-    artists = ", ".join(a.get("name", "") for a in track.get("artists") or [] if a)
-    return {
-        "name": track.get("name") or "Unknown track",
-        "artist": artists or "Unknown artist",
-        "album": album.get("name"),
-        "preview_url": track.get("preview_url"),
-        "external_url": (track.get("external_urls") or {}).get("spotify"),
-        "image_url": images[0].get("url") if images else None,
-        "popularity": int(track.get("popularity") or 0),
-        "duration_ms": int(track.get("duration_ms") or 0),
-        "release_date": album.get("release_date"),
-    }
-
-
-def _search_playlist_ids(query: str, market: str | None) -> list[str]:
-    """Return playlist ids matching a mood query, in random order."""
-    params = {"q": query, "type": "playlist", "limit": 20}
-    if market:
-        params["market"] = market
-    data = _authorized_get(_SEARCH_URL, params)
-    items = (data.get("playlists") or {}).get("items") or []
-    ids = [p["id"] for p in items if p and p.get("id")]
-    random.shuffle(ids)
-    return ids
-
-
-def _playlist_track_dicts(playlist_id: str, market: str | None) -> list[dict]:
-    """Return parsed, playable tracks from a playlist (episodes excluded)."""
-    params = {"limit": _PLAYLIST_PAGE}
-    if market:
-        params["market"] = market
-    data = _authorized_get(_PLAYLIST_TRACKS_URL.format(playlist_id=playlist_id), params)
-    tracks = []
-    for item in data.get("items") or []:
-        track = (item or {}).get("track")
-        if track and track.get("type", "track") == "track" and track.get("name"):
-            tracks.append(_parse_track(track))
-    return tracks
-
-
-def _search_track_dicts(query: str, market: str | None) -> list[dict]:
-    """Fallback: a plain keyword track search."""
-    params = {"q": query, "type": "track", "limit": _PLAYLIST_PAGE}
-    if market:
-        params["market"] = market
-    data = _authorized_get(_SEARCH_URL, params)
-    items = (data.get("tracks") or {}).get("items") or []
-    return [_parse_track(t) for t in items if t and t.get("name")]
-
 
 def _fallback_recommendations() -> list[dict]:
-    """A non-empty, curated recommendation set for when Spotify fails."""
+    """A non-empty, curated recommendation set for when Deezer fails."""
     tracks = list(_FALLBACK_TRACKS)
     random.shuffle(tracks)
     return [
         {
-            "name": t["name"],
-            "artist": t["artist"],
+            "name": track["name"],
+            "artist": track["artist"],
             "album": None,
             "preview_url": None,
-            "external_url": "https://open.spotify.com/search/"
-            + urllib.parse.quote(f"{t['name']} {t['artist']}"),
+            "external_url": "https://www.deezer.com/search/"
+            + urllib.parse.quote(f"{track['name']} {track['artist']}"),
             "image_url": None,
             "popularity": 0,
             "duration_ms": 0,
             "release_date": None,
         }
-        for t in tracks
+        for track in tracks
     ]
 
 
 def _query_for(emotion: str) -> str:
-    """Map a detected emotion to its mood-playlist search phrase."""
+    """Map a detected emotion to its mood-keyword search phrase."""
     return EMOTION_TO_QUERY.get((emotion or "").strip().lower(), _DEFAULT_QUERY)
 
 
-def _collect_for_query(
-    query: str, market: str | None, limit: int = _MAX_RESULTS
-) -> list[dict]:
-    """Gather mood-matched tracks for one query (may return an empty list).
-
-    Stops once ``limit`` tracks are gathered. Tries curated playlists
-    first, then a keyword track search. Tracks are de-duplicated by
-    external_url and kept in the playlists' curated order.
-
-    Spotify restricts ``/v1/search?type=playlist`` to apps with a user
-    OAuth context (client-credentials apps get 403). When that happens we
-    silently fall through to the track-search path rather than discarding
-    the whole result and dropping to the static fallback.
-    """
-    collected: list[dict] = []
-    seen: set[str] = set()
-
-    try:
-        playlist_ids = _search_playlist_ids(query, market)
-    except requests.RequestException as exc:
-        logger.info("Playlist search unavailable (%s); falling back to track search", exc)
-        playlist_ids = []
-
-    for playlist_id in playlist_ids:
-        try:
-            tracks = _playlist_track_dicts(playlist_id, market)
-        except requests.RequestException:
-            continue  # e.g. a Spotify-owned playlist that is not accessible
-        for track in tracks:
-            url = track.get("external_url")
-            if url and url not in seen:
-                seen.add(url)
-                collected.append(track)
-        if len(collected) >= limit:
-            break
-    if len(collected) >= _MIN_USABLE_TRACKS:
-        return collected
-
-    # No usable playlist -- fall back to a plain keyword track search.
-    return _search_track_dicts(query, market)
+def _collect_for_query(query: str, limit: int = _MAX_RESULTS) -> list[dict]:
+    """Return up to ``limit`` Deezer search hits for ``query`` (may be empty)."""
+    tracks = deezer.search_tracks(query, limit=min(limit, _SEARCH_LIMIT))
+    return tracks[:limit]
 
 
 def _personalize(
-    emotion: str, history: list[str], primary: list[dict], market: str | None
+    emotion: str, history: list[str], primary: list[dict]
 ) -> list[dict]:
     """Blend the user's recurring mood into ``primary`` via the model.
 
@@ -314,26 +133,19 @@ def _personalize(
     fetches its tracks, and interleaves them at an affinity-driven rate.
     Both mood sets are quality-ranked first so their best tracks surface.
 
-    Fetching the recurring-mood tracks is best-effort: a Spotify failure
-    there must not discard the (good) current-mood result, so it falls
-    back to quality-ranking ``primary`` alone.
+    Fetching the recurring-mood tracks is best-effort -- the Deezer client
+    swallows network errors and returns [], so a failure there just skips
+    the blend instead of sinking the primary result.
     """
     affinity = personalization.mood_affinity(emotion, history)
     recurring = personalization.recurring_mood(emotion, affinity)
 
-    # No distinct recurring taste (or it maps to the same playlists as the
-    # current mood) -- nothing to blend, just quality-rank what we have.
+    # No distinct recurring taste (or it maps to the same search phrase as
+    # the current mood) -- nothing to blend, just quality-rank what we have.
     if not recurring or _query_for(recurring) == _query_for(emotion):
         return personalization.rank_by_quality(primary)
 
-    try:
-        secondary = _collect_for_query(
-            _query_for(recurring), market, limit=_HISTORY_BLEND_LIMIT
-        )
-    except requests.RequestException:
-        logger.warning("history blend skipped; Spotify request failed")
-        return personalization.rank_by_quality(primary)
-
+    secondary = _collect_for_query(_query_for(recurring), limit=_HISTORY_BLEND_LIMIT)
     if not secondary:
         return personalization.rank_by_quality(primary)
 
@@ -353,33 +165,34 @@ def get_music_recommendation(
     When ``history`` (recent detected moods) is supplied, a lightweight
     personalization model blends in tracks for the user's recurring mood
     and quality-ranks the result, so recommendations reflect both the
-    moment and the longer-term pattern. Without history the curated
-    playlist order is returned unchanged.
+    moment and the longer-term pattern. Without history the live result
+    order is returned unchanged.
+
+    The ``market`` argument is accepted for API compatibility with the
+    previous Spotify path but is unused -- Deezer's search endpoint does
+    not take a market.
 
     Returns up to _MAX_RESULTS de-duplicated tracks. The list is ALWAYS
-    non-empty: on any Spotify failure it returns a curated fallback set,
+    non-empty: on any Deezer failure it returns a curated fallback set,
     so a caller never surfaces an error or an empty result.
     """
-    market = market if (market and len(market) == 2) else None
+    del market  # noqa -- interface parity only
 
     try:
-        primary = _collect_for_query(_query_for(emotion), market)
+        primary = _collect_for_query(_query_for(emotion))
 
         if history:
-            primary = _personalize(emotion, history, primary, market)
+            primary = _personalize(emotion, history, primary)
 
         if len(primary) >= _MIN_USABLE_TRACKS:
             return primary[:_MAX_RESULTS]
         if primary:
             return primary
     except requests.RequestException as exc:
-        # Include the full exception detail so operators can tell apart
-        # bad credentials (401 from /api/token), throttling (429), and
-        # connectivity issues from the generic "request failed" line.
-        logger.warning(
-            "Spotify request failed for emotion=%s: %s", emotion, exc, exc_info=True
-        )
-    except Exception:  # noqa: BLE001 -- e.g. missing-credentials RuntimeError
+        # Defensive: the Deezer client already swallows RequestException
+        # internally, but personalize() could in principle raise a new one.
+        logger.warning("Live recommendation failed for emotion=%s: %s", emotion, exc)
+    except Exception:  # noqa: BLE001
         logger.exception("Unexpected recommendation error for emotion=%s", emotion)
 
     # Last resort -- always hand back something listenable.

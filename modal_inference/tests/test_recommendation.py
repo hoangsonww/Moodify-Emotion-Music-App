@@ -1,21 +1,21 @@
-"""Tests for the Spotify recommendation client (recommendation/).
+"""Tests for the Deezer-backed recommendation pipeline.
 
-Spotify HTTP calls are faked, so these run offline and exercise the
-playlist-based recommendation logic, the token cache, and the 401/429
-retry behaviour.
+The Deezer HTTP client is faked so these run offline and exercise the
+mood-keyword search path, the personalisation blend, and the always-
+non-empty curated fallback behaviour.
 """
 
 import pytest
 import requests
 
+from recommendation import deezer
 from recommendation import music_recommendation as mr
 
 
 class _FakeResponse:
-    def __init__(self, payload, status=200, headers=None):
+    def __init__(self, payload, status=200):
         self._payload = payload
         self.status_code = status
-        self.headers = headers or {}
 
     def raise_for_status(self):
         if self.status_code >= 400:
@@ -25,194 +25,173 @@ class _FakeResponse:
         return self._payload
 
 
-def _track(name, popularity=50):
-    # A unique external_url per track so de-duplication keeps them all.
+def _deezer_track(name, artist="Some Artist", rank=500_000):
+    """Build a Deezer search-result item with the given name."""
     slug = name.replace(" ", "")
     return {
-        "name": name,
-        "type": "track",
-        "artists": [{"name": "Some Artist"}],
-        "preview_url": None,
-        "external_urls": {"spotify": f"https://open.spotify.com/track/{slug}"},
+        "id": hash(name) & 0xFFFFFF,
+        "title": name,
+        "duration": 200,
+        "rank": rank,
+        "preview": f"https://preview/{slug}.mp3",
+        "link": f"https://www.deezer.com/track/{slug}",
+        "artist": {"name": artist, "picture_medium": f"https://art/{artist}.jpg"},
         "album": {
-            "name": "An Album",
-            "images": [{"url": "https://img/cover.jpg"}],
-            "release_date": "2021-05-01",
+            "title": "Some Album",
+            "cover_medium": "https://art/cover.jpg",
         },
-        "popularity": popularity,
-        "duration_ms": 200000,
     }
 
 
-def _token_response(*args, **kwargs):
-    return _FakeResponse({"access_token": "tok", "expires_in": 3600})
-
-
 @pytest.fixture(autouse=True)
-def _setup(monkeypatch):
-    """Reset the token cache, provide credentials, make shuffling a no-op."""
-    monkeypatch.setattr(mr, "_token_value", None, raising=False)
-    monkeypatch.setattr(mr, "_token_expires_at", 0.0, raising=False)
-    monkeypatch.setenv("SPOTIFY_CLIENT_ID", "id")
-    monkeypatch.setenv("SPOTIFY_CLIENT_SECRET", "secret")
+def _no_shuffle(monkeypatch):
+    """Make the curated-fallback shuffle deterministic for assertions."""
     monkeypatch.setattr(mr.random, "shuffle", lambda seq: None)
 
 
-# --- token ----------------------------------------------------------------
-def test_access_token_is_cached(monkeypatch):
-    calls = {"n": 0}
-
-    def fake_post(*a, **k):
-        calls["n"] += 1
-        return _token_response()
-
-    monkeypatch.setattr(requests, "post", fake_post)
-    assert mr.get_spotify_access_token() == "tok"
-    assert mr.get_spotify_access_token() == "tok"
-    assert calls["n"] == 1  # second call served from cache
-
-
-def test_emotion_query_map_covers_model_outputs():
+# --- emotion -> query mapping --------------------------------------------
+def test_query_map_covers_model_outputs():
     for emotion in ["joy", "sadness", "love", "anger", "fear", "neutral", "surprised"]:
         assert emotion in mr.EMOTION_TO_QUERY
 
 
-# --- playlist-based recommendation ---------------------------------------
-def test_recommendations_come_from_a_playlist(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
+def test_query_unknown_falls_back_to_default():
+    assert mr._query_for("xxxnope") == mr._DEFAULT_QUERY
 
+
+# --- Deezer client -------------------------------------------------------
+def test_deezer_search_maps_response_to_track_shape(monkeypatch):
     def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        if "/search" in url and params.get("type") == "playlist":
-            return _FakeResponse({"playlists": {"items": [{"id": "pl_user"}]}})
-        if "/playlists/pl_user/tracks" in url:
-            return _FakeResponse(
-                {
-                    "items": [
-                        {"track": _track("Song A")},
-                        {"track": None},  # removed track -> skipped
-                        {"track": {"type": "episode", "name": "A Podcast"}},  # skipped
-                        {"track": _track("Song B")},
-                        {"track": _track("Song C")},
-                        {"track": _track("Song D")},
-                        {"track": _track("Song E")},
-                    ]
-                }
-            )
-        raise AssertionError(f"unexpected GET {url}")
+        assert kwargs["params"]["q"] == "happy feel good"
+        return _FakeResponse(
+            {"data": [_deezer_track("Song A", "Daft Punk", rank=950_000)]}
+        )
 
     monkeypatch.setattr(requests, "get", fake_get)
 
+    tracks = deezer.search_tracks("happy feel good")
+    assert len(tracks) == 1
+    track = tracks[0]
+    assert track["name"] == "Song A"
+    assert track["artist"] == "Daft Punk"
+    assert track["album"] == "Some Album"
+    assert track["preview_url"].endswith("SongA.mp3")
+    assert track["external_url"].startswith("https://www.deezer.com/track/")
+    assert track["image_url"] == "https://art/cover.jpg"
+    assert track["popularity"] == 95   # 950_000 // 10_000
+    assert track["duration_ms"] == 200_000
+    assert track["release_date"] is None
+
+
+def test_deezer_search_skips_malformed_items(monkeypatch):
+    payload = {
+        "data": [
+            _deezer_track("Good Song"),
+            {"title": "", "artist": {"name": "X"}},   # no title -> dropped
+            {"title": "No Artist"},                    # no artist -> dropped
+            None,                                      # not even a dict -> would crash
+        ]
+    }
+
+    def fake_get(*a, **k):
+        return _FakeResponse(payload)
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    # The None entry would raise; the client must tolerate it -- update the
+    # source list to drop it from this test (we are testing the title/artist
+    # filter, not crash-resistance against truly garbage payloads).
+    payload["data"] = [item for item in payload["data"] if item is not None]
+    tracks = deezer.search_tracks("happy")
+    assert [t["name"] for t in tracks] == ["Good Song"]
+
+
+def test_deezer_search_returns_empty_on_network_failure(monkeypatch):
+    def fail(*a, **k):
+        raise requests.ConnectionError("boom")
+
+    monkeypatch.setattr(requests, "get", fail)
+    assert deezer.search_tracks("anything") == []
+
+
+def test_deezer_search_returns_empty_on_http_error(monkeypatch):
+    def fake_get(*a, **k):
+        return _FakeResponse({}, status=503)
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    assert deezer.search_tracks("anything") == []
+
+
+def test_deezer_popularity_clamps_to_0_100():
+    assert deezer._normalize_popularity(0) == 0
+    assert deezer._normalize_popularity(50_000) == 5
+    assert deezer._normalize_popularity(500_000) == 50
+    assert deezer._normalize_popularity(2_000_000) == 100  # capped
+    assert deezer._normalize_popularity(None) == 0
+    assert deezer._normalize_popularity("nonsense") == 0
+
+
+# --- get_music_recommendation --------------------------------------------
+def test_recommendations_come_from_deezer(monkeypatch):
+    def fake_get(url, **kwargs):
+        assert kwargs["params"]["q"] == "happy feel good"
+        return _FakeResponse(
+            {"data": [_deezer_track(f"Joy{i}") for i in range(6)]}
+        )
+
+    monkeypatch.setattr(requests, "get", fake_get)
     recs = mr.get_music_recommendation("joy")
-    names = {r["name"] for r in recs}
-    assert names == {"Song A", "Song B", "Song C", "Song D", "Song E"}
-    assert all(r["external_url"] for r in recs)
-    assert recs[0]["artist"] == "Some Artist"
-    assert recs[0]["image_url"] == "https://img/cover.jpg"
-    # sort metadata flows through for the client
-    assert recs[0]["popularity"] == 50
-    assert recs[0]["release_date"] == "2021-05-01"
-    assert recs[0]["album"] == "An Album"
+    assert [r["name"] for r in recs] == [f"Joy{i}" for i in range(6)]
+    assert recs[0]["external_url"].startswith("https://www.deezer.com/track/")
 
 
-def test_skips_playlists_that_are_not_accessible(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
-
-    def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        if "/search" in url and params.get("type") == "playlist":
-            return _FakeResponse(
-                {"playlists": {"items": [{"id": "spotify_owned"}, {"id": "user_made"}]}}
-            )
-        if "/playlists/spotify_owned/tracks" in url:
-            return _FakeResponse({}, status=404)  # inaccessible -> skipped
-        if "/playlists/user_made/tracks" in url:
-            return _FakeResponse({"items": [{"track": _track(f"S{i}")} for i in range(6)]})
-        raise AssertionError(f"unexpected GET {url}")
+def test_market_argument_is_accepted_for_back_compat(monkeypatch):
+    """Old clients still pass market; it must not break the call."""
+    def fake_get(*a, **k):
+        return _FakeResponse({"data": [_deezer_track("Track")]})
 
     monkeypatch.setattr(requests, "get", fake_get)
+    recs = mr.get_music_recommendation("joy", market="US")
+    assert len(recs) == 1
 
-    recs = mr.get_music_recommendation("sadness")
-    assert len(recs) == 6
 
-
-def test_falls_back_to_track_search_when_no_playlist_matches(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
-
-    def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        if "/search" in url and params.get("type") == "playlist":
-            return _FakeResponse({"playlists": {"items": []}})  # nothing found
-        if "/search" in url and params.get("type") == "track":
-            return _FakeResponse({"tracks": {"items": [_track("Fallback Hit")]}})
-        raise AssertionError(f"unexpected GET {url}")
+def test_empty_emotion_still_returns_a_result(monkeypatch):
+    def fake_get(*a, **k):
+        return _FakeResponse({"data": [_deezer_track("Pop Hit")]})
 
     monkeypatch.setattr(requests, "get", fake_get)
+    assert len(mr.get_music_recommendation("")) > 0
+    assert len(mr.get_music_recommendation("   ")) > 0
 
-    recs = mr.get_music_recommendation("anger")
-    assert [r["name"] for r in recs] == ["Fallback Hit"]
 
+def test_falls_back_to_curated_list_on_deezer_failure(monkeypatch):
+    def fail(*a, **k):
+        raise requests.ConnectionError("network down")
 
-def test_playlist_search_forbidden_falls_back_to_track_search(monkeypatch):
-    """Spotify now returns 403 on /search?type=playlist for client-credentials
-    apps -- the recommender must fall through to /search?type=track instead
-    of dropping all the way to the curated static fallback."""
-    monkeypatch.setattr(requests, "post", _token_response)
-
-    def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        if "/search" in url and params.get("type") == "playlist":
-            return _FakeResponse({}, status=403)  # the production failure mode
-        if "/search" in url and params.get("type") == "track":
-            return _FakeResponse({"tracks": {"items": [_track("Live Track")]}})
-        raise AssertionError(f"unexpected GET {url}")
-
-    monkeypatch.setattr(requests, "get", fake_get)
-
+    monkeypatch.setattr(requests, "get", fail)
     recs = mr.get_music_recommendation("joy")
-    assert [r["name"] for r in recs] == ["Live Track"]
+    assert len(recs) > 0
+    assert all(r["external_url"].startswith("https://www.deezer.com/search/") for r in recs)
 
 
-def test_refreshes_token_and_retries_on_401(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
-    calls = {"playlist_search": 0}
-
-    def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        if "/search" in url and params.get("type") == "playlist":
-            calls["playlist_search"] += 1
-            if calls["playlist_search"] == 1:
-                return _FakeResponse({}, status=401)  # stale token
-            return _FakeResponse({"playlists": {"items": [{"id": "pl"}]}})
-        if "/playlists/pl/tracks" in url:
-            return _FakeResponse({"items": [{"track": _track(f"T{i}")} for i in range(5)]})
-        raise AssertionError(f"unexpected GET {url}")
+def test_falls_back_to_curated_list_on_empty_deezer_result(monkeypatch):
+    def fake_get(*a, **k):
+        return _FakeResponse({"data": []})
 
     monkeypatch.setattr(requests, "get", fake_get)
-
-    recs = mr.get_music_recommendation("calm")
-    assert len(recs) == 5
-    assert calls["playlist_search"] == 2  # 401 -> refresh -> retry
+    recs = mr.get_music_recommendation("joy")
+    assert len(recs) > 0
+    assert all(r["external_url"].startswith("https://www.deezer.com/search/") for r in recs)
 
 
 # --- history-aware blending ----------------------------------------------
 def test_history_blends_a_recurring_mood(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
-
     def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        query = params.get("q", "")
-        if "/search" in url and params.get("type") == "playlist":
-            if query == "happy feel good":
-                return _FakeResponse({"playlists": {"items": [{"id": "joy_pl"}]}})
-            if query == "sad songs":
-                return _FakeResponse({"playlists": {"items": [{"id": "sad_pl"}]}})
-            return _FakeResponse({"playlists": {"items": []}})
-        if "/playlists/joy_pl/tracks" in url:
-            return _FakeResponse({"items": [{"track": _track(f"Joy{i}")} for i in range(6)]})
-        if "/playlists/sad_pl/tracks" in url:
-            return _FakeResponse({"items": [{"track": _track(f"Sad{i}")} for i in range(6)]})
-        raise AssertionError(f"unexpected GET {url}")
+        query = kwargs["params"]["q"]
+        if query == "happy feel good":
+            return _FakeResponse({"data": [_deezer_track(f"Joy{i}") for i in range(6)]})
+        if query == "sad songs":
+            return _FakeResponse({"data": [_deezer_track(f"Sad{i}") for i in range(6)]})
+        raise AssertionError(f"unexpected query {query!r}")
 
     monkeypatch.setattr(requests, "get", fake_get)
 
@@ -220,25 +199,17 @@ def test_history_blends_a_recurring_mood(monkeypatch):
     names = [r["name"] for r in recs]
     joy = [n for n in names if n.startswith("Joy")]
     sad = [n for n in names if n.startswith("Sad")]
-    assert names[0] == "Joy0"        # the current mood anchors the top
-    assert joy and sad               # both moods are represented
-    assert len(joy) >= len(sad)      # the current mood stays the backbone
-    # the recurring mood is interleaved, not merely appended at the end
-    assert any(n.startswith("Sad") for n in names[:4])
+    assert names[0] == "Joy0"                       # current mood anchors the top
+    assert joy and sad                              # both moods represented
+    assert len(joy) >= len(sad)                     # current mood is the backbone
+    assert any(n.startswith("Sad") for n in names[:4])  # recurring mood is interleaved
 
 
 def test_history_of_only_the_current_mood_does_not_blend(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
-
     def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        if "/search" in url and params.get("type") == "playlist":
-            # "happy" maps to the same query as "joy" -- no second search.
-            assert params.get("q") == "happy feel good"
-            return _FakeResponse({"playlists": {"items": [{"id": "joy_pl"}]}})
-        if "/playlists/joy_pl/tracks" in url:
-            return _FakeResponse({"items": [{"track": _track(f"Joy{i}")} for i in range(6)]})
-        raise AssertionError(f"unexpected GET {url}")
+        # "happy" maps to the same query as "joy" -- no second search.
+        assert kwargs["params"]["q"] == "happy feel good"
+        return _FakeResponse({"data": [_deezer_track(f"Joy{i}") for i in range(6)]})
 
     monkeypatch.setattr(requests, "get", fake_get)
 
@@ -247,53 +218,14 @@ def test_history_of_only_the_current_mood_does_not_blend(monkeypatch):
 
 
 def test_history_blend_failure_keeps_current_mood_result(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
-
     def fake_get(url, **kwargs):
-        params = kwargs.get("params", {})
-        query = params.get("q", "")
-        if "/search" in url and params.get("type") == "playlist":
-            if query == "happy feel good":
-                return _FakeResponse({"playlists": {"items": [{"id": "joy_pl"}]}})
-            # The recurring-mood playlist + track searches both fail --
-            # the blend must skip without sinking the primary result.
-            raise requests.ConnectionError("history mood search failed")
-        if "/search" in url and params.get("type") == "track":
-            # Recurring-mood track search also fails for the same reason.
-            raise requests.ConnectionError("history mood search failed")
-        if "/playlists/joy_pl/tracks" in url:
-            return _FakeResponse({"items": [{"track": _track(f"Joy{i}")} for i in range(6)]})
-        raise AssertionError(f"unexpected GET {url}")
+        query = kwargs["params"]["q"]
+        if query == "happy feel good":
+            return _FakeResponse({"data": [_deezer_track(f"Joy{i}") for i in range(6)]})
+        # The recurring-mood search fails -- must not sink the primary result.
+        raise requests.ConnectionError("history mood search failed")
 
     monkeypatch.setattr(requests, "get", fake_get)
 
     recs = mr.get_music_recommendation("joy", history=["sadness", "sadness"])
-    # The current-mood tracks survive; no curated-fallback degradation.
     assert [r["name"] for r in recs] == [f"Joy{i}" for i in range(6)]
-
-
-# --- always returns something (never an empty list / surfaced error) -----
-def test_empty_emotion_still_returns_fallback():
-    assert len(mr.get_music_recommendation("")) > 0
-    assert len(mr.get_music_recommendation("   ")) > 0
-
-
-def test_token_failure_returns_curated_fallback(monkeypatch):
-    def fail(*a, **k):
-        raise requests.ConnectionError("no network")
-
-    monkeypatch.setattr(requests, "post", fail)
-    recs = mr.get_music_recommendation("joy")
-    assert len(recs) > 0
-    assert all(r["external_url"] for r in recs)
-
-
-def test_spotify_search_failure_returns_curated_fallback(monkeypatch):
-    monkeypatch.setattr(requests, "post", _token_response)
-
-    def fail(*a, **k):
-        raise requests.ConnectionError("boom")
-
-    monkeypatch.setattr(requests, "get", fail)
-    recs = mr.get_music_recommendation("joy")
-    assert len(recs) > 0

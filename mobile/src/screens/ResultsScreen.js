@@ -20,7 +20,6 @@ const EMOJI = {
 const SORTS = [
   { key: 'recommended', label: 'Recommended' },
   { key: 'popular', label: 'Most popular' },
-  { key: 'newest', label: 'Newest releases' },
   { key: 'title', label: 'Title (A–Z)' },
   { key: 'artist', label: 'Artist (A–Z)' },
 ];
@@ -52,10 +51,6 @@ function sortTracks(tracks, key) {
   const list = [...tracks];
   if (key === 'popular') {
     list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-  } else if (key === 'newest') {
-    list.sort((a, b) =>
-      String(b.release_date || '').localeCompare(String(a.release_date || '')),
-    );
   } else if (key === 'title') {
     list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
   } else if (key === 'artist') {

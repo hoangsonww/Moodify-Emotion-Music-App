@@ -48,8 +48,8 @@ TEXT_EMOTION_LABELS = ["sadness", "joy", "love", "anger", "fear"]
 DEFAULT_EMOTION = "neutral"
 
 # --- Secrets / runtime env (populated by the Modal Secret) ----------------
-SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+# Music recommendations now come from Deezer's keyless public API; no
+# Spotify (or any other) credential is required for the recommender.
 
 # Hugging Face repo holding the fine-tuned text-emotion model (config +
 # tokenizer + model.safetensors). HF_TOKEN is only needed for a private repo.
