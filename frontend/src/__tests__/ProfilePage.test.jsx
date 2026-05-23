@@ -60,16 +60,10 @@ describe("<ProfilePage />", () => {
     // Loading indicator
     expect(screen.getByText(/Loading\.\.\./i)).toBeInTheDocument();
 
-    // Wait for data load
+    // Wait for data load — username appears inside the hero welcome line.
     expect(await screen.findByText(/Welcome, testuser!/i)).toBeInTheDocument();
 
-    // Profile fields
-    expect(screen.getByText(/Your Username: testuser/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Your Email: test@example\.com/i),
-    ).toBeInTheDocument();
-
-    // Mood history
+    // Identity card was removed; assert mood + rec history rendered instead.
     expect(screen.getByText("Happy")).toBeInTheDocument();
     expect(screen.getByText("Sad")).toBeInTheDocument();
 
@@ -77,8 +71,8 @@ describe("<ProfilePage />", () => {
     expect(screen.getByText("Song X")).toBeInTheDocument();
     expect(screen.getByText("Artist X")).toBeInTheDocument();
 
-    // Spotify link via text
-    const link = screen.getByText(/Listen on Deezer/i).closest("a");
+    // Deezer button is now labeled "Open in Deezer" and rendered as <a>.
+    const link = screen.getAllByText(/Open in Deezer/i)[0].closest("a");
     expect(link).toHaveAttribute("href", "https://spotify.com/x");
     expect(link).toHaveAttribute("target", "_blank");
   });

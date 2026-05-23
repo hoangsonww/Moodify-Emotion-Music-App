@@ -137,8 +137,9 @@ class TestMusicRecommendation:
     def test_history_forwarded_to_recommender(self, monkeypatch):
         captured = {}
 
-        def fake_reco(emotion, market=None, history=None):
+        def fake_reco(emotion, market=None, history=None, genre=None):
             captured["history"] = history
+            captured["genre"] = genre
             return []
 
         monkeypatch.setattr(service, "get_music_recommendation", fake_reco)
@@ -149,6 +150,23 @@ class TestMusicRecommendation:
         )
         assert resp.status_code == 200
         assert captured["history"] == ["sad", "calm"]
+        assert captured["genre"] is None
+
+    def test_genre_forwarded_to_recommender(self, monkeypatch):
+        captured = {}
+
+        def fake_reco(emotion, market=None, history=None, genre=None):
+            captured["genre"] = genre
+            return []
+
+        monkeypatch.setattr(service, "get_music_recommendation", fake_reco)
+        resp = _client().post(
+            "/music_recommendation",
+            json={"emotion": "joy", "genre": "hip-hop"},
+            headers=AUTH,
+        )
+        assert resp.status_code == 200
+        assert captured["genre"] == "hip-hop"
 
 
 class TestMediaEndpoints:

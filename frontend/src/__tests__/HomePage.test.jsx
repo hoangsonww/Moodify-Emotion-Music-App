@@ -7,14 +7,38 @@ import { MemoryRouter } from "react-router-dom";
 
 jest.mock("axios");
 
+// The Toast context is consumed by HomePage; provide a no-op stub so
+// tests don't fail on a missing provider.
+jest.mock("../components/Toast", () => ({
+  useToast: () => ({
+    show: jest.fn(),
+    success: jest.fn(),
+    warning: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+  }),
+}));
+
+const renderHome = () =>
+  render(
+    <DarkModeContext.Provider value={{ isDarkMode: false }}>
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    </DarkModeContext.Provider>,
+  );
+
 describe("<HomePage />", () => {
   beforeEach(() => {
-    // Provide a token so the useEffect fetchUserData path runs
     window.localStorage.setItem("token", "fake-jwt-token");
-
-    // Mock the GET for user profile
     axios.get.mockResolvedValue({
-      data: { id: "user-123", name: "Test User" },
+      data: {
+        id: "user-123",
+        username: "Test User",
+        mood_history: [],
+        recommendations: [],
+        listening_history: [],
+      },
     });
   });
 
@@ -23,53 +47,44 @@ describe("<HomePage />", () => {
     window.localStorage.clear();
   });
 
-  it("renders the three mode tabs and initial text prompt", async () => {
-    render(
-      <DarkModeContext.Provider value={{ isDarkMode: false }}>
-        <MemoryRouter>
-          <HomePage />
-        </MemoryRouter>
-      </DarkModeContext.Provider>,
-    );
-
-    // wait for the axios.get call
+  it("renders the three mode tiles with the new card layout", async () => {
+    renderHome();
     await waitFor(() => expect(axios.get).toHaveBeenCalledTimes(1));
 
-    // Only the exact-labeled tabs, not other buttons
-    expect(screen.getByRole("button", { name: /^Text$/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Face$/ })).toBeInTheDocument();
+    // Mode tiles are Paper cards with a label + blurb. Match the label text.
+    expect(screen.getByText(/^Text$/)).toBeInTheDocument();
+    expect(screen.getByText(/^Voice$/)).toBeInTheDocument();
+    expect(screen.getByText(/^Face$/)).toBeInTheDocument();
+
+    // Initial primary CTA is the text-mode "Add Text" button.
     expect(
-      screen.getByRole("button", { name: /^Speech$/ }),
+      screen.getByRole("button", { name: /Add Text/i }),
     ).toBeInTheDocument();
 
-    // Confirm the prompt shows the activeTab
+    // Upload counterpart for the text mode.
     expect(
-      screen.getByText(/Choose an input mode \(text\)/i),
+      screen.getByRole("button", { name: /Upload Text File/i }),
     ).toBeInTheDocument();
   });
 
-  it("switches to face mode when Face tab clicked", async () => {
-    render(
-      <DarkModeContext.Provider value={{ isDarkMode: false }}>
-        <MemoryRouter>
-          <HomePage />
-        </MemoryRouter>
-      </DarkModeContext.Provider>,
-    );
-
-    // wait for initial fetch
+  it("switches to face mode when the Face tile is clicked", async () => {
+    renderHome();
     await waitFor(() => expect(axios.get).toHaveBeenCalled());
 
-    // Click the Face tab
-    fireEvent.click(screen.getByRole("button", { name: /^Face$/ }));
+    // Click the Face mode tile (text node is inside a Paper card).
+    fireEvent.click(screen.getByText(/^Face$/));
 
-    // Now the prompt should update to (face)
+    // Action zone CTA flips to "Capture Image".
     expect(
-      screen.getByText(/Choose an input mode \(face\)/i),
+      screen.getByRole("button", { name: /Capture Image/i }),
     ).toBeInTheDocument();
 
-    // The file input accept attribute should reflect image uploads
-    const fileInput = screen.getByLabelText(/Upload Image/i).closest("input");
+    // Upload label + hidden file input accept image/*.
+    expect(
+      screen.getByRole("button", { name: /Upload Image/i }),
+    ).toBeInTheDocument();
+    const fileInput = document.getElementById("upload-file");
+    expect(fileInput).toBeTruthy();
     expect(fileInput).toHaveAttribute("accept", "image/*");
   });
 });
