@@ -18,13 +18,15 @@ from mongoengine import BooleanField, DateTimeField, Document, EmailField, Strin
 class User(Document):
     """A Moodify user account, stored in the ``users`` MongoDB collection."""
 
+    # Field-level unique=True creates the index; listing the same field
+    # in meta.indexes again would cause an IndexKeySpecsConflict against
+    # the existing Atlas indexes (unique vs non-unique with the same name).
     meta = {
         "collection": "users",
-        "indexes": ["username", "email"],
     }
 
     username = StringField(required=True, unique=True)
-    email = EmailField()
+    email = EmailField(unique=True)
     password = StringField(required=True)  # hashed -- never store plaintext
     is_active = BooleanField(default=True)
     created_at = DateTimeField(default=datetime.utcnow)
