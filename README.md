@@ -12,71 +12,108 @@ Realizing this need, **Moodify** is being developed by **[Son Nguyen](https://gi
 The **Moodify** project is an integrated emotion-based music recommendation system that combines frontend, backend, AI/ML models, and data analytics to provide personalized music recommendations based on user emotions. The application analyzes **text, speech, or facial expressions** and suggests music that aligns with the detected emotions.
 
 Supporting both desktop and mobile platforms, **Moodify** offers a seamless user experience with real-time emotion detection and music recommendations. The project leverages **React for the frontend, Django for the backend, and three advanced, self-trained AI/ML models for emotion detection**. **Data analytics** scripts and **Apache Spark and Hadoop** 
-are also used to visualize emotion trends and model performance. Users will be directed to Spotify to listen to the recommended music, and they can save their favorite tracks to their Spotify account 🎸🥁🎹.
+are also used to visualize emotion trends and model performance. Users open recommended tracks in Deezer's free web player straight from the Results page 🎸🥁🎹.
 
 <p align="center">
+  <!-- Core languages -->
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/JavaScript-ES2023-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+
   <!-- Frontend -->
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-  <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios" />
-  <img src="https://img.shields.io/badge/MUI-007FFF?style=for-the-badge&logo=mui&logoColor=white" alt="Material UI" />
-  <img src="https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router" />
-  <img src="https://img.shields.io/badge/Redux-764ABC?style=for-the-badge&logo=redux&logoColor=white" alt="Redux" />
+  <img src="https://img.shields.io/badge/React-18.3-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/MUI-6.1-007FFF?style=for-the-badge&logo=mui&logoColor=white" alt="Material UI" />
+  <img src="https://img.shields.io/badge/Emotion-CSS--in--JS-D26AC2?style=for-the-badge&logo=emotion&logoColor=white" alt="Emotion" />
+  <img src="https://img.shields.io/badge/React_Router-6-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router" />
+  <img src="https://img.shields.io/badge/Axios-1.7-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios" />
+  <img src="https://img.shields.io/badge/Webpack-CRA-8DD6F9?style=for-the-badge&logo=webpack&logoColor=black" alt="Webpack" />
+  <img src="https://img.shields.io/badge/Babel-F9DC3E?style=for-the-badge&logo=babel&logoColor=black" alt="Babel" />
+  <img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white" alt="ESLint" />
+  <img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black" alt="Prettier" />
   <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest" />
-  <img src="https://img.shields.io/badge/React%20Testing_Library-E33332?style=for-the-badge&logo=testing-library&logoColor=white" alt="Testing Library" />
+  <img src="https://img.shields.io/badge/Testing_Library-E33332?style=for-the-badge&logo=testing-library&logoColor=white" alt="Testing Library" />
 
   <!-- Backend -->
-  <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django" />
-  <img src="https://img.shields.io/badge/DRF-ff1709?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework" />
-  <img src="https://img.shields.io/badge/MongoEngine-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoEngine" />
-  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
-  <img src="https://img.shields.io/badge/Spotify-1DB954?style=for-the-badge&logo=spotify&logoColor=white" alt="Spotify" />
+  <img src="https://img.shields.io/badge/Django-5.1-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django" />
+  <img src="https://img.shields.io/badge/DRF-3.15-A30000?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework" />
+  <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Pydantic-2.9-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic" />
+  <img src="https://img.shields.io/badge/MongoEngine-0.29-589636?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoEngine" />
+  <img src="https://img.shields.io/badge/PyJWT-2.9-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="PyJWT" />
   <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger" />
   <img src="https://img.shields.io/badge/Redoc-EB222A?style=for-the-badge&logo=googledocs&logoColor=white" alt="Redoc" />
-  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
+  <img src="https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white" alt="Gunicorn" />
+  <img src="https://img.shields.io/badge/WhiteNoise-3F4F75?style=for-the-badge" alt="WhiteNoise" />
+  <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest" />
 
   <!-- Databases -->
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+  <img src="https://img.shields.io/badge/MongoDB_Atlas-13AA52?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Atlas" />
   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
-  <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
 
-  <!-- AI/ML -->
-  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
-  <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow" />
+  <!-- Music / external APIs -->
+  <img src="https://img.shields.io/badge/Deezer_API-FF6600?style=for-the-badge&logo=deezer&logoColor=white" alt="Deezer API" />
+
+  <!-- AI / ML -->
+  <img src="https://img.shields.io/badge/PyTorch-2.2-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/TensorFlow-2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow" />
   <img src="https://img.shields.io/badge/Keras-D00000?style=for-the-badge&logo=keras&logoColor=white" alt="Keras" />
-  <img src="https://img.shields.io/badge/HuggingFace-FFD54F?style=for-the-badge&logo=huggingface&logoColor=black" alt="HuggingFace" />
+  <img src="https://img.shields.io/badge/Transformers-4.44-FFD43B?style=for-the-badge&logo=huggingface&logoColor=black" alt="Transformers" />
+  <img src="https://img.shields.io/badge/Hugging_Face_Hub-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Hub" />
   <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="Pandas" />
   <img src="https://img.shields.io/badge/Scikit_Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="Scikit Learn" />
   <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy" />
-  <img src="https://img.shields.io/badge/MLFlow-999999?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow" />
-  <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge&logo=streamlabs&logoColor=white" alt="FER" />
+  <img src="https://img.shields.io/badge/SciPy-8CAAE6?style=for-the-badge&logo=scipy&logoColor=white" alt="SciPy" />
+  <img src="https://img.shields.io/badge/MLFlow-0194E2?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow" />
+  <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge" alt="FER" />
   <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" alt="OpenCV" />
   <img src="https://img.shields.io/badge/Librosa-1E1E1E?style=for-the-badge&logo=python&logoColor=white" alt="Librosa" />
 
-  <!-- Load Balancing -->
-  <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="NGINX" />
-  <img src="https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white" alt="Gunicorn" />
-
-  <!-- Data Analytics -->
-  <img src="https://img.shields.io/badge/Matplotlib-11557C?style=for-the-badge&logo=matrix&logoColor=white" alt="Matplotlib" />
-  <img src="https://img.shields.io/badge/Hadoop-66CCFF?style=for-the-badge&logo=apachehadoop&logoColor=black" alt="Hadoop" />
-  <img src="https://img.shields.io/badge/Spark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white" alt="Spark" />
-
   <!-- Mobile -->
-  <img src="https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React Native" />
-  <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
-  <img src="https://img.shields.io/badge/Expo_Go-003020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo Go" />
+  <img src="https://img.shields.io/badge/React_Native-0.74-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React Native" />
+  <img src="https://img.shields.io/badge/Expo_SDK_51-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
+  <img src="https://img.shields.io/badge/EAS_Build-4630EB?style=for-the-badge&logo=expo&logoColor=white" alt="EAS" />
+  <img src="https://img.shields.io/badge/Hermes_JS-31A8FF?style=for-the-badge" alt="Hermes JS" />
+  <img src="https://img.shields.io/badge/AsyncStorage-FF9F1C?style=for-the-badge" alt="AsyncStorage" />
 
-  <!-- DevOps / Deployment -->
-  <img src="https://img.shields.io/badge/Amazon_Web_Services-232F3E?style=for-the-badge&logo=task&logoColor=white" alt="AWS" />
-  <img src="https://img.shields.io/badge/Google_Cloud_Platform-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="GCP" />
+  <!-- Data analytics -->
+  <img src="https://img.shields.io/badge/Apache_Spark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white" alt="Spark" />
+  <img src="https://img.shields.io/badge/Apache_Hadoop-66CCFF?style=for-the-badge&logo=apachehadoop&logoColor=black" alt="Hadoop" />
+  <img src="https://img.shields.io/badge/Matplotlib-11557C?style=for-the-badge&logo=python&logoColor=white" alt="Matplotlib" />
+
+  <!-- Load balancing / web server -->
+  <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="NGINX" />
+
+  <!-- DevOps / CI -->
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes" />
+  <img src="https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=helm&logoColor=white" alt="Helm" />
+  <img src="https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white" alt="Argo CD" />
   <img src="https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white" alt="Terraform" />
   <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins" />
-  <img src="https://img.shields.io/badge/Render-152535?style=for-the-badge&logo=render&logoColor=white" alt="Render" />
-  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
-  <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify" />
   <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" />
+
+  <!-- Hosting -->
+  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
+  <img src="https://img.shields.io/badge/Modal-7B68EE?style=for-the-badge" alt="Modal" />
+  <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify" />
+  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS" />
+  <img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="GCP" />
+  <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle Cloud" />
+
+  <!-- Security / auth -->
+  <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" />
+  <img src="https://img.shields.io/badge/PBKDF2-228B22?style=for-the-badge" alt="PBKDF2" />
+  <img src="https://img.shields.io/badge/CORS-FF6347?style=for-the-badge" alt="CORS" />
+
+  <!-- Tooling -->
+  <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git" />
+  <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
+  <img src="https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white" alt="npm" />
+  <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white" alt="Postman" />
 </p>
 
 > [!IMPORTANT]
@@ -153,13 +190,13 @@ graph TB
     end
 
     subgraph "External Services"
-        I[Spotify API]
+        I[Deezer Search API]
     end
 
     subgraph "Data Layer"
         J[(MongoDB)]
         K[(Redis Cache)]
-        L[(SQLite)]
+        L[(MongoDB Atlas)]
     end
 
     subgraph "Analytics Layer"
@@ -208,7 +245,7 @@ sequenceDiagram
     participant BE as Backend API
     participant AI as AI/ML Service
     participant DB as MongoDB
-    participant SP as Spotify API
+    participant SP as Deezer API
     participant CH as Redis Cache
 
     U->>FE: Input (Text/Speech/Image)
@@ -234,15 +271,15 @@ sequenceDiagram
 
 The Moodify app is currently live and deployed on Vercel. You can access the live app using the following link: **[https://moodify-app.vercel.app](https://moodify-app.vercel.app).**
 
-Feel free to also visit the backend at [Moodify Backend API](https://moodify-emotion-music-app.onrender.com/).
+Feel free to also visit the backend at [Moodify Backend API](https://moodify-backend-api.vercel.app/).
 
 For your information, the front-end's production (deployment) branch is `frontend-deployment/production`, and the backend's production (deployment) branch is `main-deployment-branch/production`.
 
 > [!IMPORTANT]
-> **Disclaimer:** The backend of Moodify is currently hosted with the **Free Tier** of Render, so it may take a few seconds to load initially. Additionally, it may spin down after a period of inactivity or high traffic, so please be patient if the backend takes a few seconds to respond.
+> **Note:** The Django API is deployed to Vercel and the ML inference service runs on Modal with memory snapshots + scale-to-zero, so the first request after idle may take ~1-2 s while a container is restored. Subsequent calls hit a warm container.
 
 > [!IMPORTANT]
-> **Note**: The amount of memory allocated by Render is only **512MB with 0.1 CPU**, so the backend may run out of memory if there are too many requests at once, which may cause the server to restart. **Also**, the facial and speech emotion detection models may also **cause the server to crash** due to memory constraints and the heavy processing required by AI applications, so please be patient if the server crashes and restarts. I'd also recommend that you clone the repository and replace the URLs with your own local backend server for a more stable experience.
+> **Cold-start note:** Modal scales to zero when idle, so the very first inference call after a quiet period may take a couple of seconds while a memory snapshot restores. The text/speech/facial endpoints never fail closed -- a model failure returns the neutral fallback emotion + a curated track list instead of a 500.
 
 > [!NOTE]
 > There is no guarantee of uptime or performance with the current deployment, unless I have more resources _(money)_ to upgrade the server :( Feel free to [contact me](#contact) if you encounter any issues or need further assistance.
@@ -250,7 +287,8 @@ For your information, the front-end's production (deployment) branch is `fronten
 ### Live Statuses
 
 [![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green?logo=vercel)](https://moodify-emotion-music-app.vercel.app/)
-[![Deployed with Render](https://img.shields.io/badge/Deployed%20with-Render-green?logo=render)](https://moodify-emotion-music-app.onrender.com/)
+[![Django on Vercel](https://img.shields.io/badge/Django-Vercel-000000?logo=vercel&logoColor=white)](https://moodify-backend-api.vercel.app/)
+[![Inference on Modal](https://img.shields.io/badge/Inference-Modal-7B68EE?logo=modal&logoColor=white)](https://modal.com)
 [![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen?logo=ai)](ai_ml)
 [![Netlify Backup OK](https://img.shields.io/badge/Netlify%20Backup-OK-brightgreen?logo=netlify)](https://moodify-emotion-music-app.netlify.app/)
 [![Docker Container OK](https://img.shields.io/badge/Docker%20Container-OK-brightgreen?logo=docker)](docker-compose.yml)
@@ -292,7 +330,7 @@ Here is the list of technologies used in the Moodify project:
 - **Django REST Framework (DRF)**: For creating RESTful APIs.
 - **MongoEngine**: For MongoDB integration with Django.
 - **JWT**: For user authentication and authorization.
-- **Spotify API**: For fetching music recommendations.
+- **Deezer API**: For fetching music recommendations (free, keyless).
 - **Swagger**: For API documentation.
 - **Redoc**: For API documentation.
 - **Flask**: For serving the AI/ML models as APIs.
@@ -302,7 +340,6 @@ Here is the list of technologies used in the Moodify project:
 ### **Databases**:
 - **MongoDB**: For storing user data and music recommendations.
 - **Redis**: For caching and session management.
-- **SQLite**: For development and testing purposes.
 - **PostgreSQL**: For production database (optional, can be configured).
 
 ### **AI/ML Models**:
@@ -331,7 +368,8 @@ Here is the list of technologies used in the Moodify project:
 - **Docker**: For containerizing the application.
 - **Kubernetes**: For orchestrating the containers.
 - **Jenkins**: For continuous integration and deployment.
-- **Render**: For hosting the backend API.
+- **Vercel**: For hosting the Django API and React frontend.
+- **Modal**: For hosting the ML inference service (memory snapshots, scale-to-zero).
 - **Vercel**: For hosting the frontend application.
 - **Netlify**: For hosting the frontend application (backup).
 - **GitHub Actions**: For automating workflows and deployments.
@@ -348,57 +386,39 @@ Here is the list of technologies used in the Moodify project:
 ### Home Page
 
 <p align="center">
-  <img src="images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
+  <img src="images/home-text.png" alt="Home Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Home Page - Dark Mode
+<p align="center">
+  <img src="images/home-voice.png" alt="Home Page" width="100%" style="border-radius: 10px">
+</p>
+
+<p align="center">
+  <img src="images/home-face.png" alt="Home Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Home Page - Dark Mode
 
 <p align="center">
   <img src="images/homepage-dark.png" alt="Home Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
-#### Text Input
+### Text Input
 
 <p align="center">
-  <img src="images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
-</p>
-
-#### Text Input - Dark Mode
-
-<p align="center">
-  <img src="images/textinput-dark.png" alt="Text Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="images/text-input.png" alt="Text Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Speech Input
 
 <p align="center">
-  <img src="images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
-</p>
-
-<p align="center">
-  <img src="images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
-</p>
-
-#### Speech Input - Dark Mode
-
-<p align="center">
-  <img src="images/speechinputmodal-dark.png" alt="Speech Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="images/voice-input.png" alt="Speech Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Facial Expression Input
 
 <p align="center">
-  <img src="images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
-</p>
-
-<p align="center">
-  <img src="images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
-</p>
-
-#### Facial Expression Input - Dark Mode
-
-<p align="center">
-  <img src="images/facialinputmodal-dark.png" alt="Facial Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="images/face-input.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 </p>
 
 ### Profile Page
@@ -407,28 +427,10 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Profile Page (Continued)
-
-<p align="center">
-  <img src="images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Profile Page - Dark Mode
-
-<p align="center">
-  <img src="images/profile-dar.png" alt="Profile Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
 ### Results - Recommendations Page
 
 <p align="center">
   <img src="images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Results - Recommendations Page - Dark Mode
-
-<p align="center">
-  <img src="images/results-dark.png" alt="Results Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Login Page
@@ -473,10 +475,6 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
 
-<p align="center">
-  <img src="images/mobile-view2.png" alt="Mobile View" width="50%" style="border-radius: 10px">
-</p>
-
 <h2 id="-complete-file-structure">📂 Complete File Structure</h2>
 
 The project has a comprehensive file structure combining frontend, backend, AI/ML models, and data analytics components:
@@ -514,7 +512,6 @@ Moodify-Emotion-Music-App/
 │   │
 │   ├── .gitignore                 # Git ignore file
 │   ├── Dockerfile                 # Dockerfile for containerization
-│   └── db.sqlite3                 # SQLite database (if used)
 │
 ├── ai_ml/                         # AI/ML models for emotion detection
 │   ├── data/                      # Datasets for training and testing
@@ -619,7 +616,7 @@ Or, you can download the pre-trained models from the Google Drive links provided
    ```
 
 5. **Edit the configurations in the `src/config.py` file:**
-    - Visit the `src/config.py` file and update the configurations as needed, especially your Spotify API keys and configure ALL the paths.
+    - Visit `modal_inference/config.py` if you need to override defaults. Music recommendations come from Deezer's public, keyless API -- no Spotify credential is required.
     - Visit the individual model training scripts in the `src/models` directory and update the paths to the datasets and output paths as needed.
     - Ensure all paths are correctly set before training the models!
 
@@ -742,6 +739,28 @@ Finally, set up the frontend to interact with the backend.
 | `POST`      | `/api/facial_emotion/`       | Analyze facial expressions for emotions    |
 | `POST`      | `/api/music_recommendation/` | Get music recommendations based on emotion |
 
+> Speech and facial uploads bypass Django and hit the Modal inference
+> service directly with the user's JWT — see
+> [`modal_inference/README.md`](modal_inference/README.md) for the
+> direct-upload contract.
+
+### **Observability Endpoints**
+
+| HTTP Method | Endpoint                                            | Auth          | Description                                                                  |
+|-------------|-----------------------------------------------------|---------------|------------------------------------------------------------------------------|
+| `GET`       | `/api/health/`                                      | none          | Django liveness probe                                                        |
+| `GET`       | `/api/metrics/?window=1h&endpoint=...`              | service token | Aggregated **error rates + p50/p95/p99 latency + throughput** (Django side)  |
+| `GET`       | Modal `/health`                                     | none          | Modal liveness + cache + rate-limit stats                                    |
+| `GET`       | Modal `/metrics?window=1h&endpoint=...`             | service token | Aggregated SRE metrics from the Modal inference service                      |
+| `GET`       | Modal `/`                                           | none          | Welcome JSON with links + endpoint catalogue + rate-limit ceilings           |
+
+Both `/metrics` endpoints persist one row per request to a MongoDB
+Atlas time-series collection (30-day TTL), so trends survive
+container restarts and scale-to-zero. See
+[`modal_inference/README.md#sre-metrics`](modal_inference/README.md#sre-metrics)
+and [`backend/README.md#sre-metrics`](backend/README.md#sre-metrics)
+for the full design (schema, resilience model, cost math).
+
 ### **Admin Interface Endpoints**
 
 | HTTP Method | Endpoint                     | Description                                  |
@@ -773,8 +792,8 @@ Finally, set up the frontend to interact with the backend.
 <h2 id="-backend-apis-documentation">🚀 Backend APIs Documentation</h2>
 
 Our backend APIs are all well-documented using Swagger UI and Redoc. You can access the API documentation at the following URLs:
-- **Swagger UI**: `https://moodify-emotion-music-app.onrender.com/swagger`.
-- **Redoc**: `https://moodify-emotion-music-app.onrender.com/redoc`.
+- **Swagger UI**: `https://moodify-backend-api.vercel.app/swagger/`.
+- **Redoc**: `https://moodify-backend-api.vercel.app/redoc/`.
 
 > [!IMPORTANT]
 > Our backend server may spin down after a period of inactivity, so it may take a few seconds to load initially!
@@ -900,30 +919,78 @@ The `data_analytics` folder provides data analysis and visualization scripts to 
 
 <h2 id="-mobile-app-version">📱 Mobile App Version</h2>
 
-There is also a mobile version of the Moodify app built using React Native and Expo. You can find the mobile app in the `mobile` directory.
+There is also a fully-featured **native mobile app** built with **React
+Native (Expo SDK 51)**. It runs from a single codebase on **iOS 18+** and
+**Android 15+**, talks to the same Django REST API and Modal inference
+service as the web client, and ships with JWT auth, silent token
+refresh, mood-tinted theming, and graceful offline-degraded inference.
 
-1. **Navigate to the mobile directory:**
-   ```bash
-   cd ../mobile
-   ```
+> 📘 **Deep dive:** see [`MOBILE_APPS.md`](MOBILE_APPS.md)
+> for every screen, every diagram, and side-by-side iOS + Android
+> captures. The short tour and dev setup live in
+> [`mobile/README.md`](mobile/README.md).
 
-2. **Install dependencies using Yarn:**
-   ```bash
-    yarn install
-    ```
+### Highlights
 
-3. **Start the Expo development server:**
-    ```bash
-    yarn start
-    ```
+- **Three inference modes** — text, voice (`.m4a`), front-camera selfie.
+- **JWT auth with silent refresh** — collapsed concurrent 401s, single
+  in-flight refresh.
+- **Graceful degradation** — Modal cold start or network failure still
+  yields a curated fallback playlist (`degraded: true`).
+- **Auto-detected market** from device locale (16 countries + Global).
+- **Per-mood gradient theming** with 13 distinct mood palettes.
+- **Custom blurred pill tab bar** floating above the content.
 
-4. **Scan the QR code using the Expo Go app on your mobile device to run the app.**
+### Screen tour — iOS + Android side-by-side
 
-If successful, you should see the following home screen:
+| Login | Home — Text | Home — Voice | Home — Face |
+|:---:|:---:|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/01-login.png" width="190" /> | <img src="mobile/docs/screenshots/android/02-home-text.png" width="190" /> | <img src="mobile/docs/screenshots/ios/03-home-voice.png" width="190" /> | <img src="mobile/docs/screenshots/android/04-home-face.png" width="190" /> |
 
-<p align="center">
-  <img src="images/mobile-ui.png" alt="Mobile Home" width="50%" style="border-radius: 10px">
-</p>
+| Results | Sort sheet | Market sheet | Profile |
+|:---:|:---:|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/05-results.png" width="190" /> | <img src="mobile/docs/screenshots/android/06-sort-sheet.png" width="190" /> | <img src="mobile/docs/screenshots/ios/07-market-sheet.png" width="190" /> | <img src="mobile/docs/screenshots/android/08-profile.png" width="190" /> |
+
+| Settings | Edit email | Change password | Register |
+|:---:|:---:|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/09-settings.png" width="190" /> | <img src="mobile/docs/screenshots/android/10-edit-email.png" width="190" /> | <img src="mobile/docs/screenshots/ios/11-change-password.png" width="190" /> | <img src="mobile/docs/screenshots/android/12-register.png" width="190" /> |
+
+| Forgot — Verify | Forgot — Reset |
+|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/13-forgot-verify.png" width="190" /> | <img src="mobile/docs/screenshots/android/14-forgot-reset.png" width="190" /> |
+
+### Mobile architecture
+
+```mermaid
+flowchart LR
+    subgraph Device[📱 iOS / Android]
+        UI[React Native UI]
+        Ctx[AuthContext]
+        Store[(AsyncStorage)]
+        Cam[expo-camera]
+        Mic[expo-av]
+    end
+    UI --> Ax[Axios + interceptors]
+    Ctx <--> Store
+    Cam --> UI
+    Mic --> UI
+    Ax -- "auth, profile, history" --> API[Django REST API]
+    Ax -- "text, audio, image" --> Modal[Modal inference]
+    UI -- "open URL" --> Deezer[(Deezer search)]
+```
+
+### Run it
+
+```bash
+cd mobile
+npm install                              # or yarn install
+cp .env.example .env                     # set EXPO_PUBLIC_API_URL / EXPO_PUBLIC_MODAL_API_URL
+npx expo start                           # press i (iOS), a (Android), w (web), or scan the QR with Expo Go
+# port collision?  npx expo start --port 8083
+```
+
+For production builds, use **EAS Build** — see
+[`mobile/README.md`](mobile/README.md#running-it) for the full flow.
 
 Feel free to explore the mobile app and test its functionalities!
 
@@ -1243,7 +1310,7 @@ graph LR
         K[Kubernetes Cluster]
         L[AWS/GCP]
         M[Vercel Frontend]
-        N[Render Backend]
+        N[Vercel Backend]
     end
 
     subgraph "Monitoring"

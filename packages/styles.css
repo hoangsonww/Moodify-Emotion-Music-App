@@ -185,16 +185,26 @@ a:hover {
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 2rem;
+    gap: 0.4rem;
     align-items: center;
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow-x: auto;
+    /* Hide the horizontal scrollbar on browsers that show one. The
+       nav still scrolls (touch + shift-wheel) but doesn't visually
+       grow a bar that pushes content. */
+    scrollbar-width: none;
 }
+.nav-links::-webkit-scrollbar { display: none; }
 
 .nav-links a {
     position: relative;
     color: var(--text-primary);
-    font-weight: 500;
-    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.4rem 0.75rem;
     border-radius: 8px;
+    white-space: nowrap;
     transition: color 0.28s ease, background-color 0.28s ease;
     text-decoration: none;
 }

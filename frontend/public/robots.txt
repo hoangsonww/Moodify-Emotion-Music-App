@@ -1,3 +1,59 @@
+# Moodify — frontend SPA
 # https://www.robotstxt.org/robotstxt.html
+
 User-agent: *
-Disallow:
+Allow: /
+# Authenticated screens carry no public content — keep them out of the
+# index so search snippets always point at a usable logged-out page.
+Disallow: /home
+Disallow: /profile
+Disallow: /results
+Disallow: /recommendations
+
+# Explicit allow-list for the major engines + AI crawlers. Each block
+# repeats the same rules so an UA-specific lookup short-circuits the
+# generic block above.
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://moodify-emotion-music-app.vercel.app/sitemap.xml
+Host: https://moodify-emotion-music-app.vercel.app

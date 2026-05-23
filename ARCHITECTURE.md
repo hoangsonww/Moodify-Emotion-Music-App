@@ -1,8 +1,6 @@
 # Moodify System Architecture Documentation
 
-**Version:** 1.0
-**Last Updated:** 2025-10-07
-**Author:** Son Nguyen
+A comprehensive overview of the architecture of the Moodify platform, detailing the design principles, system components, data flow, security measures, deployment strategy, and monitoring approach. This document serves as a reference for developers, architects, and stakeholders to understand the technical foundation of the system and guide future development and maintenance efforts.
 
 ## Table of Contents
 
@@ -21,7 +19,7 @@
 
 ## 1. Executive Summary
 
-Moodify is a sophisticated emotion-based music recommendation system that combines modern web technologies, advanced AI/ML models, and cloud infrastructure to deliver personalized music experiences. The system analyzes user emotions through three modalities (text, speech, and facial expressions) and provides curated music recommendations via Spotify integration.
+Moodify is a sophisticated emotion-based music recommendation system that combines modern web technologies, advanced AI/ML models, and cloud infrastructure to deliver personalized music experiences. The system analyzes user emotions through three modalities (text, speech, and facial expressions) and provides curated music recommendations via Deezer's public Search API. (The recommender ran on Spotify in earlier iterations; Spotify locked down /v1/search for client-credentials apps and the service was migrated to Deezer, which is free and keyless.)
 
 ### Key Capabilities
 
@@ -44,13 +42,13 @@ C4Context
 
     System(moodify, "Moodify Platform", "Emotion-based music recommendation system")
 
-    System_Ext(spotify, "Spotify API", "Music streaming service")
+    System_Ext(deezer, "Deezer API", "Music search + previews (free, keyless)")
     System_Ext(mongodb, "MongoDB Atlas", "Cloud database")
     System_Ext(redis, "Redis Cloud", "Caching layer")
 
     Rel(user, moodify, "Uses", "HTTPS")
     Rel(admin, moodify, "Manages", "HTTPS")
-    Rel(moodify, spotify, "Fetches music", "REST API")
+    Rel(moodify, deezer, "Fetches music", "REST API")
     Rel(moodify, mongodb, "Stores data", "MongoDB Protocol")
     Rel(moodify, redis, "Caches data", "Redis Protocol")
 ```
@@ -66,7 +64,7 @@ C4Context
   - Infrastructure orchestration (Kubernetes, Docker)
 
 - **Out of Scope**:
-  - Music playback functionality (delegated to Spotify)
+  - Music playback functionality (delegated to Deezer's web player)
   - Music content creation
   - Payment processing
   - Email/SMS notification services
@@ -156,7 +154,7 @@ graph TB
     end
 
     subgraph "External Services"
-        SPOT[Spotify API]
+        DEEZER[Deezer API]
         MAIL[Email Service<br/>SendGrid]
     end
 
@@ -326,7 +324,7 @@ graph TB
 
         subgraph "Integration Layer"
             IN1[ML Client]
-            IN2[Spotify Client]
+            IN2[Deezer Client]
             IN3[Cache Manager]
         end
 
@@ -436,7 +434,7 @@ erDiagram
         string profile_picture_url
         boolean email_verified
         boolean is_active
-        json spotify_profile
+        json deezer_profile
     }
 
     MOOD_HISTORY {
@@ -454,7 +452,7 @@ erDiagram
     LISTENING_HISTORY {
         ObjectId _id PK
         ObjectId user_id FK
-        string spotify_track_id
+        string deezer_track_id
         string track_name
         string artist_name
         string album_name
@@ -920,6 +918,62 @@ graph TB
     style H fill:#FFC107
 ```
 
+### Inference cost protection (as deployed)
+
+The diagram above describes the aspirational multi-tier caching for
+the long-term enterprise stack. The **current production deployment**
+on Modal + Vercel uses a tighter, simpler model that's appropriate
+for serverless / scale-to-zero — documented here for accuracy.
+
+#### Caches (in-process, per Modal container)
+
+| Cache | Key | TTL | Max | Why safe to cache |
+|---|---|---|---|---|
+| `text_emotion`  | `text.strip().lower()`   | 24 h | 2048 | BERT classifier is deterministic; normalisation matches the tokenizer. |
+| `deezer_search` | `(query, limit)`         | 1 h  | 256  | Only ~30 mood-keyword queries; Deezer rank refreshes daily at most. |
+| `speech_emotion`| `sha256(upload_bytes)`   | 6 h  | 256  | Defends against retry storms + working-session reuploads. Stores **label only**, never bytes. |
+| `facial_emotion`| `sha256(upload_bytes)`   | 6 h  | 256  | Same as speech. |
+
+Three invalidation mechanisms: lazy TTL expiry, LRU eviction, and
+container restart (any `modal deploy` clears every cache). Empty /
+failed / `degraded=True` results are **never** cached.
+
+#### Rate limiting (per-caller sliding window)
+
+| Tier | Endpoints | Default | Notes |
+|---|---|---|---|
+| `general` | `/text_emotion`, `/music_recommendation` | 45/min per user | Cheap calls (~100 ms each). |
+| `media`   | `/speech_emotion`, `/facial_emotion`     | 15/min per user | Expensive calls (~500 ms each, plus sha256). Independent budget. |
+| `service-token` (Django proxy) | all | bypassed | DRF throttling on the Django side covers proxied traffic. |
+
+Algorithm: sliding window of monotonic timestamps in a per-user
+`deque`, lazy expiry on every check, LRU bound on the key set.
+Standard `X-RateLimit-Limit / Remaining / Window` headers on every
+response, `Retry-After` (rounded up) on a 429.
+
+#### Cost ceiling stack
+
+```mermaid
+flowchart TD
+    L1["Layer 1: TTLCache<br/>(repeat lookups -> ~5 ms)"] --> L2
+    L2["Layer 2: Per-user rate limit<br/>(45 general · 15 media · per minute)"] --> L3
+    L3["Layer 3: MAX_CONTAINERS = 5<br/>(hard parallelism cap)"] --> L4
+    L4["Layer 4: Modal billing cap<br/>(set in dashboard - the kill switch)"]
+
+    style L1 fill:#34d399,stroke:#fff,color:#fff
+    style L2 fill:#3b82f6,stroke:#fff,color:#fff
+    style L3 fill:#f59e0b,stroke:#fff,color:#fff
+    style L4 fill:#ef4444,stroke:#fff,color:#fff
+```
+
+**Worst-case math at the defaults**:
+`5 containers × $0.000104/sec × 60 s ≈ $0.031/min ≈ $1.87/hour ≈ $45/day`.
+Real-world usage with cache hits + scale-to-zero idle windows lands
+at single-digit dollars per month for the inference layer.
+
+See `modal_inference/README.md` for the implementation
+(`cache.py`, `rate_limit.py`, the `/health` observability surface).
+
 ## 10. Disaster Recovery
 
 ### Backup Strategy
@@ -1053,6 +1107,106 @@ graph TB
 | **Database** | Query time, Connections, Cache hit rate | Connections > 90% | Alert |
 | **Business** | User registrations, Emotion detections, Recommendations | - | Dashboard |
 
+### SRE metrics pipeline (as deployed)
+
+The Prometheus/Fluentd/Jaeger stack above describes the aspirational
+long-term observability target. The **current production deployment**
+on Vercel + Modal + Atlas runs a simpler, free-tier-only pipeline
+that backs the live `/metrics` endpoints on both services.
+
+#### Pipeline
+
+```mermaid
+flowchart LR
+    Req[Incoming request] --> MW[Metrics middleware<br/>times the call]
+    MW --> H[Handler]
+    H --> MW
+    MW --> Live[(In-process recorder<br/>~1000 sample reservoir)]
+    MW --> Store[(MongoDB Atlas<br/>time-series collection)]
+    Live --> Endpoint["GET /metrics?window=1h"]
+    Store --> Endpoint
+    Endpoint --> Operator[Operator / dashboard]
+
+    style Live fill:#34d399,stroke:#fff,color:#fff
+    style Store fill:#7c3aed,stroke:#fff,color:#fff
+    style Endpoint fill:#3b82f6,stroke:#fff,color:#fff
+```
+
+#### Collections
+
+| Collection           | Service                | Endpoint to read                |
+|----------------------|------------------------|---------------------------------|
+| `inference_metrics`  | Modal (FastAPI)        | `GET /metrics` (service token)  |
+| `backend_metrics`    | Django (Vercel)        | `GET /api/metrics/` (admin token) |
+
+#### Per-doc schema
+
+```json
+{
+  "ts":         "ISODate (time-series index)",
+  "meta": {
+    "service":      "modal | django",
+    "endpoint":     "/text_emotion | /users/<str:user_id>/profile/ | ...",
+    "method":       "POST",
+    "container":    "modal-task-... | iad1-...",
+    "status_class": "2xx | 3xx | 4xx | 5xx"
+  },
+  "status":     200,
+  "latency_ms": 142.3,
+  "degraded":   false
+}
+```
+
+Native time-series compression brings each doc to roughly **150 B
+on disk**; 10 k req/day × 30 days ≈ **45 MB** -- well inside the
+Atlas free tier (512 MB).
+
+#### Properties
+
+| Property              | Behaviour |
+|-----------------------|-----------|
+| Write pattern         | Per-request synchronous (`~1 ms` warm), failures swallowed |
+| Cardinality           | Path params normalised to the route template; `/health`, `/metrics`, `/swagger/`, `/redoc/`, `/` are skipped |
+| TTL                   | 30 days native (env-tunable via `METRICS_TTL_DAYS`) |
+| Latency percentiles   | Computed Python-side from raw `latency_ms` samples (linear-interp percentile) at query time |
+| Auth on `/metrics`    | **Service token only** -- end-user JWTs explicitly rejected |
+| Resilience            | Metrics MUST NEVER break the request: every layer (recorder, store, middleware) catches its own exceptions |
+| Persistence offline   | If `MONGO_DB_URI` is unset or Atlas is unreachable, persistence silently disables; live in-process counters still work |
+
+#### Response shape (both services)
+
+```json
+{
+  "service": "modal | django",
+  "window":  {"label": "1h", "since": "...", "until": "...", "seconds": 3600},
+  "persisted": {
+    "available": true,
+    "endpoints": [
+      {
+        "endpoint": "/text_emotion", "method": "POST",
+        "count": 412, "error_count": 3, "error_rate": 0.0073,
+        "latency_ms": {"p50": 102, "p95": 245, "p99": 412, "max": 891, "mean": 134, "samples": 412},
+        "status_codes": {"200": 409, "401": 2, "500": 1}
+      }
+    ]
+  },
+  "live": {
+    "container": "...",
+    "uptime_seconds": 412.5,
+    "endpoints": [...]
+  }
+}
+```
+
+The `persisted` block aggregates across every container that wrote
+into the window; the `live` block is the calling container's
+in-process counters since startup, useful for verifying behaviour
+right now without waiting for the next Mongo aggregation tick.
+
+Implementation lives in `modal_inference/metrics{,_store}.py` and
+`backend/observability/` -- see the per-service READMEs for the
+deep dive.
+
 ### Distributed Tracing
 
 ```mermaid
@@ -1063,7 +1217,7 @@ sequenceDiagram
     participant BE as Backend
     participant ML as ML Service
     participant DB as Database
-    participant SP as Spotify
+    participant SP as Deezer
 
     Note over U,SP: Trace ID: abc123xyz
 
@@ -1148,7 +1302,8 @@ sequenceDiagram
 | | AWS | - | Primary cloud |
 | | GCP | - | Alternative cloud |
 | | Vercel | - | Frontend hosting |
-| | Render | - | Backend hosting |
+| | Vercel | - | Backend (Django) + frontend hosting |
+| | Modal | - | ML inference service (memory snapshots, scale-to-zero) |
 
 ---
 

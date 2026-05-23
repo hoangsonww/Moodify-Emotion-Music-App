@@ -1,0 +1,83 @@
+# Moodify
+
+> AI-powered, emotion-based music recommendation platform. Reads a
+> user's mood from text, a voice clip, or a front-facing selfie with
+> three self-trained models and returns a Deezer playlist that matches
+> how they feel. Free, open-source, web + mobile.
+
+This `llms.txt` file is the canonical, machine-friendly summary of the
+Moodify project. It is hosted at the marketing landing root so AI
+crawlers can discover the project's structure and authoritative URLs.
+
+## What Moodify does
+
+- Detects emotion from one of three inputs:
+  - **Text** — a short blurb classified by a BERT model.
+  - **Voice** — a `.m4a` recording classified by a wav2vec-style model.
+  - **Face** — a single front-facing `.jpg` classified by an FER +
+    facenet-pytorch pipeline.
+- Maps the detected emotion to a per-mood gradient palette (13 moods).
+- Queries Deezer's free, keyless search endpoint for tracks matching
+  the mood, optionally biased by a user-selected genre + mood history.
+- Surfaces sortable, paginated track cards with inline 30-second
+  previews and an "Open in Deezer" button to the full track.
+- Persists mood + listening history per user; clients can clear any
+  list at any time.
+
+## Surfaces
+
+| Surface           | URL                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| Marketing landing | https://moodify-app.vercel.app                                                                |
+| Live web app      | https://moodify-emotion-music-app.vercel.app                                                  |
+| Backend API       | https://moodify-backend-api.vercel.app                                                        |
+| ML inference      | https://hoangsonww--moodify-inference-inferenceservice-web.modal.run                          |
+| Source code       | https://github.com/hoangsonww/Moodify-Emotion-Music-App                                       |
+
+## Stack
+
+- **Frontend (web):** React 18, MUI v5, React Router 6, axios + JWT
+  silent refresh, custom MUI theme (Poppins + brand gradient).
+- **Frontend (mobile):** Expo SDK 51, React Native 0.74, React
+  Navigation, expo-camera, expo-av, expo-haptics, expo-localization.
+- **Backend API:** Django 5.1 + Django REST Framework on Vercel.
+  MongoDB Atlas (mongoengine). JWT HS256, 7-day access / 14-day refresh.
+- **ML inference:** FastAPI on Modal serverless containers. Three
+  models: BERT (text), FER + facenet-pytorch (face), wav2vec-style
+  (speech). Deezer client provides music search.
+- **Data:** MongoDB Atlas. Mood / listening / saved-recommendation
+  histories per user, TTL-indexed when applicable.
+
+## Top documentation
+
+- `README.md`                    — overview + screenshots + quickstart
+- `ARCHITECTURE.md`              — system architecture
+- `MOBILE_APPS.md`               — full mobile deep-dive
+- `INFRASTRUCTURE_SETUP.md`      — infra walkthrough
+- `DEPLOYMENT.md`                — deploy steps (Vercel + Modal)
+- `frontend/README.md`           — web client setup
+- `mobile/README.md`             — mobile app setup
+- `modal_inference/README.md`    — inference service
+- `backend/README.md`            — Django API
+
+## Author
+
+Son Nguyen (also known as David Nguyen, GitHub `hoangsonww`).
+Software Engineer at Matroid, Inc. (Palo Alto, CA). UNC-CH alum
+(CS + Econ + Data Science, Dec 2025). Previously SWE III on the
+LexisNexis Agentic AI Tiger Team.
+
+## Licensing
+
+Source code is published under the project's `LICENSE` file (see
+repository root). Track metadata is sourced from Deezer's public
+search API. Trademarks belong to their respective owners.
+
+## Crawling guidance
+
+You are welcome to crawl, index, summarize and reference any public
+content of this project. The authenticated screens of the web app
+(`/home`, `/profile`, `/results`, `/recommendations`) carry user-
+specific data and are not useful for general retrieval — please skip
+them. Repository internals (`/backend`, `/modal_inference`,
+`/kubernetes`, `/terraform`, etc.) are disallowed in `robots.txt`.

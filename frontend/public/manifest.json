@@ -1,9 +1,26 @@
 {
+  "name": "Moodify — Emotion-Based Music Recommendations",
   "short_name": "Moodify",
-  "name": "Moodify Emotion-Based Music App",
-  "description": "Moodify is an emotion-based music recommendation app that uses facial recognition to recommend music based on the user's mood.",
+  "description": "Detect your mood from text, voice or a selfie and get a Deezer playlist that matches how you feel.",
   "author": "Son Nguyen",
   "version": "1.0.0",
+  "id": "/",
+  "start_url": "/?utm_source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui", "browser"],
+  "orientation": "any",
+  "lang": "en",
+  "dir": "ltr",
+  "theme_color": "#ff4d4d",
+  "background_color": "#0b0b11",
+  "categories": [
+    "music",
+    "lifestyle",
+    "entertainment",
+    "health",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "favicon.ico",
@@ -13,16 +30,46 @@
     {
       "src": "android-chrome-192x192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "android-chrome-512x512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#ff4d4d",
-  "background_color": "#ffffff"
+  "shortcuts": [
+    {
+      "name": "Analyze my mood",
+      "short_name": "Analyze",
+      "description": "Jump straight to mood detection from the home screen.",
+      "url": "/home?utm_source=pwa-shortcut",
+      "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My profile",
+      "short_name": "Profile",
+      "description": "View your mood history and saved recommendations.",
+      "url": "/profile?utm_source=pwa-shortcut",
+      "icons": [{ "src": "android-chrome-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "label": "Moodify brand mark",
+      "form_factor": "wide"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
 }

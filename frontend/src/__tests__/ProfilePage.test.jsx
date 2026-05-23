@@ -78,7 +78,7 @@ describe("<ProfilePage />", () => {
     expect(screen.getByText("Artist X")).toBeInTheDocument();
 
     // Spotify link via text
-    const link = screen.getByText(/Listen on Spotify/i).closest("a");
+    const link = screen.getByText(/Listen on Deezer/i).closest("a");
     expect(link).toHaveAttribute("href", "https://spotify.com/x");
     expect(link).toHaveAttribute("target", "_blank");
   });
@@ -104,8 +104,8 @@ describe("<ProfilePage />", () => {
 
     await waitFor(() =>
       expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining("/api/music_recommendation/"),
-        { emotion: "happy" },
+        expect.stringContaining("/music_recommendation"),
+        { emotion: "happy", history: ["Happy", "Sad"] },
         expect.any(Object),
       ),
     );

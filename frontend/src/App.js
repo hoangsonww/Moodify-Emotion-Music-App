@@ -6,6 +6,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import RequireAuth from "./components/RequireAuth";
+import RedirectIfAuthed from "./components/RedirectIfAuthed";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import HomePage from "./pages/HomePage";
@@ -19,7 +21,12 @@ import ForgotPassword from "./pages/ForgotPassword";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import { DarkModeProvider, DarkModeContext } from "./context/DarkModeContext";
+import { ToastProvider } from "./components/Toast";
+import { installAuthInterceptor } from "./services/auth";
 import "./styles/styles.css";
+
+// Install the global 401 -> token-refresh interceptor once at startup.
+installAuthInterceptor();
 
 function App() {
   const { isDarkMode } = useContext(DarkModeContext);
@@ -45,16 +52,70 @@ function AppLayout() {
     <>
       {!hideNavbar && <Navbar />}
       <Routes>
+        {/* Public routes -- landing, auth, legal. Auth pages bounce a
+            signed-in user back to /home so they never see the form. */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/recommendations" element={<RecommendationsPage />} />
-        <Route path="/results" element={<ResultsPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route
+          path="/login"
+          element={
+            <RedirectIfAuthed>
+              <Login />
+            </RedirectIfAuthed>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RedirectIfAuthed>
+              <Register />
+            </RedirectIfAuthed>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <RedirectIfAuthed>
+              <ForgotPassword />
+            </RedirectIfAuthed>
+          }
+        />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+
+        {/* Gated feature routes -- redirect to /login when signed out. */}
+        <Route
+          path="/home"
+          element={
+            <RequireAuth>
+              <HomePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/results"
+          element={
+            <RequireAuth>
+              <ResultsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/recommendations"
+          element={
+            <RequireAuth>
+              <RecommendationsPage />
+            </RequireAuth>
+          }
+        />
+
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Footer />
@@ -65,7 +126,9 @@ function AppLayout() {
 export default function AppWithProvider() {
   return (
     <DarkModeProvider>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </DarkModeProvider>
   );
 }

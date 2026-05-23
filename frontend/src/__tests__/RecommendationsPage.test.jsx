@@ -50,11 +50,11 @@ describe("<RecommendationsPage />", () => {
     );
   });
 
-  it("renders three Spotify links with correct text and target", () => {
-    const links = screen.getAllByRole("link", { name: /Listen on Spotify/i });
+  it("renders three Deezer links with correct text and target", () => {
+    const links = screen.getAllByRole("link", { name: /Listen on Deezer/i });
     expect(links).toHaveLength(3);
     links.forEach((link) => {
-      expect(link).toHaveAttribute("href", "https://open.spotify.com");
+      expect(link).toHaveAttribute("href", "https://www.deezer.com");
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noreferrer");
     });

@@ -1,0 +1,56 @@
+# Moodify Modal inference service -- NVIDIA GPU dependency set.
+#
+# This is the FUTURE path documented in docs/PRODUCTION_REFACTOR_PLAN.md §7.
+# It is NOT used by the default CPU deployment. To switch to GPU:
+#
+#   1. Add `gpu="T4"` (or "L4"/"A10G") to the @app.cls decorator in
+#      modal_app.py.
+#   2. Build the image from this file and install CUDA PyTorch wheels via
+#      index_url="https://download.pytorch.org/whl/cu121", and use the GPU
+#      TensorFlow build instead of tensorflow-cpu.
+#   3. Keep the `fer` install as `--no-deps` (see note below).
+#   4. (Optional) TensorRT-compile the BERT text model.
+#
+# Flip trigger: sustained p95 inference latency > 400 ms, or > ~20 req/s
+# per container.
+
+# --- Web layer (Modal provides the ASGI server) ---
+fastapi==0.115.0
+python-multipart==0.0.12
+pydantic==2.9.2
+
+# --- Text emotion (BERT / Transformers) ---
+transformers==4.44.2
+tokenizers==0.19.1
+safetensors==0.4.5
+huggingface-hub==0.25.1
+
+# --- Speech emotion (librosa + scikit-learn) ---
+numpy==1.26.4
+scikit-learn==1.5.2
+librosa==0.10.2.post1
+soundfile==0.12.1
+audioread==3.0.1
+
+# --- Facial emotion (FER detector) ---
+# `fer` is installed separately with `--no-deps` (its metadata pins the
+# unbuildable, never-imported `ffmpeg==1.4`); its real deps are listed
+# here. For GPU, swap tensorflow-cpu for the GPU `tensorflow` build.
+facenet-pytorch==2.6.0
+tensorflow==2.17.0
+tf-keras==2.17.0
+opencv-contrib-python-headless==4.10.0.84
+moviepy==1.0.3
+pandas==2.2.3
+tqdm==4.66.5
+Pillow==10.2.0
+
+# --- Auth + outbound HTTP ---
+PyJWT==2.9.0
+requests==2.32.3
+
+# --- NVIDIA GPU acceleration (optional) ---
+# TensorRT-LLM / torch-tensorrt for compiling the BERT text model.
+# Uncomment when adopting the GPU path; pin against the CUDA version.
+# torch-tensorrt==2.2.0
+# nvidia-tensorrt==10.0.1

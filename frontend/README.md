@@ -337,33 +337,40 @@ sequenceDiagram
 ### Home Page
 
 <p align="center">
-  <img src="../images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
+  <img src="../images/home-text.png" alt="Home Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Text Input
+<p align="center">
+  <img src="../images/home-voice.png" alt="Home Page" width="100%" style="border-radius: 10px">
+</p>
 
 <p align="center">
-  <img src="../images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
+  <img src="../images/home-face.png" alt="Home Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Home Page - Dark Mode
+
+<p align="center">
+  <img src="../images/homepage-dark.png" alt="Home Page - Dark Mode" width="100%" style="border-radius: 10px">
+</p>
+
+### Text Input
+
+<p align="center">
+  <img src="../images/text-input.png" alt="Text Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Speech Input
 
 <p align="center">
-  <img src="../images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
-</p>
-
-<p align="center">
-  <img src="../images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
+  <img src="../images/voice-input.png" alt="Speech Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Facial Expression Input
 
 <p align="center">
-  <img src="../images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+  <img src="../images/face-input.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 </p>
-
-<p align="center">
-  <img src="../images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 
 ### Profile Page
 
@@ -371,11 +378,7 @@ sequenceDiagram
   <img src="../images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
-<p align="center">
-  <img src="../images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
-</p>
-
-### Results/Recommendations Page
+### Results - Recommendations Page
 
 <p align="center">
   <img src="../images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
@@ -390,19 +393,37 @@ sequenceDiagram
 ### Registration Page
 
 <p align="center">
-  <img src="../images/registration.png" alt="Registration Page" width="100%" style="border-radius: 10px">
+  <img src="../images/register.png" alt="Registration Page" width="100%" style="border-radius: 10px">
 </p>
 
-### 404 Not Found Page
+### Forgot Password Page
 
 <p align="center">
-  <img src="../images/notfound.png" alt="404 Not Found Page" width="100%" style="border-radius: 10px">
+  <img src="../images/forgot-password.png" alt="Forgot Password Page" width="100%" style="border-radius: 10px">
 </p>
 
-## Footer
+#### Reset Password - Once the User Has Verified Their Account Ownership
 
 <p align="center">
-  <img src="../images/footer.png" alt="Footer" width="100%" style="border-radius: 10px">
+  <img src="../images/reset-password.png" alt="Reset Password" width="100%" style="border-radius: 10px">
+</p>
+
+### Privacy Policy Page
+
+<p align="center">
+  <img src="../images/privacy-policy.png" alt="Privacy Policy Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Terms of Service Page
+
+<p align="center">
+  <img src="../images/terms.png" alt="Terms of Service Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Responsive Design - Mobile View
+
+<p align="center">
+  <img src="../images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
 
 ## Getting Started
@@ -427,9 +448,25 @@ sequenceDiagram
    ```
 
 3. Install the dependencies:
+
    ```bash
    npm install
    ```
+
+4. Point the app at your backends. Copy `frontend/.env.example` to
+   `frontend/.env` and fill in the two URLs:
+
+   ```bash
+   cp .env.example .env
+   # then edit:
+   #   REACT_APP_API_URL=https://<your-django-api>
+   #   REACT_APP_MODAL_API_URL=https://<your-modal-inference-app>
+   ```
+
+   These are the only deployment-specific values the app needs. When
+   deploying to Vercel, set the same two variables in the project's
+   Environment Variables panel (Production / Preview / Development) and
+   redeploy — `frontend/src/config.js` reads them at build time.
 
 ### Running the Application
 

@@ -1,13 +1,10 @@
-from mongoengine import Document, StringField, ListField, DateTimeField, DictField
-from datetime import datetime
+"""User-app models.
 
+``UserProfile`` is defined once in ``api.models``; it is re-exported here so
+existing ``from .models import UserProfile`` imports keep working.
+The MongoDB-backed account model lives in ``users.documents.User``.
+"""
 
-class UserProfile(Document):
-    """
-    This class defines the structure of the user profile document in the MongoDB database.
-    """
-    username = StringField(required=True)
-    mood_history = ListField(StringField())
-    listening_history = ListField(StringField())
-    recommendations = ListField(DictField())
-    created_at = DateTimeField(default=datetime.utcnow)
+from api.models import UserProfile
+
+__all__ = ["UserProfile"]

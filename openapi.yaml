@@ -330,9 +330,24 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - emotion
               properties:
                 emotion:
                   type: string
+                  description: The detected emotion to recommend music for.
+                market:
+                  type: string
+                  description: Optional ISO 3166-1 alpha-2 country code to scope results.
+                history:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                  description: >-
+                    Optional recent detected moods (oldest first). When given,
+                    a lightweight personalization model blends in tracks for
+                    the user's recurring mood.
       responses:
         '200':
           description: Music recommendations retrieved

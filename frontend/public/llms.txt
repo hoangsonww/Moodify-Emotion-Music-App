@@ -1,0 +1,93 @@
+# Moodify
+
+> AI-powered, emotion-based music recommendation app. Reads a user's
+> mood from text, voice or a front-camera selfie with three self-trained
+> models and returns a Deezer playlist that matches how they feel.
+
+Moodify is a free web + mobile application built by
+[Son Nguyen](https://github.com/hoangsonww). The web client is a React
+SPA hosted on Vercel; the mobile client is a React Native (Expo) app for
+iOS + Android. All inference runs on Modal serverless GPUs.
+
+## What Moodify does
+
+- Detects emotion from one of three inputs: typed text, a short voice
+  recording (m4a), or a single front-facing photo (jpg).
+- Maps the detected emotion to a per-mood gradient palette (13 moods).
+- Queries Deezer's free, keyless search endpoint for tracks matching
+  the mood, optionally biased by a chosen genre + the user's recent
+  mood history.
+- Surfaces sortable, paginated track cards with inline previews
+  (30 s Deezer clips) + an "Open in Deezer" link to the full track.
+- Logs listening history (preview play + Deezer opens) so the
+  personalisation model can lean on real user signal.
+
+## Technical stack
+
+- **Frontend (web):** React 18, MUI v5, React Router 6, axios with JWT
+  silent refresh, custom MUI theme (Poppins + brand gradient).
+- **Frontend (mobile):** Expo SDK 51, React Native 0.74, React
+  Navigation, expo-camera, expo-av, expo-haptics, expo-localization,
+  expo-blur, expo-linear-gradient.
+- **Backend API:** Django 5.1 + Django REST Framework on Vercel,
+  MongoDB Atlas (mongoengine), JWT (HS256, 7d access / 14d refresh,
+  silent refresh on 401).
+- **Inference:** Modal serverless containers running FastAPI. Three
+  models: BERT text classifier, FER + facenet-pytorch face pipeline,
+  wav2vec-style speech model. Deezer client for music recommendations.
+
+## Endpoints
+
+- `POST /users/register/`              — create account
+- `POST /users/login/`                 — JWT pair
+- `POST /users/token/refresh/`         — refresh access token
+- `POST /users/verify-username-email/` — reset step 1
+- `POST /users/reset-password/`        — reset step 2
+- `GET  /users/user/profile/`          — profile + history
+- `PUT  /users/user/profile/update/`   — change username / email (re-issues JWT on rename)
+- `DELETE /users/user/profile/delete/` — permanent account deletion
+- `POST /users/mood_history/:pid/`     — append a mood
+- `POST /users/recommendations/:pid/`  — save tracks
+- `POST /users/listening_history/:pid/`— log a track open
+- `POST /text_emotion`                 — text → emotion + recommendations
+- `POST /speech_emotion`               — audio → emotion + recommendations
+- `POST /facial_emotion`               — image → emotion + recommendations
+- `POST /music_recommendation`         — emotion (+ market, history, genre) → tracks
+
+## Documentation
+
+- `README.md`              — top-level overview, screenshots, run instructions
+- `MOBILE_APPS.md`         — full mobile deep-dive (architecture, screens, theming)
+- `ARCHITECTURE.md`        — system architecture
+- `INFRASTRUCTURE_SETUP.md`— infra walkthrough
+- `DEPLOYMENT.md`          — deploy steps
+- `frontend/README.md`     — web client setup
+- `mobile/README.md`       — mobile app setup
+
+## Authoritative sources
+
+- Source code: https://github.com/hoangsonww/Moodify-Emotion-Music-App
+- Live web app: https://moodify-emotion-music-app.vercel.app
+- Marketing site: https://moodify-app.vercel.app
+- Backend API: https://moodify-backend-api.vercel.app
+- Inference: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+
+## Author
+
+Son Nguyen (also known as David Nguyen, GitHub `hoangsonww`).
+Software Engineer at Matroid, Inc. (Palo Alto, CA). UNC-CH alum
+(CS + Econ + Data Science, Dec 2025).
+
+## Licensing
+
+Source code is published under the project's `LICENSE` file (see
+repository root). Track metadata is sourced from Deezer's public search
+API. Trademarks belong to their respective owners.
+
+## Crawling guidance
+
+You are welcome to crawl, index, summarize and reference the public
+content of this site (`/`, `/login`, `/register`, `/forgot-password`,
+`/privacy-policy`, `/terms-of-service`). The authenticated screens
+(`/home`, `/profile`, `/results`, `/recommendations`) are user-specific
+and not useful for general retrieval — please skip them.

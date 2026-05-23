@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+    xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+    <!-- Marketing landing -->
+    <url>
+        <loc>https://moodify-app.vercel.app/</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+        <xhtml:link rel="alternate" hreflang="en" href="https://moodify-app.vercel.app/" />
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://moodify-app.vercel.app/" />
+        <image:image>
+            <image:loc>https://moodify-app.vercel.app/images/moodify-logo.png</image:loc>
+            <image:title>Moodify — AI emotion-based music recommendation platform</image:title>
+            <image:caption>Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to it.</image:caption>
+        </image:image>
+    </url>
+
+    <!-- Same-page anchors for richer indexing -->
+    <url>
+        <loc>https://moodify-app.vercel.app/#overview</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://moodify-app.vercel.app/#features</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://moodify-app.vercel.app/#architecture</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://moodify-app.vercel.app/#technology</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://moodify-app.vercel.app/#deployment</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://moodify-app.vercel.app/#demo</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- Cross-link to the live SPA so crawlers find it -->
+    <url>
+        <loc>https://moodify-emotion-music-app.vercel.app/</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+</urlset>

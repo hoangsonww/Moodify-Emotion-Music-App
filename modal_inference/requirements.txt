@@ -1,0 +1,55 @@
+# Moodify Modal inference service -- CPU dependency set.
+#
+# PyTorch CPU wheels (torch + torchvision, the latter required by
+# facenet-pytorch) are installed separately in modal_app.py via
+#   .pip_install(..., index_url="https://download.pytorch.org/whl/cpu")
+# to keep the container image small. Do NOT add torch/torchvision here.
+#
+# For the NVIDIA GPU variant see requirements-gpu.txt.
+
+# --- Web layer (Modal provides the ASGI server) ---
+fastapi==0.115.0
+python-multipart==0.0.12
+pydantic==2.9.2
+
+# --- Text emotion (BERT / Transformers) ---
+transformers==4.44.2
+tokenizers==0.19.1
+safetensors==0.4.5
+huggingface-hub==0.25.1
+
+# --- Speech emotion (librosa + scikit-learn) ---
+numpy==1.26.4
+scikit-learn==1.5.2
+librosa==0.10.2.post1
+soundfile==0.12.1
+audioread==3.0.1
+
+# --- Facial emotion (FER detector) ---
+# `fer` is installed separately in modal_app.py with `--no-deps`, because
+# its metadata pins `ffmpeg==1.4` -- an abandoned package that fails to
+# build on modern setuptools and which `fer` never actually imports. Its
+# real runtime dependencies are pinned here explicitly. FER runs its
+# emotion CNN on Keras/TensorFlow (tf-keras + TF_USE_LEGACY_KERAS=1 keep
+# the bundled .h5 model loadable under TF 2.17) and uses facenet-pytorch's
+# MTCNN for face detection.
+facenet-pytorch==2.6.0
+tensorflow-cpu==2.17.0
+tf-keras==2.17.0
+opencv-contrib-python-headless==4.10.0.84
+moviepy==1.0.3
+pandas==2.2.3
+tqdm==4.66.5
+Pillow==10.2.0
+
+# --- Auth + outbound HTTP ---
+PyJWT==2.9.0
+requests==2.32.3
+# huggingface-hub (above) downloads the text model in download_models.py.
+
+# --- SRE metrics persistence (Mongo Atlas time-series collection) ---
+# Per-request write of one telemetry doc to MongoDB Atlas. See
+# modal_inference/metrics_store.py for the design. The store is fully
+# guarded -- if MONGO_DB_URI is unset or Mongo is down, the inference
+# endpoints keep serving traffic without persisted metrics.
+pymongo==4.10.1

@@ -49,9 +49,9 @@ const Recommendations = ({ recommendations }) => {
                     target="_blank"
                     variant="contained"
                     color="primary"
-                    style={styles.spotifyButton}
+                    style={styles.playerButton}
                   >
-                    Listen on Spotify
+                    Listen on Deezer
                   </Button>
                 </CardContent>
               </Box>

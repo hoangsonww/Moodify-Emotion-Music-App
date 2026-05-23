@@ -1,33 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+    xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+    <!-- Landing -->
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/</loc>
-        <lastmod>2024-10-20</lastmod>
-        <changefreq>daily</changefreq>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>weekly</changefreq>
         <priority>1.0</priority>
+        <xhtml:link rel="alternate" hreflang="en" href="https://moodify-emotion-music-app.vercel.app/" />
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://moodify-emotion-music-app.vercel.app/" />
+        <image:image>
+            <image:loc>https://moodify-emotion-music-app.vercel.app/android-chrome-512x512.png</image:loc>
+            <image:title>Moodify — AI mood-based music recommendations</image:title>
+            <image:caption>Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to it.</image:caption>
+        </image:image>
+    </url>
+
+    <!-- Auth surface (publicly indexable so it ranks on brand searches) -->
+    <url>
+        <loc>https://moodify-emotion-music-app.vercel.app/login</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://moodify-emotion-music-app.vercel.app/home</loc>
-        <lastmod>2024-10-20</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
+        <loc>https://moodify-emotion-music-app.vercel.app/register</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
     </url>
+    <url>
+        <loc>https://moodify-emotion-music-app.vercel.app/forgot-password</loc>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+    </url>
+
+    <!-- Legal -->
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/privacy-policy</loc>
-        <lastmod>2024-10-20</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
     </url>
     <url>
         <loc>https://moodify-emotion-music-app.vercel.app/terms-of-service</loc>
-        <lastmod>2024-10-20</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://moodify-emotion-music-app.vercel.app/results</loc>
-        <lastmod>2024-10-20</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.6</priority>
+        <lastmod>2026-05-23</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
     </url>
 </urlset>

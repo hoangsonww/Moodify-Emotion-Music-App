@@ -1,0 +1,7 @@
+# Moodify Django API -- development / test dependencies.
+-r requirements.txt
+
+pytest==8.4.1
+pytest-django==4.11.1
+pytest-cov==5.0.0
+mongomock==4.3.0

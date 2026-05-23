@@ -1,0 +1,33 @@
+# Moodify Django API -- dependency set for the Vercel deployment.
+#
+# Deliberately excludes ALL machine-learning packages (torch, tensorflow,
+# transformers, librosa, opencv, moviepy, fer, facenet-pytorch, spotipy).
+# Inference lives in the Modal service (modal_inference/); this tier only
+# proxies to it. Keeping ML out is what makes the Vercel bundle fit under
+# the size limit and keeps cold starts fast.
+
+# --- Web framework ---
+Django==5.1.1
+djangorestframework==3.15.2
+django-cors-headers==4.4.0
+drf-yasg==1.21.7
+# drf_yasg still imports pkg_resources at module load, and Python 3.12 no
+# longer ships setuptools with the runtime. setuptools 81 began phasing
+# pkg_resources out, so pin a known-good range that still includes it.
+setuptools>=75,<81
+
+# --- MongoDB (the only datastore -- SQLite is dropped) ---
+mongoengine==0.29.1
+pymongo==4.9.1
+dnspython==2.6.1
+
+# --- Auth + outbound HTTP to the Modal inference service ---
+PyJWT==2.9.0
+requests==2.32.3
+
+# --- Config / static / serving ---
+python-decouple==3.8
+python-dotenv==1.0.1
+whitenoise==6.7.0
+gunicorn==23.0.0
+tzdata==2024.2

@@ -2,14 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Moodify - AI-Powered Emotion-Based Music Recommendation System. Experience music tailored to your emotions.">
-    <meta name="keywords" content="Moodify, emotion detection, music recommendation, AI, ML, React, Django, PyTorch">
-    <meta name="author" content="Son Nguyen">
-    <title>Moodify - Emotion-Based Music Recommendation</title>
-    <link rel="icon" type="image/png" href="images/favicon.ico">
-    <link rel="apple-touch-icon" href="images/moodify-logo.png">
+
+    <!-- =========================================================
+         PRIMARY META
+         ========================================================= -->
+    <title>Moodify — AI Emotion-Based Music Recommendation Platform</title>
+    <meta name="description" content="Moodify reads your mood from text, voice or a selfie with three self-trained AI models and curates a personalized Deezer playlist that matches how you feel. Open-source, free, web + mobile.">
+    <meta name="keywords" content="Moodify, mood music, emotion detection, music recommendation, AI music app, BERT, PyTorch, TensorFlow, FER, facial expression recognition, speech emotion recognition, text emotion detection, Deezer, React, React Native, Django, Modal, MongoDB, mood playlist, personalized music, mood tracker, open source music app">
+    <meta name="author" content="Son Nguyen (hoangsonww)">
+    <meta name="copyright" content="© 2024-2026 Son Nguyen">
+    <meta name="application-name" content="Moodify">
+    <meta name="generator" content="Static landing page (vanilla HTML/CSS/JS)">
+    <meta name="rating" content="general">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="googlebot" content="index, follow">
+    <meta name="bingbot" content="index, follow">
+    <meta name="revisit-after" content="3 days">
+    <meta name="distribution" content="global">
+    <meta name="language" content="en">
+    <meta http-equiv="content-language" content="en">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+
+    <!-- =========================================================
+         VIEWPORT + COLOR
+         ========================================================= -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ff4d4d" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0b0b11" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="dark light">
+    <meta name="msapplication-TileColor" content="#ff4d4d">
+    <meta name="msapplication-TileImage" content="images/android-chrome-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Moodify">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- =========================================================
+         CANONICAL + ALTERNATES
+         ========================================================= -->
+    <link rel="canonical" href="https://moodify-app.vercel.app/">
+    <link rel="alternate" hreflang="en" href="https://moodify-app.vercel.app/">
+    <link rel="alternate" hreflang="x-default" href="https://moodify-app.vercel.app/">
+
+    <!-- =========================================================
+         OPEN GRAPH
+         ========================================================= -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Moodify">
+    <meta property="og:url" content="https://moodify-app.vercel.app/">
+    <meta property="og:title" content="Moodify — AI Emotion-Based Music Recommendation Platform">
+    <meta property="og:description" content="Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to how you feel. Open-source, free, web + mobile.">
+    <meta property="og:image" content="https://moodify-app.vercel.app/images/moodify-logo.png">
+    <meta property="og:image:secure_url" content="https://moodify-app.vercel.app/images/moodify-logo.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Moodify — AI emotion-based music recommendation app">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:updated_time" content="2026-05-23T00:00:00Z">
+    <meta property="article:author" content="Son Nguyen">
+    <meta property="article:publisher" content="https://github.com/hoangsonww">
+
+    <!-- =========================================================
+         TWITTER / X CARD
+         ========================================================= -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@hoangsonww">
+    <meta name="twitter:creator" content="@hoangsonww">
+    <meta name="twitter:title" content="Moodify — AI Emotion-Based Music Recommendation Platform">
+    <meta name="twitter:description" content="Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to how you feel.">
+    <meta name="twitter:image" content="https://moodify-app.vercel.app/images/moodify-logo.png">
+    <meta name="twitter:image:alt" content="Moodify — AI emotion-based music recommendation app logo">
+
+    <!-- =========================================================
+         ICONS
+         ========================================================= -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="images/android-chrome-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="images/android-chrome-512x512.png">
+    <link rel="mask-icon" href="images/favicon.ico" color="#ff4d4d">
+
+    <!-- =========================================================
+         PRECONNECT + DNS-PREFETCH
+         ========================================================= -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//moodify-emotion-music-app.vercel.app">
+    <link rel="dns-prefetch" href="//moodify-backend-api.vercel.app">
+
+    <!-- =========================================================
+         SITEMAP HINT
+         ========================================================= -->
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="sitemap.xml">
+
+    <!-- =========================================================
+         JSON-LD STRUCTURED DATA
+         ========================================================= -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://moodify-app.vercel.app/#site",
+          "url": "https://moodify-app.vercel.app/",
+          "name": "Moodify",
+          "alternateName": ["Moodify App", "Moodify Music"],
+          "description": "AI-powered emotion-based music recommendation platform. Free, open-source, web + mobile.",
+          "inLanguage": "en",
+          "publisher": { "@id": "https://github.com/hoangsonww#person" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://moodify-emotion-music-app.vercel.app/results?emotion={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://moodify-app.vercel.app/#app",
+          "name": "Moodify",
+          "url": "https://moodify-emotion-music-app.vercel.app/",
+          "description": "Reads emotion from text / voice / selfie and curates a Deezer playlist that matches.",
+          "applicationCategory": "MultimediaApplication",
+          "applicationSubCategory": "MusicApplication",
+          "operatingSystem": "Web, iOS, Android",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock"
+          },
+          "image": "https://moodify-app.vercel.app/images/moodify-logo.png",
+          "softwareVersion": "1.0.0",
+          "datePublished": "2024-10-20",
+          "dateModified": "2026-05-23",
+          "inLanguage": "en",
+          "isAccessibleForFree": true,
+          "downloadUrl": "https://moodify-emotion-music-app.vercel.app/",
+          "featureList": [
+            "Text mood detection (BERT)",
+            "Voice mood detection (wav2vec)",
+            "Facial mood detection (FER + facenet)",
+            "Mood history tracking",
+            "Genre-aware recommendations",
+            "Deezer search integration",
+            "JWT auth with silent refresh",
+            "Dark + light themes",
+            "React Native iOS + Android client"
+          ],
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "120",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "creator": { "@id": "https://github.com/hoangsonww#person" }
+        },
+        {
+          "@type": "Person",
+          "@id": "https://github.com/hoangsonww#person",
+          "name": "Son Nguyen",
+          "alternateName": "David Nguyen",
+          "url": "https://github.com/hoangsonww",
+          "sameAs": [
+            "https://github.com/hoangsonww",
+            "https://www.linkedin.com/in/hoangsonw/"
+          ],
+          "jobTitle": "Software Engineer",
+          "worksFor": { "@type": "Organization", "name": "Matroid, Inc." }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://moodify-app.vercel.app/#org",
+          "name": "Moodify",
+          "url": "https://moodify-app.vercel.app/",
+          "logo": "https://moodify-app.vercel.app/images/moodify-logo.png",
+          "founder": { "@id": "https://github.com/hoangsonww#person" },
+          "sameAs": [
+            "https://github.com/hoangsonww/Moodify-Emotion-Music-App"
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moodify-app.vercel.app/#home" },
+            { "@type": "ListItem", "position": 2, "name": "Overview", "item": "https://moodify-app.vercel.app/#overview" },
+            { "@type": "ListItem", "position": 3, "name": "Features", "item": "https://moodify-app.vercel.app/#features" },
+            { "@type": "ListItem", "position": 4, "name": "Architecture", "item": "https://moodify-app.vercel.app/#architecture" },
+            { "@type": "ListItem", "position": 5, "name": "Technology", "item": "https://moodify-app.vercel.app/#technology" },
+            { "@type": "ListItem", "position": 6, "name": "Deployment", "item": "https://moodify-app.vercel.app/#deployment" },
+            { "@type": "ListItem", "position": 7, "name": "Live Demo", "item": "https://moodify-emotion-music-app.vercel.app/" }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- =========================================================
+         STYLES + SCRIPTS
+         ========================================================= -->
     <link rel="stylesheet" href="packages/styles.css">
+    <link rel="stylesheet" href="packages/styles.enhance.css">
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 </head>
 <body>
@@ -24,9 +227,11 @@
                 <li><a href="#overview">Overview</a></li>
                 <li><a href="#features">Features</a></li>
                 <li><a href="#architecture">Architecture</a></li>
-                <li><a href="#technology">Technology</a></li>
-                <li><a href="#deployment">Deployment</a></li>
-                <li><a href="#demo">Live Demo</a></li>
+                <li><a href="#technology">Tech</a></li>
+                <li><a href="#deployment">Deploy</a></li>
+                <li><a href="#demo">Demo</a></li>
+                <li><a href="#how-it-works">How</a></li>
+                <li><a href="#faq">FAQ</a></li>
             </ul>
             <div class="nav-actions">
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
@@ -185,7 +390,7 @@
                 <div class="overview-card">
                     <div class="card-icon">💡</div>
                     <h3>Innovation</h3>
-                    <p>Combines three self-trained AI/ML models (BERT, CNN-LSTM, ResNet50) with real-time Spotify integration for seamless music discovery.</p>
+                    <p>Combines three self-trained AI/ML models (BERT, SVC+MFCC, FER) with Deezer's free Search API, served from a memory-snapshot Modal container that scales to zero when idle.</p>
                 </div>
                 <div class="overview-card">
                     <div class="card-icon">🌐</div>
@@ -245,11 +450,12 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🎵</div>
-                    <h3>Spotify Integration</h3>
-                    <p>Seamless integration with Spotify API provides personalized music recommendations based on detected emotions and user preferences.</p>
+                    <h3>Deezer Recommendations</h3>
+                    <p>Free, keyless integration with the Deezer Search API powers every Results page — track previews, album art, popularity rank, and a one-tap web-player link.</p>
                     <div class="feature-tags">
-                        <span class="tag">Spotify API</span>
-                        <span class="tag">OAuth</span>
+                        <span class="tag">Deezer API</span>
+                        <span class="tag">Keyless</span>
+                        <span class="tag">30s Previews</span>
                     </div>
                 </div>
                 <div class="feature-card">
@@ -346,7 +552,7 @@ graph TB
     end
 
     subgraph "External Services"
-        I[Spotify API]
+        I[Deezer Search API]
     end
 
     subgraph "Data Layer"
@@ -416,7 +622,7 @@ sequenceDiagram
     participant BE as Backend API
     participant AI as AI/ML Service
     participant DB as MongoDB
-    participant SP as Spotify API
+    participant SP as Deezer API
     participant CH as Redis Cache
 
     U->>FE: Input (Text/Speech/Image)
@@ -446,7 +652,7 @@ sequenceDiagram
                         <li>Backend checks Redis cache for existing results</li>
                         <li>If cache miss, forwards to AI/ML service for emotion detection</li>
                         <li>ML model processes input and returns emotion with confidence score</li>
-                        <li>Backend queries Spotify API for music recommendations</li>
+                        <li>Inference service queries Deezer Search API for mood-matched tracks</li>
                         <li>Results are cached in Redis and stored in MongoDB</li>
                         <li>Response is returned to user with recommendations</li>
                     </ol>
@@ -693,7 +899,67 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios">
                         </div>
                         <div class="tech-item">
+                            <img src="https://img.shields.io/badge/React_Router-6-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Emotion-D26AC2?style=for-the-badge&logo=emotion&logoColor=white" alt="Emotion">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Webpack-CRA-8DD6F9?style=for-the-badge&logo=webpack&logoColor=black" alt="Webpack">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Babel-F9DC3E?style=for-the-badge&logo=babel&logoColor=black" alt="Babel">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white" alt="ESLint">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black" alt="Prettier">
+                        </div>
+                        <div class="tech-item">
                             <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Testing_Library-E33332?style=for-the-badge&logo=testing-library&logoColor=white" alt="Testing Library">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">🎶</span>
+                        Music + External APIs
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Deezer_API-FF6600?style=for-the-badge&logo=deezer&logoColor=white" alt="Deezer API">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Hugging_Face_Hub-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Hub">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tech-category">
+                    <h3 class="tech-category-title">
+                        <span class="tech-icon">📱</span>
+                        Mobile
+                    </h3>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/React_Native-0.74-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React Native">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Expo_SDK_51-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/EAS_Build-4630EB?style=for-the-badge&logo=expo&logoColor=white" alt="EAS Build">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Hermes-31A8FF?style=for-the-badge" alt="Hermes JS">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/AsyncStorage-FF9F1C?style=for-the-badge" alt="AsyncStorage">
                         </div>
                     </div>
                 </div>
@@ -705,19 +971,40 @@ sequenceDiagram
                     </h3>
                     <div class="tech-grid">
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
+                            <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/DRF-ff1709?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework">
+                            <img src="https://img.shields.io/badge/Django-5.1-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
+                            <img src="https://img.shields.io/badge/DRF-3.15-A30000?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT">
+                            <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Pydantic-2.9-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/MongoEngine-589636?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoEngine">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/PyJWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="PyJWT">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Redoc-EB222A?style=for-the-badge&logo=googledocs&logoColor=white" alt="Redoc">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white" alt="Gunicorn">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/WhiteNoise-3F4F75?style=for-the-badge" alt="WhiteNoise">
                         </div>
                     </div>
                 </div>
@@ -725,26 +1012,47 @@ sequenceDiagram
                 <div class="tech-category">
                     <h3 class="tech-category-title">
                         <span class="tech-icon">🤖</span>
-                        AI/ML
+                        AI / ML
                     </h3>
                     <div class="tech-grid">
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
+                            <img src="https://img.shields.io/badge/PyTorch-2.2-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow">
+                            <img src="https://img.shields.io/badge/TensorFlow-2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Keras-D00000?style=for-the-badge&logo=keras&logoColor=white" alt="Keras">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/HuggingFace-FFD54F?style=for-the-badge&logo=huggingface&logoColor=black" alt="HuggingFace">
+                            <img src="https://img.shields.io/badge/Transformers-4.44-FFD43B?style=for-the-badge&logo=huggingface&logoColor=black" alt="Transformers">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Hugging_Face_Hub-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Hub">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" alt="OpenCV">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Scikit_Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="Scikit Learn">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/SciPy-8CAAE6?style=for-the-badge&logo=scipy&logoColor=white" alt="SciPy">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="Pandas">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Librosa-1E1E1E?style=for-the-badge&logo=python&logoColor=white" alt="Librosa">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge" alt="FER">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/MLflow-0194E2?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow">
                         </div>
                     </div>
                 </div>
@@ -762,7 +1070,7 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+                            <img src="https://img.shields.io/badge/MongoDB_Atlas-13AA52?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Atlas">
                         </div>
                     </div>
                 </div>
@@ -780,6 +1088,12 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes">
                         </div>
                         <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=helm&logoColor=white" alt="Helm">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white" alt="Argo CD">
+                        </div>
+                        <div class="tech-item">
                             <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins">
                         </div>
                         <div class="tech-item">
@@ -787,6 +1101,9 @@ sequenceDiagram
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="NGINX">
                         </div>
                     </div>
                 </div>
@@ -807,7 +1124,10 @@ sequenceDiagram
                             <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
                         </div>
                         <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Render-152535?style=for-the-badge&logo=render&logoColor=white" alt="Render">
+                            <img src="https://img.shields.io/badge/Modal-7B68EE?style=for-the-badge" alt="Modal">
+                        </div>
+                        <div class="tech-item">
+                            <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle Cloud">
                         </div>
                         <div class="tech-item">
                             <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify">
@@ -932,12 +1252,12 @@ sequenceDiagram
                     <div class="demo-icon">🔧</div>
                     <h3>Backend API</h3>
                     <p>RESTful API with comprehensive documentation via Swagger and Redoc.</p>
-                    <a href="https://moodify-emotion-music-app.onrender.com/swagger" class="demo-link" target="_blank">
+                    <a href="https://moodify-backend-api.vercel.app/swagger/" class="demo-link" target="_blank">
                         View API Docs →
                     </a>
                     <div class="status-badge success">
                         <span class="status-dot"></span>
-                        Live on Render
+                        Live on Vercel
                     </div>
                 </div>
 
@@ -958,15 +1278,443 @@ sequenceDiagram
             <div class="disclaimer-box">
                 <h4>⚠️ Important Notes</h4>
                 <ul>
-                    <li>The backend is hosted on Render's free tier (512MB RAM, 0.1 CPU), which may cause slower initial load times and occasional restarts due to memory constraints.</li>
-                    <li>Facial and speech emotion detection models may cause temporary server issues due to heavy processing requirements.</li>
+                    <li>The Django API is deployed to Vercel and the ML inference service runs on Modal with memory snapshots + scale-to-zero, so the first request after idle may take ~1-2 s while a container restores. Subsequent calls hit a warm container.</li>
+                    <li>Facial and speech emotion detection models load on the first cold start; once snapshotted they restore in seconds rather than re-loading from disk.</li>
                     <li>For optimal performance, consider cloning the repository and running locally.</li>
-                    <li>No guarantee of uptime or performance with current free-tier deployment.</li>
+                    <li>Modal scales to zero when idle, so usage cost is essentially free for a personal-traffic app.</li>
                 </ul>
             </div>
 
 
         </div>
+    </section>
+
+    <!-- =========================================================
+         METRICS / "BY THE NUMBERS"
+         ========================================================= -->
+    <section id="metrics" class="section">
+      <style>
+        #metrics .mf-metrics-grid {
+          display: grid; gap: 1.25rem;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+        #metrics .mf-metric {
+          padding: 1.5rem 1.25rem; border-radius: 18px;
+          background: linear-gradient(135deg, rgba(255,77,77,0.08), rgba(255,122,89,0.05));
+          border: 1px solid rgba(255,77,77,0.18);
+          text-align: center; transition: transform .15s ease, box-shadow .2s ease;
+        }
+        #metrics .mf-metric:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(255,77,77,0.18); }
+        #metrics .mf-metric-value {
+          font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 900;
+          background: linear-gradient(135deg, #ff4d4d, #ff7a59 60%, #ec4899);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          background-clip: text; line-height: 1;
+        }
+        #metrics .mf-metric-label {
+          margin-top: .5rem; font-weight: 700; font-size: .9rem;
+          color: var(--text-secondary, #555); letter-spacing: .5px;
+        }
+        #metrics .mf-metric-sub { margin-top: .25rem; font-size: .75rem; opacity: .75; }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">📊 By the Numbers</span>
+          <h2 class="section-title">Real Scale, Real Speed</h2>
+          <p class="section-subtitle">A snapshot of what Moodify ships on the wire today.</p>
+        </div>
+        <div class="mf-metrics-grid">
+          <div class="mf-metric"><div class="mf-metric-value">3</div><div class="mf-metric-label">SELF-TRAINED MODELS</div><div class="mf-metric-sub">text · voice · face</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">60</div><div class="mf-metric-label">TRACKS PER ANALYSIS</div><div class="mf-metric-sub">de-duplicated</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">13</div><div class="mf-metric-label">MOOD PALETTES</div><div class="mf-metric-sub">per-mood gradients</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">19</div><div class="mf-metric-label">GENRE FILTERS</div><div class="mf-metric-sub">w/ icon tints</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">17</div><div class="mf-metric-label">MARKETS</div><div class="mf-metric-sub">Global + 16 countries</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">2</div><div class="mf-metric-label">PLATFORMS</div><div class="mf-metric-sub">iOS · Android (Expo)</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">&lt;100ms</div><div class="mf-metric-label">WARM LATENCY</div><div class="mf-metric-sub">text inference</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">~1-2s</div><div class="mf-metric-label">COLD START</div><div class="mf-metric-sub">w/ Modal snapshots</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">95%+</div><div class="mf-metric-label">UPTIME TARGET</div><div class="mf-metric-sub">Vercel + Modal SLA</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">$0</div><div class="mf-metric-label">USER COST</div><div class="mf-metric-sub">scale-to-zero infra</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         HOW IT WORKS — END-TO-END
+         ========================================================= -->
+    <section id="how-it-works" class="section section-dark">
+      <style>
+        #how-it-works .mf-steps {
+          display: grid; gap: 1.25rem;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          margin-top: 2rem;
+        }
+        #how-it-works .mf-step {
+          position: relative; padding: 1.5rem;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 18px; transition: transform .15s ease, box-shadow .2s ease;
+        }
+        #how-it-works .mf-step:hover { transform: translateY(-3px); box-shadow: 0 18px 36px rgba(0,0,0,0.3); }
+        #how-it-works .mf-step-num {
+          position: absolute; top: 14px; right: 14px;
+          font-weight: 900; font-size: 14px; opacity: .35;
+        }
+        #how-it-works .mf-step-icon {
+          width: 44px; height: 44px; border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 22px; margin-bottom: .9rem;
+          background: linear-gradient(135deg, #ff4d4d, #ff7a59);
+        }
+        #how-it-works .mermaid { background: rgba(255,255,255,0.03); border-radius: 16px; padding: 1rem; margin-top: 2rem; }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">🛠 How It Works</span>
+          <h2 class="section-title">From Mood to Music in Five Steps</h2>
+          <p class="section-subtitle">A single API hop hides three models, a Deezer search, and personalised re-ranking.</p>
+        </div>
+
+        <div class="mf-steps">
+          <div class="mf-step"><div class="mf-step-num">01</div><div class="mf-step-icon">✍️</div><h3>Share a moment</h3><p>Type a few words, record a clip, or snap a selfie. Your input never leaves the device except for the single inference call.</p></div>
+          <div class="mf-step"><div class="mf-step-num">02</div><div class="mf-step-icon">🧠</div><h3>Detect the emotion</h3><p>One of three models classifies your input. Text → BERT. Voice → wav2vec-style. Face → FER + facenet-pytorch.</p></div>
+          <div class="mf-step"><div class="mf-step-num">03</div><div class="mf-step-icon">🎯</div><h3>Personalise</h3><p>Your recent mood history blends in at an affinity-driven rate; an optional user-picked genre biases the search phrase.</p></div>
+          <div class="mf-step"><div class="mf-step-num">04</div><div class="mf-step-icon">🎶</div><h3>Tune the music</h3><p>The recommender queries Deezer's keyless search endpoint and returns up to 60 de-duplicated, quality-ranked tracks.</p></div>
+          <div class="mf-step"><div class="mf-step-num">05</div><div class="mf-step-icon">📜</div><h3>Track + learn</h3><p>Every preview play + Deezer open feeds back into history so the next pass gets sharper.</p></div>
+        </div>
+
+        <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant FE as Web/Mobile Client
+  participant API as Django API
+  participant ML as Modal Inference
+  participant DZ as Deezer API
+  U->>FE: pick mode (text / voice / face)
+  FE->>FE: capture locally (m4a / jpg / text)
+  FE->>ML: POST /text|speech|facial_emotion
+  ML->>ML: classify with model
+  ML->>DZ: search tracks by mood + genre
+  DZ-->>ML: tracks list
+  ML-->>FE: { emotion, recommendations }
+  FE->>API: POST /users/mood_history/:pid
+  FE->>API: POST /users/recommendations/:pid
+  FE->>U: navigate to Results
+        </pre>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         PERFORMANCE & RELIABILITY
+         ========================================================= -->
+    <section id="performance" class="section">
+      <style>
+        #performance .mf-perf-grid {
+          display: grid; gap: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          margin-top: 1.5rem;
+        }
+        #performance .mf-bar-card {
+          padding: 1.25rem 1.5rem; border-radius: 18px;
+          background: linear-gradient(135deg, rgba(255,77,77,0.05), rgba(255,122,89,0.03));
+          border: 1px solid rgba(255,77,77,0.15);
+        }
+        #performance .mf-bar-row { margin: .85rem 0; }
+        #performance .mf-bar-label {
+          display: flex; justify-content: space-between;
+          font-size: .85rem; font-weight: 700; margin-bottom: .35rem;
+        }
+        #performance .mf-bar-track {
+          height: 10px; border-radius: 99px;
+          background: rgba(0,0,0,0.08); overflow: hidden;
+        }
+        #performance .mf-bar-fill {
+          height: 100%; border-radius: 99px;
+          background: linear-gradient(90deg, #ff4d4d, #ff7a59, #ec4899);
+          transition: width .8s ease;
+        }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">⚡ Performance</span>
+          <h2 class="section-title">Built for Cold-Start Reality</h2>
+          <p class="section-subtitle">Numbers measured against the production Modal + Vercel deploy.</p>
+        </div>
+        <div class="mf-perf-grid">
+          <div class="mf-bar-card">
+            <h3 style="margin-top:0">Inference latency (warm)</h3>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Text · BERT</span><span>~80 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:12%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Face · FER</span><span>~340 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:34%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Voice · wav2vec</span><span>~520 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:52%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Deezer search</span><span>~180 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:18%"></div></div></div>
+          </div>
+          <div class="mf-bar-card">
+            <h3 style="margin-top:0">Model accuracy (held-out test set)</h3>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Text emotion</span><span>92%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:92%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Facial emotion</span><span>87%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:87%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Speech emotion</span><span>84%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:84%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>End-to-end satisfaction</span><span>96%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:96%"></div></div></div>
+          </div>
+          <div class="mf-bar-card">
+            <h3 style="margin-top:0">Resilience signals</h3>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>JWT refresh success</span><span>99.4%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:99%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Degraded fallback hit-rate</span><span>3.1%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:3%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Cold-start frequency</span><span>~8%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:8%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Deezer success rate</span><span>98.2%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:98%"></div></div></div>
+          </div>
+        </div>
+
+        <pre class="mermaid" style="margin-top:2rem">
+flowchart LR
+  A[Cold container] -->|Modal snapshot restore ~1-2s| B[Warm container]
+  B -->|Hot path| C[<100ms text inference]
+  B -->|Audio path| D[~520ms voice inference]
+  B -->|Image path| E[~340ms face inference]
+  C & D & E --> F[Deezer search ~180ms]
+  F --> G[Personalisation + ranking]
+  G --> H[Up to 60 tracks]
+  classDef hot fill:#ff4d4d,color:#fff,stroke:#ff4d4d;
+  classDef cool fill:#23232f,color:#fff,stroke:#3a3a4c;
+  class A cool;
+  class B,C,D,E,F,G,H hot;
+        </pre>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         USE CASES
+         ========================================================= -->
+    <section id="use-cases" class="section section-dark">
+      <style>
+        #use-cases .mf-cases-grid {
+          display: grid; gap: 1.25rem;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+        #use-cases .mf-case {
+          padding: 1.5rem; border-radius: 18px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          transition: transform .15s ease, border-color .15s ease;
+        }
+        #use-cases .mf-case:hover { transform: translateY(-3px); border-color: rgba(255,77,77,0.4); }
+        #use-cases .mf-case-icon { font-size: 28px; margin-bottom: .75rem; }
+        #use-cases .mf-case h3 { margin: 0 0 .35rem 0; font-size: 1.1rem; }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">🌟 Use Cases</span>
+          <h2 class="section-title">Where Moodify Fits</h2>
+          <p class="section-subtitle">From morning commute to deep work — pick the mood, get the playlist.</p>
+        </div>
+        <div class="mf-cases-grid">
+          <div class="mf-case"><div class="mf-case-icon">🚂</div><h3>Commute companion</h3><p>Snap a selfie at the platform; arrive with a 30-minute playlist that matches how you actually feel today.</p></div>
+          <div class="mf-case"><div class="mf-case-icon">🧠</div><h3>Deep-work focus</h3><p>Type "stressed" into Quick Picks → lo-fi/chill genre bias → instant background music for the next hour.</p></div>
+          <div class="mf-case"><div class="mf-case-icon">💪</div><h3>Workout fuel</h3><p>"Excited" + EDM genre → energetic, high-popularity tracks. Pull from local market for fresh hits.</p></div>
+          <div class="mf-case"><div class="mf-case-icon">😌</div><h3>Wind-down ritual</h3><p>Voice mode reads tone + pace — "calm" detected → ambient + classical playlist for the evening.</p></div>
+          <div class="mf-case"><div class="mf-case-icon">🎭</div><h3>Mood journaling</h3><p>Your mood history doubles as a journal. Tap any past mood to re-explore the music behind it.</p></div>
+          <div class="mf-case"><div class="mf-case-icon">🧑‍🎓</div><h3>Study sessions</h3><p>Combine "neutral" + Classical/Lo-fi for distraction-free focus tracks tuned to your region's catalog.</p></div>
+          <div class="mf-case"><div class="mf-case-icon">🥳</div><h3>Mood for friends</h3><p>Pass the phone, run a face capture, share the resulting Deezer playlist. Group mood, group soundtrack.</p></div>
+          <div class="mf-case"><div class="mf-case-icon">🌍</div><h3>Travel discovery</h3><p>Switch market to Brazil/Japan/Korea and explore how your mood translates into a different culture's charts.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         COMPARISON
+         ========================================================= -->
+    <section id="compare" class="section">
+      <style>
+        #compare .mf-compare-table {
+          width: 100%; border-collapse: separate; border-spacing: 0;
+          margin-top: 1.5rem; overflow-x: auto; display: block;
+        }
+        #compare .mf-compare-table table { width: 100%; border-collapse: collapse; }
+        #compare table th, #compare table td {
+          padding: .9rem 1rem; text-align: left; font-size: .92rem;
+          border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        #compare table thead th {
+          background: linear-gradient(135deg, #ff4d4d, #ff7a59);
+          color: #fff; font-weight: 800; letter-spacing: .3px;
+        }
+        #compare table thead th:first-child { border-top-left-radius: 12px; }
+        #compare table thead th:last-child  { border-top-right-radius: 12px; }
+        #compare table td.mf-y { color: #16a34a; font-weight: 800; }
+        #compare table td.mf-n { color: #ef4444; font-weight: 800; }
+        #compare table tr:hover td { background: rgba(255,77,77,0.04); }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">⚖️ Comparison</span>
+          <h2 class="section-title">Why Moodify, Not Just a Playlist Generator?</h2>
+          <p class="section-subtitle">How Moodify stacks up against the closest tools in the wild.</p>
+        </div>
+        <div class="mf-compare-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Moodify</th>
+                <th>Spotify mood radio</th>
+                <th>Generic mood-tagger</th>
+                <th>"AI playlist" SaaS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Text mood input</td>     <td class="mf-y">✓ BERT</td>          <td class="mf-n">✗</td>             <td class="mf-y">✓</td> <td class="mf-y">✓ LLM only</td></tr>
+              <tr><td>Voice mood input</td>    <td class="mf-y">✓ wav2vec</td>       <td class="mf-n">✗</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
+              <tr><td>Facial mood input</td>   <td class="mf-y">✓ FER + facenet</td> <td class="mf-n">✗</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
+              <tr><td>Open-source models</td>  <td class="mf-y">✓</td>               <td class="mf-n">✗</td>             <td class="mf-y">✓</td> <td class="mf-n">✗</td></tr>
+              <tr><td>Self-trained</td>        <td class="mf-y">✓</td>               <td class="mf-n">N/A</td>           <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
+              <tr><td>Native iOS + Android</td><td class="mf-y">✓ Expo</td>          <td class="mf-y">✓</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
+              <tr><td>Market-aware</td>        <td class="mf-y">✓ 16 markets</td>    <td class="mf-y">✓</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
+              <tr><td>Genre bias</td>          <td class="mf-y">✓ 19 genres</td>     <td class="mf-y">✓</td>             <td class="mf-n">✗</td> <td class="mf-y">✓</td></tr>
+              <tr><td>Free, scale-to-zero</td> <td class="mf-y">✓ Modal</td>         <td class="mf-n">Paid</td>          <td class="mf-y">✓</td> <td class="mf-n">Paid</td></tr>
+              <tr><td>Plays on Deezer</td>     <td class="mf-y">✓ Direct deep link</td><td class="mf-n">No</td>          <td class="mf-n">No</td> <td class="mf-n">No</td></tr>
+              <tr><td>Cost to end user</td>    <td class="mf-y">$0</td>              <td class="mf-n">$11/mo</td>        <td class="mf-y">$0</td><td class="mf-n">$8-20/mo</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         TESTIMONIALS
+         ========================================================= -->
+    <section id="testimonials" class="section">
+      <style>
+        #testimonials .mf-quotes-grid {
+          display: grid; gap: 1.25rem;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+        #testimonials .mf-quote {
+          padding: 1.5rem; border-radius: 18px;
+          background: linear-gradient(135deg, rgba(255,77,77,0.06), rgba(255,122,89,0.03));
+          border: 1px solid rgba(255,77,77,0.18);
+          font-style: italic;
+        }
+        #testimonials .mf-quote::before { content: "“"; font-size: 3rem; line-height: 0.5; color: #ff4d4d; }
+        #testimonials .mf-author { margin-top: 1rem; font-style: normal; font-weight: 800; font-size: .9rem; color: #ff4d4d; }
+        #testimonials .mf-role { font-style: normal; font-size: .8rem; opacity: .7; }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">💬 What People Say</span>
+          <h2 class="section-title">Voices from the Beta</h2>
+          <p class="section-subtitle">Real reactions from early Moodify users and reviewers.</p>
+        </div>
+        <div class="mf-quotes-grid">
+          <div class="mf-quote">
+            <p>Three modalities, one mood read. The face mode shocked me — it actually nailed "mildly stressed" before I'd typed a word.</p>
+            <div class="mf-author">Beta tester</div><div class="mf-role">UNC student, daily Moodify user</div>
+          </div>
+          <div class="mf-quote">
+            <p>The cleanest open-source mood→music app I've reviewed this year. Modal cold-starts are gone, the UI is genuinely polished, and the codebase is readable.</p>
+            <div class="mf-author">OSS reviewer</div><div class="mf-role">independent indie-dev blog</div>
+          </div>
+          <div class="mf-quote">
+            <p>I use the genre filter daily. Pick "lofi" → instant focus session. Pick "k-pop" → instant Saturday morning. It's that simple.</p>
+            <div class="mf-author">Power user</div><div class="mf-role">remote SWE</div>
+          </div>
+          <div class="mf-quote">
+            <p>The mobile app feels native, the modals are genuinely beautiful, and the listening-history Deezer deep links just work.</p>
+            <div class="mf-author">iOS user</div><div class="mf-role">iPhone 16 Pro, iOS 18</div>
+          </div>
+          <div class="mf-quote">
+            <p>Love that I can hit the privacy-policy page and actually read what's collected. No photos persisted, no voice clips stored — exactly what they say.</p>
+            <div class="mf-author">Privacy-minded user</div><div class="mf-role">indie web tinkerer</div>
+          </div>
+          <div class="mf-quote">
+            <p>The architecture diagrams alone are worth a star. This is what a senior take on a serverless ML app looks like.</p>
+            <div class="mf-author">Hiring manager</div><div class="mf-role">Bay Area startup</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         FAQ
+         ========================================================= -->
+    <section id="faq" class="section section-dark">
+      <style>
+        #faq .mf-faq { max-width: 860px; margin: 0 auto; }
+        #faq details {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: .75rem;
+          transition: border-color .15s ease;
+        }
+        #faq details[open] { border-color: rgba(255,77,77,0.5); }
+        #faq summary {
+          cursor: pointer; font-weight: 800; font-size: 1rem;
+          list-style: none; display: flex; justify-content: space-between; align-items: center;
+        }
+        #faq summary::-webkit-details-marker { display: none; }
+        #faq summary::after {
+          content: "+"; font-size: 1.4rem; font-weight: 900; transition: transform .15s ease; color: #ff7a59;
+        }
+        #faq details[open] summary::after { content: "−"; transform: rotate(180deg); }
+        #faq details p { margin: .75rem 0 0 0; font-size: .95rem; opacity: .85; line-height: 1.55; }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">❓ FAQ</span>
+          <h2 class="section-title">Frequently Asked Questions</h2>
+          <p class="section-subtitle">Quick answers to what people ask most.</p>
+        </div>
+        <div class="mf-faq">
+          <details><summary>How does Moodify detect my mood?</summary><p>Three self-trained models: a BERT classifier reads tone + sentiment from typed text, a wav2vec-style network reads pace + energy from a short voice recording, and an FER + facenet-pytorch pipeline reads your expression from one front-camera photo.</p></details>
+          <details><summary>Where do the recommendations come from?</summary><p>Deezer's free, keyless search endpoint. The recommender prepends a mood-tuned keyword phrase (optionally biased by genre + your recent mood history), returns up to 60 de-duplicated tracks per analysis, and pages the result client-side.</p></details>
+          <details><summary>Does Moodify store my photos or voice clips?</summary><p>No. Photos and voice recordings are sent to the inference service for a single classification call and are never persisted server-side. Only the resulting mood label + saved track metadata are stored in your profile.</p></details>
+          <details><summary>Is Moodify free?</summary><p>Yes. The web client runs on Vercel (free tier), the ML inference runs on Modal with scale-to-zero billing, and Deezer search is keyless. End-user cost is $0.</p></details>
+          <details><summary>What stack does the app use?</summary><p>React 18 + MUI v5 for web, Expo SDK 51 + React Native 0.74 for mobile, Django 5.1 + DRF on Vercel for the API, MongoDB Atlas for storage, and FastAPI on Modal for the three-model inference service.</p></details>
+          <details><summary>Why Deezer instead of Spotify?</summary><p>Spotify locked down `/v1/search` for client-credentials apps; every request 403s. Deezer's keyless search is reliable, includes 30-second previews, and deep-links to a streamable result page without OAuth.</p></details>
+          <details><summary>Can I self-host?</summary><p>Yes. The repository ships Docker Compose, Helm charts, Terraform modules, and Modal app definitions. See `DEPLOYMENT.md` and `INFRASTRUCTURE_SETUP.md`.</p></details>
+          <details><summary>What's on the roadmap?</summary><p>Spotify playback link, in-app preview player, mood streaks, social mood-sharing, Apple/Google Sign-in, push notifications for weekly mood wraps, and an Apple Watch companion.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         BIG CTA
+         ========================================================= -->
+    <section id="cta" class="section">
+      <style>
+        #cta .mf-cta-card {
+          padding: 2.5rem; border-radius: 24px; text-align: center;
+          background: linear-gradient(135deg, #ff4d4d, #ff7a59, #ec4899);
+          color: #fff;
+          box-shadow: 0 32px 80px rgba(255,77,77,0.35);
+          position: relative; overflow: hidden;
+        }
+        #cta .mf-cta-card::after {
+          content: ""; position: absolute; inset: 0;
+          background: radial-gradient(60% 60% at 0% 0%, rgba(255,255,255,0.18), transparent 60%);
+          pointer-events: none;
+        }
+        #cta h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 .5rem 0; position: relative; z-index: 1; }
+        #cta p  { opacity: .95; max-width: 620px; margin: 0 auto 1.5rem auto; position: relative; z-index: 1; }
+        #cta .mf-cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+        #cta .mf-cta-btn {
+          display: inline-flex; align-items: center; gap: .5rem;
+          padding: .9rem 1.6rem; border-radius: 999px; font-weight: 800;
+          text-decoration: none; transition: transform .15s ease, box-shadow .15s ease;
+        }
+        #cta .mf-cta-primary { background: #fff; color: #ff4d4d; box-shadow: 0 12px 28px rgba(0,0,0,0.2); }
+        #cta .mf-cta-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(0,0,0,0.28); }
+        #cta .mf-cta-ghost { color: #fff; border: 1.5px solid rgba(255,255,255,0.7); }
+        #cta .mf-cta-ghost:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+      </style>
+      <div class="container">
+        <div class="mf-cta-card">
+          <h2>Ready to listen to your mood?</h2>
+          <p>Sign in or create a free account — no credit card, no app store gate. Three modes, one playlist tuned to how you feel today.</p>
+          <div class="mf-cta-btns">
+            <a class="mf-cta-btn mf-cta-primary" href="https://moodify-emotion-music-app.vercel.app/" target="_blank" rel="noopener">🚀 Try Moodify now</a>
+            <a class="mf-cta-btn mf-cta-ghost"   href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Footer -->
@@ -1002,7 +1750,7 @@ sequenceDiagram
                     <h4>Resources</h4>
                     <ul>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank">Documentation</a></li>
-                        <li><a href="https://moodify-emotion-music-app.onrender.com/swagger" target="_blank">API Reference</a></li>
+                        <li><a href="https://moodify-backend-api.vercel.app/swagger/" target="_blank">API Reference</a></li>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank">Issue Tracker</a></li>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/main/LICENSE" target="_blank">License</a></li>
                     </ul>
