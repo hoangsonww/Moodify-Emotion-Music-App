@@ -342,6 +342,17 @@ const getStyles = (isDark) => ({
     backgroundColor: isDark ? "#1f1f1f" : "#ffffff",
     color: isDark ? "#ffffff" : "#000000",
     transition: "background-color 0.3s ease, color 0.3s ease",
+    // Force the OutlinedInput root to be transparent so the field's
+    // inside matches the card's outside.
+    "& .MuiOutlinedInput-root": { backgroundColor: "transparent" },
+    "& .MuiOutlinedInput-root.Mui-focused": { backgroundColor: "transparent" },
+    // Defeat Chrome / Edge autofill background tint.
+    "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active": {
+      WebkitBoxShadow: `0 0 0 1000px ${isDark ? "#1f1f1f" : "#ffffff"} inset !important`,
+      WebkitTextFillColor: `${isDark ? "#ffffff" : "#000000"} !important`,
+      caretColor: isDark ? "#ffffff" : "#000000",
+      transition: "background-color 5000s ease-in-out 0s",
+    },
   },
   heroStrip: {
     padding: "28px 32px 24px",
