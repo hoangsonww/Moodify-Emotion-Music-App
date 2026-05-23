@@ -18,11 +18,14 @@ from mongoengine import BooleanField, DateTimeField, Document, EmailField, Strin
 class User(Document):
     """A Moodify user account, stored in the ``users`` MongoDB collection."""
 
-    # Field-level unique=True creates the index; listing the same field
-    # in meta.indexes again would cause an IndexKeySpecsConflict against
-    # the existing Atlas indexes (unique vs non-unique with the same name).
+    # auto_create_index=False stops mongoengine from re-creating indexes
+    # on every cold start (the right pattern for serverless: indexes are
+    # managed once in Atlas, not by each request). Without it, any spec
+    # mismatch between the field declarations here and what Atlas already
+    # has would crash the first request with IndexKeySpecsConflict.
     meta = {
         "collection": "users",
+        "auto_create_index": False,
     }
 
     username = StringField(required=True, unique=True)
