@@ -66,6 +66,41 @@ MODAL_SERVICE_TOKEN = os.getenv("MODAL_SERVICE_TOKEN")
 # Comma-separated list of allowed browser origins for CORS.
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 
+# --- Caching ---------------------------------------------------------------
+# Two caches sit in front of the costly bits of the request path:
+#   * Deezer track search -- mood-keyword queries are highly repeated and
+#     the upstream result is stable within an hour; collapsing repeats
+#     saves a network round trip AND a Deezer hit.
+#   * Text emotion -- the BERT classifier is deterministic on the
+#     lowercased input (bert-base-uncased), so identical text returns the
+#     identical label; we can serve repeats from RAM with zero accuracy
+#     cost.
+# Caches are LRU-bounded and per-entry TTL'd; they live in the container
+# process, so each Modal replica has its own. That's fine: the win is
+# saving repeated work inside a single user's session.
+CACHE_DEEZER_TTL = float(os.getenv("CACHE_DEEZER_TTL", "3600"))      # 1 h
+CACHE_DEEZER_MAX = int(os.getenv("CACHE_DEEZER_MAX", "256"))
+CACHE_TEXT_TTL = float(os.getenv("CACHE_TEXT_TTL", "86400"))         # 24 h
+CACHE_TEXT_MAX = int(os.getenv("CACHE_TEXT_MAX", "2048"))
+# Speech / facial uploads -- keyed by a content hash (sha256 of the
+# bytes). Repeat-hit rate is normally near zero, so this cache mainly
+# guards against retry-storm pathologies (an over-eager front-end
+# resubmitting the same blob). Short TTL keeps the surface small.
+# The hash space is global, so there's no PII risk -- only the label
+# (e.g. "joy") + degraded flag is stored.
+CACHE_MEDIA_TTL = float(os.getenv("CACHE_MEDIA_TTL", "900"))         # 15 min
+CACHE_MEDIA_MAX = int(os.getenv("CACHE_MEDIA_MAX", "256"))
+
+# --- Rate limiting ---------------------------------------------------------
+# Per-caller sliding-window throttle on the inference endpoints. Sized so
+# a real user (one tap = one request) NEVER hits it, but a stuck loop or
+# script trips within seconds and stops draining compute budget.
+# Service-token (Django -> Modal) calls bypass this layer: Django already
+# throttles them per-user upstream via DRF.
+RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "1").lower() not in ("0", "false", "no")
+RATE_LIMIT_PER_USER = int(os.getenv("RATE_LIMIT_PER_USER", "60"))
+RATE_LIMIT_WINDOW = float(os.getenv("RATE_LIMIT_WINDOW", "60"))
+
 # --- Scaling / cost tuning ------------------------------------------------
 # Scale to zero: no container runs (and nothing is billed) while the
 # service is idle. You only pay for actual request-handling time plus the

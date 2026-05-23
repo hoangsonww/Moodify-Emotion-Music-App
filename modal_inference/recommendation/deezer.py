@@ -13,10 +13,29 @@ import logging
 
 import requests
 
+import config
+from cache import TTLCache
+
 logger = logging.getLogger(__name__)
 
 _SEARCH_URL = "https://api.deezer.com/search"
 _HTTP_TIMEOUT = 10
+
+# Module-level cache so repeats inside one container hit RAM instead of
+# the Deezer network. Keyed by ``(query, limit)`` -- normalised query in
+# ``search_tracks`` -- with the TTL/size pulled from config so prod can
+# tune without a code change. The cache stores the *parsed* track list,
+# so a hit is essentially free (just a dict copy).
+_search_cache = TTLCache(
+    max_size=config.CACHE_DEEZER_MAX,
+    ttl_seconds=config.CACHE_DEEZER_TTL,
+    name="deezer_search",
+)
+
+
+def get_cache() -> TTLCache:
+    """Expose the cache for /health observability and tests."""
+    return _search_cache
 
 
 def _normalize_popularity(rank) -> int:
@@ -64,10 +83,21 @@ def _parse_track(item: dict) -> dict | None:
 def search_tracks(query: str, limit: int = 50) -> list[dict]:
     """Return up to ``limit`` Deezer search hits, mapped to track dicts.
 
+    Repeated calls with the same query+limit within the cache TTL are
+    served from RAM (no Deezer round trip). Empty results are NOT cached
+    so a transient upstream failure isn't memoised; the next call retries.
+
     Returns an empty list on any failure (network, malformed JSON) so the
     caller can fall through to the curated static list without having to
     catch this module's exceptions itself.
     """
+    cache_key = ((query or "").strip().lower(), int(limit))
+    cached = _search_cache.get(cache_key)
+    if cached is not None:
+        # Hand back a fresh copy so the caller can mutate (sort / slice /
+        # personalise) without mutating the cached entry.
+        return [dict(track) for track in cached]
+
     try:
         resp = requests.get(
             _SEARCH_URL,
@@ -81,5 +111,8 @@ def search_tracks(query: str, limit: int = 50) -> list[dict]:
         return []
 
     items = data.get("data") or []
-    parsed = (_parse_track(item) for item in items)
-    return [track for track in parsed if track is not None]
+    parsed = [track for track in (_parse_track(item) for item in items) if track is not None]
+    if parsed:
+        # Only cache non-empty results -- never memoise an outage.
+        _search_cache.set(cache_key, [dict(track) for track in parsed])
+    return parsed

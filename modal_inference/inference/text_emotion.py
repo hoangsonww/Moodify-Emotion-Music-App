@@ -8,8 +8,37 @@ Refactored from ai_ml/src/models/text_emotion.py. The legacy code called
 import logging
 
 import config
+from cache import TTLCache
 
 logger = logging.getLogger(__name__)
+
+
+# Process-wide cache for text-emotion predictions. Safe to cache because
+# the classifier is fully deterministic on the normalised input string,
+# and the underlying tokenizer (bert-base-uncased) lowercases the input
+# anyway -- so ``Hello`` and ``hello`` share a cache slot AND share a
+# prediction. The TTL is long but bounded so a stale label can't outlive
+# a model swap forever (replace + redeploy -> new container -> empty cache).
+_prediction_cache = TTLCache(
+    max_size=config.CACHE_TEXT_MAX,
+    ttl_seconds=config.CACHE_TEXT_TTL,
+    name="text_emotion",
+)
+
+
+def get_cache() -> TTLCache:
+    """Expose the cache for /health observability and tests."""
+    return _prediction_cache
+
+
+def _normalize(text: str) -> str:
+    """Cache-key normalisation -- match bert-base-uncased + the model.
+
+    Stripping whitespace and lowercasing collapses callers that mean the
+    same thing into the same key without altering what the model would
+    have predicted (the tokenizer would normalise this anyway).
+    """
+    return (text or "").strip().lower()
 
 
 class TextEmotionModel:
@@ -46,9 +75,22 @@ class TextEmotionModel:
         logger.info("Text emotion labels: %s", self._labels)
 
     def predict(self, text: str) -> str:
-        """Return the predicted emotion label for ``text``."""
+        """Return the predicted emotion label for ``text``.
+
+        Identical inputs (after whitespace+case normalisation) are served
+        from a process-wide TTL cache so the BERT forward pass runs at
+        most once per unique snippet inside the cache window. The cache
+        key is the *normalised* string -- never the raw input -- so we
+        never leak cached results across truly different texts.
+        """
         if not self.loaded:
             raise RuntimeError("TextEmotionModel.load() was not called")
+
+        key = _normalize(text)
+        if key:
+            cached = _prediction_cache.get(key)
+            if cached is not None:
+                return cached
 
         import torch
 
@@ -64,6 +106,11 @@ class TextEmotionModel:
 
         idx = int(logits[0].argmax())
         if 0 <= idx < len(self._labels):
-            return self._labels[idx]
-        logger.warning("Text model produced out-of-range index %s", idx)
-        return config.DEFAULT_EMOTION
+            label = self._labels[idx]
+        else:
+            logger.warning("Text model produced out-of-range index %s", idx)
+            label = config.DEFAULT_EMOTION
+
+        if key:
+            _prediction_cache.set(key, label)
+        return label

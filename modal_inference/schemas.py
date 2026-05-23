@@ -48,3 +48,8 @@ class EmotionResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     models_loaded: dict[str, bool]
+    # Observability surface so we can sanity-check the caching / rate-limit
+    # layer in production without redeploying. Optional so old clients
+    # (and the older test suite) keep working unchanged.
+    caches: Optional[dict[str, dict]] = None
+    rate_limit: Optional[dict] = None
