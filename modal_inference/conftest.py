@@ -30,11 +30,13 @@ def _reset_caches_and_limiter():
     from service import get_media_caches, reset_rate_limiter as _reset_limiter
 
     media = get_media_caches()
-    for cache in (_te.get_cache(), _dz.get_cache(), *media.values()):
-        cache.clear()
-        cache.reset_stats()
-    _reset_limiter()
+
+    def _wipe():
+        for cache in (_te.get_cache(), _dz.get_cache(), *media.values()):
+            cache.clear()
+            cache.reset_stats()
+        _reset_limiter()
+
+    _wipe()
     yield
-    for cache in (_te.get_cache(), _dz.get_cache(), *media.values()):
-        cache.clear()
-    _reset_limiter()
+    _wipe()

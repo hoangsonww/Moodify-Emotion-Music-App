@@ -23,7 +23,16 @@ import logging
 import os
 import tempfile
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Response, UploadFile
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 
 import config
@@ -62,23 +71,46 @@ def get_media_caches() -> dict[str, TTLCache]:
     """Expose the media caches for /health observability and tests."""
     return {"speech_emotion": _speech_cache, "facial_emotion": _facial_cache}
 
-# One limiter per service process. Created at import time so its counters
-# accumulate across requests; tests can reset via ``reset_rate_limiter``.
+# Two limiters per service process. The "general" one covers cheap JSON
+# endpoints (text + recs); the "media" one covers expensive uploads
+# (speech + facial). Splitting lets us protect compute budget where it
+# actually matters without making the general limit absurdly tight for
+# normal UX. Each user has separate budgets in each tier so heavy
+# uploaders don't lock themselves out of text inference.
 _rate_limiter = SlidingWindowLimiter(
     limit=config.RATE_LIMIT_PER_USER,
+    window=config.RATE_LIMIT_WINDOW,
+)
+_media_rate_limiter = SlidingWindowLimiter(
+    limit=config.RATE_LIMIT_MEDIA_PER_USER,
     window=config.RATE_LIMIT_WINDOW,
 )
 
 
 def get_rate_limiter() -> SlidingWindowLimiter:
-    """Expose the limiter so tests / /health can read its state."""
+    """Expose the general limiter so tests / /health can read its state."""
     return _rate_limiter
 
 
+def get_media_rate_limiter() -> SlidingWindowLimiter:
+    """Expose the media limiter so tests / /health can read its state."""
+    return _media_rate_limiter
+
+
 def reset_rate_limiter() -> None:
-    """Drop all per-caller windows -- used by tests to isolate cases."""
-    _rate_limiter.clear()
-    _rate_limiter.reset_stats()
+    """Drop all per-caller windows AND restore configured limits.
+
+    Used by the test fixture in conftest.py so a test that mutates a
+    limit doesn't leak that state into the next case.
+    """
+    for rl, limit in (
+        (_rate_limiter, config.RATE_LIMIT_PER_USER),
+        (_media_rate_limiter, config.RATE_LIMIT_MEDIA_PER_USER),
+    ):
+        rl.clear()
+        rl.reset_stats()
+        # Tests reach into ``_limit`` directly; reset it to the env default.
+        rl._limit = int(limit)  # noqa: SLF001 -- intentional reset hook
 
 # Max upload size accepted on the media endpoints (defence-in-depth).
 MAX_UPLOAD_BYTES = 12 * 1024 * 1024
@@ -103,6 +135,15 @@ def _detect(model, name, infer):
 def build_app(text_model, speech_model, facial_model) -> FastAPI:
     """Construct the inference FastAPI app around three loaded models."""
     web_app = FastAPI(title="Moodify Inference", version="1.0.0")
+    # CORS: prefer the explicit allow-list from config; only fall back to
+    # "*" when nothing was configured (dev). In prod ALLOWED_ORIGINS
+    # should always be populated -- log a loud warning if it isn't so
+    # the operator notices.
+    if not config.ALLOWED_ORIGINS:
+        logger.warning(
+            "ALLOWED_ORIGINS is empty -- defaulting to '*'. "
+            "Set ALLOWED_ORIGINS in the Modal Secret for production."
+        )
     web_app.add_middleware(
         CORSMiddleware,
         allow_origins=config.ALLOWED_ORIGINS or ["*"],
@@ -117,11 +158,12 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
         except AuthError as exc:
             raise HTTPException(status_code=401, detail=str(exc)) from exc
 
-    def require_auth_and_quota(
+    def _apply_quota(
         response: Response,
-        authorization: str | None = Header(default=None),
+        ctx: dict,
+        limiter: SlidingWindowLimiter,
     ) -> dict:
-        """Auth + per-caller sliding-window rate limit.
+        """Shared auth+quota body for the per-tier dependencies.
 
         Service-token callers (Django -> Modal proxy) bypass the limit;
         they're already throttled per-user upstream by DRF, and double-
@@ -129,50 +171,125 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
         the proxy. End-user JWTs are limited per ``sub`` claim, so a
         single account can't fan out across tabs to multiply its budget.
 
-        On block we still set the standard ``X-RateLimit-*`` headers AND
-        ``Retry-After`` so the front-end can back off intelligently
-        instead of spinning -- this keeps the limit invisible during
-        normal use while making misbehaviour obvious.
+        Standard ``X-RateLimit-*`` headers ride on every response (so
+        the client can read its remaining budget mid-session), and
+        ``Retry-After`` is set on a block so the front-end can back off
+        intelligently instead of spinning.
         """
-        ctx = require_auth(authorization)
         if not config.RATE_LIMIT_ENABLED:
             return ctx
         key = caller_key(ctx)
         if key is None:
-            # Service-token caller -- skip the limiter.
+            # Service-token caller -- skip the limiter entirely.
             return ctx
-        decision = _rate_limiter.check(key)
-        # Apply headers on every response so the client can see its
-        # remaining budget on success too.
-        for header_name, header_value in decision.as_headers().items():
-            response.headers[header_name] = header_value
+        decision = limiter.check(key)
+        headers = decision.as_headers()
         if not decision.allowed:
+            # Block path: rely on HTTPException.headers -- response.headers
+            # set on the dependency's Response object is discarded by
+            # Starlette's exception handler.
             raise HTTPException(
                 status_code=429,
                 detail="Rate limit exceeded -- slow down and retry shortly.",
-                headers=decision.as_headers(),
+                headers=headers,
             )
+        for header_name, header_value in headers.items():
+            response.headers[header_name] = header_value
         return ctx
 
+    def require_auth_and_quota(
+        response: Response,
+        authorization: str | None = Header(default=None),
+    ) -> dict:
+        """Standard quota for the cheap JSON endpoints (text / recs)."""
+        return _apply_quota(response, require_auth(authorization), _rate_limiter)
+
+    def require_auth_and_media_quota(
+        request: Request,
+        response: Response,
+        authorization: str | None = Header(default=None),
+    ) -> dict:
+        """Stricter quota for the expensive upload endpoints.
+
+        Also performs a *cheap* Content-Length precheck so we reject a
+        20-GB upload before Starlette spools its body to disk. The
+        in-handler size check on ``file.file.read(MAX_UPLOAD_BYTES+1)``
+        still runs as a backstop for chunked uploads with no
+        Content-Length.
+        """
+        cl = request.headers.get("content-length")
+        if cl is not None:
+            try:
+                if int(cl) > MAX_UPLOAD_BYTES:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"Upload too large (max {MAX_UPLOAD_BYTES} bytes).",
+                    )
+            except ValueError:
+                # Malformed header -- ignore, the in-handler check catches it.
+                pass
+        return _apply_quota(response, require_auth(authorization), _media_rate_limiter)
+
+    def _safe_stats(label, fn):
+        """Defensive wrapper for /health -- a sub-system blowing up must
+        not turn /health itself into a 500 (Modal would recycle the
+        container, masking the real problem)."""
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Failed to collect %s stats", label)
+            return {"error": type(exc).__name__}
+
     @web_app.get("/health", response_model=HealthResponse)
-    def health() -> HealthResponse:
-        return HealthResponse(
-            status="ok",
-            models_loaded={
+    def health(response: Response) -> HealthResponse:
+        # /health is the liveness/readiness probe target. It must never
+        # 500: a flaky stats call would otherwise prompt Modal to
+        # recycle the container, masking the real failure. Each section
+        # is wrapped so one bad piece reports "error" and the rest still
+        # come through.
+        models_loaded = _safe_stats(
+            "models_loaded",
+            lambda: {
                 "text": getattr(text_model, "loaded", False),
                 "speech": getattr(speech_model, "loaded", False),
                 "facial": getattr(facial_model, "loaded", False),
             },
-            caches={
-                "text_emotion": text_emotion_module.get_cache().stats(),
-                "deezer_search": deezer_module.get_cache().stats(),
-                "speech_emotion": _speech_cache.stats(),
-                "facial_emotion": _facial_cache.stats(),
-            },
-            rate_limit={
+        )
+        caches = {
+            "text_emotion": _safe_stats(
+                "text_emotion cache", lambda: text_emotion_module.get_cache().stats()
+            ),
+            "deezer_search": _safe_stats(
+                "deezer_search cache", lambda: deezer_module.get_cache().stats()
+            ),
+            "speech_emotion": _safe_stats(
+                "speech_emotion cache", lambda: _speech_cache.stats()
+            ),
+            "facial_emotion": _safe_stats(
+                "facial_emotion cache", lambda: _facial_cache.stats()
+            ),
+        }
+        rate_limit = _safe_stats(
+            "rate_limit",
+            lambda: {
                 "enabled": bool(config.RATE_LIMIT_ENABLED),
-                **_rate_limiter.stats(),
+                "general": _rate_limiter.stats(),
+                "media": _media_rate_limiter.stats(),
             },
+        )
+        # If any sub-system failed to report, mark the overall status as
+        # "degraded" so dashboards/probes can fan out.
+        degraded = any(
+            isinstance(v, dict) and "error" in v
+            for v in (models_loaded, *caches.values(), rate_limit)
+        )
+        # Don't let CDNs / browsers cache the probe itself.
+        response.headers["Cache-Control"] = "no-store"
+        return HealthResponse(
+            status="degraded" if degraded else "ok",
+            models_loaded=models_loaded if isinstance(models_loaded, dict) and "error" not in models_loaded else {},
+            caches=caches,
+            rate_limit=rate_limit if isinstance(rate_limit, dict) else None,
         )
 
     @web_app.post("/text_emotion", response_model=EmotionResponse)
@@ -227,11 +344,15 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
                 emotion, degraded = cached_label, False
             else:
                 suffix = os.path.splitext(file.filename or "")[1] or ".bin"
-                tmp_path = None
+                # Capture the temp path BEFORE writing so a write failure
+                # mid-block still hits the finally cleanup branch.
+                tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+                tmp_path = tmp.name
                 try:
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                    try:
                         tmp.write(data)
-                        tmp_path = tmp.name
+                    finally:
+                        tmp.close()
                     emotion, degraded = _detect(
                         model,
                         name,
@@ -239,10 +360,13 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
                     )
                 finally:
                     if tmp_path and os.path.exists(tmp_path):
-                        os.unlink(tmp_path)
+                        try:
+                            os.unlink(tmp_path)
+                        except OSError:
+                            logger.warning("Failed to delete tmp upload %s", tmp_path)
                 # Only memoise successful, non-degraded inferences so a
                 # transient failure (e.g. ffmpeg hiccup) doesn't get
-                # locked in for the next 15 minutes.
+                # locked in for the next TTL window.
                 if not degraded:
                     media_cache.set(content_key, emotion)
 
@@ -253,11 +377,17 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
         )
 
     @web_app.post("/speech_emotion", response_model=EmotionResponse)
-    def speech_emotion(file: UploadFile = File(...), _ctx: dict = Depends(require_auth_and_quota)):
+    def speech_emotion(
+        file: UploadFile = File(...),
+        _ctx: dict = Depends(require_auth_and_media_quota),
+    ):
         return _infer_from_upload(file, speech_model, "speech", _speech_cache)
 
     @web_app.post("/facial_emotion", response_model=EmotionResponse)
-    def facial_emotion(file: UploadFile = File(...), _ctx: dict = Depends(require_auth_and_quota)):
+    def facial_emotion(
+        file: UploadFile = File(...),
+        _ctx: dict = Depends(require_auth_and_media_quota),
+    ):
         return _infer_from_upload(file, facial_model, "facial", _facial_cache)
 
     return web_app

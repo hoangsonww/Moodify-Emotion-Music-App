@@ -83,22 +83,54 @@ CACHE_DEEZER_MAX = int(os.getenv("CACHE_DEEZER_MAX", "256"))
 CACHE_TEXT_TTL = float(os.getenv("CACHE_TEXT_TTL", "86400"))         # 24 h
 CACHE_TEXT_MAX = int(os.getenv("CACHE_TEXT_MAX", "2048"))
 # Speech / facial uploads -- keyed by a content hash (sha256 of the
-# bytes). Repeat-hit rate is normally near zero, so this cache mainly
-# guards against retry-storm pathologies (an over-eager front-end
-# resubmitting the same blob). Short TTL keeps the surface small.
-# The hash space is global, so there's no PII risk -- only the label
-# (e.g. "joy") + degraded flag is stored.
-CACHE_MEDIA_TTL = float(os.getenv("CACHE_MEDIA_TTL", "900"))         # 15 min
+# bytes). Repeat-hit rate is dominated by retry storms (seconds), demo
+# sessions (minutes-hours) and same-user re-uploads inside a working
+# session. The cache stores ONLY the predicted label (~120 B per entry),
+# never the bytes, so privacy and RAM cost are both negligible at any
+# TTL. Two hard invalidations sit upstream of the TTL anyway:
+#   * Modal SCALEDOWN_WINDOW (5 min idle) -> container dies -> empty cache.
+#   * `modal deploy` -> new container revision -> empty cache.
+# So the TTL only really bounds staleness during a *sustained* session,
+# which means a longer TTL is strictly better -- more hits captured, no
+# downside. 6 h comfortably covers a workday of repeated demo uploads.
+CACHE_MEDIA_TTL = float(os.getenv("CACHE_MEDIA_TTL", "21600"))       # 6 h
 CACHE_MEDIA_MAX = int(os.getenv("CACHE_MEDIA_MAX", "256"))
 
 # --- Rate limiting ---------------------------------------------------------
-# Per-caller sliding-window throttle on the inference endpoints. Sized so
-# a real user (one tap = one request) NEVER hits it, but a stuck loop or
-# script trips within seconds and stops draining compute budget.
-# Service-token (Django -> Modal) calls bypass this layer: Django already
-# throttles them per-user upstream via DRF.
+# Per-caller sliding-window throttle on the inference endpoints. Two
+# tiers because the modalities have very different compute costs:
+#
+#   * "general"  -- /text_emotion + /music_recommendation: cheap
+#                   (~50-100 ms each). 60 req/60s per user is plenty.
+#   * "media"    -- /speech_emotion + /facial_emotion: 5-10x more
+#                   expensive per call. Tighter ceiling so a stuck
+#                   front-end can't fan compute cost out to infinity.
+#
+# Sized so a real user (one tap = one request) NEVER hits either limit
+# during normal use, but a stuck loop or script trips within seconds.
+# Service-token (Django -> Modal) calls bypass this layer: Django
+# already throttles them per-user upstream via DRF.
+#
+# NOTE: limits are per-container (in-memory). When Modal scales out to
+# N containers, the effective ceiling is N * limit per user during a
+# burst -- see rate_limit.py for the trade-off discussion.
 RATE_LIMIT_ENABLED = os.getenv("RATE_LIMIT_ENABLED", "1").lower() not in ("0", "false", "no")
-RATE_LIMIT_PER_USER = int(os.getenv("RATE_LIMIT_PER_USER", "60"))
+# Defaults are *UX-balanced*: a real user (including a demo session
+# fanning the app out across all three modalities) cannot trip them.
+# The actual cost ceiling lives one layer down at MAX_CONTAINERS, so
+# loosening the per-user limit doesn't widen the bill -- it only
+# changes WHICH callers get a 429 first when the service is saturated.
+#
+#   * 45 general req/min ~= 1 call every 1.3 s sustained. A demo
+#     toggling moods rapidly hits maybe 20-30/min. Headroom: ~50%.
+#   * 15 media  req/min  = 1 upload every 4 s sustained. Recording +
+#     sending an emotion clip realistically takes 5-15 s in the UI,
+#     so a power-user demo hits maybe 4-6/min. Headroom: ~3x.
+#
+# Anything that *does* trip these limits (retry loop, scripted abuse,
+# crawler) is by definition not a UX path.
+RATE_LIMIT_PER_USER = int(os.getenv("RATE_LIMIT_PER_USER", "45"))
+RATE_LIMIT_MEDIA_PER_USER = int(os.getenv("RATE_LIMIT_MEDIA_PER_USER", "15"))
 RATE_LIMIT_WINDOW = float(os.getenv("RATE_LIMIT_WINDOW", "60"))
 
 # --- Scaling / cost tuning ------------------------------------------------
@@ -107,13 +139,23 @@ RATE_LIMIT_WINDOW = float(os.getenv("RATE_LIMIT_WINDOW", "60"))
 # short scaledown tail -- which keeps Modal usage well inside its free
 # monthly compute credit. Cold starts are kept fast by memory snapshotting
 # (enable_memory_snapshot in modal_app.py).
-# NOTE: Modal >= 0.64 uses `min_containers` / `scaledown_window`.
+# NOTE: Modal >= 0.64 uses `min_containers` / `scaledown_window` /
+# `max_containers`.
 MIN_CONTAINERS = 0          # 0 = scale to zero when idle (cheapest)
 SCALEDOWN_WINDOW = 300      # keep a container warm 5 min after the last request
 CONTAINER_CPU = 1.0         # ample for these small models
 # All three models load in ~1.3 GB (measured); 4 GB leaves headroom for
 # concurrent requests and the memory snapshot.
 CONTAINER_MEMORY_MB = 4096
+# Hard ceiling on parallel containers -- the LAST line of cost defence
+# below the per-user rate limit and the cache layer. With 1 vCPU + 4 GB
+# at Modal's CPU pricing, 5 fully-saturated containers cost roughly
+# $0.03/min ($45/day worst case), and the per-user 30/min limit means a
+# realistic concurrent user count of 5 * 30 = 150 saturating users
+# before any of them get a 429 -- well above this app's traffic shape.
+# Bump this only if you see the upper bound hit in /health logs and you
+# actually have the users to justify the extra spend.
+MAX_CONTAINERS = int(os.getenv("MAX_CONTAINERS", "5"))
 
 
 def require(name: str) -> str:

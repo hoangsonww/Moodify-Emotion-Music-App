@@ -918,6 +918,62 @@ graph TB
     style H fill:#FFC107
 ```
 
+### Inference cost protection (as deployed)
+
+The diagram above describes the aspirational multi-tier caching for
+the long-term enterprise stack. The **current production deployment**
+on Modal + Vercel uses a tighter, simpler model that's appropriate
+for serverless / scale-to-zero — documented here for accuracy.
+
+#### Caches (in-process, per Modal container)
+
+| Cache | Key | TTL | Max | Why safe to cache |
+|---|---|---|---|---|
+| `text_emotion`  | `text.strip().lower()`   | 24 h | 2048 | BERT classifier is deterministic; normalisation matches the tokenizer. |
+| `deezer_search` | `(query, limit)`         | 1 h  | 256  | Only ~30 mood-keyword queries; Deezer rank refreshes daily at most. |
+| `speech_emotion`| `sha256(upload_bytes)`   | 6 h  | 256  | Defends against retry storms + working-session reuploads. Stores **label only**, never bytes. |
+| `facial_emotion`| `sha256(upload_bytes)`   | 6 h  | 256  | Same as speech. |
+
+Three invalidation mechanisms: lazy TTL expiry, LRU eviction, and
+container restart (any `modal deploy` clears every cache). Empty /
+failed / `degraded=True` results are **never** cached.
+
+#### Rate limiting (per-caller sliding window)
+
+| Tier | Endpoints | Default | Notes |
+|---|---|---|---|
+| `general` | `/text_emotion`, `/music_recommendation` | 45/min per user | Cheap calls (~100 ms each). |
+| `media`   | `/speech_emotion`, `/facial_emotion`     | 15/min per user | Expensive calls (~500 ms each, plus sha256). Independent budget. |
+| `service-token` (Django proxy) | all | bypassed | DRF throttling on the Django side covers proxied traffic. |
+
+Algorithm: sliding window of monotonic timestamps in a per-user
+`deque`, lazy expiry on every check, LRU bound on the key set.
+Standard `X-RateLimit-Limit / Remaining / Window` headers on every
+response, `Retry-After` (rounded up) on a 429.
+
+#### Cost ceiling stack
+
+```mermaid
+flowchart TD
+    L1["Layer 1: TTLCache<br/>(repeat lookups -> ~5 ms)"] --> L2
+    L2["Layer 2: Per-user rate limit<br/>(45 general · 15 media · per minute)"] --> L3
+    L3["Layer 3: MAX_CONTAINERS = 5<br/>(hard parallelism cap)"] --> L4
+    L4["Layer 4: Modal billing cap<br/>(set in dashboard - the kill switch)"]
+
+    style L1 fill:#34d399,stroke:#fff,color:#fff
+    style L2 fill:#3b82f6,stroke:#fff,color:#fff
+    style L3 fill:#f59e0b,stroke:#fff,color:#fff
+    style L4 fill:#ef4444,stroke:#fff,color:#fff
+```
+
+**Worst-case math at the defaults**:
+`5 containers × $0.000104/sec × 60 s ≈ $0.031/min ≈ $1.87/hour ≈ $45/day`.
+Real-world usage with cache hits + scale-to-zero idle windows lands
+at single-digit dollars per month for the inference layer.
+
+See `modal_inference/README.md` for the implementation
+(`cache.py`, `rate_limit.py`, the `/health` observability surface).
+
 ## 10. Disaster Recovery
 
 ### Backup Strategy

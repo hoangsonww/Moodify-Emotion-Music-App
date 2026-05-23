@@ -24,10 +24,33 @@ Design choices
 * **Retry-After header** is set when blocking so the client can back off
   intelligently rather than spinning.
 * **Monotonic clock** so suspends / NTP jumps don't blow a window.
+
+Multi-container reality
+-----------------------
+Modal can spin up more than one container under load. Each container
+runs an independent ``SlidingWindowLimiter`` in-process -- there is no
+shared store. The effective per-user limit is therefore at most
+``RATE_LIMIT_PER_USER * N_containers`` during a fanout, NOT exactly
+``RATE_LIMIT_PER_USER``. We accept this trade-off because:
+
+  * Modal's request routing keeps a returning caller on the same warm
+    container during normal use (5-minute scaledown window), so the
+    fanout multiplier only kicks in under bursts that already imply
+    many concurrent users.
+  * A Redis-backed distributed limiter would add a single point of
+    failure and ~5-10 ms of latency to every request just to harden an
+    upper bound that the Modal billing cap already enforces.
+  * The limit is a cost-protection floor, not a contractual SLA.
+
+If you ever need exact distributed enforcement, swap the in-memory
+``OrderedDict`` for a Redis Lua-scripted sliding window keyed the same
+way -- the public API of this module won't change.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import threading
 import time
 from collections import OrderedDict, deque
@@ -187,6 +210,14 @@ def caller_key(ctx: dict) -> Optional[str]:
     Returns ``None`` for service-token callers, which means "do not
     rate-limit" -- those are trusted Django -> Modal proxy hops, already
     DRF-throttled per-user upstream.
+
+    For end-user JWTs we key on the ``sub`` claim (or ``user_id`` as a
+    fallback used by some Django versions). When neither is present, we
+    fall back to a stable hash of the *whole* claim set so the same
+    token still groups its own calls -- and we serialise via
+    ``json.dumps`` rather than the builtin ``hash()`` so non-scalar
+    claims (lists, dicts: ``roles``, ``permissions``, ...) don't blow
+    up with ``TypeError``.
     """
     if not ctx:
         return None
@@ -196,6 +227,15 @@ def caller_key(ctx: dict) -> Optional[str]:
     sub = claims.get("sub") or claims.get("user_id")
     if sub:
         return f"user:{sub}"
-    # Authenticated but anonymous claims -- unusual, but key on a stable
-    # hash of the whole claim set so a token still groups its own calls.
-    return f"jwt:{hash(tuple(sorted(claims.items())))}"
+    # Authenticated but anonymous claims -- unusual but defensive. Use
+    # sha256(json) so list/dict claim values don't raise TypeError and
+    # the key is stable across processes (the builtin hash() is salted
+    # per-process via PYTHONHASHSEED, which would give different
+    # containers different keys for the same token).
+    try:
+        blob = json.dumps(claims, sort_keys=True, default=str).encode()
+    except (TypeError, ValueError):
+        # Truly pathological claims -- key on the ctx identity so the
+        # caller still gets *some* limiting rather than bypassing.
+        blob = repr(claims).encode()
+    return f"jwt:{hashlib.sha256(blob).hexdigest()[:16]}"

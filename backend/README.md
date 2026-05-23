@@ -264,6 +264,44 @@ flowchart TD
 
 ---
 
+## Throttling + cost protection
+
+Django sits in front of MongoDB Atlas (cheap) and the Modal inference
+service (the expensive bit). Two layers of throttling protect the
+Modal budget end-to-end:
+
+```mermaid
+flowchart LR
+    C[Client] -->|Bearer JWT| D[Django on Vercel]
+    D -- "DRF throttle<br/>60/min anon · 240/min user" --> P{proxy?}
+    P -- "yes (text / recs)" --> M[Modal inference]
+    P -- "no (media direct)" --> M
+    C -.->|direct upload<br/>speech / facial| M
+    M -- "sliding-window<br/>45/min general · 15/min media" --> Models[(Models)]
+
+    style D fill:#3b82f6,stroke:#fff,color:#fff
+    style M fill:#7c3aed,stroke:#fff,color:#fff
+```
+
+| Layer | Where | Default | What it protects |
+|---|---|---|---|
+| **DRF throttling** (`AnonRateThrottle`, `UserRateThrottle`) | Django, every endpoint | `60/min` anon, `240/min` user | DB load, login brute-force, the proxied inference paths |
+| **Modal sliding-window limit** | Modal, per inference endpoint | `45/min` general, `15/min` media (per user JWT `sub`) | Modal compute spend |
+| **`MAX_CONTAINERS=5`** | Modal app config | hard cap | Final cost ceiling — see `modal_inference/README.md` |
+
+Tune the DRF tier via `THROTTLE_ANON` / `THROTTLE_USER`; tune the
+Modal tier via `RATE_LIMIT_PER_USER` / `RATE_LIMIT_MEDIA_PER_USER` in
+the Modal Secret. **Service-token (Django → Modal proxy) calls bypass
+the Modal limiter entirely** — DRF is the right place to throttle
+proxied traffic, so we don't double-limit a single user via two
+different counters.
+
+For the full caching + rate-limit design (algorithms, multi-container
+trade-offs, observability), see
+[`../modal_inference/README.md`](../modal_inference/README.md#rate-limiting).
+
+---
+
 ## Endpoint reference
 
 ### Auth + account management — `/users/`
@@ -363,6 +401,8 @@ in your Vercel project's Environment Variables for production.
 | `MODAL_SERVICE_TOKEN` | yes | **Must match Modal**'s `MODAL_SERVICE_TOKEN` |
 | `CORS_ALLOW_ALL_ORIGINS` | no | Default `True`; flip to lock down |
 | `CORS_ALLOWED_ORIGINS` | no | When the above is `False` |
+| `THROTTLE_ANON` | no | DRF anonymous-user rate. Default `60/min`. |
+| `THROTTLE_USER` | no | DRF authenticated-user rate. Default `240/min`. |
 | `CACHE_REDIS_URL` | no | If set, use Redis (e.g. Upstash) instead of LocMem cache |
 
 ---

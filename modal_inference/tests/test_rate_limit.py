@@ -117,6 +117,30 @@ class TestCallerKey:
         assert caller_key({}) is None
         assert caller_key(None) is None
 
+    def test_user_with_list_claims_does_not_crash(self):
+        """Regression: claims containing list/dict values used to raise
+        TypeError from the builtin hash() of an unhashable tuple."""
+        ctx = {
+            "kind": "user",
+            "claims": {
+                "roles": ["admin", "user"],
+                "permissions": {"can_post": True},
+                "email": "x@example.com",
+            },
+        }
+        key = caller_key(ctx)
+        assert isinstance(key, str)
+        assert key.startswith("jwt:")
+        # Same claims hash to the same key across calls (stable).
+        assert caller_key(ctx) == key
+
+    def test_user_with_sub_is_preferred_over_claim_hash(self):
+        """Even when other claims exist, ``sub`` takes precedence."""
+        with_sub = caller_key({"kind": "user", "claims": {"sub": "u1", "roles": ["a"]}})
+        without_sub = caller_key({"kind": "user", "claims": {"roles": ["a"]}})
+        assert with_sub == "user:u1"
+        assert with_sub != without_sub
+
 
 # ---------------- end-to-end via TestClient ---------------------------
 _KEY = "test-jwt-key"
@@ -219,8 +243,15 @@ class TestEndToEndRateLimit:
         assert "caches" in body
         assert "text_emotion" in body["caches"]
         assert "deezer_search" in body["caches"]
+        assert "speech_emotion" in body["caches"]
+        assert "facial_emotion" in body["caches"]
         assert body["rate_limit"]["enabled"] is True
-        assert body["rate_limit"]["limit"] > 0
+        # Both tiers are reported so dashboards can show each independently.
+        assert body["rate_limit"]["general"]["limit"] > 0
+        assert body["rate_limit"]["media"]["limit"] > 0
+        # /health must not be cached by intermediaries.
+        resp = app_client.get("/health")
+        assert resp.headers.get("Cache-Control") == "no-store"
 
     def test_rate_limit_disabled_bypasses_entirely(self, app_client, monkeypatch):
         monkeypatch.setattr(config, "RATE_LIMIT_ENABLED", False)
@@ -233,3 +264,66 @@ class TestEndToEndRateLimit:
                 headers={"Authorization": f"Bearer {token}"},
             )
             assert r.status_code == 200
+
+
+class TestMediaRateLimit:
+    """Media endpoints use a separate, tighter limit."""
+
+    def test_media_limit_is_independent_from_general(self, app_client):
+        """Exhausting the media budget does NOT block /text_emotion."""
+        service.get_media_rate_limiter()._limit = 2  # noqa: SLF001
+        service.get_rate_limiter()._limit = 10       # noqa: SLF001
+        token = _user_token("split")
+        headers = {"Authorization": f"Bearer {token}"}
+        for _ in range(2):
+            r = app_client.post(
+                "/speech_emotion",
+                files={"file": ("a.wav", b"unique-blob-" + str(_).encode(), "audio/wav")},
+                headers=headers,
+            )
+            assert r.status_code == 200
+        # 3rd media call -> blocked
+        r = app_client.post(
+            "/speech_emotion",
+            files={"file": ("a.wav", b"unique-blob-Z", "audio/wav")},
+            headers=headers,
+        )
+        assert r.status_code == 429
+        # But /text_emotion still works on the general budget.
+        r = app_client.post("/text_emotion", json={"text": "hi"}, headers=headers)
+        assert r.status_code == 200
+
+    def test_content_length_too_large_returns_413(self, app_client, monkeypatch):
+        """The Content-Length precheck rejects oversized uploads early
+        (before the body is buffered)."""
+        monkeypatch.setattr(service, "MAX_UPLOAD_BYTES", 50)
+        r = app_client.post(
+            "/speech_emotion",
+            files={"file": ("a.wav", b"x" * 500, "audio/wav")},
+            headers={"Authorization": f"Bearer {_SERVICE_TOKEN}"},
+        )
+        assert r.status_code == 413
+
+
+class TestHealthRobustness:
+    """``/health`` must never return a 5xx even if a sub-system is broken."""
+
+    def test_health_degrades_when_stats_raises(self, app_client, monkeypatch):
+        # Force one cache's .stats() to raise.
+        from inference import text_emotion as te
+        monkeypatch.setattr(
+            te.get_cache(),
+            "stats",
+            lambda: (_ for _ in ()).throw(RuntimeError("boom")),
+        )
+        resp = app_client.get("/health")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["status"] == "degraded"
+        assert body["caches"]["text_emotion"] == {"error": "RuntimeError"}
+        # Other caches still reported normally.
+        assert "size" in body["caches"]["deezer_search"]
+
+    def test_health_sets_no_store_cache_control(self, app_client):
+        resp = app_client.get("/health")
+        assert resp.headers.get("Cache-Control") == "no-store"

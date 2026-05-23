@@ -97,7 +97,11 @@ def download_models() -> None:
     memory=config.CONTAINER_MEMORY_MB,
     # Scale to zero when idle (no idle billing); a request spins a container
     # up. scaledown_window keeps it warm briefly so bursts reuse it.
+    # max_containers is the hard ceiling on parallel containers -- the
+    # final cost-protection floor below the per-user rate limit and the
+    # cache. See config.py for the math.
     min_containers=config.MIN_CONTAINERS,
+    max_containers=config.MAX_CONTAINERS,
     scaledown_window=config.SCALEDOWN_WINDOW,
     # Snapshot the container after the models are loaded, so a cold start
     # restores in seconds instead of re-importing torch/TF and re-loading

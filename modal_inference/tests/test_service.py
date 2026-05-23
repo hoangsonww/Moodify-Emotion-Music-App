@@ -177,15 +177,19 @@ class TestMediaEndpoints:
         assert resp.status_code == 200
         assert resp.json()["degraded"] is True
 
-    def test_oversized_upload_degrades_gracefully(self, monkeypatch):
+    def test_oversized_upload_rejected_by_content_length(self, monkeypatch):
+        """When Content-Length advertises a too-large body we reject 413
+        early so the bytes never hit our handler. This is the prod path
+        for genuinely oversized uploads -- the in-handler ``read(MAX+1)``
+        size check stays as a backstop for chunked uploads with no
+        Content-Length header."""
         monkeypatch.setattr(service, "MAX_UPLOAD_BYTES", 10)
         resp = _client().post(
             "/speech_emotion",
             files={"file": ("a.wav", b"x" * 50, "audio/wav")},
             headers=AUTH,
         )
-        assert resp.status_code == 200
-        assert resp.json()["degraded"] is True
+        assert resp.status_code == 413
 
     def test_degraded_flag_propagates(self):
         resp = _client(speech=FakeMediaModel(emotion="neutral", degraded=True)).post(
