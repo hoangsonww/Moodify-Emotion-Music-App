@@ -117,6 +117,22 @@ def _query_for(emotion: str) -> str:
     return EMOTION_TO_QUERY.get((emotion or "").strip().lower(), _DEFAULT_QUERY)
 
 
+def _query_with_genre(base: str, genre: str | None) -> str:
+    """Prepend an optional genre keyword so Deezer skews toward that genre.
+
+    Empty / whitespace-only genres are ignored and the original mood query
+    is returned untouched, so callers can pass through user input without
+    pre-validating.
+    """
+    g = (genre or "").strip().lower()
+    if not g:
+        return base
+    # Deezer's search ranks keyword hits across track + artist + album, so
+    # putting the genre first ("hip-hop happy feel good") is enough to bias
+    # the results without losing the mood phrase.
+    return f"{g} {base}"
+
+
 def _collect_for_query(query: str, limit: int = _MAX_RESULTS) -> list[dict]:
     """Return up to ``limit`` Deezer search hits for ``query`` (may be empty)."""
     tracks = deezer.search_tracks(query, limit=min(limit, _SEARCH_LIMIT))
@@ -124,7 +140,10 @@ def _collect_for_query(query: str, limit: int = _MAX_RESULTS) -> list[dict]:
 
 
 def _personalize(
-    emotion: str, history: list[str], primary: list[dict]
+    emotion: str,
+    history: list[str],
+    primary: list[dict],
+    genre: str | None = None,
 ) -> list[dict]:
     """Blend the user's recurring mood into ``primary`` via the model.
 
@@ -145,7 +164,10 @@ def _personalize(
     if not recurring or _query_for(recurring) == _query_for(emotion):
         return personalization.rank_by_quality(primary)
 
-    secondary = _collect_for_query(_query_for(recurring), limit=_HISTORY_BLEND_LIMIT)
+    secondary = _collect_for_query(
+        _query_with_genre(_query_for(recurring), genre),
+        limit=_HISTORY_BLEND_LIMIT,
+    )
     if not secondary:
         return personalization.rank_by_quality(primary)
 
@@ -158,7 +180,10 @@ def _personalize(
 
 
 def get_music_recommendation(
-    emotion: str, market: str | None = None, history: list[str] | None = None
+    emotion: str,
+    market: str | None = None,
+    history: list[str] | None = None,
+    genre: str | None = None,
 ) -> list[dict]:
     """Return mood-matched tracks for the given emotion.
 
@@ -167,6 +192,11 @@ def get_music_recommendation(
     and quality-ranks the result, so recommendations reflect both the
     moment and the longer-term pattern. Without history the live result
     order is returned unchanged.
+
+    When ``genre`` (e.g. "hip-hop", "lofi") is supplied, it is prepended
+    to the Deezer search phrase so the result skews toward that genre.
+    Both the primary search and the personalization blend share the genre
+    bias so the mix stays coherent.
 
     The ``market`` argument is accepted for API compatibility with the
     previous Spotify path but is unused -- Deezer's search endpoint does
@@ -179,10 +209,11 @@ def get_music_recommendation(
     del market  # noqa -- interface parity only
 
     try:
-        primary = _collect_for_query(_query_for(emotion))
+        primary_query = _query_with_genre(_query_for(emotion), genre)
+        primary = _collect_for_query(primary_query)
 
         if history:
-            primary = _personalize(emotion, history, primary)
+            primary = _personalize(emotion, history, primary, genre)
 
         if len(primary) >= _MIN_USABLE_TRACKS:
             return primary[:_MAX_RESULTS]

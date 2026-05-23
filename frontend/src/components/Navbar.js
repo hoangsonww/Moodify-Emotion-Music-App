@@ -31,10 +31,26 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { DarkModeContext } from "../context/DarkModeContext";
 import { isAuthenticated, logout, AUTH_EVENT } from "../services/auth";
 
+// The /results tab is labelled "Explore" by default. It only flips to
+// "Results" when the user is actually on /results AND arrived there from
+// an analysis (location.state carries the detected emotion). Visiting
+// /results directly via the tab itself keeps the "Explore" label so the
+// nav doesn't promise a result the user hasn't generated yet.
 const NAV_ITEMS = [
   { label: "Home", path: "/home", icon: HomeIcon, requireAuth: true },
-  { label: "Profile", path: "/profile", icon: AccountCircleIcon, requireAuth: true },
-  { label: "Results", path: "/results", icon: RecommendIcon, requireAuth: true },
+  {
+    label: "Profile",
+    path: "/profile",
+    icon: AccountCircleIcon,
+    requireAuth: true,
+  },
+  {
+    label: "Explore",
+    resultsLabel: "Results",
+    path: "/results",
+    icon: RecommendIcon,
+    requireAuth: true,
+  },
 ];
 
 const Navbar = () => {
@@ -75,7 +91,18 @@ const Navbar = () => {
     navigate(path);
   };
 
-  const visibleItems = NAV_ITEMS.filter((item) => !item.requireAuth || isLoggedIn);
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requireAuth || isLoggedIn,
+  ).map((item) => {
+    if (item.path !== "/results" || !item.resultsLabel) return item;
+    const arrivedFromAnalysis =
+      location.pathname === "/results" &&
+      Boolean(location.state && location.state.emotion);
+    return {
+      ...item,
+      label: arrivedFromAnalysis ? item.resultsLabel : item.label,
+    };
+  });
 
   // ---- desktop button ----
   const NavButton = ({ item }) => {
@@ -252,7 +279,8 @@ const Navbar = () => {
                 sx={{
                   fontFamily: "Poppins",
                   color: "#fff",
-                  background: "linear-gradient(135deg, #ff4d4d 0%, #ff6b6b 100%)",
+                  background:
+                    "linear-gradient(135deg, #ff4d4d 0%, #ff6b6b 100%)",
                   fontWeight: 700,
                   fontSize: 14,
                   borderRadius: "999px",
@@ -440,8 +468,7 @@ const Navbar = () => {
               textTransform: "none",
               boxShadow: "0 10px 22px rgba(255,77,77,0.35)",
               "&:hover": {
-                background:
-                  "linear-gradient(135deg, #ff5e5e 0%, #ff7d7d 100%)",
+                background: "linear-gradient(135deg, #ff5e5e 0%, #ff7d7d 100%)",
               },
             }}
           >

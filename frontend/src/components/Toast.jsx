@@ -59,10 +59,14 @@ export function ToastProvider({ children }) {
     () => ({
       show,
       dismiss,
-      success: (message, opts = {}) => show({ ...opts, severity: "success", message }),
-      error: (message, opts = {}) => show({ ...opts, severity: "error", message }),
-      warning: (message, opts = {}) => show({ ...opts, severity: "warning", message }),
-      info: (message, opts = {}) => show({ ...opts, severity: "info", message }),
+      success: (message, opts = {}) =>
+        show({ ...opts, severity: "success", message }),
+      error: (message, opts = {}) =>
+        show({ ...opts, severity: "error", message }),
+      warning: (message, opts = {}) =>
+        show({ ...opts, severity: "warning", message }),
+      info: (message, opts = {}) =>
+        show({ ...opts, severity: "info", message }),
     }),
     [show, dismiss],
   );

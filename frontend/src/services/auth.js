@@ -42,7 +42,9 @@ export function isTokenValid(token, skewSeconds = 30) {
   if (!token) return false;
   try {
     const { exp } = jwtDecode(token);
-    return typeof exp === "number" && exp * 1000 - skewSeconds * 1000 > Date.now();
+    return (
+      typeof exp === "number" && exp * 1000 - skewSeconds * 1000 > Date.now()
+    );
   } catch {
     return false;
   }
@@ -113,7 +115,11 @@ export function installAuthInterceptor() {
       const original = error.config || {};
       const status = error.response && error.response.status;
 
-      if (status !== 401 || original._skipAuthRefresh || original._authRetried) {
+      if (
+        status !== 401 ||
+        original._skipAuthRefresh ||
+        original._authRetried
+      ) {
         return Promise.reject(error);
       }
 
@@ -145,7 +151,11 @@ export function installAuthInterceptor() {
 // --- Registration ---------------------------------------------------------
 export const register = async (username, password, email) => {
   try {
-    await axios.post(`${API_URL}/users/register/`, { username, password, email });
+    await axios.post(`${API_URL}/users/register/`, {
+      username,
+      password,
+      email,
+    });
   } catch (error) {
     console.error("Registration error:", error);
   }

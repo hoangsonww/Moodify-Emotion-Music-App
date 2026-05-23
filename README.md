@@ -386,57 +386,39 @@ Here is the list of technologies used in the Moodify project:
 ### Home Page
 
 <p align="center">
-  <img src="images/homepage.png" alt="Home Page" width="100%" style="border-radius: 10px">
+  <img src="images/home-text.png" alt="Home Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Home Page - Dark Mode
+<p align="center">
+  <img src="images/home-voice.png" alt="Home Page" width="100%" style="border-radius: 10px">
+</p>
+
+<p align="center">
+  <img src="images/home-face.png" alt="Home Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Home Page - Dark Mode
 
 <p align="center">
   <img src="images/homepage-dark.png" alt="Home Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
-#### Text Input
+### Text Input
 
 <p align="center">
-  <img src="images/textinput.png" alt="Text Input" width="100%" style="border-radius: 10px">
-</p>
-
-#### Text Input - Dark Mode
-
-<p align="center">
-  <img src="images/textinput-dark.png" alt="Text Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="images/text-input.png" alt="Text Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Speech Input
 
 <p align="center">
-  <img src="images/speechinput.png" alt="Speech Input" width="100%" style="border-radius: 10px">
-</p>
-
-<p align="center">
-  <img src="images/speechinputmodal.png" alt="Speech Input" width="100%" style="border-radius: 10px">
-</p>
-
-#### Speech Input - Dark Mode
-
-<p align="center">
-  <img src="images/speechinputmodal-dark.png" alt="Speech Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="images/voice-input.png" alt="Speech Input" width="100%" style="border-radius: 10px">
 </p>
 
 #### Facial Expression Input
 
 <p align="center">
-  <img src="images/facialinput.png" alt="Facial Input" width="100%" style="border-radius: 10px">
-</p>
-
-<p align="center">
-  <img src="images/facialinputmodal.png" alt="Facial Input" width="100%" style="border-radius: 10px">
-</p>
-
-#### Facial Expression Input - Dark Mode
-
-<p align="center">
-  <img src="images/facialinputmodal-dark.png" alt="Facial Input - Dark Mode" width="100%" style="border-radius: 10px">
+  <img src="images/face-input.png" alt="Facial Input" width="100%" style="border-radius: 10px">
 </p>
 
 ### Profile Page
@@ -445,28 +427,10 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/profile.png" alt="Profile Page" width="100%" style="border-radius: 10px">
 </p>
 
-#### Profile Page (Continued)
-
-<p align="center">
-  <img src="images/profile2.png" alt="Profile Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Profile Page - Dark Mode
-
-<p align="center">
-  <img src="images/profile-dar.png" alt="Profile Page - Dark Mode" width="100%" style="border-radius: 10px">
-</p>
-
 ### Results - Recommendations Page
 
 <p align="center">
   <img src="images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
-</p>
-
-#### Results - Recommendations Page - Dark Mode
-
-<p align="center">
-  <img src="images/results-dark.png" alt="Results Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
 ### Login Page
@@ -509,10 +473,6 @@ Here is the list of technologies used in the Moodify project:
 
 <p align="center">
   <img src="images/mobile-view.png" alt="Mobile View" width="50%" style="border-radius: 10px">
-</p>
-
-<p align="center">
-  <img src="images/mobile-view2.png" alt="Mobile View" width="50%" style="border-radius: 10px">
 </p>
 
 <h2 id="-complete-file-structure">📂 Complete File Structure</h2>

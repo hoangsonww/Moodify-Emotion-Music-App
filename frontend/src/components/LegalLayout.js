@@ -38,13 +38,20 @@ export default function LegalLayout({ kind, title, intro, sections }) {
           <Box sx={styles.heroBlobA} />
           <Box sx={styles.heroBlobB} />
 
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ position: "relative" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            sx={{ position: "relative" }}
+          >
             <Box sx={styles.heroMark}>
               <HeroIcon sx={{ color: "#fff", fontSize: 30 }} />
             </Box>
             <Box>
               <Typography variant="overline" sx={styles.heroKicker}>
-                <PolicyOutlined sx={{ fontSize: 14, mr: 0.5, verticalAlign: "middle" }} />
+                <PolicyOutlined
+                  sx={{ fontSize: 14, mr: 0.5, verticalAlign: "middle" }}
+                />
                 {kind === "terms" ? "Legal · Terms" : "Legal · Privacy"}
               </Typography>
               <Typography variant="h3" component="h1" sx={styles.heroTitle}>
@@ -67,9 +74,20 @@ export default function LegalLayout({ kind, title, intro, sections }) {
         <Box sx={styles.sectionList}>
           {sections.map((section, i) => (
             <Paper key={section.title} elevation={3} sx={styles.section}>
-              <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb: 1.5 }}>
-                <Box sx={styles.sectionNumber}>{String(i + 1).padStart(2, "0")}</Box>
-                <Typography variant="h6" component="h2" sx={styles.sectionTitle}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1.25}
+                sx={{ mb: 1.5 }}
+              >
+                <Box sx={styles.sectionNumber}>
+                  {String(i + 1).padStart(2, "0")}
+                </Box>
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  sx={styles.sectionTitle}
+                >
                   {section.title}
                 </Typography>
               </Stack>
@@ -123,7 +141,8 @@ const getStyles = (isDark) => ({
     borderRadius: "20px",
     padding: { xs: "24px", sm: "32px" },
     color: "#fff",
-    background: "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 65%, #ffa46d 100%)",
+    background:
+      "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 65%, #ffa46d 100%)",
     boxShadow: "0 20px 50px rgba(255,77,77,0.35)",
   },
   heroBlobA: {
@@ -209,7 +228,8 @@ const getStyles = (isDark) => ({
     boxShadow: isDark
       ? "0 12px 30px rgba(0,0,0,0.35)"
       : "0 12px 30px rgba(255,77,77,0.06)",
-    transition: "transform .25s ease, box-shadow .25s ease, border-color .25s ease",
+    transition:
+      "transform .25s ease, box-shadow .25s ease, border-color .25s ease",
     "&:hover": {
       transform: "translateY(-2px)",
       boxShadow: "0 18px 36px rgba(255,77,77,0.10)",

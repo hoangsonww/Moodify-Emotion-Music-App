@@ -27,22 +27,28 @@ const RecommendationsPage = () => {
         <Box sx={styles.heroBlobA} />
         <Box sx={styles.heroBlobB} />
 
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ position: "relative" }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          sx={{ position: "relative" }}
+        >
           <Box sx={styles.heroMark}>
             <LibraryMusic sx={{ color: "#fff", fontSize: 30 }} />
           </Box>
           <Box>
             <Typography variant="overline" sx={styles.heroKicker}>
-              <AutoAwesome sx={{ fontSize: 14, mr: 0.5, verticalAlign: "middle" }} />
+              <AutoAwesome
+                sx={{ fontSize: 14, mr: 0.5, verticalAlign: "middle" }}
+              />
               Sample playlist
             </Typography>
             <Typography variant="h4" component="h1" sx={styles.heroTitle}>
               Music Recommendations
             </Typography>
             <Typography sx={styles.heroSub}>
-              Here are some music recommendations based on your mood: a
-              preview of what every Results page looks like once you've
-              analysed a mood.
+              Here are some music recommendations based on your mood: a preview
+              of what every Results page looks like once you've analysed a mood.
             </Typography>
           </Box>
         </Stack>
@@ -106,7 +112,8 @@ const getStyles = (isDark) => ({
     borderRadius: "20px",
     padding: { xs: "24px", sm: "32px" },
     color: "#fff",
-    background: "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 65%, #ffa46d 100%)",
+    background:
+      "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 65%, #ffa46d 100%)",
     boxShadow: "0 20px 50px rgba(255,77,77,0.35)",
     mb: 4,
   },

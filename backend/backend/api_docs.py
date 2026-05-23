@@ -263,17 +263,7 @@ RESP_429 = error_response(
 SCHEMA_HEADER = """
 ## Overview
 
-REST API for [**Moodify**](https://moodify-emotion-music-app.vercel.app/) --
-an emotion-driven music recommendation app. The Django service you're
-looking at handles user accounts, profiles, history, and proxies a
-subset of ML inference calls. The heavy ML lifting (text / speech /
-face emotion detection + the Deezer-backed recommender + the
-recency-weighted personalisation model) lives in a separate
-[scale-to-zero **Modal**](https://modal.com) service. The two share a
-JWT signing key, so the same access token you get from
-`/users/login/` works against Modal too -- web and mobile clients
-upload audio / images **directly** to Modal to avoid round-tripping
-multi-megabyte bodies through Vercel.
+REST API for [**Moodify**](https://moodify-emotion-music-app.vercel.app/) -- an emotion-driven music recommendation app. The Django service you're looking at handles user accounts, profiles, history, and proxies a subset of ML inference calls. The heavy ML lifting (text / speech / face emotion detection + the Deezer-backed recommender + the recency-weighted personalisation model) lives in a separate [scale-to-zero **Modal**](https://modal.com) service. The two share a JWT signing key, so the same access token you get from `/users/login/` works against Modal too -- web and mobile clients upload audio / images **directly** to Modal to avoid round-tripping multi-megabyte bodies through Vercel.
 
 ## Authentication
 
@@ -284,10 +274,8 @@ POST /users/token/refresh/          -> { access, refresh } when the access expir
 ```
 
 * **Access tokens** live for 7 days, **refresh tokens** for 14.
-* `Authorization` header is the only auth surface -- there are **no
-  sessions, no CSRF, no cookies**.
-* The same `JWT_SIGNING_KEY` is shared with the Modal inference
-  service; one token, one identity, both backends.
+* `Authorization` header is the only auth surface -- there are **no sessions, no CSRF, no cookies**.
+* The same `JWT_SIGNING_KEY` is shared with the Modal inference service; one token, one identity, both backends.
 
 ## Rate limiting and cost protection
 
@@ -298,17 +286,12 @@ Two layers sit in front of the Modal compute budget:
 | DRF throttling (`AnonRateThrottle`, `UserRateThrottle`) | Django | `60/min` anon, `240/min` user |
 | Sliding-window per-user limit | Modal | `45/min` general, `15/min` media |
 
-Both are tuned to never bite a real user -- only retry loops and
-scripted abuse trip them. See the
-[modal_inference README](https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/master/modal_inference/README.md#rate-limiting)
-for the full design.
+Both are tuned to never bite a real user -- only retry loops and scripted abuse trip them. See the [modal_inference README](https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/master/modal_inference/README.md#rate-limiting) for the full design.
 
 ## Conventions
 
-* **Success** responses are either an explicit body (`/users/login/` ->
-  `{ access, refresh }`) or the envelope `{"message": "..."}`.
-* **Error** responses are always `{"error": "<human-readable>"}` with
-  the matching 4xx status code.
+* **Success** responses are either an explicit body (`/users/login/` -> `{ access, refresh }`) or the envelope `{"message": "..."}`.
+* **Error** responses are always `{"error": "<human-readable>"}` with the matching 4xx status code.
 * All timestamps are ISO 8601, UTC.
 * All IDs are Mongo ObjectIds (24-character hex strings).
 

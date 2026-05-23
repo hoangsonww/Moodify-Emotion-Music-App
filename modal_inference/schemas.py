@@ -21,6 +21,11 @@ class MusicRecommendationRequest(BaseModel):
     # user's recurring mood alongside the current one. Capped to bound the
     # payload; extra entries are ignored.
     history: list[str] = Field(default_factory=list, max_length=50)
+    # Optional user-picked genre keyword (e.g. "hip-hop", "lofi", "jazz").
+    # When supplied, the recommender prepends it to the Deezer search
+    # phrase so the result skews toward that genre while still honouring
+    # the mood.
+    genre: Optional[str] = Field(default=None, max_length=40)
 
 
 class Track(BaseModel):

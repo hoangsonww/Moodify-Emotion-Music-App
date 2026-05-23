@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import RequireAuth from "./components/RequireAuth";
+import RedirectIfAuthed from "./components/RedirectIfAuthed";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import HomePage from "./pages/HomePage";
@@ -51,11 +52,33 @@ function AppLayout() {
     <>
       {!hideNavbar && <Navbar />}
       <Routes>
-        {/* Public routes -- landing, auth, legal. */}
+        {/* Public routes -- landing, auth, legal. Auth pages bounce a
+            signed-in user back to /home so they never see the form. */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route
+          path="/login"
+          element={
+            <RedirectIfAuthed>
+              <Login />
+            </RedirectIfAuthed>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RedirectIfAuthed>
+              <Register />
+            </RedirectIfAuthed>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <RedirectIfAuthed>
+              <ForgotPassword />
+            </RedirectIfAuthed>
+          }
+        />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-of-service" element={<TermsOfServicePage />} />
 

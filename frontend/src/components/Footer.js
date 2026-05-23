@@ -9,6 +9,14 @@ const Footer = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  // Match the navbar's behaviour: /results is labelled "Explore" by
+  // default and only flips to "Results" once the user is actually on
+  // /results AND arrived from an analysis (state carries the emotion).
+  const arrivedFromAnalysis =
+    location.pathname === "/results" &&
+    Boolean(location.state && location.state.emotion);
+  const resultsLabel = arrivedFromAnalysis ? "Results" : "Explore";
+
   return (
     <Box sx={styles.footer}>
       {/* Navigation Links */}
@@ -31,7 +39,7 @@ const Footer = () => {
           }
           onClick={() => navigate("/results")}
         >
-          Results
+          {resultsLabel}
         </Link>
         <Link
           sx={

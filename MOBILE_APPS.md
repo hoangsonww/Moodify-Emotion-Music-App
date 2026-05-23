@@ -1,11 +1,11 @@
 # Moodify Mobile — iOS + Android Deep Dive
 
-> The definitive reference for the **Moodify React Native app**. Every
-> screen, every flow, every layer — with side-by-side iOS and Android
-> captures, two-dozen Mermaid diagrams, end-to-end sequence flows,
-> component anatomies, performance notes and a complete operations
-> playbook. Read this top-to-bottom and you can rebuild the app
-> without opening the source.
+The definitive reference for the **Moodify React Native app**. Every
+screen, every flow, every layer — with side-by-side iOS and Android
+captures, two-dozen Mermaid diagrams, end-to-end sequence flows,
+component anatomies, performance notes and a complete operations
+playbook. Read this top-to-bottom and you can rebuild the app
+without opening the source.
 
 <p align="center">
   <img src="images/moodify-logo.png" alt="Moodify" width="160" />
@@ -21,7 +21,6 @@
   <img src="https://img.shields.io/badge/Modal-Inference-7B68EE?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Deezer-Recommend-FF6600?style=for-the-badge&logo=deezer&logoColor=white" />
   <img src="https://img.shields.io/badge/Axios-1.7-5A29E4?style=for-the-badge&logo=axios&logoColor=white" />
-  <img src="https://img.shields.io/badge/Dark_Mode_Only-0b0b11?style=for-the-badge&logoColor=white" />
 </p>
 
 ---
@@ -537,7 +536,7 @@ flowchart LR
     Exp --> V{exp*1000 - 30000 > Date.now?}
     V -- yes --> OK[token valid]
     V -- no  --> Bad[token expired]
-    Sub --> Profile[getCurrentUser → {id, username}]
+    Sub --> Profile["getCurrentUser returns id + username"]
 ```
 
 A 30-second `skewSeconds` tolerance guards against minor device-clock
@@ -1064,7 +1063,7 @@ sequenceDiagram
     participant Req as Request interceptor
     participant Out as Outgoing HTTP
     participant Res as Response interceptor
-    participant Refresh as refreshSession()
+    participant Refresh as refreshSession
 
     Note over Req: every request
     Req->>Req: if !_skipAuth and accessToken<br/>set Authorization: Bearer …
@@ -1081,7 +1080,7 @@ sequenceDiagram
             Res->>Out: replay original
         else refresh fails
             Refresh-->>Res: false
-            Res->>Res: clearTokens(); onSessionExpired()
+            Res->>Res: clearTokens + onSessionExpired
             Res-->>Caller: reject
         end
     else other error

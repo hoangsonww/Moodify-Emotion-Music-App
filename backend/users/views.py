@@ -5,6 +5,7 @@ Authentication is JWT-only, backed by the mongoengine ``User`` document
 """
 
 import logging
+import re
 
 import jwt
 from drf_yasg import openapi
@@ -97,10 +98,19 @@ _PROFILE_UPDATE_BODY = _obj(
     properties={
         "email": openapi.Schema(type=openapi.TYPE_STRING, format="email",
                                 example="newemail@example.com"),
+        "username": openapi.Schema(type=openapi.TYPE_STRING,
+                                   minLength=3, maxLength=30,
+                                   description="New username. Letters / digits / `_.-` only.",
+                                   example="newhandle"),
     },
     required=[],
-    example={"email": "newemail@example.com"},
+    example={"username": "newhandle", "email": "newemail@example.com"},
 )
+
+# Username constraints kept centralised so register / update agree.
+USERNAME_MIN_LENGTH = 3
+USERNAME_MAX_LENGTH = 30
+USERNAME_PATTERN = r"^[A-Za-z0-9_.\-]+$"
 
 _TOKEN_PAIR_SCHEMA = _obj(
     properties={
@@ -505,17 +515,21 @@ def user_profile(request):
     tags=[Tags.PROFILE],
     operation_summary="Update mutable profile fields",
     operation_description=(
-        "Patches the signed-in user's mutable fields. Only `email` is "
-        "currently editable — username changes are deliberately not "
-        "supported (they'd require a cascading rename across mood / "
-        "listening / saved-recommendations history). Missing fields "
-        "are left untouched, so this is effectively a PATCH."
+        "Patches the signed-in user's mutable fields. Currently supports "
+        "`email` and `username`. Username changes rename both the `User` "
+        "document and the cached `UserProfile.username` join key in a "
+        "single round-trip; the response includes a fresh access/refresh "
+        "JWT pair when the username actually changes so the client can "
+        "swap tokens without forcing a re-login. Missing fields are left "
+        "untouched, so this is effectively a PATCH."
     ),
     request_body=_PROFILE_UPDATE_BODY,
     responses={
         200: ok_message("Profile updated.", "Profile updated successfully."),
+        400: error_response("Invalid username.", "Username must be 3-30 chars."),
         401: RESP_401,
         404: error_response("Profile missing.", "User profile not found."),
+        409: error_response("Username taken.", "That username is already taken."),
     },
 )
 @api_view(["PUT"])
@@ -531,8 +545,48 @@ def user_profile_update(request):
         request.user.email = email.strip()
         request.user.save()
 
+    raw_username = request.data.get("username")
+    new_tokens = None
+    if raw_username is not None:
+        new_username = raw_username.strip()
+        current_username = request.user.username
+        if not new_username:
+            return Response(
+                {"error": "Username cannot be empty."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(new_username) < USERNAME_MIN_LENGTH or len(new_username) > USERNAME_MAX_LENGTH:
+            return Response(
+                {"error": f"Username must be {USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH} characters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not re.match(USERNAME_PATTERN, new_username):
+            return Response(
+                {"error": "Username may only contain letters, digits, and the characters _ . -"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if new_username != current_username:
+            if User.objects(username=new_username).first():
+                return Response(
+                    {"error": "That username is already taken."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            request.user.username = new_username
+            request.user.save()
+            # The profile is keyed by username -- keep it in sync.
+            profile.username = new_username
+            # Issue fresh tokens so the JWT's `username` claim reflects
+            # the rename. Auth itself still resolves via `sub` (user id),
+            # so the old token would keep working -- but UI code reads
+            # the username from the claims for display, so refresh it.
+            new_tokens = issue_tokens(request.user)
+
     profile.save()
-    return Response({"message": "Profile updated successfully."})
+    body = {"message": "Profile updated successfully.", "username": request.user.username}
+    if new_tokens:
+        body["access"] = new_tokens["access"]
+        body["refresh"] = new_tokens["refresh"]
+    return Response(body)
 
 
 @swagger_auto_schema(

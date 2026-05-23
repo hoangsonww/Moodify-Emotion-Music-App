@@ -68,8 +68,7 @@ const Register = () => {
     } catch (error) {
       const status = error?.response?.status;
       toast.error(
-        status === 409 ||
-          /already/i.test(error?.response?.data?.error || "")
+        status === 409 || /already/i.test(error?.response?.data?.error || "")
           ? "That username or email is already taken."
           : error?.response?.data?.error ||
               "Registration failed due to a server error. Please try again.",
@@ -138,7 +137,9 @@ const Register = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <AlternateEmail sx={{ color: isDarkMode ? "#bbb" : "#666" }} />
+                  <AlternateEmail
+                    sx={{ color: isDarkMode ? "#bbb" : "#666" }}
+                  />
                 </InputAdornment>
               ),
               style: styles.inputText,
@@ -274,17 +275,27 @@ const getStyles = (isDark) => ({
     backgroundColor: isDark ? "#1f1f1f" : "#ffffff",
     color: isDark ? "#ffffff" : "#000000",
     transition: "background-color 0.3s ease, color 0.3s ease",
-    // Force the OutlinedInput root to be transparent so the field's
-    // inside matches the card's outside.
-    "& .MuiOutlinedInput-root": { backgroundColor: "transparent" },
-    "& .MuiOutlinedInput-root.Mui-focused": { backgroundColor: "transparent" },
-    // Defeat Chrome / Edge autofill background tint.
-    "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active": {
-      WebkitBoxShadow: `0 0 0 1000px ${isDark ? "#1f1f1f" : "#ffffff"} inset !important`,
-      WebkitTextFillColor: `${isDark ? "#ffffff" : "#000000"} !important`,
-      caretColor: isDark ? "#ffffff" : "#000000",
-      transition: "background-color 5000s ease-in-out 0s",
+    // Force the OutlinedInput AND the inner <input> element to be fully
+    // transparent so the field's inside matches the card's outside.
+    "& .MuiOutlinedInput-root, & .MuiOutlinedInput-root.Mui-focused, & .MuiOutlinedInput-root:hover":
+      {
+        backgroundColor: "transparent !important",
+        boxShadow: "none !important",
+      },
+    "& .MuiInputBase-root, & .MuiInputBase-input, & .MuiOutlinedInput-input": {
+      backgroundColor: "transparent !important",
+      boxShadow: "none !important",
+      WebkitAppearance: "none",
+      appearance: "none",
     },
+    // Defeat Chrome / Edge autofill background tint.
+    "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active":
+      {
+        WebkitBoxShadow: `0 0 0 1000px ${isDark ? "#1f1f1f" : "#ffffff"} inset !important`,
+        WebkitTextFillColor: `${isDark ? "#ffffff" : "#000000"} !important`,
+        caretColor: isDark ? "#ffffff" : "#000000",
+        transition: "background-color 5000s ease-in-out 0s",
+      },
   },
   heroStrip: {
     padding: "28px 32px 24px",

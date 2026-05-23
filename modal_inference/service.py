@@ -496,7 +496,7 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
             emotion=body.emotion,
             market=body.market,
             recommendations=get_music_recommendation(
-                body.emotion, body.market, body.history
+                body.emotion, body.market, body.history, body.genre
             ),
         )
 
