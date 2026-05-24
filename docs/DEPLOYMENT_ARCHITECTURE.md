@@ -973,6 +973,6 @@ graph LR
 
 **Document Version**: 1.0
 **Last Updated**: 2025-11-26
-**Maintained by**: DevOps Team
+**Maintained by**: Son Nguyen
 
 This document provides comprehensive visual documentation of the Moodify deployment architecture using Mermaid diagrams. All diagrams are rendered automatically in Markdown-compatible viewers.

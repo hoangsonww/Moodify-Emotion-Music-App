@@ -12,7 +12,7 @@
  * - Automated rollback on failure
  * - Comprehensive monitoring and notifications
  *
- * Author: DevOps Team
+ * Author: Son Nguyen
  * Last Updated: 2025-11-26
  */
 
