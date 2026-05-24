@@ -1205,11 +1205,3 @@ caches. That's the only "invalidation" most caches ever need.
 `RATE_LIMIT_ENABLED=0` in the Modal Secret and redeploy. The
 dependency short-circuits and headers stop being emitted; nothing
 else changes.
-
----
-
-> Part of the [Moodify](../README.md) monorepo.
-> See [`../ARCHITECTURE.md`](../ARCHITECTURE.md) for the full system
-> overview, [`../backend/README.md`](../backend/README.md) for the
-> Django API, and [`../docs/PRODUCTION_REFACTOR_PLAN.md`](../docs/PRODUCTION_REFACTOR_PLAN.md)
-> for the migration that produced this service.

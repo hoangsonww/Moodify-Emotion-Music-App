@@ -91,9 +91,7 @@ describe("<HomePage />", () => {
     // the tree, so query by type instead of an id (the legacy
     // `upload-file` id no longer exists).
     await waitFor(() => {
-      expect(
-        document.querySelector('input[type="file"]'),
-      ).toBeInTheDocument();
+      expect(document.querySelector('input[type="file"]')).toBeInTheDocument();
     });
     const fileInput = document.querySelector('input[type="file"]');
     expect(fileInput).toHaveAttribute("accept", "image/*");

@@ -622,7 +622,7 @@ a:hover {
     top: 50%;
     left: 50%;
     transform-origin: center;
-    transform: rotate(var(--rotation)) translate(180px) rotate(calc(-1 * var(--rotation)));
+    transform: translate(-50%, -50%) rotate(var(--rotation)) translate(180px) rotate(calc(-1 * var(--rotation)));
 }
 
 .emotion-card {
@@ -772,7 +772,7 @@ a:hover {
     }
     
     .emotion-item {
-        transform: rotate(var(--rotation)) translate(140px) rotate(calc(-1 * var(--rotation)));
+        transform: translate(-50%, -50%) rotate(var(--rotation)) translate(140px) rotate(calc(-1 * var(--rotation)));
     }
 }
 
@@ -786,7 +786,7 @@ a:hover {
     }
     
     .emotion-item {
-        transform: rotate(var(--rotation)) translate(100px) rotate(calc(-1 * var(--rotation)));
+        transform: translate(-50%, -50%) rotate(var(--rotation)) translate(100px) rotate(calc(-1 * var(--rotation)));
     }
     
     .emotion-card {
