@@ -55,5 +55,5 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://moodify-emotion-music-app.vercel.app/sitemap.xml
-Host: https://moodify-emotion-music-app.vercel.app
+Sitemap: https://moodify-app.vercel.app/sitemap.xml
+Host: https://moodify-app.vercel.app

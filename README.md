@@ -312,7 +312,7 @@ For your information, the front-end's production (deployment) branch is `fronten
 
 ### Live Statuses
 
-[![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green?logo=vercel)](https://moodify-emotion-music-app.vercel.app/)
+[![Deployed with Vercel](https://img.shields.io/badge/Deployed%20with-Vercel-green?logo=vercel)](https://moodify-app.vercel.app/)
 [![Django on Vercel](https://img.shields.io/badge/Django-Vercel-000000?logo=vercel&logoColor=white)](https://moodify-backend-api.vercel.app/)
 [![Inference on Modal](https://img.shields.io/badge/Inference-Modal-7B68EE?logo=modal&logoColor=white)](https://modal.com)
 [![AI/ML Tests Passing](https://img.shields.io/badge/AI/ML%20Tests-Passing-brightgreen?logo=ai)](ai_ml)

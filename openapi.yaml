@@ -49,11 +49,11 @@ info:
   contact:
     name: Son Nguyen
     email: hoangson091104@gmail.com
-    url: https://moodify-emotion-music-app.vercel.app/
+    url: https://moodify-app.vercel.app/
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  termsOfService: https://moodify-emotion-music-app.vercel.app/terms-of-service
+  termsOfService: https://moodify-app.vercel.app/terms-of-service
   x-logo:
     url: https://raw.githubusercontent.com/hoangsonww/Moodify-Emotion-Music-App/master/frontend/web/public/logo512.png
     altText: Moodify
