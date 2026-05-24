@@ -26,9 +26,12 @@ import {
   Check,
   Close,
   CloudUpload,
+  Delete as DeleteIcon,
+  Description as DescriptionIcon,
   FaceRetouchingNatural,
   FiberManualRecord,
   History,
+  InsertDriveFile as FileIcon,
   Insights,
   KeyboardArrowRight,
   LibraryMusic,
@@ -139,6 +142,7 @@ const MODE_CARDS = [
   {
     key: "text",
     label: "Text",
+    headline: "Spill it - we'll find the soundtrack",
     blurb: "Write a few words about your day.",
     icon: TextFields,
     colors: ["#34d399", "#10b981"],
@@ -146,6 +150,7 @@ const MODE_CARDS = [
   {
     key: "speech",
     label: "Voice",
+    headline: "Say it out loud - we're listening",
     blurb: "Record a short voice clip.",
     icon: MicNone,
     colors: ["#8b5cf6", "#d946ef"],
@@ -153,6 +158,7 @@ const MODE_CARDS = [
   {
     key: "face",
     label: "Face",
+    headline: "Your face tells the whole story",
     blurb: "Snap a photo of your expression.",
     icon: FaceRetouchingNatural,
     colors: ["#ec4899", "#f472b6"],
@@ -186,12 +192,178 @@ const greetingFor = (date = new Date()) => {
   return "Good night";
 };
 
+// ---------- RTF -> plain text ----------
+// Pragmatic RTF stripper sized for the kind of files TextEdit / Word /
+// Pages / Apple Notes write. We only need the human-readable text -- not
+// fidelity to the original formatting -- so this throws away every
+// destination group (font / colour / style tables, embedded images, etc.)
+// and decodes the handful of escape sequences that carry real characters.
+//
+// Returns "" on garbage so the caller can surface a clear "empty after
+// stripping" warning instead of forwarding noise to the model.
+const RTF_DESTINATIONS = new Set([
+  "fonttbl",
+  "colortbl",
+  "expandedcolortbl",
+  "stylesheet",
+  "info",
+  "header",
+  "footer",
+  "headerl",
+  "headerr",
+  "footerl",
+  "footerr",
+  "pict",
+  "themedata",
+  "colorschememapping",
+  "latentstyles",
+  "datastore",
+  "rsidtbl",
+  "generator",
+  "filetbl",
+  "listtable",
+  "listoverridetable",
+  "revtbl",
+  "background",
+  "shppict",
+  "nonshppict",
+  "operator",
+  "company",
+  "category",
+  "author",
+  "title",
+  "subject",
+  "comment",
+]);
+
+const RTF_LINEBREAK_KEYWORDS = new Set([
+  "par",
+  "line",
+  "sect",
+  "page",
+  "softline",
+  "softpage",
+  "lbrk",
+]);
+
+function extractRtfPlainText(src) {
+  if (!src || typeof src !== "string") return "";
+
+  // 1. Drop entire destination groups (font tables, pictures, etc.) via
+  //    balanced brace matching.
+  let i = 0;
+  let out = "";
+  const stack = []; // each frame: { skip: bool }
+  let skipDepth = 0;
+
+  while (i < src.length) {
+    const ch = src[i];
+
+    if (ch === "{") {
+      // Peek for a destination control word at the start of the group.
+      let j = i + 1;
+      // Optional `\*` ignorable-destination marker.
+      if (src[j] === "\\" && src[j + 1] === "*") j += 2;
+      let dest = "";
+      if (src[j] === "\\") {
+        let k = j + 1;
+        while (k < src.length && /[a-zA-Z]/.test(src[k])) {
+          dest += src[k];
+          k++;
+        }
+      }
+      const isDestSkip = dest && RTF_DESTINATIONS.has(dest.toLowerCase());
+      stack.push({ skip: isDestSkip });
+      if (isDestSkip) skipDepth++;
+      i++;
+      continue;
+    }
+
+    if (ch === "}") {
+      const frame = stack.pop();
+      if (frame && frame.skip) skipDepth--;
+      i++;
+      continue;
+    }
+
+    if (skipDepth > 0) {
+      i++;
+      continue;
+    }
+
+    if (ch === "\\") {
+      // Hex escape: \'xx
+      if (src[i + 1] === "'") {
+        const hex = src.slice(i + 2, i + 4);
+        if (/^[0-9a-fA-F]{2}$/.test(hex)) {
+          out += String.fromCharCode(parseInt(hex, 16));
+          i += 4;
+          continue;
+        }
+      }
+      // Unicode escape: \uNNNN (signed) followed by a one-character
+      // fallback (which we discard).
+      if (src[i + 1] === "u") {
+        const m = src.slice(i + 2).match(/^(-?\d+)/);
+        if (m) {
+          let code = parseInt(m[1], 10);
+          if (code < 0) code += 0x10000;
+          out += String.fromCharCode(code);
+          i += 2 + m[1].length;
+          // Skip the single replacement char (often `?`).
+          if (src[i] && src[i] !== "\\" && src[i] !== "{" && src[i] !== "}") {
+            i += 1;
+          }
+          continue;
+        }
+      }
+      // Literal-character escapes.
+      if (src[i + 1] === "\\" || src[i + 1] === "{" || src[i + 1] === "}") {
+        out += src[i + 1];
+        i += 2;
+        continue;
+      }
+      // Newline / tab control words.
+      const m = src.slice(i + 1).match(/^([a-zA-Z]+)(-?\d+)? ?/);
+      if (m) {
+        const word = m[1].toLowerCase();
+        if (RTF_LINEBREAK_KEYWORDS.has(word)) {
+          out += "\n";
+        } else if (word === "tab") {
+          out += "\t";
+        }
+        // Every other control word is markup; drop it silently.
+        i += 1 + m[0].length;
+        continue;
+      }
+      // Lone backslash -- skip.
+      i += 1;
+      continue;
+    }
+
+    // CR/LF inside RTF are formatting, not real newlines.
+    if (ch === "\r" || ch === "\n") {
+      i++;
+      continue;
+    }
+
+    out += ch;
+    i++;
+  }
+
+  return out
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 const HomePage = () => {
   const [activeTab, setActiveTab] = useState("text");
   const [inputValue, setInputValue] = useState("");
   // eslint-disable-next-line no-unused-vars
   const [file, setFile] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
   const webcamRef = useRef(null);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -302,23 +474,54 @@ const HomePage = () => {
     }
   };
 
-  const handleFileUpload = async (e) => {
-    const uploadedFile = e.target.files[0];
-    // Guard against a cancelled file-picker dialog: without this the
-    // empty file is still POSTed to /facial_emotion or /speech_emotion
-    // and the Modal service falls back to a random emotion, navigating
-    // the user to a Results page they never asked for.
-    if (!uploadedFile) {
-      e.target.value = "";
-      return;
-    }
+  // Lightweight "is this acceptable for the current tab" check used by
+  // BOTH the file <input> change handler and the drag-drop modal so the
+  // two entry points share one contract.
+  const validateUploadedFile = (uploadedFile) => {
+    if (!uploadedFile) return { ok: false };
     if (uploadedFile.size > 10 * 1024 * 1024) {
       toast.warning("File must be under 10 MB.");
-      e.target.value = "";
-      return;
+      return { ok: false };
     }
+    if (activeTab === "text") {
+      const allowedExts = [".txt", ".md", ".csv", ".log", ".rtf", ".text"];
+      const name = (uploadedFile.name || "").toLowerCase();
+      const extOk = allowedExts.some((ext) => name.endsWith(ext));
+      const mimeOk =
+        !uploadedFile.type ||
+        uploadedFile.type.startsWith("text/") ||
+        uploadedFile.type === "application/rtf" ||
+        uploadedFile.type === "application/json";
+      if (!extOk && !mimeOk) {
+        toast.warning("Text files only - .txt, .md, .csv, .log, .rtf");
+        return { ok: false };
+      }
+    } else if (activeTab === "speech") {
+      const allowedExts = [".wav", ".mp3", ".m4a", ".mp4", ".ogg", ".webm"];
+      const name = (uploadedFile.name || "").toLowerCase();
+      const extOk = allowedExts.some((ext) => name.endsWith(ext));
+      const mimeOk =
+        !uploadedFile.type || uploadedFile.type.startsWith("audio/");
+      if (!extOk && !mimeOk) {
+        toast.warning("Audio files only - .wav, .mp3, .m4a, .mp4, .ogg, .webm");
+        return { ok: false };
+      }
+    } else if (activeTab === "face") {
+      const mimeOk =
+        !uploadedFile.type || uploadedFile.type.startsWith("image/");
+      if (!mimeOk) {
+        toast.warning("Image files only - .jpg, .png, .webp");
+        return { ok: false };
+      }
+    }
+    return { ok: true };
+  };
+
+  const processUploadedFile = async (uploadedFile) => {
+    if (!validateUploadedFile(uploadedFile).ok) return false;
 
     setFile(uploadedFile);
+    setShowUploadModal(false);
 
     const formData = new FormData();
     formData.append("file", uploadedFile);
@@ -335,7 +538,25 @@ const HomePage = () => {
 
       // Race the file upload request against a 1-minute timeout
       if (activeTab === "text") {
-        const textContent = await uploadedFile.text();
+        let textContent = await uploadedFile.text();
+        // RTF files are NOT plain text -- they look like
+        // `{\rtf1\ansi\fs24 happy}`. Feeding the raw markup to BERT
+        // makes the model treat the control words as content (so
+        // "happy" buried in `\rtf1\ansi...` reads as anger). Strip
+        // the markup back down to human text before we send it.
+        const isRtf =
+          /\.rtf$/i.test(uploadedFile.name || "") ||
+          uploadedFile.type === "application/rtf" ||
+          uploadedFile.type === "text/rtf" ||
+          textContent.trimStart().startsWith("{\\rtf");
+        if (isRtf) {
+          textContent = extractRtfPlainText(textContent);
+        }
+        if (!textContent.trim()) {
+          toast.warning("That file was empty after stripping formatting.");
+          setIsLoading(false);
+          return;
+        }
         response = await Promise.race([
           axios.post(
             `${MODAL_API_URL}/text_emotion`,
@@ -828,12 +1049,22 @@ const HomePage = () => {
       : activeTab === "speech"
         ? "Upload Audio File"
         : "Upload Image";
+  // Single source of truth for what the file picker offers AND what the
+  // helper line below the upload button shows. Keeping these in sync
+  // stops the picker from claiming we accept .md while the UI promises
+  // only .txt (or vice-versa).
+  const acceptAttr =
+    activeTab === "text"
+      ? ".txt,.md,.csv,.log,.rtf,.text,text/plain,application/rtf,text/rtf"
+      : activeTab === "speech"
+        ? ".wav,.mp3,.m4a,.mp4,.ogg,.webm,audio/*"
+        : "image/*";
   const formatsHint =
     activeTab === "text"
-      ? "Accepts .txt"
+      ? "Text - .txt, .md, .csv, .log, .rtf (max 10 MB)"
       : activeTab === "speech"
-        ? "Accepts .wav, .mp4"
-        : "Accepts .jpg, .jpeg, .png, .webp";
+        ? "Audio - .wav, .mp3, .m4a, .mp4, .ogg, .webm (max 10 MB)"
+        : "Images - .jpg, .jpeg, .png, .webp (max 10 MB)";
 
   return (
     <Box
@@ -991,10 +1222,10 @@ const HomePage = () => {
                 <ActiveIcon sx={{ color: "#fff", fontSize: 28 }} />
               </Box>
               <Typography sx={styles.actionTitle(isDarkMode)}>
-                {activeMode.label} mode ready
+                {activeMode.headline}
               </Typography>
               <Typography sx={styles.actionHint(isDarkMode)}>
-                {activeMode.blurb} {formatsHint}
+                {activeMode.blurb}
               </Typography>
 
               <Stack
@@ -1011,25 +1242,11 @@ const HomePage = () => {
                   {ctaLabel}
                 </Button>
 
-                <input
-                  accept={
-                    activeTab === "text"
-                      ? ".txt"
-                      : activeTab === "speech"
-                        ? ".wav, .mp4"
-                        : "image/*"
-                  }
-                  style={{ display: "none" }}
-                  id="upload-file"
-                  type="file"
-                  onChange={handleFileUpload}
-                />
                 <Button
                   fullWidth
-                  component="label"
-                  htmlFor="upload-file"
                   startIcon={<CloudUpload />}
                   sx={styles.ghostCta(isDarkMode)}
+                  onClick={() => setShowUploadModal(true)}
                 >
                   {uploadLabel}
                 </Button>
@@ -1448,6 +1665,19 @@ const HomePage = () => {
           </Box>
         </Modal>
       )}
+
+      {/* ---------- UPLOAD MODAL (drag-drop + click-pick) ---------- */}
+      <UploadModal
+        open={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        mode={activeMode}
+        acceptAttr={acceptAttr}
+        formatsHint={formatsHint}
+        onFile={processUploadedFile}
+        isDarkMode={isDarkMode}
+        styles={styles}
+        validate={validateUploadedFile}
+      />
     </Box>
   );
 };
@@ -2075,14 +2305,16 @@ function StatBubble({ icon, label, value, tint, isDark }) {
       >
         {icon}
       </Box>
-      <Box>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0 }}>
         <Typography
           sx={{
             fontFamily: "Poppins",
             fontWeight: 900,
             fontSize: 16,
-            lineHeight: 1,
+            lineHeight: 0.95,
             color: isDark ? "#f6f6f8" : "#1a1a1a",
+            mt: "-2px",
+            mb: 0,
           }}
         >
           {value}
@@ -2092,6 +2324,7 @@ function StatBubble({ icon, label, value, tint, isDark }) {
             fontFamily: "Poppins",
             fontSize: 10,
             fontWeight: 700,
+            lineHeight: 1,
             letterSpacing: 0.6,
             color: isDark ? "#888896" : "#8a8a96",
             textTransform: "uppercase",
@@ -2102,6 +2335,367 @@ function StatBubble({ icon, label, value, tint, isDark }) {
         </Typography>
       </Box>
     </Stack>
+  );
+}
+
+// ---------- Upload modal (drag-drop + click-pick) ----------
+// Standalone so its drag/hover state lives outside the HomePage render
+// tree -- prevents the whole page from re-rendering every time the user
+// drags a file across the dropzone.
+function UploadModal({
+  open,
+  onClose,
+  mode,
+  acceptAttr,
+  formatsHint,
+  onFile,
+  isDarkMode,
+  styles,
+  validate,
+}) {
+  const [dragActive, setDragActive] = useState(false);
+  const [staged, setStaged] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = React.useRef(null);
+
+  // Reset every time the modal opens so a previous staging doesn't
+  // leak into a new session.
+  useEffect(() => {
+    if (open) {
+      setDragActive(false);
+      setStaged(null);
+      setSubmitting(false);
+    }
+  }, [open]);
+
+  if (!mode) return null;
+
+  const handlePicked = (file) => {
+    if (!file) return;
+    const { ok } = validate(file);
+    if (!ok) return;
+    setStaged(file);
+  };
+
+  const onChooseClick = () => fileInputRef.current?.click();
+
+  const onInputChange = (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    handlePicked(f);
+  };
+
+  const onDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer?.types?.includes("Files")) setDragActive(true);
+  };
+  const onDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const onDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+  const onDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const f = e.dataTransfer.files?.[0];
+    handlePicked(f);
+  };
+
+  const onSubmit = async () => {
+    if (!staged || submitting) return;
+    setSubmitting(true);
+    try {
+      await onFile(staged);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const formatBytes = (n) => {
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+    return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      slotProps={{ backdrop: { sx: styles.modalBackdrop } }}
+    >
+      <Box sx={styles.modalShell(isDarkMode)}>
+        <ModalHeader
+          colors={mode.colors}
+          icon={<CloudUpload sx={{ color: "#fff", fontSize: 26 }} />}
+          eyebrow={`${mode.label.toUpperCase()} MODE`}
+          title="Upload a file"
+          subtitle="Drag and drop, or click to browse your device."
+          onClose={onClose}
+        />
+        <Box sx={styles.modalBody(isDarkMode)}>
+          <Box
+            role="button"
+            tabIndex={0}
+            onClick={onChooseClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") onChooseClick();
+            }}
+            onDragEnter={onDragEnter}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+            sx={{
+              position: "relative",
+              cursor: "pointer",
+              borderRadius: "18px",
+              border: `2px dashed ${
+                dragActive
+                  ? mode.colors[1]
+                  : isDarkMode
+                    ? "rgba(255,255,255,0.22)"
+                    : "rgba(0,0,0,0.18)"
+              }`,
+              background: dragActive
+                ? `linear-gradient(135deg, ${mode.colors[0]}1f, ${mode.colors[1]}14)`
+                : isDarkMode
+                  ? "rgba(255,255,255,0.04)"
+                  : "rgba(0,0,0,0.025)",
+              transition: "all 180ms ease",
+              p: { xs: 3, sm: 4.5 },
+              textAlign: "center",
+              outline: "none",
+              "&:hover": {
+                borderColor: mode.colors[1],
+                background: `linear-gradient(135deg, ${mode.colors[0]}14, ${mode.colors[1]}0c)`,
+              },
+              "&:focus-visible": {
+                boxShadow: `0 0 0 3px ${mode.colors[1]}40`,
+              },
+            }}
+          >
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: "20px",
+                background: `linear-gradient(135deg, ${mode.colors[0]} 0%, ${mode.colors[1]} 100%)`,
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mx: "auto",
+                mb: 1.5,
+                boxShadow: `0 12px 32px ${mode.colors[1]}45`,
+                transform: dragActive ? "scale(1.08)" : "scale(1)",
+                transition: "transform 180ms ease",
+              }}
+            >
+              <CloudUpload sx={{ fontSize: 30 }} />
+            </Box>
+            <Typography
+              sx={{
+                fontFamily: "Poppins",
+                fontWeight: 700,
+                fontSize: { xs: 16, sm: 18 },
+                color: isDarkMode ? "#f6f6f8" : "#1a1a1a",
+                lineHeight: 1.25,
+              }}
+            >
+              {dragActive ? "Drop it here" : "Drag and drop a file"}
+            </Typography>
+            <Typography
+              sx={{
+                mt: 0.5,
+                fontFamily: "Poppins",
+                fontSize: 13,
+                color: isDarkMode ? "#a8a8b3" : "#6b6b76",
+              }}
+            >
+              or{" "}
+              <Box
+                component="span"
+                sx={{
+                  fontWeight: 700,
+                  color: mode.colors[1],
+                  textDecoration: "underline",
+                  textUnderlineOffset: 3,
+                }}
+              >
+                browse your device
+              </Box>
+            </Typography>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={acceptAttr}
+              style={{ display: "none" }}
+              onChange={onInputChange}
+            />
+          </Box>
+
+          {/* Format hint chip */}
+          <Box
+            sx={{
+              mt: 1.75,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+              px: 1.25,
+              py: 0.5,
+              borderRadius: "999px",
+              border: `1px solid ${
+                isDarkMode ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.10)"
+              }`,
+              background: isDarkMode
+                ? "rgba(255,255,255,0.04)"
+                : "rgba(0,0,0,0.03)",
+              width: "fit-content",
+              mx: "auto",
+            }}
+          >
+            <DescriptionIcon
+              sx={{
+                fontSize: 14,
+                color: isDarkMode
+                  ? "rgba(255,255,255,0.7)"
+                  : "rgba(0,0,0,0.55)",
+              }}
+            />
+            <Typography
+              sx={{
+                fontFamily: "Poppins",
+                fontSize: 11.5,
+                fontWeight: 500,
+                color: isDarkMode
+                  ? "rgba(255,255,255,0.78)"
+                  : "rgba(0,0,0,0.62)",
+              }}
+            >
+              {formatsHint}
+            </Typography>
+          </Box>
+
+          {/* Staged file preview */}
+          {staged && (
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1.25}
+              sx={{
+                mt: 2,
+                px: 1.5,
+                py: 1.25,
+                borderRadius: "14px",
+                background: isDarkMode
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(0,0,0,0.04)",
+                border: `1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)"
+                }`,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: "10px",
+                  background: `linear-gradient(135deg, ${mode.colors[0]} 0%, ${mode.colors[1]} 100%)`,
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <FileIcon sx={{ fontSize: 20 }} />
+              </Box>
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography
+                  noWrap
+                  title={staged.name}
+                  sx={{
+                    fontFamily: "Poppins",
+                    fontWeight: 600,
+                    fontSize: 13.5,
+                    color: isDarkMode ? "#f6f6f8" : "#1a1a1a",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {staged.name}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: "Poppins",
+                    fontSize: 11.5,
+                    color: isDarkMode ? "#a0a0ab" : "#7a7a85",
+                    mt: 0.25,
+                  }}
+                >
+                  {formatBytes(staged.size)}
+                </Typography>
+              </Box>
+              <IconButton
+                size="small"
+                onClick={() => setStaged(null)}
+                aria-label="Remove file"
+                sx={{
+                  color: isDarkMode ? "#cfcfd6" : "#6b6b76",
+                  "&:hover": {
+                    color: "#ff4d4d",
+                    background: "rgba(255,77,77,0.10)",
+                  },
+                }}
+              >
+                <DeleteIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Stack>
+          )}
+
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.25}
+            sx={{ mt: 2.25 }}
+          >
+            <Button
+              fullWidth
+              disabled={!staged || submitting}
+              onClick={onSubmit}
+              startIcon={
+                submitting ? (
+                  <CircularProgress size={16} sx={{ color: "#fff" }} />
+                ) : (
+                  <Check />
+                )
+              }
+              sx={{
+                ...styles.modalCta(mode.colors),
+                "&.Mui-disabled": {
+                  opacity: 0.55,
+                  color: "#fff",
+                },
+              }}
+            >
+              {submitting ? "Uploading..." : "Use this file"}
+            </Button>
+            <Button
+              fullWidth
+              onClick={onClose}
+              startIcon={<Close />}
+              sx={styles.modalGhost(isDarkMode)}
+            >
+              Cancel
+            </Button>
+          </Stack>
+        </Box>
+      </Box>
+    </Modal>
   );
 }
 

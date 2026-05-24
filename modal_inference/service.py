@@ -167,7 +167,16 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
         # /health is a liveness probe -- uptime monitors hit it every
         # 10-60 s. Persisting every probe would drown the time-series
         # in noise without adding signal. Same for the docs URLs.
-        skip = path in ("/", "/health", "/metrics", "/docs", "/redoc", "/openapi.json")
+        skip = path in (
+            "/",
+            "/health",
+            "/metrics",
+            "/docs",
+            "/redoc",
+            "/openapi.json",
+            "/robots.txt",
+            "/favicon.ico",
+        )
         start = time.perf_counter()
         status_code = 500
         # The ``X-Moodify-Degraded`` header is set by inference handlers
@@ -357,6 +366,32 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
                 "headers": ["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Window", "Retry-After (on 429)"],
             },
         }
+
+    @web_app.get("/robots.txt", include_in_schema=False)
+    def robots_txt() -> Response:
+        """Tell crawlers to stay away from the inference API.
+
+        Crawlers (Google, Bing, archive bots) routinely probe `/robots.txt`
+        on any reachable URL. Without this route they get a 404 that wakes
+        the container, runs middleware, persists a metric, and otherwise
+        wastes scale-to-zero budget. A trivial allow-list-of-nothing
+        response keeps the surface area down AND skips the middleware
+        (the path is in the metrics middleware skip set already if we
+        add it; see below).
+        """
+        body = "User-agent: *\nDisallow: /\n"
+        return Response(
+            content=body,
+            media_type="text/plain",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
+
+    @web_app.get("/favicon.ico", include_in_schema=False)
+    def favicon_ico() -> Response:
+        """Browsers always probe `/favicon.ico`; return 204 to stop the
+        404 noise without serving an actual icon (the public-facing site
+        lives elsewhere)."""
+        return Response(status_code=204, headers={"Cache-Control": "public, max-age=86400"})
 
     @web_app.get("/health", response_model=HealthResponse)
     def health(response: Response) -> HealthResponse:
