@@ -7,7 +7,7 @@ const TermsOfServicePage = () => (
     kind="terms"
     title="Terms of Service"
     intro={
-      "Welcome to Moodify. By using our application you agree to these Terms of Service. Please read them carefully — they set out what you can expect from us and what we ask of you."
+      "Welcome to Moodify. By using our application you agree to these Terms of Service. Please read them carefully - they set out what you can expect from us and what we ask of you."
     }
     sections={[
       {

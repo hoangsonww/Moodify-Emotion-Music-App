@@ -473,4 +473,4 @@ kubectl describe ingress backend-ingress-canary -n $NAMESPACE
 ---
 
 **Last Updated**: 2025-11-26
-**Maintained by**: DevOps Team
+**Maintained by**: Son Nguyen

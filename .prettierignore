@@ -1,0 +1,11 @@
+frontend/build
+node_modules
+dist
+coverage
+*.log
+*.lock
+.DS_Store
+.env
+.env.local
+.env.development
+.env.test

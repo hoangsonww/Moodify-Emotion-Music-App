@@ -54,7 +54,7 @@ const ForgotPassword = () => {
         { username, email },
       );
       if (response.status === 200) {
-        toast.success("Verified — pick a new password.");
+        toast.success("Verified - pick a new password.");
         setStep(2);
       }
     } catch (error) {
@@ -88,7 +88,7 @@ const ForgotPassword = () => {
         new_password: newPassword,
       });
       if (response.status === 200) {
-        toast.success("Password updated — sign in to continue.");
+        toast.success("Password updated - sign in to continue.");
         setTimeout(() => navigate("/login"), 700);
       }
     } catch (error) {
@@ -120,7 +120,7 @@ const ForgotPassword = () => {
           </Box>
           <Typography sx={styles.heroBrand}>Reset your password</Typography>
           <Typography sx={styles.heroTag}>
-            Step {step} of 2 — {step === 1 ? "verify" : "set new password"}
+            Step {step} of 2 - {step === 1 ? "verify" : "set new password"}
           </Typography>
 
           <Box sx={{ mt: 2, position: "relative", zIndex: 1 }}>

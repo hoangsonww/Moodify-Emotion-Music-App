@@ -17,7 +17,7 @@
         <xhtml:link rel="alternate" hreflang="x-default" href="https://moodify-emotion-music-app.vercel.app/" />
         <image:image>
             <image:loc>https://moodify-emotion-music-app.vercel.app/android-chrome-512x512.png</image:loc>
-            <image:title>Moodify — AI mood-based music recommendations</image:title>
+            <image:title>Moodify - AI mood-based music recommendations</image:title>
             <image:caption>Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to it.</image:caption>
         </image:image>
     </url>

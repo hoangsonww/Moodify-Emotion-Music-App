@@ -24,10 +24,10 @@ const fmt = (s) => {
  * Inline mini-player for a 30-second Deezer preview.
  *
  * Props
- *   src       string — preview URL
- *   gradient  string[] — 2-3 stop colors used on the play button + progress
+ *   src       string - preview URL
+ *   gradient  string[] - 2-3 stop colors used on the play button + progress
  *   isDark    bool
- *   dense     bool — slightly smaller layout for the Profile track list
+ *   dense     bool - slightly smaller layout for the Profile track list
  */
 export default function TrackPlayer({
   src,
@@ -108,7 +108,7 @@ export default function TrackPlayer({
             try {
               onPlay();
             } catch {
-              // analytics-only — never let it crash playback
+              // analytics-only - never let it crash playback
             }
           }
         }).catch(() => setPlaying(false));

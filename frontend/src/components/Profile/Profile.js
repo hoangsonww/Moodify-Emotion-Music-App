@@ -134,7 +134,7 @@ const ProfilePage = () => {
   // ------------ data fetch ------------
   useEffect(() => {
     if (!token) {
-      toast.warning("You are not signed in — sending you to login.");
+      toast.warning("You are not signed in - sending you to login.");
       navigate("/login");
       return;
     }
@@ -158,7 +158,7 @@ const ProfilePage = () => {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         setUserData(JSON.parse(cached));
-        toast.info("Showing cached profile — couldn't reach the server.");
+        toast.info("Showing cached profile - couldn't reach the server.");
       } else {
         setError(
           "Failed to fetch profile data. Our servers might be down. Please try again later.",
@@ -285,7 +285,7 @@ const ProfilePage = () => {
         username: userData?.username,
         new_password: password,
       });
-      toast.success("Password updated — sign in with your new password.");
+      toast.success("Password updated - sign in with your new password.");
       setPwOpen(false);
       setPassword("");
       setConfirmPw("");
@@ -480,7 +480,7 @@ const ProfilePage = () => {
                   Welcome, {userData.username}!
                 </Typography>
                 <Typography sx={styles.heroSub}>
-                  Your moods, your music, your history — all in one place.
+                  Your moods, your music, your history - all in one place.
                 </Typography>
               </Box>
             </Box>
@@ -1422,7 +1422,7 @@ function TrackRow({ rec, isDark, profileId }) {
               mt: 0.25,
             }}
           >
-            No preview — open on Deezer to listen
+            No preview - open on Deezer to listen
           </Typography>
         )}
       </Box>
@@ -1430,7 +1430,7 @@ function TrackRow({ rec, isDark, profileId }) {
   );
 }
 
-// Listening-history entries are stored as plain "Name — Artist" strings
+// Listening-history entries are stored as plain "Name - Artist" strings
 // because the backend was sized for analytics, not metadata. Parse the
 // string back into a track-shaped object so we can render it in the same
 // rich card style as the saved-recommendations list above, and open a
@@ -1439,7 +1439,7 @@ function ListenRow({ entry, isDark, profileId }) {
   const [g1, , g3] = PROFILE_TRACK_PALETTE;
   const text = String(entry || "").trim();
   // The reverse split tolerates names containing the em-dash separator.
-  const splitIdx = text.lastIndexOf(" — ");
+  const splitIdx = text.lastIndexOf(" - ");
   const name = splitIdx > 0 ? text.slice(0, splitIdx) : text || "Untitled";
   const artist = splitIdx > 0 ? text.slice(splitIdx + 3) : "";
   const query = artist ? `${name} ${artist}` : name;

@@ -466,7 +466,7 @@ sequenceDiagram
    These are the only deployment-specific values the app needs. When
    deploying to Vercel, set the same two variables in the project's
    Environment Variables panel (Production / Preview / Development) and
-   redeploy — `frontend/src/config.js` reads them at build time.
+   redeploy - `frontend/src/config.js` reads them at build time.
 
 ### Running the Application
 

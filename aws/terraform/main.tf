@@ -37,7 +37,7 @@ provider "aws" {
       Project     = "Moodify"
       Environment = var.environment
       ManagedBy   = "Terraform"
-      Owner       = "DevOps Team"
+      Owner       = "Son Nguyen"
       CostCenter  = "Engineering"
     }
   }

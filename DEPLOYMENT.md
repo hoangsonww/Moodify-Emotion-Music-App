@@ -1222,7 +1222,7 @@ mindmap
 
 **Document Version**: 2.0
 **Last Updated**: 2025-11-26
-**Maintained by**: DevOps Team
+**Maintained by**: Son Nguyen
 **Changes in v2.0**:
 - Added blue-green deployment infrastructure
 - Added canary deployment with progressive rollout

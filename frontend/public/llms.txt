@@ -38,31 +38,31 @@ iOS + Android. All inference runs on Modal serverless GPUs.
 
 ## Endpoints
 
-- `POST /users/register/`              — create account
-- `POST /users/login/`                 — JWT pair
-- `POST /users/token/refresh/`         — refresh access token
-- `POST /users/verify-username-email/` — reset step 1
-- `POST /users/reset-password/`        — reset step 2
-- `GET  /users/user/profile/`          — profile + history
-- `PUT  /users/user/profile/update/`   — change username / email (re-issues JWT on rename)
-- `DELETE /users/user/profile/delete/` — permanent account deletion
-- `POST /users/mood_history/:pid/`     — append a mood
-- `POST /users/recommendations/:pid/`  — save tracks
-- `POST /users/listening_history/:pid/`— log a track open
-- `POST /text_emotion`                 — text → emotion + recommendations
-- `POST /speech_emotion`               — audio → emotion + recommendations
-- `POST /facial_emotion`               — image → emotion + recommendations
-- `POST /music_recommendation`         — emotion (+ market, history, genre) → tracks
+- `POST /users/register/`              - create account
+- `POST /users/login/`                 - JWT pair
+- `POST /users/token/refresh/`         - refresh access token
+- `POST /users/verify-username-email/` - reset step 1
+- `POST /users/reset-password/`        - reset step 2
+- `GET  /users/user/profile/`          - profile + history
+- `PUT  /users/user/profile/update/`   - change username / email (re-issues JWT on rename)
+- `DELETE /users/user/profile/delete/` - permanent account deletion
+- `POST /users/mood_history/:pid/`     - append a mood
+- `POST /users/recommendations/:pid/`  - save tracks
+- `POST /users/listening_history/:pid/`- log a track open
+- `POST /text_emotion`                 - text → emotion + recommendations
+- `POST /speech_emotion`               - audio → emotion + recommendations
+- `POST /facial_emotion`               - image → emotion + recommendations
+- `POST /music_recommendation`         - emotion (+ market, history, genre) → tracks
 
 ## Documentation
 
-- `README.md`              — top-level overview, screenshots, run instructions
-- `MOBILE_APPS.md`         — full mobile deep-dive (architecture, screens, theming)
-- `ARCHITECTURE.md`        — system architecture
-- `INFRASTRUCTURE_SETUP.md`— infra walkthrough
-- `DEPLOYMENT.md`          — deploy steps
-- `frontend/README.md`     — web client setup
-- `mobile/README.md`       — mobile app setup
+- `README.md`              - top-level overview, screenshots, run instructions
+- `MOBILE_APPS.md`         - full mobile deep-dive (architecture, screens, theming)
+- `ARCHITECTURE.md`        - system architecture
+- `INFRASTRUCTURE_SETUP.md`- infra walkthrough
+- `DEPLOYMENT.md`          - deploy steps
+- `frontend/README.md`     - web client setup
+- `mobile/README.md`       - mobile app setup
 
 ## Authoritative sources
 
@@ -90,4 +90,4 @@ You are welcome to crawl, index, summarize and reference the public
 content of this site (`/`, `/login`, `/register`, `/forgot-password`,
 `/privacy-policy`, `/terms-of-service`). The authenticated screens
 (`/home`, `/profile`, `/results`, `/recommendations`) are user-specific
-and not useful for general retrieval — please skip them.
+and not useful for general retrieval - please skip them.
