@@ -12,7 +12,7 @@ spec:
   project: moodify
 
   source:
-    repoURL: https://github.com/your-org/moodify.git
+    repoURL: https://github.com/hoangsonww/Moodify-Emotion-Music-App
     targetRevision: main
     path: helm/moodify-backend
     helm:
@@ -87,7 +87,7 @@ spec:
   description: Moodify Application Project
 
   sourceRepos:
-    - 'https://github.com/your-org/moodify.git'
+    - 'https://github.com/hoangsonww/Moodify-Emotion-Music-App'
     - 'https://charts.bitnami.com/bitnami'
     - 'https://prometheus-community.github.io/helm-charts'
 

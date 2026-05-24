@@ -189,8 +189,8 @@ graph TB
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-org/moodify.git
-cd moodify
+git clone https://github.com/hoangsonww/Moodify-Emotion-Music-App
+cd Moodify-Emotion-Music-App
 ```
 
 ### 2. Configure Environment Variables
