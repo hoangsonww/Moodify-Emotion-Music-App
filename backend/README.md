@@ -220,6 +220,8 @@ erDiagram
         list~string~ mood_history "append-only"
         list~string~ listening_history "append-only"
         list~dict~ recommendations "rich track objects"
+        dict mood_calibration "RL: {predicted: {actual: count}}"
+        dict taste_profile "RL: {alpha[22], beta[22], events}"
         datetime created_at
     }
 ```
@@ -227,7 +229,11 @@ erDiagram
 | Collection | Defined in | Notes |
 |---|---|---|
 | `users` | `users/documents.py` | Auth-bearing; replaces `django.contrib.auth.models.User`. Password hashing reuses `django.contrib.auth.hashers` (pure functions). |
-| `user_profile` | `api/models.py` | Re-exported from `users/models.py` so both apps share one definition. |
+| `user_profile` | `api/models.py` | Re-exported from `users/models.py` so both apps share one definition. Owns the two RL fields below. |
+| `mood_feedback` | `api/feedback_store.py` | Mongo time-series; one row per mood correction. Lazy-created. 365-day TTL. |
+| `track_feedback` | `api/feedback_store.py` | Mongo time-series; one row per 👍 / 👎 / open-in-Deezer signal. Lazy-created. 365-day TTL. |
+
+**Personalisation fields** (`UserProfile.mood_calibration`, `UserProfile.taste_profile`) are `DictField`s — schemaless, so no migration is needed when the layout evolves. The bandit's feature extractor is forward-compatible: shorter stored vectors are padded with the prior on read (`api/bandit.py:_read_posterior`).
 
 ---
 
@@ -423,11 +429,13 @@ For the matching Modal-side design, see
 |---|---|---|---|---|
 | `GET`  | `/api/health/`               | none          | —                                  | `{status: ok}`. |
 | `GET`  | `/api/metrics/`              | service token | —                                  | Aggregated p50/p95/p99, error rate, throughput per endpoint. See [§ SRE metrics](#sre-metrics). |
-| `POST` | `/api/text_emotion/`         | none          | `{text}`                           | Proxies to Modal `/text_emotion`. |
-| `POST` | `/api/music_recommendation/` | none          | `{emotion, market?, history?}`     | Proxies to Modal `/music_recommendation`. |
+| `POST` | `/api/text_emotion/`         | optional JWT  | `{text}`                           | Proxies to Modal `/text_emotion`. **If the caller is authenticated**, applies the per-user mood-calibration map (`api/calibration.py`) and may rewrite the predicted label; a `calibrated_from` field is added to the response in that case. |
+| `POST` | `/api/music_recommendation/` | optional JWT  | `{emotion, market?, history?, genre?}` | Proxies to Modal `/music_recommendation`. **If the caller is authenticated and warm** (≥ 20 feedback events), re-ranks the result list via the Thompson-Sampling bandit (`api/bandit.py`). Anonymous / cold callers see the base order. |
+| `POST` | `/api/feedback/`             | JWT required  | `{kind: "mood" \| "track", ...}`   | Unified RL feedback intake. Mood payloads append to `mood_feedback` and bump `UserProfile.mood_calibration[predicted][actual]`. Track payloads append to `track_feedback` and (when the optional `track` dict is supplied) update `UserProfile.taste_profile` via `bandit.update_posterior`. Returns 202 on success. |
 
-The proxy paths exist for server-to-server use; the web + mobile
-clients usually call Modal directly with their own user JWT.
+Authenticated browser / mobile clients hit the Django paths above so the
+RL layer can act; anonymous callers and large media uploads (speech, facial)
+go straight to Modal as before.
 
 ### Docs
 

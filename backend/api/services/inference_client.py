@@ -53,10 +53,19 @@ def text_emotion(text: str) -> dict:
 
 
 def music_recommendation(
-    emotion: str, market: str | None = None, history: list[str] | None = None
+    emotion: str,
+    market: str | None = None,
+    history: list[str] | None = None,
+    genre: str | None = None,
 ) -> dict:
     """Proxy a music-recommendation request."""
-    return _post(
-        "/music_recommendation",
-        {"emotion": emotion, "market": market, "history": history or []},
-    )
+    payload: dict = {
+        "emotion": emotion,
+        "market": market,
+        "history": history or [],
+    }
+    # Only forward genre when set; Modal treats the field as optional but
+    # avoids an extra null hop when we don't have a value.
+    if genre:
+        payload["genre"] = genre
+    return _post("/music_recommendation", payload)

@@ -338,6 +338,33 @@ under a millisecond per request — fast enough to run inline on every
 recommendation call. 14 unit tests in `tests/test_personalization.py`
 cover the maths.
 
+### Per-user RL re-rank (applied downstream in Django)
+
+The Modal recommender produces the **base** ordering described above.
+For authenticated callers, the Django backend applies a second pass
+on top — a Thompson-Sampling contextual bandit driven by the user's
+👍 / 👎 / open-in-Deezer signals. The split is deliberate:
+
+* Modal stays **identity-free** and **stateless**. It accepts the
+  shared service token from Django for anonymous proxy traffic; it
+  never reads user JWTs on the text / music endpoints and never holds
+  RL state.
+* All per-user state (Beta posterior, mood calibration map, feedback
+  event log) lives in Mongo and is owned by the Django app. The
+  bandit re-ranks **after** Modal returns; the calibration map
+  rewrites the predicted emotion **after** Modal's BERT call returns.
+
+See `backend/api/bandit.py`, `backend/api/track_features.py`, and
+`backend/api/calibration.py` for the implementation, and the
+ARCHITECTURE.md "Reinforcement-Learning / Personalisation Layer"
+section for the end-to-end flow.
+
+The bandit is **identity-when-cold** by construction: with fewer than
+20 logged signals (or zero, the anonymous case) it returns the input
+order unchanged. Anonymous Modal traffic is therefore unaffected, and
+new users see exactly the base EWMA + Markov ordering until they
+cross the threshold.
+
 ---
 
 ## Authentication

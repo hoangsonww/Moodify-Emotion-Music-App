@@ -1139,13 +1139,12 @@ function Stat({ icon, label, value, tint }) {
   return (
     <Box
       sx={{
-        flex: 1,
         minWidth: 0,
         background: "rgba(255,255,255,0.08)",
         backdropFilter: "blur(6px)",
         borderRadius: "14px",
         border: "1px solid rgba(255,255,255,0.18)",
-        p: 1.75,
+        p: { xs: 1.5, sm: 1.75 },
         display: "flex",
         alignItems: "center",
         gap: 1.5,
@@ -1167,14 +1166,31 @@ function Stat({ icon, label, value, tint }) {
       >
         {icon}
       </Box>
-      <Box sx={{ minWidth: 0 }}>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography
-          sx={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: "#fff" }}
+          sx={{
+            fontSize: 22,
+            fontWeight: 800,
+            lineHeight: 1,
+            color: "#fff",
+            // 3-digit values like 250 + a small card -- never let the
+            // number wrap; truncate instead.
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
         >
           {value}
         </Typography>
         <Typography
-          sx={{ fontSize: 12, color: "rgba(255,255,255,0.85)", mt: 0.25 }}
+          sx={{
+            fontSize: 12,
+            color: "rgba(255,255,255,0.85)",
+            mt: 0.25,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
         >
           {label}
         </Typography>
@@ -1762,9 +1778,11 @@ const getStyles = (isDark) => ({
   },
   statsRow: {
     mt: 3,
-    display: "flex",
+    display: "grid",
+    // 1-up on phones (each card gets full width so the label never
+    // wraps awkwardly under a 3-digit value), 3-up from tablet up.
+    gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
     gap: 1.5,
-    flexWrap: "wrap",
     position: "relative",
   },
 

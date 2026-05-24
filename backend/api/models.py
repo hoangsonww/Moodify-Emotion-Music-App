@@ -32,3 +32,19 @@ class UserProfile(Document):
     listening_history = ListField(StringField())
     recommendations = ListField(DictField())
     created_at = DateTimeField(default=datetime.utcnow)
+
+    # RL feedback state. Both are nested dicts that may be empty for a
+    # cold-start user; the bandit / calibration layers treat absence as
+    # "no signal yet" and fall back to the rule-based pipelines.
+    #
+    # mood_calibration: ``{predicted: {actual: count}}`` -- e.g. a user
+    # who has corrected "joy" to "love" three times will have
+    # ``{"joy": {"love": 3}}``. The text-emotion inference path reads
+    # this map at call time and, if a dominant correction exists,
+    # rewrites the final label for that user only.
+    #
+    # taste_profile: ``{"alpha": [float, ...], "beta": [float, ...]}``
+    # -- Beta-Bernoulli posterior parameters over the fixed-order track-
+    # feature vector. Empty until the user's first track signal arrives.
+    mood_calibration = DictField(default=dict)
+    taste_profile = DictField(default=dict)

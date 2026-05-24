@@ -51,6 +51,10 @@ import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../context/DarkModeContext";
 import { useToast } from "../components/Toast";
 import { API_URL, MODAL_API_URL } from "../config";
+import {
+  detectTextEmotion,
+  getRecommendations,
+} from "../services/recommend";
 
 // ---------- shared mood palette (same colors as Results page) ----------
 const MOOD_PALETTE = {
@@ -558,16 +562,9 @@ const HomePage = () => {
           return;
         }
         response = await Promise.race([
-          axios.post(
-            `${MODAL_API_URL}/text_emotion`,
-            { text: textContent },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          ),
+          // Authed callers hit Django so per-user calibration applies;
+          // anon callers fall through to Modal directly.
+          detectTextEmotion({ text: textContent, token }),
           timeout(60000), // Timeout set to 1 minute
         ]);
       } else if (activeTab === "face") {
@@ -595,7 +592,17 @@ const HomePage = () => {
       // Save both mood and recommendations to history
       await saveToHistory(emotion, recommendations);
 
-      navigate("/results", { state: { emotion, recommendations } });
+      // Modality flows through to ResultsPage so the mood-correction
+      // widget can label the disagreement event correctly.
+      const inputType =
+        activeTab === "face"
+          ? "facial"
+          : activeTab === "speech"
+            ? "speech"
+            : "text";
+      navigate("/results", {
+        state: { emotion, recommendations, inputType },
+      });
     } catch (error) {
       console.error(
         `Error uploading ${activeTab} file or request timed out:`,
@@ -609,12 +616,7 @@ const HomePage = () => {
 
       try {
         // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
+        const response = await getRecommendations({ emotion: newMood });
 
         const newRecommendations = response.data.recommendations || [];
 
@@ -695,7 +697,9 @@ const HomePage = () => {
       // Save both mood and recommendations to history
       await saveToHistory(emotion, recommendations);
 
-      navigate("/results", { state: { emotion, recommendations } });
+      navigate("/results", {
+        state: { emotion, recommendations, inputType: "facial" },
+      });
     } catch (error) {
       console.error("Error or timeout occurred:", error);
 
@@ -706,12 +710,7 @@ const HomePage = () => {
 
       try {
         // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
+        const response = await getRecommendations({ emotion: newMood });
 
         const newRecommendations = response.data.recommendations || [];
 
@@ -744,16 +743,8 @@ const HomePage = () => {
     try {
       // Race the text submission request against a 1-minute timeout
       const response = await Promise.race([
-        axios.post(
-          `${MODAL_API_URL}/text_emotion`,
-          { text: inputValue.trim() },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        ),
+        // Authed callers hit Django so per-user calibration applies.
+        detectTextEmotion({ text: inputValue.trim(), token }),
         timeout(60000), // Timeout set to 1 minute
       ]);
 
@@ -763,7 +754,9 @@ const HomePage = () => {
       await saveToHistory(emotion, recommendations);
 
       // Navigate to the results page with the response data
-      navigate("/results", { state: { emotion, recommendations } });
+      navigate("/results", {
+        state: { emotion, recommendations, inputType: "text" },
+      });
     } catch (error) {
       console.error("Error processing text or request timed out:", error);
 
@@ -774,12 +767,7 @@ const HomePage = () => {
 
       try {
         // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
+        const response = await getRecommendations({ emotion: newMood });
 
         const newRecommendations = response.data.recommendations || [];
 
@@ -947,7 +935,9 @@ const HomePage = () => {
       ]);
 
       const { emotion, recommendations } = response.data;
-      navigate("/results", { state: { emotion, recommendations } });
+      navigate("/results", {
+        state: { emotion, recommendations, inputType: "speech" },
+      });
     } catch (error) {
       console.error("Error uploading audio or request timed out:", error);
 
@@ -958,12 +948,7 @@ const HomePage = () => {
 
       try {
         // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
+        const response = await getRecommendations({ emotion: newMood });
 
         const newRecommendations = response.data.recommendations || [];
 
@@ -1005,9 +990,7 @@ const HomePage = () => {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const res = await axios.post(`${MODAL_API_URL}/music_recommendation`, {
-        emotion: String(mood).toLowerCase(),
-      });
+      const res = await getRecommendations({ emotion: mood });
       const recommendations = res.data?.recommendations || [];
       if (token) {
         await saveToHistory(mood, recommendations);

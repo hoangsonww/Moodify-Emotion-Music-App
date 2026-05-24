@@ -333,10 +333,21 @@ The Moodify project aims to provide the following features:
 - Data analytics scripts for emotion trends and model performance.
 - AI/ML models for text, speech, and facial emotion detection.
 - User profile management and customization.
+- **Reinforcement-learning feedback loop** — a "Was this right?" widget under every detection records per-user mood corrections, and 👍 / 👎 / open-in-Deezer signals on every track feed a Thompson-Sampling contextual bandit that re-ranks subsequent recommendation lists. Cold-start guarantee: new and anonymous users see exactly the rule-based EWMA+Markov order until they cross 20 logged signals.
 - Mobile app version for seamless user experience.
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
 - And so much more!
+
+### Personalisation pipeline (RL layer)
+
+| Layer | What it does | Where |
+|---|---|---|
+| L1 — per-user mood calibration | Persistent `{predicted: {actual: count}}` map on `UserProfile`. After ≥ 3 same-direction corrections, the text-emotion view rewrites the predicted label for that user only. Anonymous callers unaffected. | `backend/api/calibration.py`, applied in `api/views.py:text_emotion` |
+| L2 — disagreement / signal log | Two MongoDB time-series collections, `mood_feedback` and `track_feedback`, capture every `POST /api/feedback/` event for analysis and future LoRA fine-tunes. | `backend/api/feedback_store.py` |
+| L3 — Thompson-Sampling bandit re-rank | Beta-Bernoulli posterior over a fixed 22-dim feature vector (emotion×6, decade×7, duration×4, popularity-quintile×5). 👍 → +1 α, 👎 → +1 β, open-in-Deezer → +0.5 α. Re-orders the candidate list returned by the EWMA + Markov base scorer; can never inject, drop, or invent tracks. | `backend/api/bandit.py` + `backend/api/track_features.py`, applied in `api/views.py:music_recommendation` |
+
+All three layers are user-scoped and authentication-gated. The feedback endpoint is `POST /api/feedback/` and accepts both `{kind: "mood", ...}` and `{kind: "track", ...}` payloads (see `backend/openapi.yaml`).
 
 <h2 id="-technologies">🛠️ Technologies</h2>
 
