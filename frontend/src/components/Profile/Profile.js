@@ -17,7 +17,6 @@ import {
   Paper,
   Stack,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import {
@@ -25,7 +24,6 @@ import {
   AutoAwesome,
   Clear,
   Delete,
-  Edit,
   Email,
   HistoryToggleOff,
   Key,
@@ -55,7 +53,7 @@ import { logTrackOpen } from "../../services/listening";
 import { API_URL, MODAL_API_URL } from "../../config";
 import { logout as clearAuthTokens, setTokens } from "../../services/auth";
 
-const USERNAME_RE = /^[A-Za-z0-9_.\-]{3,30}$/;
+const USERNAME_RE = /^[A-Za-z0-9_.-]{3,30}$/;
 
 // Brand gradient palette shared with the Results page for saved tracks.
 const PROFILE_TRACK_PALETTE = ["#ff4d4d", "#ff7a59", "#ec4899"];
@@ -367,7 +365,10 @@ const ProfilePage = () => {
 
   // ------------ derived ------------
   const moods = userData?.mood_history || [];
-  const recs = userData?.recommendations || [];
+  const recs = useMemo(
+    () => userData?.recommendations || [],
+    [userData?.recommendations],
+  );
 
   // ---- saved-recommendations search + sort ----
   const RECS_SORTS = [
