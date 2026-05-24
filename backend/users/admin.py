@@ -1,18 +1,19 @@
+"""Local-only Django admin customisation.
+
+This module is only meaningful when ``ENABLE_ADMIN`` is on (local dev).
+Vercel production runs without ``django.contrib.admin`` in INSTALLED_APPS,
+so admin autodiscovery never imports this file there.
+
+Why not register ``User`` / ``UserProfile`` here? Both are mongoengine
+Documents, not Django ORM Models, so they don't satisfy the ``ModelAdmin``
+contract and registering them would raise. The classic admin exists locally
+only for ``createsuperuser`` (Django's own ``auth.User`` table in SQLite)
+so an operator can sign in to a real admin page; user-facing data lives in
+MongoDB Atlas and is still managed through the REST API.
+"""
+
 from django.contrib import admin
-from .models import UserProfile
-from django.utils.translation import gettext_lazy as _
 
-admin.site.site_header = _("Emotion-Based Music App Admin")
-admin.site.site_title = _("Emotion-Based Music App Admin Portal")
-admin.site.index_title = _("Emotion-Based Music App Admin Portal")
-
-admin.site.site_header = "Emotion-Based Music App Admin"
-admin.site.site_title = "Music App Admin Portal"
-admin.site.index_title = "Welcome to the Music App Admin"
-
-
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('username', 'created_at')
-    search_fields = ('username',)
-
-admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.site_header = "Moodify Admin"
+admin.site.site_title = "Moodify Admin"
+admin.site.index_title = "Moodify Admin — local only"

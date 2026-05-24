@@ -639,8 +639,21 @@ functions time out before a 12 MB audio file finishes uploading, and
 a Django bundle. The current split — clients call Modal directly with
 their JWT — avoids both ceilings.
 
-**Why no admin app?** No SQL → no Django admin. We never needed one;
-all state is per-user history.
+**Why no admin app in production?** No SQL → no Django admin on Vercel.
+All app state is per-user history that lives in MongoDB Atlas and is
+managed through the REST API. The admin is **opt-in for local dev only**:
+
+```bash
+export ENABLE_ADMIN=True   # auto-on whenever DEBUG=True
+python manage.py migrate   # one-time SQLite + auth tables
+python manage.py createsuperuser
+python manage.py runserver # http://127.0.0.1:8000/admin/
+```
+
+`ENABLE_ADMIN=False` (the default in production) leaves
+`django.contrib.admin` / `auth.User` table / sessions / `csrf` entirely
+out of `INSTALLED_APPS`, so `/admin/` returns `404` and the deploy
+matches the original no-SQL footprint exactly.
 
 **Can I run this against a local MongoDB?** Yes — set
 `MONGO_DB_URI=mongodb://localhost:27017/emotion_based_music_db` and

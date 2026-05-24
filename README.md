@@ -789,9 +789,14 @@ for the full design (schema, resilience model, cost math).
 
 ### **Admin Interface Endpoints**
 
-| HTTP Method | Endpoint                     | Description                                  |
-|-------------|------------------------------|----------------------------------------------|
-| `GET`       | `/admin/`                    | Access the Django Admin interface            |
+| HTTP Method | Endpoint  | Description                                         |
+|-------------|-----------|-----------------------------------------------------|
+| `GET`       | `/admin/` | Django admin (local-only — see _Admin Interface_)   |
+
+> The admin is **local-only**. It is gated behind `ENABLE_ADMIN=True`
+> (auto-on whenever `DEBUG=True`). The Vercel deploy ships with
+> `ENABLE_ADMIN=False`, so `/admin/` returns `404` in production — by
+> design, since production has no SQL database.
 
 ### **Documentation Endpoints**
 
@@ -801,15 +806,35 @@ for the full design (schema, resilience model, cost math).
 | `GET`       | `/redoc/`   | Access the Redoc API documentation        |
 | `GET`       | `/`         | Access the API root endpoint (Swagger UI) |
 
-### **Admin Interface**
+### **Admin Interface** (local only)
 
-1. Create a superuser:
+Production runs on Vercel with no SQL database, so the classic Django
+admin is intentionally **disabled there**. Locally it's a single env-flag
+away — flip it on, apply migrations once, create a superuser, and the
+familiar admin login page lives at `/admin/`.
+
+1. Opt in (auto-on whenever `DEBUG=True`):
+   ```bash
+   export ENABLE_ADMIN=True       # or set DEBUG=True
+   ```
+2. One-time SQLite + admin tables:
+   ```bash
+   python manage.py migrate
+   ```
+3. Create a superuser:
    ```bash
    python manage.py createsuperuser
    ```
-2. Access the admin panel at `http://127.0.0.1:8000/admin/`
+4. Run the server and open the admin:
+   ```bash
+   python manage.py runserver
+   open http://127.0.0.1:8000/admin/
+   ```
 
-3. You should see the following login page:
+> User-facing data (mood history, listening history, saved
+> recommendations) lives in MongoDB Atlas and is managed through the REST
+> API, not the admin. The admin only sees Django's own `auth.User` table —
+> the superuser you create with `createsuperuser`.
 
 <p align="center">
   <img src="images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
