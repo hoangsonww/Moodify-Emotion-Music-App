@@ -1,0 +1,62 @@
+# =============================================================================
+# GKE Ingress — global HTTP(S) load balancer fronting the SPA + API
+# =============================================================================
+# Pairs with managedcertificate.yaml and backend-config.yaml.
+# Requires the `gce` ingress class (the default on GKE).
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: moodify-ingress
+  namespace: moodify
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "moodify-static-ip"
+    networking.gke.io/managed-certificates: "moodify-cert"
+    networking.gke.io/v1beta1.FrontendConfig: "moodify-frontend-config"
+spec:
+  defaultBackend:
+    service:
+      name: moodify-frontend
+      port:
+        number: 80
+  rules:
+    - host: moodify.example.com
+      http:
+        paths:
+          - path: /users/
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-backend
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-frontend
+                port:
+                  number: 80
+    - host: api.moodify.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-backend
+                port:
+                  number: 8000
+---
+# FrontendConfig — HTTPS redirect + SSL policy
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: moodify-frontend-config
+  namespace: moodify
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: MOVED_PERMANENTLY_DEFAULT
+  sslPolicy: moodify-modern-tls   # create via `gcloud compute ssl-policies create`

@@ -1,0 +1,130 @@
+# =============================================================================
+# moodify-frontend — default values
+# =============================================================================
+
+environment: production
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: moodify/frontend
+  pullPolicy: IfNotPresent
+  tag: "latest"
+imagePullSecrets: []
+
+replicaCount: 3
+
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+serviceAccount:
+  create: true
+  name: moodify-frontend-sa
+  annotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101            # nginx user on alpine
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 101
+  capabilities:
+    drop: [ALL]
+
+resources:
+  requests: { cpu: 50m,  memory: 64Mi }
+  limits:   { cpu: 500m, memory: 256Mi }
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "12m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - host: moodify.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts: [moodify.example.com]
+      secretName: moodify-frontend-tls
+
+# Inlined into a ConfigMap and served as `env.js` so the SPA can read the
+# backend URL at runtime without re-baking the image per environment.
+runtimeConfig:
+  REACT_APP_BACKEND_URL: "https://api.moodify.example.com"
+  REACT_APP_MODAL_URL:   "https://hoangsonww--moodify-inference-inferenceservice-web.modal.run"
+  REACT_APP_ENVIRONMENT: "production"
+
+# Writable scratch dirs for nginx (because the rootfs is read-only).
+emptyDirs:
+  - name: cache
+    mountPath: /var/cache/nginx
+  - name: run
+    mountPath: /var/run
+  - name: tmp
+    mountPath: /tmp
+
+probes:
+  liveness:
+    httpGet:
+      path: /healthz
+      port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 15
+  readiness:
+    httpGet:
+      path: /healthz
+      port: 8080
+    initialDelaySeconds: 2
+    periodSeconds: 5
+  startup:
+    httpGet:
+      path: /healthz
+      port: 8080
+    failureThreshold: 30
+    periodSeconds: 2
+
+nodeSelector: {}
+tolerations: []
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: moodify-frontend
+
+monitoring:
+  serviceMonitor:
+    enabled: false   # the SPA itself has no /metrics; rely on edge exporter

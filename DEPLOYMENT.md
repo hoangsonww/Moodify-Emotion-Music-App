@@ -2,6 +2,122 @@
 
 Comprehensive deployment procedures, runbooks, and operational guidelines for Moodify production environments.
 
+> ## Two production paths
+>
+> Moodify supports two production deployment topologies. Pick the one
+> that matches your environment — they don't overlap.
+>
+> | Path                          | When to use                                                                                            | Where it lives in this repo                                          |
+> | ----------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+> | **🟢 Vercel + Modal (canonical)** | Default. Zero-ops, scale-to-zero, what the public Moodify deployment uses.                          | `make deploy-prod` (orchestrates `deploy-modal` + `deploy-vercel-*`)   |
+> | **🔵 Self-host on Kubernetes**    | Compliance, data residency, air-gapped, or org-mandated cloud (AWS / GCP / OCI / Azure).            | `terraform/` + `helm/` + `kubernetes/` + `argocd/`                    |
+>
+> Sections **Quick Start** below cover the Vercel + Modal path. Sections
+> **Blue-Green Deployment**, **Canary Deployment**, **CI/CD Pipeline**,
+> **Operational Runbooks** target the Kubernetes self-host path.
+
+## Vercel + Modal quick start (canonical)
+
+```bash
+# Modal inference (one-time models bootstrap, then deploy)
+cd modal_inference
+modal run modal_app.py::download_models    # first time only
+modal deploy modal_app.py
+
+# Vercel projects (backend Django API + frontend SPA)
+vercel link              # link both backend/ and frontend/ to your Vercel projects
+vercel env add EXPO_PUBLIC_API_URL       # set per-project envs (see below)
+vercel env add EXPO_PUBLIC_MODAL_API_URL
+
+# Deploy both
+( cd backend  && vercel deploy --prod --yes )
+( cd frontend && vercel deploy --prod --yes )
+
+# Or from repo root via Makefile
+make deploy-prod
+```
+
+Required envs for the **frontend** Vercel project (CRA build-time):
+
+* `REACT_APP_API_URL` → `https://moodify-backend-api.vercel.app`
+* `REACT_APP_MODAL_API_URL` → Modal service URL printed by `modal deploy`
+
+Required envs for the **backend** Vercel project:
+
+* `MONGO_URI`, `JWT_SIGNING_KEY`, `MODAL_INFERENCE_URL`,
+  `MODAL_SERVICE_TOKEN`, `CORS_ALLOWED_ORIGINS`.
+
+Required envs for the **mobile** Expo app (set via `eas env:create` or
+in `mobile/.env`):
+
+* `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_MODAL_API_URL`.
+
+## Vercel + Modal smoke verify
+
+```bash
+curl -fsS https://moodify-backend-api.vercel.app/users/health/        # Django
+curl -fsS https://hoangsonww--moodify-inference-inferenceservice-web.modal.run/health  # Modal
+make perf-smoke API_URL=https://moodify-backend-api.vercel.app        # k6 smoke
+```
+
+Roll back with the Vercel CLI:
+
+```bash
+vercel rollback --token=$VERCEL_TOKEN  # picks the previous deployment
+```
+
+Roll back Modal by re-deploying a prior tag:
+
+```bash
+cd modal_inference
+git checkout v1.2.3
+modal deploy modal_app.py
+```
+
+---
+
+## Self-host quick start (Kubernetes)
+
+If you're taking the self-host path instead of Vercel + Modal:
+
+```bash
+# 1. Provision the cloud foundation
+cd aws/terraform                        # or gcp/terraform / oracle-cloud/terraform
+cp terraform.tfvars.example terraform.tfvars && $EDITOR terraform.tfvars
+cp backend.hcl.example backend.hcl     && $EDITOR backend.hcl
+terraform init -backend-config=backend.hcl
+terraform apply
+
+# 2. Kubeconfig from the outputs
+eval "$(terraform output -raw kubeconfig_command)"
+
+# 3. Cloud-specific overlays (IRSA / Workload Identity, StorageClass, Ingress)
+kubectl apply -f ../kubernetes/production/        # AWS
+# OR
+kubectl apply -f ../../gcp/kubernetes/            # GCP
+
+# 4. Argo CD GitOps (one-time)
+kubectl apply -f ../../argocd/install-argocd.yaml
+kubectl apply -f ../../argocd/applications/
+
+# 5. Or skip Argo CD and install charts directly
+helm dependency update helm/monitoring
+helm upgrade --install monitoring helm/monitoring -n monitoring --create-namespace \
+  -f helm/monitoring/values.yaml
+helm upgrade --install moodify-backend  helm/moodify-backend  -n moodify --create-namespace
+helm upgrade --install moodify-frontend helm/moodify-frontend -n moodify
+
+# 6. (Optional) front the cluster with the in-repo nginx edge
+cd nginx && make build && make up && make health
+```
+
+Roll back a chart with `helm rollback <release> <revision>`. Roll back
+Terraform with `terraform apply -var-file=previous.tfvars`. The
+GitOps-driven path rolls back by reverting the commit and letting Argo CD
+reconcile.
+
+---
+
 ## Table of Contents
 
 - [Deployment Overview](#deployment-overview)
@@ -212,12 +328,18 @@ export NAMESPACE=moodify-staging
 
 ### 2. Infrastructure
 
-- [ ] Terraform plan reviewed
+- [ ] `terraform plan` reviewed for the target cloud (`aws/terraform/`,
+      `gcp/terraform/`, `oracle-cloud/terraform/`)
+- [ ] All Terraform modules (`vpc`, `eks`/`gke`/`aks`, `rds`, `redis`,
+      `s3`, `monitoring`, `argocd`) pinned in `main.tf`
 - [ ] No breaking changes in dependencies
 - [ ] Database migrations tested
 - [ ] Redis cache warmed
-- [ ] SSL certificates valid (>30 days)
+- [ ] SSL certificates valid (>30 days) — run
+      `nginx/scripts/healthcheck.sh https://moodify.example.com`
 - [ ] DNS TTL reduced (if DNS changes)
+- [ ] If touching observability: `helm lint helm/monitoring &&
+      helm template helm/monitoring -f helm/monitoring/values.yaml`
 
 ### 3. Monitoring
 

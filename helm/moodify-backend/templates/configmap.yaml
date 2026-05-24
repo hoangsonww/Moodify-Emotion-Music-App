@@ -1,0 +1,12 @@
+{{- if .Values.configMap }}
+{{- if .Values.configMap.data }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "moodify-backend.fullname" . }}-config
+  labels:
+    {{- include "moodify-backend.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.configMap.data | nindent 2 }}
+{{- end }}
+{{- end }}

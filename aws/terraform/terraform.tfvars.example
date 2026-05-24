@@ -1,0 +1,51 @@
+# =============================================================================
+# Example tfvars for the aws/terraform root
+# =============================================================================
+# Copy to terraform.tfvars and fill in. NEVER commit a real terraform.tfvars
+# that contains secrets — use sops, Vault, AWS SSM SecureString, or
+# `TF_VAR_*` env vars in CI.
+# =============================================================================
+
+environment = "production"
+aws_region  = "us-east-1"
+
+# Domain + DNS
+domain_name             = "moodify.example.com"
+api_subdomain           = "api"
+hosted_zone_id          = "ZXXXXXXXXXXXXX"
+
+# VPC
+vpc_cidr                = "10.0.0.0/16"
+availability_zones      = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+# EKS sizing
+kubernetes_version      = "1.30"
+eks_node_instance_types = ["m5.large", "m5a.large"]
+eks_node_desired_size   = 4
+eks_node_min_size       = 3
+eks_node_max_size       = 12
+eks_node_capacity_type  = "ON_DEMAND"
+
+# Data stores
+rds_instance_class      = "db.m5.large"
+rds_storage_gb          = 200
+rds_multi_az            = true
+rds_backup_retention_d  = 30
+rds_deletion_protection = true
+
+redis_node_type            = "cache.m5.large"
+redis_num_cache_nodes      = 3
+redis_automatic_failover   = true
+
+# Observability
+prometheus_retention    = "45d"
+prometheus_storage_size = "200Gi"
+grafana_admin_password  = "REPLACE_ME"
+slack_webhook_url       = ""
+pagerduty_service_key   = ""
+
+# Tags (merged into the provider default_tags)
+extra_tags = {
+  CostCenter = "platform"
+  Compliance = "soc2"
+}

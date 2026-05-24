@@ -1,0 +1,23 @@
+# =============================================================================
+# StorageClass — EBS gp3 (default)
+# =============================================================================
+# The EBS CSI driver add-on (installed by the EKS module) provides the
+# in-tree provisioner. gp3 is the right default — same perf as gp2
+# at a third of the cost, with knob-able IOPS / throughput.
+# =============================================================================
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-sc-gp3
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  encrypted: "true"
+  fsType: ext4

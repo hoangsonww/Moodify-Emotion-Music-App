@@ -2,6 +2,52 @@
 
 Complete guide for setting up the production-ready deployment infrastructure for Moodify.
 
+> 💡 **Heads up — this guide covers the self-host path.** If you're
+> running Moodify on Vercel + Modal (the canonical production path),
+> none of this is needed — skip to [`DEPLOYMENT.md`](DEPLOYMENT.md)
+> instead. The infra below is for clusters you own, on AWS / GCP /
+> Oracle Cloud / Azure.
+
+## At a glance — what gets built
+
+```
+                          ┌──────────────────────┐
+                          │  Terraform (root +   │
+                          │  per-env tfvars)     │
+                          └──────────┬───────────┘
+                                     ▼
+       ┌───────────────────────────────────────────────────┐
+       │  Cloud foundation (VPC, IAM, KMS, secrets store)  │
+       └───────────────────────────────────────────────────┘
+                                     │
+   ┌────────────┬─────────────┬──────┴──────┬────────────────┬──────────────┐
+   ▼            ▼             ▼             ▼                ▼              ▼
+ EKS/GKE/    Managed       Managed       Object         Notification     CDN +
+ AKS/OKE     Postgres      Redis         storage        topics (alarms)  WAF
+   │
+   ├──────► Helm install (helm/moodify-backend/ + helm/moodify-frontend/)
+   │
+   ├──────► Argo CD bootstrap (argocd/install-argocd.yaml + applications/)
+   │
+   ├──────► Add-ons (k8s-addons/)  — External Secrets, OPA, Velero, Chaos Mesh
+   │
+   └──────► Monitoring (helm/monitoring umbrella —
+                       kube-prometheus-stack + Loki + Promtail + Tempo)
+```
+
+### Module / chart inventory
+
+| Layer | What lives where |
+| ----- | ---------------- |
+| **Terraform modules** (`terraform/modules/`) | `vpc` (subnets + flow logs) · `eks` (AWS K8s + IRSA OIDC) · `aks` (Azure K8s + Workload Identity) · `gke` (GCP K8s + Workload Identity + Cilium) · `rds` (Multi-AZ Postgres + KMS + Secrets Manager) · `redis` (ElastiCache replication + TLS) · `s3` (encrypted buckets, lifecycle) · `monitoring` (Grafana + dashboards + alerts) · `argocd` (HA Argo CD with app-of-apps) |
+| **Per-cloud roots** | `aws/terraform/`, `gcp/terraform/`, `oracle-cloud/terraform/` — wire modules together; each ships `outputs.tf`, `terraform.tfvars.example`, `backend.hcl.example` |
+| **Cloud-specific overlays** | `aws/kubernetes/production/` (StorageClass, ALB Ingress, cluster-autoscaler, external-secrets) · `gcp/kubernetes/` (StorageClass, ManagedCertificate, BackendConfig, GKE Ingress, external-secrets) |
+| **IAM bindings** | `aws/iam/irsa-examples.tf` — least-privilege IRSA roles for ESO, backend, cluster-autoscaler |
+| **Cross-cloud monitoring** | `aws/cloudwatch/` (dashboard + alarms) · `gcp/monitoring/` (Cloud Monitoring dashboard + alert policies) |
+| **Helm charts** | `helm/moodify-backend/` (Django, blue/green) · `helm/moodify-frontend/` (React SPA, runtime env.js) · `helm/monitoring/` (umbrella + Moodify SLO rules + Grafana dashboards) |
+| **Edge proxy** | `nginx/` — `nginx.conf` + `snippets/{security,ssl,proxy,cors,well-known,maintenance}.conf` + `scripts/{generate-dev-tls,test-config,reload,healthcheck,renew-certs,maintenance}.sh` + `exporter/` (prometheus sidecar) |
+| **GitOps** | `argocd/applications/*` — one Application per chart, pulls from `helm/` |
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
@@ -143,8 +189,8 @@ graph TB
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/your-org/moodify.git
-cd moodify
+git clone https://github.com/hoangsonww/Moodify-Emotion-Music-App
+cd Moodify-Emotion-Music-App
 ```
 
 ### 2. Configure Environment Variables
@@ -440,38 +486,61 @@ git push
 
 ## Setup Monitoring
 
-### 1. Install Prometheus
+The full observability stack ships as a single umbrella chart at
+[`helm/monitoring/`](helm/monitoring/) — `kube-prometheus-stack`, Loki,
+Promtail, and Tempo, pre-wired with the Moodify dashboards and SLO alerts.
+
+### 1. Install the umbrella chart
 
 ```bash
-# Add Prometheus Helm repo
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+# Pull chart dependencies (Prometheus, Loki, Tempo, Promtail)
+helm dependency update helm/monitoring
 
-# Install Prometheus
-helm install prometheus prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --create-namespace \
-  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+# Production install
+helm upgrade --install monitoring helm/monitoring \
+  --namespace monitoring --create-namespace \
+  --values helm/monitoring/values.yaml \
+  --set "kube-prometheus-stack.grafana.adminPassword=$(openssl rand -hex 16)"
+
+# Local / minikube
+helm upgrade --install monitoring helm/monitoring \
+  -n monitoring --create-namespace \
+  -f helm/monitoring/values.yaml \
+  -f helm/monitoring/values-dev.yaml
 
 # Verify
 kubectl get pods -n monitoring
+helm test monitoring -n monitoring
 ```
 
-### 2. Install Grafana
+### 2. Grafana
 
-Grafana is included with kube-prometheus-stack. Access it:
+Grafana ships behind an Ingress with cert-manager-issued TLS. Without
+ingress, port-forward:
 
 ```bash
-# Get Grafana password
-kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+kubectl --namespace monitoring get secret grafana \
+  -o jsonpath="{.data.admin-password}" | base64 --decode
 
-# Port forward Grafana
-kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
-
-# Access: http://localhost:3000
-# Username: admin
-# Password: <from above>
+kubectl --namespace monitoring port-forward svc/grafana 3000:80
+# http://localhost:3000   user: admin
 ```
+
+The Moodify folder is auto-populated by the dashboards in
+`helm/monitoring/dashboards/` (overview, inference, postgres).
+
+### 3. Cloud-native fallback (when the cluster is down)
+
+Prometheus is the source of truth, but you also have a parallel cloud
+dashboard so observability survives a control-plane outage:
+
+* **AWS** — `aws/cloudwatch/{dashboard,alarms}.tf` provisions a CloudWatch
+  dashboard + alarms (EKS node CPU, RDS CPU/storage, ElastiCache memory).
+* **GCP** — `gcp/monitoring/{dashboard,alerts}.tf` provisions a Cloud
+  Monitoring dashboard + alert policies for GKE + Cloud SQL.
+
+Both consume the same SNS / notification channels you wire into Grafana
+AlertManager, so alerts arrive on the same Slack / PagerDuty.
 
 ### 3. Configure Dashboards
 

@@ -1,0 +1,54 @@
+# =============================================================================
+# BackendConfig — GCLB health checks + Cloud Armor + IAP
+# =============================================================================
+# Attached to a Service via the `cloud.google.com/backend-config` annotation
+# (see ingress.yaml). Tunes how GCLB probes the Service and which Cloud Armor
+# policy is enforced.
+# =============================================================================
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: moodify-backend-config
+  namespace: moodify
+spec:
+  timeoutSec: 60
+  connectionDraining:
+    drainingTimeoutSec: 60
+  healthCheck:
+    type: HTTP
+    requestPath: /healthz
+    port: 8000
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+  sessionAffinity:
+    affinityType: NONE
+  logging:
+    enable: true
+    sampleRate: 1.0
+  securityPolicy:
+    name: moodify-armor   # create via `gcloud compute security-policies create`
+  iap:
+    enabled: false        # flip true for staff-only admin endpoints
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: moodify-frontend-config
+  namespace: moodify
+spec:
+  timeoutSec: 30
+  cdn:
+    enabled: true
+    cachePolicy:
+      includeHost: true
+      includeProtocol: true
+      includeQueryString: false
+    defaultTtl: 86400
+    maxTtl: 604800
+    clientTtl: 3600
+  healthCheck:
+    type: HTTP
+    requestPath: /healthz
+    port: 8080

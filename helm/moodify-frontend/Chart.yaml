@@ -1,0 +1,25 @@
+apiVersion: v2
+name: moodify-frontend
+description: |
+  Helm chart for the Moodify React SPA when self-hosting on Kubernetes. Use
+  alongside helm/moodify-backend. The canonical production deploy lives on
+  Vercel — this chart is for clusters where you'd rather own the edge.
+type: application
+version: 1.0.0
+appVersion: "2026.03"
+keywords:
+  - moodify
+  - frontend
+  - react
+  - spa
+  - nginx
+maintainers:
+  - name: Son Nguyen
+    email: hoangson091104@gmail.com
+home: https://github.com/hoangsonww/Moodify-Emotion-Music-App
+sources:
+  - https://github.com/hoangsonww/Moodify-Emotion-Music-App
+icon: https://raw.githubusercontent.com/hoangsonww/Moodify-Emotion-Music-App/master/frontend/web/public/logo512.png
+annotations:
+  category: Application
+  licenses: Apache-2.0

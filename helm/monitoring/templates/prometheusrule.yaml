@@ -1,0 +1,61 @@
+{{- if .Values.moodify.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "moodify-monitoring.fullname" . }}-slo
+  namespace: {{ .Values.moodify.alerts.namespace }}
+  labels:
+    {{- include "moodify-monitoring.labels" . | nindent 4 }}
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: moodify.slo
+      interval: 30s
+      rules:
+        - alert: MoodifyBackendHigh5xx
+          expr: |
+            (
+              sum(rate(django_http_responses_total_by_status_total{job="moodify-backend",status=~"5.."}[5m]))
+              /
+              sum(rate(django_http_responses_total_by_status_total{job="moodify-backend"}[5m]))
+            ) > 0.02
+          for: 5m
+          labels:
+            severity: warning
+            service: moodify-backend
+          annotations:
+            summary: "Backend 5xx ratio > 2% (5m)"
+            runbook: "https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/master/INFRASTRUCTURE_SETUP.md"
+
+        - alert: MoodifyBackendHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum by (le) (rate(django_http_requests_latency_seconds_bucket{job="moodify-backend"}[5m]))
+            ) > 1.5
+          for: 10m
+          labels:
+            severity: warning
+            service: moodify-backend
+          annotations:
+            summary: "Backend p95 latency > 1.5s (10m)"
+
+        - alert: MoodifyInferenceColdStarts
+          expr: increase(modal_function_cold_start_total[15m]) > 50
+          for: 15m
+          labels:
+            severity: info
+            service: modal-inference
+          annotations:
+            summary: "More than 50 Modal cold starts in 15m"
+            description: "Consider raising min_containers on the Modal app."
+
+        - alert: MoodifyPodCrashLoop
+          expr: rate(kube_pod_container_status_restarts_total{namespace="moodify"}[10m]) > 0
+          for: 10m
+          labels:
+            severity: critical
+            service: moodify
+          annotations:
+            summary: "Pods restarting in moodify namespace"
+{{- end }}

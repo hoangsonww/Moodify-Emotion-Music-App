@@ -1,0 +1,17 @@
+# =============================================================================
+# Google-managed TLS certificate for the apex + api hostnames
+# =============================================================================
+# Google provisions and renews this cert automatically. DNS must point at the
+# GCLB IP attached to the Ingress before the cert can be issued. Use
+# cert-manager + Let's Encrypt instead if you need wildcards.
+# =============================================================================
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: moodify-cert
+  namespace: moodify
+spec:
+  domains:
+    - moodify.example.com
+    - www.moodify.example.com
+    - api.moodify.example.com

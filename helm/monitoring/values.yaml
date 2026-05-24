@@ -1,0 +1,230 @@
+# =============================================================================
+# moodify-monitoring — default values
+# =============================================================================
+# All four sub-charts can be toggled independently. The defaults give you a
+# production-grade install for a 3+ node cluster. For local / minikube use
+# the values-dev.yaml overlay.
+# =============================================================================
+
+global:
+  clusterName: moodify-prod
+  storageClass: ""   # falls back to the cluster default
+
+# ---- kube-prometheus-stack ------------------------------------------------
+"kube-prometheus-stack":
+  enabled: true
+  fullnameOverride: kps
+
+  defaultRules:
+    create: true
+    rules:
+      etcd: false       # managed control plane
+      kubeScheduler: false
+      kubeControllerManager: false
+
+  alertmanager:
+    enabled: true
+    fullnameOverride: alertmanager
+    alertmanagerSpec:
+      replicas: 2
+      retention: 120h
+      storage:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 20Gi
+      resources:
+        requests: { cpu: 100m, memory: 256Mi }
+        limits:   { cpu: 500m, memory: 512Mi }
+    config:
+      route:
+        receiver: slack
+        group_by: ["alertname", "namespace", "service"]
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        routes:
+          - matchers: ["severity = critical"]
+            receiver: pagerduty
+            continue: true
+      receivers:
+        - name: slack
+          slack_configs:
+            - send_resolved: true
+              api_url: "https://hooks.slack.com/services/REPLACE/ME"
+              channel: "#moodify-alerts"
+              title: "{{ .Status | toUpper }} — {{ .CommonLabels.alertname }}"
+        - name: pagerduty
+          pagerduty_configs:
+            - service_key: "REPLACE_ME"
+              severity: "{{ .CommonLabels.severity }}"
+
+  grafana:
+    enabled: true
+    fullnameOverride: grafana
+    replicas: 2
+    adminPassword: "changeme"   # override via --set or sealed secret
+    persistence:
+      enabled: true
+      size: 20Gi
+      accessModes: ["ReadWriteOnce"]
+    sidecar:
+      dashboards:
+        enabled: true
+        searchNamespace: ALL
+        provider:
+          allowUiUpdates: true
+        label: grafana_dashboard
+      datasources:
+        enabled: true
+    grafana.ini:
+      server:
+        root_url: "https://grafana.moodify.example.com"
+      auth.anonymous:
+        enabled: false
+      security:
+        cookie_secure: true
+        strict_transport_security: true
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        url: http://loki:3100
+        access: proxy
+        isDefault: false
+      - name: Tempo
+        type: tempo
+        url: http://tempo:3100
+        access: proxy
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts: [grafana.moodify.example.com]
+      tls:
+        - hosts: [grafana.moodify.example.com]
+          secretName: grafana-tls
+    dashboardProviders:
+      dashboardproviders.yaml:
+        apiVersion: 1
+        providers:
+          - name: moodify
+            orgId: 1
+            folder: Moodify
+            type: file
+            disableDeletion: true
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/moodify
+
+  prometheus:
+    enabled: true
+    fullnameOverride: prometheus
+    prometheusSpec:
+      replicas: 2
+      retention: 30d
+      retentionSize: "90GB"
+      walCompression: true
+      enableAdminAPI: false
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      ruleSelectorNilUsesHelmValues: false
+      probeSelectorNilUsesHelmValues: false
+      resources:
+        requests: { cpu: "500m", memory: "2Gi" }
+        limits:   { cpu: "2",    memory: "8Gi" }
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 100Gi
+      additionalScrapeConfigs:
+        - job_name: nginx-edge
+          static_configs:
+            - targets: ["nginx-exporter.moodify.svc.cluster.local:9113"]
+        - job_name: moodify-backend
+          metrics_path: /metrics
+          static_configs:
+            - targets: ["moodify-backend.moodify.svc.cluster.local:8000"]
+
+  kubeStateMetrics:
+    enabled: true
+  nodeExporter:
+    enabled: true
+  prometheusOperator:
+    admissionWebhooks:
+      failurePolicy: Fail
+      patch:
+        enabled: true
+
+# ---- Loki -----------------------------------------------------------------
+loki:
+  enabled: true
+  deploymentMode: SingleBinary
+  loki:
+    auth_enabled: false
+    storage:
+      type: filesystem
+    schemaConfig:
+      configs:
+        - from: "2024-01-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+    commonConfig:
+      replication_factor: 1
+  singleBinary:
+    replicas: 1
+    persistence:
+      enabled: true
+      size: 50Gi
+  # SimpleScalable components disabled (we run SingleBinary).
+  read:    { replicas: 0 }
+  write:   { replicas: 0 }
+  backend: { replicas: 0 }
+  gateway:
+    enabled: true
+  monitoring:
+    serviceMonitor:
+      enabled: true
+
+# ---- Promtail (log shipper) ----------------------------------------------
+promtail:
+  enabled: true
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+  serviceMonitor:
+    enabled: true
+
+# ---- Tempo (traces) -------------------------------------------------------
+tempo:
+  enabled: true
+  tempo:
+    retention: 168h   # 7 days
+  persistence:
+    enabled: true
+    size: 30Gi
+  serviceMonitor:
+    enabled: true
+
+# ---- Moodify-specific extras ---------------------------------------------
+moodify:
+  # Set true to create a ConfigMap containing the dashboards under
+  # terraform/modules/monitoring/dashboards/. Grafana sidecar will auto-load.
+  dashboards:
+    enabled: true
+    namespace: monitoring
+    label: grafana_dashboard
+
+  # PrometheusRule with Moodify-specific SLO alerts.
+  alerts:
+    enabled: true
+    namespace: monitoring

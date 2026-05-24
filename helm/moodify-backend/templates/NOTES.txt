@@ -1,0 +1,28 @@
+Moodify backend deployed!
+
+Release:     {{ .Release.Name }}
+Namespace:   {{ .Release.Namespace }}
+Chart:       {{ .Chart.Name }}-{{ .Chart.Version }}
+App version: {{ .Chart.AppVersion }}
+
+{{- if .Values.blueGreen.enabled }}
+
+▶ Blue/green:
+    active color = {{ .Values.blueGreen.activeEnvironment }}
+    keep inactive = {{ .Values.blueGreen.keepInactive }}
+{{- end }}
+
+▶ Wait for the deployment to come Ready:
+    kubectl --namespace {{ .Release.Namespace }} rollout status \
+      deploy/{{ include "moodify-backend.fullname" . }}{{ if .Values.blueGreen.enabled }}-{{ .Values.blueGreen.activeEnvironment }}{{ end }}
+
+▶ Hit the API in-cluster:
+    kubectl --namespace {{ .Release.Namespace }} port-forward \
+      svc/{{ include "moodify-backend.fullname" . }} 8000:{{ .Values.service.port | default 8000 }}
+    curl http://localhost:8000/users/health/
+
+▶ Tail logs:
+    kubectl --namespace {{ .Release.Namespace }} logs -l app.kubernetes.io/name={{ include "moodify-backend.name" . }} -f --tail=200
+
+▶ Roll back to a previous revision:
+    helm rollback {{ .Release.Name }} -n {{ .Release.Namespace }}

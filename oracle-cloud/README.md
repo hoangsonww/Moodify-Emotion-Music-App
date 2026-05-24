@@ -2,6 +2,11 @@
 
 Production-ready deployment guide for hosting Moodify on **Oracle Cloud Infrastructure (OCI)** using **OKE (Kubernetes)**, **OCIR (Container Registry)**, **Object Storage**, and **OCI Load Balancer/WAF**.
 
+> ⚠️ **Optional self-host path.** The canonical Moodify production runs
+> on **Vercel** (web + Django API) and **Modal** (ML inference) — see
+> [`../DEPLOYMENT.md`](../DEPLOYMENT.md). Use this directory when an
+> org policy / Oracle-cloud credits make OCI the right home for the stack.
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)

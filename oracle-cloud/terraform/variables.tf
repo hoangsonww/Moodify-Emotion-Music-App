@@ -109,3 +109,9 @@ variable "enable_waf" {
   default     = true
   description = "Create OCI WAF policy for the load balancer."
 }
+
+variable "oncall_email" {
+  type        = string
+  default     = ""
+  description = "Optional on-call email auto-subscribed to the alarm topic."
+}

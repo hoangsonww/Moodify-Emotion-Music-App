@@ -98,9 +98,9 @@ are also used to visualize emotion trends and model performance. Users open reco
 
   <!-- Hosting -->
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
-  <img src="https://img.shields.io/badge/Modal-7B68EE?style=for-the-badge" alt="Modal" />
+  <img src="https://img.shields.io/badge/Modal-7B68EE?style=for-the-badge&logo=modal&logoColor=white" alt="Modal" />
   <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify" />
-  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS" />
+  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=task&logoColor=white" alt="AWS" />
   <img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="GCP" />
   <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle Cloud" />
 
@@ -125,6 +125,32 @@ are also used to visualize emotion trends and model performance. Users open reco
 > • Always verify you’re interacting with one of the links in this README.
 > 
 > • If you have any questions or concerns, please [contact me](mailto:hoangson091104@gmail.com) directly, before taking any action.
+
+## Single-command developer entry point
+
+This repo ships a [`Makefile`](Makefile) that wraps every common dev / ops
+task. From the repo root:
+
+```bash
+make help               # menu of every target
+make install            # install all four workspaces
+make dev                # run backend + frontend together
+make test               # run jest + django + pytest
+make deploy-prod        # Modal deploy + Vercel deploy (web + api)
+make perf-smoke         # k6 smoke against prod
+```
+
+Self-host paths (Kubernetes, AWS / GCP / OCI / Azure, Argo CD, Helm) live under
+[`terraform/`](terraform/) (modules: `vpc`, `eks`, `gke`, `aks`, `rds`,
+`redis`, `s3`, `monitoring`, `argocd`), [`helm/`](helm/) (`moodify-backend`,
+`moodify-frontend`, `monitoring` umbrella), [`kubernetes/`](kubernetes/),
+[`argocd/`](argocd/), [`k8s-addons/`](k8s-addons/),
+[`aws/`](aws/) (`terraform/`, `kubernetes/production/`, `iam/`, `cloudwatch/`),
+[`gcp/`](gcp/) (`terraform/`, `kubernetes/`, `monitoring/`),
+[`oracle-cloud/`](oracle-cloud/), and [`nginx/`](nginx/) (modular edge with
+`snippets/`, `scripts/`, `exporter/`). Each directory has its own README.
+The canonical production path is **Vercel + Modal** — see
+[`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## **Table of Contents**
 

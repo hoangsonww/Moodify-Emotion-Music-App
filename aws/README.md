@@ -2,6 +2,12 @@
 
 Complete production-ready deployment guide for Moodify on Amazon Web Services (AWS).
 
+> ⚠️ **Optional self-host path.** The canonical Moodify production runs
+> on **Vercel** (web + Django API) and **Modal** (ML inference) — see
+> [`../DEPLOYMENT.md`](../DEPLOYMENT.md). Use this directory only if you
+> need to drop the whole stack onto an EKS cluster you control (compliance,
+> data residency, or air-gapped use cases).
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)

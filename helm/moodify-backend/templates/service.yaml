@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "moodify-backend.fullname" . }}
+  labels:
+    {{- include "moodify-backend.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type | default "ClusterIP" }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port | default 8000 }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    {{- include "moodify-backend.selectorLabels" . | nindent 4 }}
+    {{- if .Values.blueGreen.enabled }}
+    color: {{ .Values.blueGreen.activeEnvironment | quote }}
+    {{- end }}

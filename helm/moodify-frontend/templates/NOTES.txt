@@ -1,0 +1,17 @@
+moodify-frontend installed in {{ .Release.Namespace }}.
+
+Reach the SPA:
+{{- if .Values.ingress.enabled }}
+  {{- range .Values.ingress.hosts }}
+  https://{{ .host }}
+  {{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ include "moodify-frontend.fullname" . }} 8080:80
+  open http://localhost:8080
+{{- end }}
+
+Runtime config is served from /env.js — change `runtimeConfig` in values.yaml
+to point at a different backend or Modal URL. No image rebuild needed.
+
+Confirm rollout:
+  kubectl rollout status deployment/{{ include "moodify-frontend.fullname" . }}

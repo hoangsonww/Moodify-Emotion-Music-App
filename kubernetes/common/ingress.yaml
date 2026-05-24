@@ -1,0 +1,52 @@
+# =============================================================================
+# Ingress — terminates TLS + routes traffic
+# =============================================================================
+# Requires the ingress-nginx controller (or any IngressClass-compatible
+# controller) installed in the cluster. cert-manager fronts Let's Encrypt
+# for automatic certs; replace `letsencrypt-prod` with your ClusterIssuer.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: moodify
+  namespace: moodify
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "12m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/limit-rps: "60"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: camera=(self), microphone=(self), geolocation=()";
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - moodify.example.com
+        - api.moodify.example.com
+      secretName: moodify-tls
+  rules:
+    - host: api.moodify.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-backend
+                port:
+                  number: 8000
+    - host: moodify.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-frontend
+                port:
+                  number: 80

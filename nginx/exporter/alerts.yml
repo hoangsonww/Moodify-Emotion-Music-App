@@ -1,0 +1,57 @@
+# =============================================================================
+# Prometheus alert rules for the nginx edge
+# =============================================================================
+# Drop into Prometheus's rule_files section, e.g.:
+#   rule_files:
+#     - /etc/prometheus/rules/nginx.yml
+# Tunable thresholds at the top — keep them in sync with the SLOs in the
+# Moodify runbook (docs/INFRASTRUCTURE_SETUP.md).
+# =============================================================================
+
+groups:
+  - name: nginx.edge
+    interval: 30s
+    rules:
+      - alert: NginxEdgeDown
+        expr: up{job="nginx-edge"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: nginx
+        annotations:
+          summary: "nginx-exporter down"
+          description: "Edge metrics endpoint has been unreachable for 2 minutes."
+
+      - alert: NginxHighErrorRate
+        expr: |
+          sum(rate(nginx_http_requests_total{status=~"5.."}[5m]))
+            /
+          sum(rate(nginx_http_requests_total[5m]))
+            > 0.02
+        for: 5m
+        labels:
+          severity: warning
+          service: nginx
+        annotations:
+          summary: "Edge 5xx ratio > 2% (5m)"
+          description: "Likely upstream issue — check Django + Modal targets."
+
+      - alert: NginxHighConnections
+        expr: nginx_connections_active > 8000
+        for: 10m
+        labels:
+          severity: warning
+          service: nginx
+        annotations:
+          summary: "Active connections > 8000 (10m)"
+          description: "Approaching default worker_connections cap; consider scaling worker processes."
+
+      - alert: NginxCertExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 14
+        for: 1h
+        labels:
+          severity: warning
+          service: nginx
+        annotations:
+          summary: "TLS cert expires in < 14 days"
+          description: "Renew with scripts/renew-certs.sh or check certbot timer."

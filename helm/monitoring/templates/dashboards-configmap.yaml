@@ -1,0 +1,20 @@
+{{- if .Values.moodify.dashboards.enabled }}
+{{- /*
+Grafana sidecar picks up any ConfigMap with the configured label and mounts
+the keys as JSON dashboards. Files are sourced from
+../../terraform/modules/monitoring/dashboards.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "moodify-monitoring.fullname" . }}-dashboards
+  namespace: {{ .Values.moodify.dashboards.namespace }}
+  labels:
+    {{- include "moodify-monitoring.labels" . | nindent 4 }}
+    {{ .Values.moodify.dashboards.label }}: "1"
+data:
+{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+{{- end }}
