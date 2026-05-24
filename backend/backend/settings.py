@@ -72,10 +72,23 @@ ADMIN_METRICS_TOKEN = config(
 MODAL_SERVICE_TOKEN = config("MODAL_SERVICE_TOKEN", default="")
 
 # --- Applications ---------------------------------------------------------
-# No admin/sessions/messages/allauth. django.contrib.auth + contenttypes are
-# kept INSTALLED (but unused and never queried) only because DRF and
-# drf-yasg import from them; there is no SQL database, and authentication is
-# JWT-only against the mongoengine User document.
+# By default there is no admin/sessions/messages/allauth -- production runs
+# on Vercel with no SQL database, and authentication is JWT-only against the
+# mongoengine User document. django.contrib.auth + contenttypes are kept
+# INSTALLED (but unused and never queried) only because DRF and drf-yasg
+# import from them.
+#
+# The classic Django admin (`python manage.py createsuperuser` +
+# `/admin/`) is available LOCALLY by opting in with `ENABLE_ADMIN=True`
+# (or any truthy DEBUG run). When opted in, the admin app, its prereqs
+# (`auth`, `sessions`, `messages`), the matching middleware, a SQLite
+# database for the superuser table, and the `/admin/` URL mount are all
+# loaded. None of this ships to Vercel unless the env var is set.
+# decouple's ``cast=bool`` runs ``bool(value)``, which treats EVERY
+# non-empty string as True (including the literal "False"). Pass the
+# default already as a real bool so the fallback respects DEBUG honestly.
+ENABLE_ADMIN = config("ENABLE_ADMIN", default=DEBUG, cast=bool)
+
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
@@ -103,8 +116,73 @@ MIDDLEWARE = [
 ROOT_URLCONF = "backend.urls"
 WSGI_APPLICATION = "backend.wsgi.application"
 
-# No SQL database. Django 5 permits an empty DATABASES mapping.
+# No SQL database in production. Django 5 permits an empty DATABASES mapping.
 DATABASES = {}
+
+if ENABLE_ADMIN:
+    # Local admin path -- enable Django admin + its hard dependencies and
+    # back them with a tiny SQLite file. SQLite lives at the repo root
+    # alongside manage.py so `createsuperuser` lands in a known place.
+    INSTALLED_APPS = [
+        "django.contrib.admin",
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "django.contrib.sessions",
+        "django.contrib.messages",
+        "django.contrib.staticfiles",
+        "rest_framework",
+        "corsheaders",
+        "drf_yasg",
+        "api",
+        "users",
+        "observability",
+    ]
+
+    # Insert session + auth + messages middleware right after security so
+    # they wrap the admin views the same way Django's startproject does.
+    # csrf goes BEFORE auth, message middleware goes LAST of the trio.
+    _admin_extra_mw = [
+        "django.contrib.sessions.middleware.SessionMiddleware",
+        "django.middleware.csrf.CsrfViewMiddleware",
+        "django.contrib.auth.middleware.AuthenticationMiddleware",
+        "django.contrib.messages.middleware.MessageMiddleware",
+    ]
+    _security_idx = MIDDLEWARE.index(
+        "django.middleware.security.SecurityMiddleware"
+    )
+    # Insert immediately AFTER SecurityMiddleware so the chain reads:
+    # Security -> Whitenoise -> Sessions -> Csrf -> Auth -> Messages -> ...
+    MIDDLEWARE = (
+        MIDDLEWARE[: _security_idx + 2]  # Security + WhiteNoise stay first
+        + _admin_extra_mw
+        + MIDDLEWARE[_security_idx + 2 :]
+    )
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+    # Admin templates need the `request` + `auth` + `messages` context
+    # processors; add them only when the admin is on.
+    TEMPLATES_CONTEXT_PROCESSORS_EXTRA = [
+        "django.contrib.auth.context_processors.auth",
+        "django.contrib.messages.context_processors.messages",
+    ]
+
+_TEMPLATE_CONTEXT_PROCESSORS = [
+    "django.template.context_processors.debug",
+    "django.template.context_processors.request",
+]
+if ENABLE_ADMIN:
+    # Admin templates need `auth` (for `user` / `perms`) and `messages`
+    # (for the flash bar after a save). Add them only when the admin is on.
+    _TEMPLATE_CONTEXT_PROCESSORS += [
+        "django.contrib.auth.context_processors.auth",
+        "django.contrib.messages.context_processors.messages",
+    ]
 
 TEMPLATES = [
     {
@@ -112,10 +190,7 @@ TEMPLATES = [
         "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-            ],
+            "context_processors": _TEMPLATE_CONTEXT_PROCESSORS,
         },
     },
 ]
