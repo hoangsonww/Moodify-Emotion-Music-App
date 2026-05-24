@@ -1,13 +1,43 @@
 @import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.css");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.css");
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  /* Stop any rogue inner element (long URL, wide table, decorative glow)
+     from pushing the viewport wider than the screen on mobile. */
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Long unbroken strings (URLs, share tokens) break instead of
+     forcing a horizontal scrollbar. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Media + iframes should never exceed their container. */
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+  height: auto;
 }
 
 code {

@@ -146,34 +146,46 @@ const styles = {
   footer: {
     backgroundColor: "#ff4d4d",
     color: "white",
-    padding: "20px 0",
+    // Horizontal padding keeps wrapped links off the viewport edge
+    // on tight phone widths; box-sizing keeps the 100% width honest.
+    padding: { xs: "16px 12px", sm: "20px 24px" },
     textAlign: "center",
-    fontFamily: "Poppins, sans-serif", // Use Poppins font
+    fontFamily: "Poppins, sans-serif",
     marginTop: "20px",
     width: "100%",
-    "@media (max-width: 600px)": {
-      padding: "15px 0",
-    },
+    maxWidth: "100vw",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
   navLinks: {
     display: "flex",
     justifyContent: "center",
-    gap: "20px",
+    alignItems: "center",
+    // Tighter gap on phones — eight pills + 20px gaps overflow
+    // anything narrower than ~410 px.
+    columnGap: { xs: "12px", sm: "20px" },
+    rowGap: { xs: "8px", sm: "10px" },
     marginBottom: "10px",
-    flexWrap: "wrap", // Makes it responsive
-    fontFamily: "Poppins, sans-serif", // Use Poppins font
+    flexWrap: "wrap",
+    maxWidth: "100%",
+    fontFamily: "Poppins, sans-serif",
   },
   link: {
     cursor: "pointer",
     color: "white",
     textDecoration: "none",
-    fontFamily: "Poppins, sans-serif", // Use Poppins font
-    fontSize: "14px",
+    fontFamily: "Poppins, sans-serif",
+    fontSize: { xs: "12px", sm: "14px" },
     fontWeight: 500,
+    lineHeight: 1.3,
     position: "relative",
+    // Long labels stay on one line — they wrap to a new row instead
+    // of breaking mid-word, which looked ugly with two-word labels
+    // like "Privacy Policy" / "Terms of Service".
+    whiteSpace: "nowrap",
+    transition: "transform 0.2s",
     "&:hover": {
       transform: "scale(1.05)",
-      transition: "transform 0.2s",
     },
   },
   activeLink: {
@@ -183,17 +195,19 @@ const styles = {
   iconContainer: {
     display: "flex",
     justifyContent: "center",
-    gap: "20px",
-    marginTop: "20px",
+    gap: { xs: "16px", sm: "20px" },
+    marginTop: { xs: "12px", sm: "20px" },
     marginBottom: "10px",
-    flexWrap: "wrap", // Makes the icons responsive
-    fontFamily: "Poppins, sans-serif", // Use Poppins font
+    flexWrap: "wrap",
+    maxWidth: "100%",
+    fontFamily: "Poppins, sans-serif",
   },
   iconLink: {
     color: "white",
+    display: "inline-flex",
   },
   icon: {
-    fontSize: "30px",
+    fontSize: { xs: "26px", sm: "30px" },
     transition: "transform 0.3s",
     "&:hover": {
       transform: "scale(1.2)",
@@ -201,8 +215,10 @@ const styles = {
   },
   copyright: {
     marginTop: "10px",
-    fontSize: "14px",
-    fontFamily: "Poppins, sans-serif", // Use Poppins font
+    fontSize: { xs: "12px", sm: "14px" },
+    fontFamily: "Poppins, sans-serif",
+    px: 1,
+    overflowWrap: "anywhere",
   },
 };
 
