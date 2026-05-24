@@ -429,7 +429,7 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/homepage-dark.png" alt="Home Page - Dark Mode" width="100%" style="border-radius: 10px">
 </p>
 
-### Text Input
+#### Text Input
 
 <p align="center">
   <img src="images/text-input.png" alt="Text Input" width="100%" style="border-radius: 10px">
@@ -445,6 +445,24 @@ Here is the list of technologies used in the Moodify project:
 
 <p align="center">
   <img src="images/face-input.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+</p>
+
+#### Text File Upload
+
+<p align="center">
+  <img src="images/text-file.png" alt="Facial Input" width="100%" style="border-radius: 10px">
+</p>
+
+#### Audio File Upload
+
+<p align="center">
+  <img src="images/voice-file.png" alt="Audio File Upload" width="100%" style="border-radius: 10px">
+</p>
+
+#### Image File Upload
+
+<p align="center">
+  <img src="images/face-file.png" alt="Image File Upload" width="100%" style="border-radius: 10px">
 </p>
 
 ### Profile Page
