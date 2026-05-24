@@ -24,11 +24,11 @@ schema_view = get_schema_view(
         title="Moodify Emotion-Based Music API",
         default_version="v1",
         description=SCHEMA_HEADER,
-        terms_of_service="https://moodify-emotion-music-app.vercel.app/terms-of-service",
+        terms_of_service="https://moodify-app.vercel.app/terms-of-service",
         contact=openapi.Contact(
             email="hoangson091104@gmail.com",
             name="Moodify",
-            url="https://moodify-emotion-music-app.vercel.app/",
+            url="https://moodify-app.vercel.app/",
         ),
         license=openapi.License(name="MIT License"),
     ),

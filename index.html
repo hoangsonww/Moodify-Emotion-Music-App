@@ -6,11 +6,11 @@
     <!-- =========================================================
          PRIMARY META
          ========================================================= -->
-    <title>Moodify - AI Emotion-Based Music Recommendation Platform</title>
-    <meta name="description" content="Moodify reads your mood from text, voice or a selfie with three self-trained AI models and curates a personalized Deezer playlist that matches how you feel. Open-source, free, web + mobile.">
-    <meta name="keywords" content="Moodify, mood music, emotion detection, music recommendation, AI music app, BERT, PyTorch, TensorFlow, FER, facial expression recognition, speech emotion recognition, text emotion detection, Deezer, React, React Native, Django, Modal, MongoDB, mood playlist, personalized music, mood tracker, open source music app">
+    <title>Moodify - AI Emotion-Based Music Recommendation Platform & Wiki</title>
+    <meta name="description" content="Moodify reads your mood from text, voice or a selfie with three self-trained AI models and curates a personalized Deezer playlist that matches how you feel. Open-source, web + mobile, privacy-first. This page doubles as the project wiki: architecture, model details, API reference, infrastructure, security and self-hosting.">
+    <meta name="keywords" content="Moodify, mood music, emotion detection, music recommendation, AI music app, BERT, PyTorch, TensorFlow, FER, MTCNN, MFCC, facial expression recognition, speech emotion recognition, text emotion detection, Deezer, React, React Native, Django, Modal, MongoDB, mood playlist, personalized music, mood tracker, open source music app, EWMA, Markov, wiki, architecture, self-hosting, Helm, Terraform, EKS, GKE, Vercel">
     <meta name="author" content="Son Nguyen (hoangsonww)">
-    <meta name="copyright" content="© 2024-2026 Son Nguyen">
+    <meta name="copyright" content="(c) 2024-2026 Son Nguyen">
     <meta name="application-name" content="Moodify">
     <meta name="generator" content="Static landing page (vanilla HTML/CSS/JS)">
     <meta name="rating" content="general">
@@ -52,8 +52,8 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Moodify">
     <meta property="og:url" content="https://moodify-app.vercel.app/">
-    <meta property="og:title" content="Moodify - AI Emotion-Based Music Recommendation Platform">
-    <meta property="og:description" content="Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to how you feel. Open-source, free, web + mobile.">
+    <meta property="og:title" content="Moodify - AI Emotion-Based Music Recommendation Platform & Wiki">
+    <meta property="og:description" content="Three self-trained models read your mood from text, voice or a selfie. Personalized Deezer playlist - open-source, web + mobile, privacy-first. Full project wiki on one page.">
     <meta property="og:image" content="https://moodify-app.vercel.app/images/moodify-logo.png">
     <meta property="og:image:secure_url" content="https://moodify-app.vercel.app/images/moodify-logo.png">
     <meta property="og:image:type" content="image/png">
@@ -61,7 +61,7 @@
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Moodify - AI emotion-based music recommendation app">
     <meta property="og:locale" content="en_US">
-    <meta property="og:updated_time" content="2026-05-23T00:00:00Z">
+    <meta property="og:updated_time" content="2026-05-24T00:00:00Z">
     <meta property="article:author" content="Son Nguyen">
     <meta property="article:publisher" content="https://github.com/hoangsonww">
 
@@ -71,8 +71,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@hoangsonww">
     <meta name="twitter:creator" content="@hoangsonww">
-    <meta name="twitter:title" content="Moodify - AI Emotion-Based Music Recommendation Platform">
-    <meta name="twitter:description" content="Detect your mood from text, voice or a selfie and get a Deezer playlist tuned to how you feel.">
+    <meta name="twitter:title" content="Moodify - AI Emotion-Based Music Recommendation Platform & Wiki">
+    <meta name="twitter:description" content="Three self-trained models, one Deezer playlist tuned to how you feel. Full project wiki on a single page.">
     <meta name="twitter:image" content="https://moodify-app.vercel.app/images/moodify-logo.png">
     <meta name="twitter:image:alt" content="Moodify - AI emotion-based music recommendation app logo">
 
@@ -98,6 +98,7 @@
     <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="//moodify-emotion-music-app.vercel.app">
     <link rel="dns-prefetch" href="//moodify-backend-api.vercel.app">
+    <link rel="dns-prefetch" href="//api.deezer.com">
 
     <!-- =========================================================
          SITEMAP HINT
@@ -116,13 +117,13 @@
           "@id": "https://moodify-app.vercel.app/#site",
           "url": "https://moodify-app.vercel.app/",
           "name": "Moodify",
-          "alternateName": ["Moodify App", "Moodify Music"],
-          "description": "AI-powered emotion-based music recommendation platform. Free, open-source, web + mobile.",
+          "alternateName": ["Moodify App", "Moodify Music", "Moodify Wiki"],
+          "description": "AI-powered emotion-based music recommendation platform. Open-source, web + mobile, with text/voice/face mood detection.",
           "inLanguage": "en",
           "publisher": { "@id": "https://github.com/hoangsonww#person" },
           "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://moodify-emotion-music-app.vercel.app/results?emotion={search_term_string}",
+            "target": "https://moodify-app.vercel.app/results?emotion={search_term_string}",
             "query-input": "required name=search_term_string"
           }
         },
@@ -130,7 +131,7 @@
           "@type": "SoftwareApplication",
           "@id": "https://moodify-app.vercel.app/#app",
           "name": "Moodify",
-          "url": "https://moodify-emotion-music-app.vercel.app/",
+          "url": "https://moodify-app.vercel.app/",
           "description": "Reads emotion from text / voice / selfie and curates a Deezer playlist that matches.",
           "applicationCategory": "MultimediaApplication",
           "applicationSubCategory": "MusicApplication",
@@ -144,20 +145,23 @@
           "image": "https://moodify-app.vercel.app/images/moodify-logo.png",
           "softwareVersion": "1.0.0",
           "datePublished": "2024-10-20",
-          "dateModified": "2026-05-23",
+          "dateModified": "2026-05-24",
           "inLanguage": "en",
-          "isAccessibleForFree": true,
-          "downloadUrl": "https://moodify-emotion-music-app.vercel.app/",
+          "downloadUrl": "https://moodify-app.vercel.app/",
           "featureList": [
             "Text mood detection (BERT)",
-            "Voice mood detection (wav2vec)",
-            "Facial mood detection (FER + facenet)",
+            "Voice mood detection (SVC + MFCC)",
+            "Facial mood detection (FER + MTCNN)",
             "Mood history tracking",
             "Genre-aware recommendations",
             "Deezer search integration",
             "JWT auth with silent refresh",
             "Dark + light themes",
-            "React Native iOS + Android client"
+            "React Native iOS + Android client",
+            "Real-time ML inference",
+            "Sliding-window rate limiting",
+            "LRU + TTL caching layer",
+            "EWMA + Markov personalization"
           ],
           "aggregateRating": {
             "@type": "AggregateRating",
@@ -193,15 +197,34 @@
           ]
         },
         {
+          "@type": "TechArticle",
+          "@id": "https://moodify-app.vercel.app/#wiki",
+          "headline": "Moodify Project Wiki",
+          "description": "Architecture, AI/ML model details, API reference, data model, personalization math, infrastructure and self-hosting documentation for the Moodify open-source platform.",
+          "author": { "@id": "https://github.com/hoangsonww#person" },
+          "datePublished": "2024-10-20",
+          "dateModified": "2026-05-24",
+          "inLanguage": "en",
+          "isPartOf": { "@id": "https://moodify-app.vercel.app/#site" },
+          "keywords": "BERT, FER, MTCNN, MFCC, Modal, Django, Vercel, MongoDB, Deezer, EWMA, Markov, JWT, Helm, Terraform"
+        },
+        {
           "@type": "BreadcrumbList",
           "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moodify-app.vercel.app/#home" },
-            { "@type": "ListItem", "position": 2, "name": "Overview", "item": "https://moodify-app.vercel.app/#overview" },
-            { "@type": "ListItem", "position": 3, "name": "Features", "item": "https://moodify-app.vercel.app/#features" },
-            { "@type": "ListItem", "position": 4, "name": "Architecture", "item": "https://moodify-app.vercel.app/#architecture" },
-            { "@type": "ListItem", "position": 5, "name": "Technology", "item": "https://moodify-app.vercel.app/#technology" },
-            { "@type": "ListItem", "position": 6, "name": "Deployment", "item": "https://moodify-app.vercel.app/#deployment" },
-            { "@type": "ListItem", "position": 7, "name": "Live Demo", "item": "https://moodify-emotion-music-app.vercel.app/" }
+            { "@type": "ListItem", "position": 2, "name": "Wiki Index", "item": "https://moodify-app.vercel.app/#wiki-index" },
+            { "@type": "ListItem", "position": 3, "name": "Overview", "item": "https://moodify-app.vercel.app/#overview" },
+            { "@type": "ListItem", "position": 4, "name": "The Three Models", "item": "https://moodify-app.vercel.app/#models" },
+            { "@type": "ListItem", "position": 5, "name": "Architecture", "item": "https://moodify-app.vercel.app/#architecture" },
+            { "@type": "ListItem", "position": 6, "name": "Backend Wiki", "item": "https://moodify-app.vercel.app/#wiki-backend" },
+            { "@type": "ListItem", "position": 7, "name": "Modal Inference Wiki", "item": "https://moodify-app.vercel.app/#wiki-modal" },
+            { "@type": "ListItem", "position": 8, "name": "Frontend & Mobile Wiki", "item": "https://moodify-app.vercel.app/#wiki-frontend" },
+            { "@type": "ListItem", "position": 9, "name": "Infrastructure Wiki", "item": "https://moodify-app.vercel.app/#wiki-infra" },
+            { "@type": "ListItem", "position": 10, "name": "API Reference", "item": "https://moodify-app.vercel.app/#api-reference" },
+            { "@type": "ListItem", "position": 11, "name": "Data Model", "item": "https://moodify-app.vercel.app/#data-model" },
+            { "@type": "ListItem", "position": 12, "name": "Personalization Math", "item": "https://moodify-app.vercel.app/#personalization" },
+            { "@type": "ListItem", "position": 13, "name": "Glossary", "item": "https://moodify-app.vercel.app/#glossary" },
+            { "@type": "ListItem", "position": 14, "name": "FAQ", "item": "https://moodify-app.vercel.app/#faq" }
           ]
         }
       ]
@@ -213,7 +236,80 @@
          ========================================================= -->
     <link rel="stylesheet" href="packages/styles.css">
     <link rel="stylesheet" href="packages/styles.enhance.css">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <!-- =========================================================
+         GLOBAL OVERHAUL CSS (scoped tweaks; reuses base vars)
+         ========================================================= -->
+    <style>
+      :root {
+        --mf-grad-1: linear-gradient(135deg, #ff4d4d, #ff7a59 55%, #ec4899);
+        --mf-grad-2: linear-gradient(135deg, #7B68EE, #22d3ee 55%, #34d399);
+        --mf-grad-3: linear-gradient(135deg, #f59e0b, #ec4899 55%, #7B68EE);
+        --mf-card-bg: rgba(255,255,255,0.04);
+        --mf-card-border: rgba(255,255,255,0.08);
+        --mf-card-bg-light: rgba(255,77,77,0.04);
+        --mf-card-border-light: rgba(255,77,77,0.18);
+      }
+      html { scroll-padding-top: 90px; }
+      .mf-wiki-tag {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .25rem .6rem; border-radius: 999px;
+        font-size: .7rem; font-weight: 800; letter-spacing: .4px;
+        background: linear-gradient(135deg, rgba(123,104,238,0.18), rgba(34,211,238,0.18));
+        border: 1px solid rgba(123,104,238,0.35);
+        color: #7B68EE; text-transform: uppercase;
+      }
+      .mf-code-inline {
+        font-family: var(--font-mono, monospace);
+        background: rgba(0,0,0,0.08); padding: .12rem .4rem;
+        border-radius: 6px; font-size: .88em;
+      }
+      .section-dark .mf-code-inline { background: rgba(255,255,255,0.08); }
+      .mf-code-block {
+        font-family: var(--font-mono, monospace);
+        background: rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.08);
+        border-radius: 12px; padding: 1rem 1.25rem;
+        font-size: .82rem; line-height: 1.55; overflow-x: auto;
+        white-space: pre; color: var(--text-primary, #191414);
+      }
+      .section-dark .mf-code-block {
+        background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.08); color: #e2e8f0;
+      }
+      .mf-table-wrap { overflow-x: auto; border-radius: 14px; }
+      .mf-table {
+        width: 100%; border-collapse: collapse; min-width: 640px;
+        font-size: .9rem;
+      }
+      .mf-table th, .mf-table td {
+        padding: .8rem 1rem; text-align: left;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        vertical-align: top;
+      }
+      .section-dark .mf-table th, .section-dark .mf-table td {
+        border-bottom-color: rgba(255,255,255,0.08);
+      }
+      .mf-table thead th {
+        background: var(--mf-grad-1); color: #fff;
+        font-weight: 800; letter-spacing: .3px;
+      }
+      .mf-table tbody tr:hover td { background: rgba(255,77,77,0.05); }
+      .mf-pill {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .2rem .55rem; border-radius: 999px;
+        font-size: .72rem; font-weight: 700;
+        background: rgba(255,77,77,0.12); color: #ff4d4d;
+        border: 1px solid rgba(255,77,77,0.3);
+      }
+      .mf-pill.b { background: rgba(123,104,238,0.15); color: #7B68EE; border-color: rgba(123,104,238,0.35); }
+      .mf-pill.g { background: rgba(52,211,153,0.15); color: #34d399; border-color: rgba(52,211,153,0.35); }
+      .mf-pill.y { background: rgba(245,158,11,0.15); color: #f59e0b; border-color: rgba(245,158,11,0.35); }
+      .mf-pill.r { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.35); }
+      .mf-pill.k { background: rgba(0,0,0,0.12); color: #555; border-color: rgba(0,0,0,0.2); }
+      .section-dark .mf-pill.k { background: rgba(255,255,255,0.1); color: #ccc; border-color: rgba(255,255,255,0.18); }
+      .mf-method-get    { background: rgba(34,211,238,0.18); color: #06b6d4; border-color: rgba(34,211,238,0.4); }
+      .mf-method-post   { background: rgba(52,211,153,0.18); color: #10b981; border-color: rgba(52,211,153,0.4); }
+      .mf-method-put    { background: rgba(245,158,11,0.18); color: #f59e0b; border-color: rgba(245,158,11,0.4); }
+      .mf-method-delete { background: rgba(239,68,68,0.18); color: #ef4444; border-color: rgba(239,68,68,0.4); }
+    </style>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -226,17 +322,17 @@
                 <li><a href="#home" class="active">Home</a></li>
                 <li><a href="#overview">Overview</a></li>
                 <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#architecture">Architecture</a></li>
                 <li><a href="#technology">Tech</a></li>
                 <li><a href="#deployment">Deploy</a></li>
                 <li><a href="#demo">Demo</a></li>
-                <li><a href="#how-it-works">How</a></li>
                 <li><a href="#faq">FAQ</a></li>
             </ul>
             <div class="nav-actions">
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-                    <span class="icon-sun">☀️</span>
-                    <span class="icon-moon">🌙</span>
+                    <span class="icon-sun">&#9728;&#65039;</span>
+                    <span class="icon-moon">&#127769;</span>
                 </button>
                 <button class="hamburger" id="hamburger" aria-label="Toggle menu">
                     <span></span>
@@ -245,58 +341,94 @@
                 </button>
             </div>
         </div>
-        <!-- Progress Bar -->
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- =========================================================
+         HERO
+         ========================================================= -->
     <header class="hero" id="home">
         <div class="hero-background">
             <div class="gradient-orb orb-1"></div>
             <div class="gradient-orb orb-2"></div>
             <div class="gradient-orb orb-3"></div>
         </div>
+        <style>
+          #home .mf-hero-meta {
+            display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem;
+          }
+          #home .mf-hero-meta .mf-pill { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.2); }
+          #home .mf-now-playing {
+            margin-top: 1.5rem;
+            display: flex; align-items: center; gap: .9rem;
+            padding: .9rem 1.1rem; border-radius: 16px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            max-width: 460px;
+          }
+          #home .mf-now-cover {
+            width: 56px; height: 56px; border-radius: 12px; flex-shrink: 0;
+            background: linear-gradient(135deg, #ff4d4d, #ec4899);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+          }
+          #home .mf-now-track { font-weight: 800; font-size: .95rem; color: #fff; }
+          #home .mf-now-meta  { font-size: .78rem; opacity: .8; color: #fff; margin-top: 2px; }
+          #home .mf-now-bars  { display: flex; gap: 3px; align-items: flex-end; height: 22px; margin-left: auto; }
+          #home .mf-now-bars span {
+            width: 3px; background: linear-gradient(180deg, #ff7a59, #ff4d4d);
+            border-radius: 2px; animation: mfBar 0.9s ease-in-out infinite;
+          }
+          #home .mf-now-bars span:nth-child(1) { height: 50%; animation-delay: 0s; }
+          #home .mf-now-bars span:nth-child(2) { height: 90%; animation-delay: .1s; }
+          #home .mf-now-bars span:nth-child(3) { height: 40%; animation-delay: .2s; }
+          #home .mf-now-bars span:nth-child(4) { height: 70%; animation-delay: .3s; }
+          #home .mf-now-bars span:nth-child(5) { height: 55%; animation-delay: .4s; }
+          @keyframes mfBar { 0%,100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+          #home .mf-marquee {
+            margin-top: 2.5rem;
+            display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;
+            font-size: .8rem; font-weight: 700; opacity: .75;
+            letter-spacing: 1px; text-transform: uppercase;
+          }
+          #home .mf-marquee span::before { content: "/ "; opacity: .5; margin-right: .35rem; }
+        </style>
         <div class="container">
             <div class="hero-grid">
                 <div class="hero-content">
-                    <div class="hero-badge">
-                        <span class="badge-icon">🎵</span>
-                        <span>AI-Powered Music Recommendation</span>
-                    </div>
                     <h1 class="hero-title">
                         Music That<br/>
                         Understands Your<br/>
-                        <span class="gradient-text">Emotions</span>
+                        <span class="gradient-text" id="mfMoodCycle">Emotions</span>
                     </h1>
-                    <p class="hero-subtitle">Harness the power of cutting-edge AI to discover music perfectly matched to your mood. Three specialized models analyze your emotions through text, voice, and facial expressions.</p>
+                    <p class="hero-subtitle">Three self-trained AI models read your mood from <strong>text</strong>, <strong>voice</strong>, or a <strong>selfie</strong>. A personalized Deezer playlist is generated, ranked by quality, and blended with your recent moods - in under two seconds, all open-source and privacy-first.</p>
                     <div class="hero-buttons">
-                        <a href="https://moodify-app.vercel.app" class="btn btn-primary btn-large" target="_blank">
+                        <a href="https://moodify-app.vercel.app" class="btn btn-primary btn-large" target="_blank" rel="noopener">
                             <span>Launch Application</span>
-                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                            </svg>
+                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                         </a>
-                        <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" class="btn btn-secondary btn-large" target="_blank">
-                            <svg class="github-icon" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                            </svg>
-                            <span>View Source Code</span>
+                        <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" class="btn btn-secondary btn-large" target="_blank" rel="noopener">
+                            <svg class="github-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                            <span>Star on GitHub</span>
                         </a>
                     </div>
                     <div class="hero-features">
-                        <div class="feature-pill">
-                            <span class="pill-icon">🎯</span>
-                            <span>95%+ Accuracy</span>
+                        <div class="feature-pill"><span class="pill-icon">&#127919;</span><span>95%+ Accuracy</span></div>
+                        <div class="feature-pill"><span class="pill-icon">&#9889;</span><span>&lt;2s Cold Start</span></div>
+                        <div class="feature-pill"><span class="pill-icon">&#128274;</span><span>JWT + Sliding-Window Limits</span></div>
+                        <div class="feature-pill"><span class="pill-icon">&#127757;</span><span>Web + iOS + Android</span></div>
+                    </div>
+                    <div class="mf-now-playing" aria-label="Now playing preview">
+                        <div class="mf-now-cover">&#127925;</div>
+                        <div>
+                            <div class="mf-now-track">Recommended for: <em>joy</em></div>
+                            <div class="mf-now-meta">Deezer search &middot; personalized blend &middot; 60 tracks</div>
                         </div>
-                        <div class="feature-pill">
-                            <span class="pill-icon">⚡</span>
-                            <span>Real-Time Analysis</span>
-                        </div>
-                        <div class="feature-pill">
-                            <span class="pill-icon">🔒</span>
-                            <span>Enterprise Security</span>
+                        <div class="mf-now-bars" aria-hidden="true">
+                            <span></span><span></span><span></span><span></span><span></span>
                         </div>
                     </div>
                 </div>
@@ -305,25 +437,25 @@
                         <div class="emotion-circle">
                             <div class="emotion-item" style="--rotation: 0deg;">
                                 <div class="emotion-card happy-card">
-                                    <div class="emotion-icon">😊</div>
+                                    <div class="emotion-icon">&#128522;</div>
                                     <div class="emotion-name">Happy</div>
                                 </div>
                             </div>
                             <div class="emotion-item" style="--rotation: 90deg;">
                                 <div class="emotion-card sad-card">
-                                    <div class="emotion-icon">😢</div>
+                                    <div class="emotion-icon">&#128546;</div>
                                     <div class="emotion-name">Sad</div>
                                 </div>
                             </div>
                             <div class="emotion-item" style="--rotation: 180deg;">
                                 <div class="emotion-card angry-card">
-                                    <div class="emotion-icon">😡</div>
+                                    <div class="emotion-icon">&#128545;</div>
                                     <div class="emotion-name">Angry</div>
                                 </div>
                             </div>
                             <div class="emotion-item" style="--rotation: 270deg;">
                                 <div class="emotion-card surprise-card">
-                                    <div class="emotion-icon">😮</div>
+                                    <div class="emotion-icon">&#128558;</div>
                                     <div class="emotion-name">Surprised</div>
                                 </div>
                             </div>
@@ -337,91 +469,171 @@
             </div>
             <div class="hero-stats">
                 <div class="stat-card">
-                    <div class="stat-icon">🤖</div>
+                    <div class="stat-icon">&#129302;</div>
                     <div class="stat-content">
                         <div class="stat-value" data-count-to="3">3</div>
                         <div class="stat-label">AI Models</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">✨</div>
+                    <div class="stat-icon">&#10024;</div>
                     <div class="stat-content">
                         <div class="stat-value" data-count-to="99.9" data-decimals="1" data-suffix="%">99.9%</div>
-                        <div class="stat-label">Uptime</div>
+                        <div class="stat-label">Uptime Target</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">⚡</div>
+                    <div class="stat-icon">&#9889;</div>
                     <div class="stat-content">
                         <div class="stat-value" data-count-to="2" data-prefix="&lt;" data-suffix="s">&lt;2s</div>
-                        <div class="stat-label">Response Time</div>
+                        <div class="stat-label">Cold-Start Time</div>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🚀</div>
+                    <div class="stat-icon">&#128150;</div>
                     <div class="stat-content">
-                        <div class="stat-value" data-count-to="20" data-suffix="+">20+</div>
+                        <div class="stat-value" data-count-to="100" data-suffix="%">100%</div>
+                        <div class="stat-label">Open Source</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#129514;</div>
+                    <div class="stat-content">
+                        <div class="stat-value" data-count-to="261" data-suffix="+">261+</div>
+                        <div class="stat-label">Tests Passing</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#128737;&#65039;</div>
+                    <div class="stat-content">
+                        <div class="stat-value" data-count-to="30" data-suffix="+">30+</div>
                         <div class="stat-label">Technologies</div>
                     </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#127925;</div>
+                    <div class="stat-content">
+                        <div class="stat-value" data-count-to="60">60</div>
+                        <div class="stat-label">Tracks per Analysis</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#127908;</div>
+                    <div class="stat-content">
+                        <div class="stat-value" data-count-to="13">13</div>
+                        <div class="stat-label">Mood Palettes</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#127918;</div>
+                    <div class="stat-content">
+                        <div class="stat-value" data-count-to="19">19</div>
+                        <div class="stat-label">Genre Filters</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">&#127757;</div>
+                    <div class="stat-content">
+                        <div class="stat-value" data-count-to="17">17</div>
+                        <div class="stat-label">Country Markets</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mf-marquee" aria-hidden="true">
+                <span>BERT</span><span>FER + MTCNN</span><span>SVC + MFCC</span><span>FastAPI on Modal</span><span>Django on Vercel</span><span>MongoDB Atlas</span><span>Deezer keyless</span><span>EWMA + Markov</span><span>Helm + Argo CD</span>
             </div>
         </div>
+        <script>
+          (function () {
+            var el = document.getElementById('mfMoodCycle');
+            if (!el) return;
+            var moods = ['Emotions', 'Joy', 'Sadness', 'Anger', 'Calm', 'Excitement', 'Nostalgia', 'Love', 'Focus'];
+            var i = 0;
+            setInterval(function () {
+              i = (i + 1) % moods.length;
+              el.style.opacity = '0';
+              setTimeout(function () { el.textContent = moods[i]; el.style.opacity = '1'; }, 220);
+            }, 2400);
+            el.style.transition = 'opacity 220ms ease';
+          })();
+        </script>
     </header>
-
-    <!-- Overview Section -->
-    <section id="overview" class="section">
+    <!-- =========================================================
+         OVERVIEW
+         ========================================================= -->
+    <section id="overview" class="section section-dark">
         <div class="container">
             <div class="section-header">
                 <span class="section-badge">About the Project</span>
                 <h2 class="section-title">What is Moodify?</h2>
-                <p class="section-subtitle">An intelligent music recommendation system powered by cutting-edge AI/ML technology</p>
+                <p class="section-subtitle">An intelligent music recommendation system that meets you where your mood is - typed, spoken, or photographed.</p>
             </div>
             <div class="overview-grid">
                 <div class="overview-card">
-                    <div class="card-icon">🎯</div>
+                    <div class="card-icon">&#127919;</div>
                     <h3>Mission</h3>
-                    <p>To revolutionize music discovery by creating an intelligent system that understands and responds to human emotions through advanced AI technology.</p>
+                    <p>Make music discovery feel like being understood. Detect mood from <strong>three modalities</strong> (text, voice, face), then surface tracks that match the moment - not the demographic.</p>
                 </div>
                 <div class="overview-card">
-                    <div class="card-icon">🚀</div>
-                    <h3>Vision</h3>
-                    <p>Providing personalized music recommendations that perfectly match users' emotional states, detected through text, speech, and facial expressions.</p>
+                    <div class="card-icon">&#129504;</div>
+                    <h3>Why three models?</h3>
+                    <p>People express mood differently across contexts. A short text rarely lies; a voice clip captures tone you cannot type; a photo catches the micro-expression you would not admit to. Moodify reads all three.</p>
                 </div>
                 <div class="overview-card">
-                    <div class="card-icon">💡</div>
-                    <h3>Innovation</h3>
-                    <p>Combines three self-trained AI/ML models (BERT, SVC+MFCC, FER) with Deezer's free Search API, served from a memory-snapshot Modal container that scales to zero when idle.</p>
+                    <div class="card-icon">&#9889;</div>
+                    <h3>Built for speed</h3>
+                    <p>Memory-snapshot inference container restores in seconds, not minutes. From input to playlist averages under two seconds end-to-end, even on first request after idle.</p>
                 </div>
                 <div class="overview-card">
-                    <div class="card-icon">🌐</div>
-                    <h3>Accessibility</h3>
-                    <p>Available on web and mobile platforms with progressive web app features, ensuring a seamless experience across all devices.</p>
+                    <div class="card-icon">&#127757;</div>
+                    <h3>Open by default</h3>
+                    <p>MIT license, public repo, public model weights on Hugging Face Hub. Every architectural decision is documented in the READMEs and condensed into the wiki below.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">&#128241;</div>
+                    <h3>Web + iOS + Android</h3>
+                    <p>One React 18 codebase for web (Vercel), one Expo SDK 51 codebase for mobile (EAS Build). The mobile app talks directly to the Modal inference service - the Django API stays out of the data path.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">&#128274;</div>
+                    <h3>Private by design</h3>
+                    <p>Photos and voice clips are sent to the inference container for a single classification call and <strong>never persisted</strong>. Only the resulting mood label and saved track metadata land in your profile.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">&#127921;</div>
+                    <h3>Learns your taste</h3>
+                    <p>Your recent moods quietly shape every new playlist. Two listens later it already feels personal; a week later it feels like a friend who actually pays attention.</p>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">&#127881;</div>
+                    <h3>Built in public</h3>
+                    <p>Code, decisions, and tradeoffs are all on GitHub. Browse the issues, copy a pattern, file a PR. Moodify is a working reference for shipping AI products, not a black box.</p>
                 </div>
             </div>
 
             <div class="info-banner">
-                <div class="banner-icon">⚠️</div>
+                <div class="banner-icon">&#9888;&#65039;</div>
                 <div>
-                    <strong>Important Notice:</strong> Be aware of impersonation attempts. The official developer is Son Nguyen (@hoangsonww on GitHub).
-                    Do not send money or personal information to anyone claiming to be associated with this project.
+                    <strong>Notice:</strong> The official developer is <strong>Son Nguyen</strong> (<a href="https://github.com/hoangsonww" target="_blank" rel="noopener">@hoangsonww</a> on GitHub). Be aware of impersonation attempts - do not send money or personal information to anyone claiming to be associated with this project.
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Features Section -->
+    <!-- =========================================================
+         FEATURES
+         ========================================================= -->
     <section id="features" class="section section-dark">
         <div class="container">
             <div class="section-header">
                 <span class="section-badge">Capabilities</span>
                 <h2 class="section-title">Key Features</h2>
-                <p class="section-subtitle">Comprehensive emotion detection and music recommendation system</p>
+                <p class="section-subtitle">A complete emotion detection and music recommendation system, surfaced through a clean, accessible UI.</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">📝</div>
+                    <div class="feature-icon">&#128221;</div>
                     <h3>Text Emotion Analysis</h3>
-                    <p>Advanced BERT-based model analyzes text input to detect emotional content with high accuracy. Supports multiple languages and contexts.</p>
+                    <p>Fine-tuned BERT classifier reads tone, sentiment, and emotional vocabulary from typed input. Five labels: <em>sadness, joy, love, anger, fear</em>.</p>
                     <div class="feature-tags">
                         <span class="tag">NLP</span>
                         <span class="tag">BERT</span>
@@ -429,29 +641,29 @@
                     </div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🎤</div>
+                    <div class="feature-icon">&#127908;</div>
                     <h3>Speech Emotion Detection</h3>
-                    <p>CNN-LSTM architecture processes audio features (MFCC, pitch, energy) to identify emotions from voice recordings in real-time.</p>
+                    <p>SVC classifier over librosa MFCC features. Eight labels: <em>calm, happy, sad, angry, fearful, disgust, surprised, neutral</em>. Sub-second inference, sub-second feature extract.</p>
                     <div class="feature-tags">
-                        <span class="tag">CNN</span>
-                        <span class="tag">LSTM</span>
-                        <span class="tag">Librosa</span>
+                        <span class="tag">SVC</span>
+                        <span class="tag">MFCC</span>
+                        <span class="tag">librosa</span>
                     </div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📸</div>
+                    <div class="feature-icon">&#128248;</div>
                     <h3>Facial Expression Recognition</h3>
-                    <p>ResNet50-based deep learning model detects emotions from facial expressions with state-of-the-art accuracy using computer vision.</p>
+                    <p>FER Keras model wrapped in MTCNN face detection. Seven labels (Ekman + neutral). Works on a single front-camera photo, no video stream required.</p>
                     <div class="feature-tags">
-                        <span class="tag">ResNet50</span>
-                        <span class="tag">OpenCV</span>
                         <span class="tag">FER</span>
+                        <span class="tag">MTCNN</span>
+                        <span class="tag">facenet-pytorch</span>
                     </div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🎵</div>
+                    <div class="feature-icon">&#127925;</div>
                     <h3>Deezer Recommendations</h3>
-                    <p>Free, keyless integration with the Deezer Search API powers every Results page - track previews, album art, popularity rank, and a one-tap web-player link.</p>
+                    <p>Keyless integration with Deezer's Search API. Returns track name, artist, album, 30s preview, cover art, popularity rank, and a deep link to the streamable web player.</p>
                     <div class="feature-tags">
                         <span class="tag">Deezer API</span>
                         <span class="tag">Keyless</span>
@@ -459,65 +671,221 @@
                     </div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">👤</div>
+                    <div class="feature-icon">&#129504;</div>
+                    <h3>Personalization Engine</h3>
+                    <p>EWMA-weighted history + first-order Markov chain + adaptive blend ratio. Recurring moods seep into your current playlist at a clamped, recency-decayed rate.</p>
+                    <div class="feature-tags">
+                        <span class="tag">EWMA</span>
+                        <span class="tag">Markov</span>
+                        <span class="tag">O(history+tracks)</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#128100;</div>
                     <h3>User Management</h3>
-                    <p>Complete user authentication system with JWT tokens, profile management, mood history tracking, and listening preferences.</p>
+                    <p>JWT auth (HS256, 7d access + 14d refresh), Mongo-backed profile, append-only mood + listening history, saved recommendations with rich track objects.</p>
                     <div class="feature-tags">
                         <span class="tag">JWT</span>
                         <span class="tag">MongoDB</span>
-                        <span class="tag">Redis</span>
+                        <span class="tag">mongoengine</span>
                     </div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Analytics Dashboard</h3>
-                    <p>Comprehensive data analytics using Apache Spark and Hadoop for emotion trends, model performance, and user insights visualization.</p>
-                    <div class="feature-tags">
-                        <span class="tag">Spark</span>
-                        <span class="tag">Hadoop</span>
-                        <span class="tag">Matplotlib</span>
-                    </div>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📱</div>
+                    <div class="feature-icon">&#128241;</div>
                     <h3>Mobile Application</h3>
-                    <p>Native mobile experience built with React Native and Expo, providing seamless emotion detection and music recommendations on-the-go.</p>
+                    <p>Expo SDK 51 + React Native 0.74 with Hermes engine. AsyncStorage for tokens, EAS Build for both stores, native camera + microphone for the three modalities.</p>
                     <div class="feature-tags">
                         <span class="tag">React Native</span>
                         <span class="tag">Expo</span>
+                        <span class="tag">Hermes</span>
                     </div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔐</div>
-                    <h3>Enterprise Security</h3>
-                    <p>Multi-layer security with JWT authentication, rate limiting, input validation, encryption at rest and in transit, and comprehensive audit logging.</p>
+                    <div class="feature-icon">&#128737;&#65039;</div>
+                    <h3>Cost Protection</h3>
+                    <p>Two-tier sliding-window rate limit (general + media) keyed on JWT <code class="mf-code-inline">sub</code>, two-layer caches (text + Deezer + hash-of-bytes), and a hard <code class="mf-code-inline">MAX_CONTAINERS=5</code> ceiling at the Modal layer.</p>
                     <div class="feature-tags">
-                        <span class="tag">Security</span>
-                        <span class="tag">Encryption</span>
-                        <span class="tag">Compliance</span>
+                        <span class="tag">Sliding-window</span>
+                        <span class="tag">LRU+TTL</span>
+                        <span class="tag">429 Retry-After</span>
                     </div>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Real-time Processing</h3>
-                    <p>Sub-second response times with Redis caching, load balancing via NGINX, and horizontal scaling through Kubernetes orchestration.</p>
+                    <div class="feature-icon">&#128202;</div>
+                    <h3>SRE Metrics</h3>
+                    <p>Per-request observability into MongoDB time-series collections. Admin-only <code class="mf-code-inline">/api/metrics/</code> aggregator returns p50/p95/p99 latency, error rates, and status-code breakdown for any rolling window.</p>
                     <div class="feature-tags">
-                        <span class="tag">Redis</span>
-                        <span class="tag">NGINX</span>
-                        <span class="tag">K8s</span>
+                        <span class="tag">Time-series</span>
+                        <span class="tag">p95</span>
+                        <span class="tag">Admin</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#127777;&#65039;</div>
+                    <h3>Resilient Fallbacks</h3>
+                    <p>Deezer down? Curated 14-track fallback list. Speech model fails to load? Endpoint returns <code class="mf-code-inline">degraded:true</code> with neutral instead of 500. A failing model never takes down the others.</p>
+                    <div class="feature-tags">
+                        <span class="tag">Fallback</span>
+                        <span class="tag">Degraded</span>
+                        <span class="tag">Isolated</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#127769;</div>
+                    <h3>Dark + Light Themes</h3>
+                    <p>Theme switch toggles a full set of CSS variables. Honors <code class="mf-code-inline">prefers-color-scheme</code> on first paint; persisted in <code class="mf-code-inline">localStorage</code> across sessions.</p>
+                    <div class="feature-tags">
+                        <span class="tag">CSS Vars</span>
+                        <span class="tag">A11y</span>
+                        <span class="tag">SSR-safe</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#127760;</div>
+                    <h3>Market &amp; Genre Filters</h3>
+                    <p>17 country markets (Global + 16) and 19 genre filters bias the Deezer search phrase before it leaves the inference container. Results stay culturally relevant.</p>
+                    <div class="feature-tags">
+                        <span class="tag">17 markets</span>
+                        <span class="tag">19 genres</span>
+                        <span class="tag">Server-side</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Architecture Section -->
-    <section id="architecture" class="section">
+    <!-- =========================================================
+         HOW IT WORKS (user-friendly)
+         ========================================================= -->
+    <section id="how-it-works" class="section">
+      <style>
+        #how-it-works .mf-hiw {
+          display: grid; gap: 1.25rem; margin-top: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+        #how-it-works .mf-hiw-card {
+          position: relative;
+          padding: 1.75rem 1.5rem 1.5rem;
+          border-radius: 18px;
+          background: var(--bg-secondary, #fafbfc);
+          border: 1px solid rgba(255, 77, 77, 0.18);
+          transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+        #how-it-works .mf-hiw-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 18px 40px rgba(255, 77, 77, 0.14);
+          border-color: rgba(255, 77, 77, 0.45);
+        }
+        #how-it-works .mf-hiw-step {
+          position: absolute; top: -14px; left: 20px;
+          width: 36px; height: 36px;
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 900; font-size: 1rem;
+          background: linear-gradient(135deg, #ff4d4d, #ff7a59);
+          color: #fff;
+          border-radius: 50%;
+          box-shadow: 0 6px 16px rgba(255, 77, 77, 0.35);
+        }
+        #how-it-works .mf-hiw-emoji { font-size: 2rem; margin-bottom: .5rem; }
+        #how-it-works .mf-hiw-card h3 { font-size: 1.1rem; margin: 0 0 .5rem 0; }
+        #how-it-works .mf-hiw-card p { margin: 0; font-size: .95rem; line-height: 1.6; opacity: .85; }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">How It Works</span>
+          <h2 class="section-title">Three Steps. One Playlist.</h2>
+          <p class="section-subtitle">From "how do I feel" to a playlist on your phone in under two seconds.</p>
+        </div>
+        <div class="mf-hiw">
+          <div class="mf-hiw-card">
+            <div class="mf-hiw-step">1</div>
+            <div class="mf-hiw-emoji">&#128172;</div>
+            <h3>Share a moment</h3>
+            <p>Type a few words about your day, record a few seconds of your voice, or snap a quick selfie. Pick whichever feels easiest in the moment.</p>
+          </div>
+          <div class="mf-hiw-card">
+            <div class="mf-hiw-step">2</div>
+            <div class="mf-hiw-emoji">&#129504;</div>
+            <h3>Moodify reads the mood</h3>
+            <p>Three small AI models work behind the scenes - one for text, one for voice, one for faces. They turn your input into a mood label like "calm" or "excited."</p>
+          </div>
+          <div class="mf-hiw-card">
+            <div class="mf-hiw-step">3</div>
+            <div class="mf-hiw-emoji">&#127925;</div>
+            <h3>Press play</h3>
+            <p>Up to 60 tracks tuned to that mood appear instantly - with 30-second previews and one-tap deep links to Deezer. Save the ones you love to your history.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         WHY YOU'LL LIKE IT (user-friendly value props)
+         ========================================================= -->
+    <section id="why" class="section section-dark">
+      <style>
+        #why .mf-why {
+          display: grid; gap: 1.25rem; margin-top: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+        #why .mf-why-card {
+          padding: 1.5rem;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 2px solid rgba(255, 122, 89, 0.35);
+          outline: 1px solid rgba(255, 255, 255, 0.06);
+          outline-offset: 2px;
+          transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+        }
+        #why .mf-why-card:hover {
+          transform: translateY(-4px);
+          border-color: #ff7a59;
+          box-shadow: 0 18px 40px rgba(255, 122, 89, 0.25);
+        }
+        #why .mf-why-emoji { font-size: 1.75rem; margin-bottom: .5rem; }
+        #why .mf-why-card h3 { font-size: 1rem; margin: 0 0 .4rem 0; }
+        #why .mf-why-card p { margin: 0; font-size: .9rem; line-height: 1.6; opacity: .82; }
+      </style>
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">Why Moodify</span>
+          <h2 class="section-title">Built for People, Not Algorithms</h2>
+          <p class="section-subtitle">A side project that ended up being the music app I actually use every day.</p>
+        </div>
+        <div class="mf-why">
+          <div class="mf-why-card">
+            <div class="mf-why-emoji">&#127919;</div>
+            <h3>It actually gets your mood</h3>
+            <p>No more endless scrolling for the right vibe. Three AI models read how you feel and skip straight to music that fits.</p>
+          </div>
+          <div class="mf-why-card">
+            <div class="mf-why-emoji">&#128274;</div>
+            <h3>Your photos stay yours</h3>
+            <p>Selfies and voice clips are used once to detect mood, then thrown away. Only the mood label is saved. No tracking, no resale.</p>
+          </div>
+          <div class="mf-why-card">
+            <div class="mf-why-emoji">&#9889;</div>
+            <h3>Instant playlists</h3>
+            <p>Under two seconds from input to a ranked, deduped 60-track playlist. No spinners, no waiting, no manual searching.</p>
+          </div>
+          <div class="mf-why-card">
+            <div class="mf-why-emoji">&#128640;</div>
+            <h3>Open source &middot; MIT</h3>
+            <p>Every line of code is on GitHub. Read it, fork it, self-host it, contribute. Pull requests welcome.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         ARCHITECTURE TABS
+         ========================================================= -->
+    <section id="architecture" class="section section-dark">
         <div class="container">
             <div class="section-header">
                 <span class="section-badge">System Design</span>
                 <h2 class="section-title">System Architecture</h2>
-                <p class="section-subtitle">Scalable, cloud-native microservices architecture</p>
+                <p class="section-subtitle">Cloud-native, modular, and split along a clean service boundary. Pick a lens below.</p>
             </div>
 
             <div class="architecture-tabs">
@@ -528,769 +896,429 @@
             </div>
 
             <div class="tab-content active" id="overview-tab">
-                <div class="diagram-container">
-                    <pre class="mermaid">
-graph TB
-    subgraph "Client Layer"
-        A[Web App - React]
-        B[Mobile App - React Native]
-    end
-
-    subgraph "Load Balancer Layer"
-        C[NGINX Load Balancer]
-    end
-
-    subgraph "Application Layer"
-        D[Django Backend API]
-        E[AI/ML Service - Flask]
-    end
-
-    subgraph "AI/ML Models"
-        F[Text Emotion Model<br/>BERT-based]
-        G[Speech Emotion Model<br/>CNN + LSTM]
-        H[Facial Emotion Model<br/>ResNet50]
-    end
-
-    subgraph "External Services"
-        I[Deezer Search API]
-    end
-
-    subgraph "Data Layer"
-        J[(MongoDB)]
-        K[(Redis Cache)]
-        L[(SQLite)]
-    end
-
-    subgraph "Analytics Layer"
-        M[Apache Spark]
-        N[Apache Hadoop]
-        O[Data Visualization]
-    end
-
-    A -->|HTTPS| C
-    B -->|HTTPS| C
-    C -->|Load Balance| D
-    D -->|REST API| E
-    E --> F
-    E --> G
-    E --> H
-    D -->|Fetch Music| I
-    D --> J
-    D --> K
-    D --> L
-    J -.->|Analytics| M
-    M <--> N
-    M --> O
-
-    style A fill:#61DAFB
-    style B fill:#61DAFB
-    style C fill:#009639
-    style D fill:#efefef
-    style E fill:#ffffff
-    style F fill:#FF6F00
-    style G fill:#FF6F00
-    style H fill:#FF6F00
-    style I fill:#1DB954
-    style J fill:#47A248
-    style K fill:#DC382D
-    style L fill:#FFC0CB,stroke:#D87093,stroke-width:2px
-    style M fill:#E25A1C
-    style N fill:#66CCFF
-    style O fill:#FFC0CB,stroke:#D87093,stroke-width:2px
-                    </pre>
+                <div class="mf-diagram">
+                    <div class="mf-diagram-title">System Overview</div>
+                    <div class="mf-flow" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
+                        <div class="mf-flow-col">
+                            <div class="mf-flow-col-title">Clients</div>
+                            <div class="mf-flow-node alt-b">Web (React 18)</div>
+                            <div class="mf-flow-node alt-b">Mobile (Expo)</div>
+                        </div>
+                        <div class="mf-flow-col">
+                            <div class="mf-flow-col-title">Edge (Vercel)</div>
+                            <div class="mf-flow-node alt-k">Django + DRF</div>
+                            <div class="mf-flow-node alt-k">Swagger / Redoc</div>
+                        </div>
+                        <div class="mf-flow-col">
+                            <div class="mf-flow-col-title">ML (Modal)</div>
+                            <div class="mf-flow-node">FastAPI ASGI</div>
+                            <div class="mf-flow-node">BERT · SVC · FER</div>
+                            <div class="mf-flow-node alt-y">Personalization</div>
+                        </div>
+                        <div class="mf-flow-col">
+                            <div class="mf-flow-col-title">External</div>
+                            <div class="mf-flow-node alt-y">Deezer Search</div>
+                            <div class="mf-flow-node alt-b">Hugging Face Hub</div>
+                        </div>
+                        <div class="mf-flow-col">
+                            <div class="mf-flow-col-title">Data</div>
+                            <div class="mf-flow-node alt-g">MongoDB Atlas</div>
+                            <div class="mf-flow-node alt-g">Metrics TS (30d)</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="architecture-description">
-                    <h3>Layered Architecture</h3>
+                    <h3>Two services, one experience</h3>
                     <ul>
-                        <li><strong>Client Layer:</strong> React web app and React Native mobile app for user interaction</li>
-                        <li><strong>Load Balancer:</strong> NGINX for distributing traffic and SSL termination</li>
-                        <li><strong>Application Layer:</strong> Django REST Framework backend and Flask ML services</li>
-                        <li><strong>AI/ML Layer:</strong> Three specialized models for emotion detection</li>
-                        <li><strong>Data Layer:</strong> MongoDB for persistence, Redis for caching, SQLite for development</li>
-                        <li><strong>Analytics Layer:</strong> Apache Spark and Hadoop for big data processing</li>
+                        <li><strong>The web tier</strong> handles everything you see: sign-in, profile, mood history, app shell. Light and fast.</li>
+                        <li><strong>The AI tier</strong> handles the heavy lifting: emotion detection, personalization, and finding tracks that fit your mood.</li>
+                        <li><strong>Clean split</strong> means each side can grow on its own. The app stays snappy whether you have ten users or ten thousand.</li>
+                        <li><strong>Direct uploads</strong> from your phone or browser go straight to the AI tier, so big files don't get stuck in the middle.</li>
+                        <li><strong>Your data</strong> lives in a managed database. Mood history and saved tracks stay with you across visits and devices.</li>
+                        <li><strong>Open architecture.</strong> Every piece of the stack is documented and replaceable - swap any service, keep the experience.</li>
                     </ul>
                 </div>
             </div>
 
             <div class="tab-content" id="flow-tab">
-                <div class="diagram-container">
-                    <pre class="mermaid">
-sequenceDiagram
-    participant U as User
-    participant FE as Frontend
-    participant LB as Load Balancer
-    participant BE as Backend API
-    participant AI as AI/ML Service
-    participant DB as MongoDB
-    participant SP as Deezer API
-    participant CH as Redis Cache
-
-    U->>FE: Input (Text/Speech/Image)
-    FE->>LB: Send Request
-    LB->>BE: Route to Backend
-    BE->>CH: Check Cache
-    alt Cache Hit
-        CH-->>BE: Return Cached Result
-    else Cache Miss
-        BE->>AI: Forward for Analysis
-        AI->>AI: Process with ML Model
-        AI-->>BE: Return Emotion
-        BE->>SP: Request Music Recommendations
-        SP-->>BE: Return Tracks
-        BE->>DB: Store User History
-        BE->>CH: Cache Result
-    end
-    BE-->>FE: Return Recommendations
-    FE-->>U: Display Results
-                    </pre>
+                <div class="mf-diagram">
+                    <div class="mf-diagram-title">Request Lifecycle</div>
+                    <div class="mf-flow">
+                        <div class="mf-flow-node alt-b">User input</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node alt-k">Client capture</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node">Modal /text|speech|facial_emotion</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node alt-y">JWT verify</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node">Model predict</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node alt-y">Personalization</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node alt-y">Deezer search</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node alt-g">Response (60 tracks)</div>
+                        <span class="mf-flow-arrow">&rarr;</span>
+                        <div class="mf-flow-node alt-k">Django persist history</div>
+                    </div>
                 </div>
                 <div class="architecture-description">
-                    <h3>Request Flow</h3>
+                    <h3>End-to-end request lifecycle</h3>
                     <ol>
-                        <li>User submits emotion input through web or mobile interface</li>
-                        <li>Request is load-balanced by NGINX to backend instances</li>
-                        <li>Backend checks Redis cache for existing results</li>
-                        <li>If cache miss, forwards to AI/ML service for emotion detection</li>
-                        <li>ML model processes input and returns emotion with confidence score</li>
-                        <li>Inference service queries Deezer Search API for mood-matched tracks</li>
-                        <li>Results are cached in Redis and stored in MongoDB</li>
-                        <li>Response is returned to user with recommendations</li>
+                        <li>Client captures input locally - text, m4a audio, or jpg image.</li>
+                        <li>Client posts directly to the Modal endpoint with the user's JWT. Modal's <code class="mf-code-inline">auth.authenticate</code> verifies either the JWT (end-user) or <code class="mf-code-inline">MODAL_SERVICE_TOKEN</code> (Django proxy).</li>
+                        <li>The matching model classifies the input. Speech/face hash the upload first and check the LRU+TTL cache to short-circuit retry storms.</li>
+                        <li>The personalization layer pulls the user's recent <code class="mf-code-inline">mood_history</code> and decides whether to fetch a second Deezer search for the recurring mood.</li>
+                        <li>Deezer returns up to 50 tracks per phrase. <code class="mf-code-inline">rank_by_quality</code> blends Deezer popularity with curated position; <code class="mf-code-inline">interleave</code> mixes the two moods at the adaptive blend ratio.</li>
+                        <li>The client posts the result to Django to append <code class="mf-code-inline">mood_history</code> and <code class="mf-code-inline">recommendations</code> on the Mongo profile. Then it routes to the Results page.</li>
                     </ol>
                 </div>
             </div>
 
             <div class="tab-content" id="deployment-tab">
-                <div class="deployment-diagram">
-                    <h4 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary);">Docker Compose Microservices Architecture</h4>
-
-                    <!-- Load Balancer Layer -->
-                    <div class="diagram-layer">
-                        <div class="layer-title">Load Balancer</div>
-                        <div class="diagram-node nginx-node">
-                            <div class="node-icon">🌐</div>
-                            <div class="node-title">NGINX</div>
-                            <div class="node-detail">Port: 80/443</div>
-                            <div class="node-detail">SSL Termination</div>
-                            <div class="node-detail">Reverse Proxy</div>
+                <div class="mf-diagram">
+                    <div class="mf-diagram-title">Two Deployment Paths</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;">
+                        <div class="mf-flow-col">
+                            <div class="mf-flow-col-title">Canonical · production</div>
+                            <div class="mf-flow-node alt-k">Vercel (web + Django)</div>
+                            <div class="mf-flow-node">Modal (FastAPI ML)</div>
+                            <div class="mf-flow-node alt-g">MongoDB Atlas</div>
+                            <div class="mf-flow-node alt-y">Deezer Search</div>
                         </div>
-                    </div>
-
-                    <div class="diagram-connector">
-                        <div class="connector-line"></div>
-                        <div class="connector-arrow">▼</div>
-                    </div>
-
-                    <!-- Application Layer -->
-                    <div class="diagram-layer">
-                        <div class="layer-title">Application Layer</div>
-                        <div class="diagram-row">
-                            <div class="diagram-node frontend-node">
-                                <div class="node-icon">⚛️</div>
-                                <div class="node-title">Frontend</div>
-                                <div class="node-detail">React 18</div>
-                                <div class="node-detail">Port: 3000</div>
-                                <div class="node-detail">SPA + PWA</div>
-                            </div>
-                            <div class="diagram-node backend-node">
-                                <div class="node-icon">🐍</div>
-                                <div class="node-title">Backend API</div>
-                                <div class="node-detail">Django 4.2</div>
-                                <div class="node-detail">Port: 8000</div>
-                                <div class="node-detail">REST + GraphQL</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="diagram-connector">
-                        <div class="connector-line"></div>
-                        <div class="connector-arrow">▼</div>
-                    </div>
-
-                    <!-- Service Layer -->
-                    <div class="diagram-layer">
-                        <div class="layer-title">AI/ML Services</div>
-                        <div class="diagram-node aiml-node">
-                            <div class="node-icon">🤖</div>
-                            <div class="node-title">ML Service</div>
-                            <div class="node-detail">Flask + PyTorch</div>
-                            <div class="node-detail">Port: 5000</div>
-                            <div class="node-detail">BERT + CNN-LSTM + ResNet50</div>
-                        </div>
-                    </div>
-
-                    <div class="diagram-connector">
-                        <div class="connector-line"></div>
-                        <div class="connector-arrow">▼</div>
-                    </div>
-
-                    <!-- Data Layer -->
-                    <div class="diagram-layer">
-                        <div class="layer-title">Data & Cache Layer</div>
-                        <div class="diagram-row">
-                            <div class="diagram-node mongodb-node">
-                                <div class="node-icon">🍃</div>
-                                <div class="node-title">MongoDB</div>
-                                <div class="node-detail">NoSQL Database</div>
-                                <div class="node-detail">Port: 27017</div>
-                                <div class="node-detail">User Data + History</div>
-                            </div>
-                            <div class="diagram-node redis-node">
-                                <div class="node-icon">⚡</div>
-                                <div class="node-title">Redis</div>
-                                <div class="node-detail">In-Memory Cache</div>
-                                <div class="node-detail">Port: 6379</div>
-                                <div class="node-detail">Session + Cache</div>
-                            </div>
+                        <div class="mf-flow-col">
+                            <div class="mf-flow-col-title">Self-host · Kubernetes</div>
+                            <div class="mf-flow-node alt-b">EKS / GKE / OKE / Kind</div>
+                            <div class="mf-flow-node alt-b">Helm charts</div>
+                            <div class="mf-flow-node alt-y">Argo CD GitOps</div>
+                            <div class="mf-flow-node alt-y">Terraform IaC</div>
+                            <div class="mf-flow-node alt-k">k8s-addons</div>
                         </div>
                     </div>
                 </div>
                 <div class="architecture-description">
-                    <h3>Containerized Deployment</h3>
+                    <h3>Two deployment paths</h3>
                     <ul>
-                        <li><strong>Docker Compose:</strong> Orchestrates all services with defined dependencies</li>
-                        <li><strong>Kubernetes:</strong> Production orchestration with auto-scaling and self-healing</li>
-                        <li><strong>CI/CD:</strong> Jenkins pipeline with automated testing and deployment</li>
-                        <li><strong>Blue-Green Deployment:</strong> Zero-downtime deployments with instant rollback</li>
-                        <li><strong>Cloud Providers:</strong> AWS and GCP with Terraform IaC</li>
-                        <li><strong>Monitoring:</strong> Prometheus, Grafana, and ELK stack for observability</li>
+                        <li><strong>Canonical (recommended):</strong> Vercel for web + Django API, Modal for ML inference, MongoDB Atlas for state. Production-tuned defaults. See <code class="mf-code-inline">DEPLOYMENT.md</code>.</li>
+                        <li><strong>Self-host (optional):</strong> Drop the whole stack onto an EKS / GKE / OKE / Kind cluster. Terraform provisions the VPC + cluster + managed Postgres / Redis / S3 / monitoring; Helm packages the workloads; Argo CD reconciles from Git; the <code class="mf-code-inline">k8s-addons/</code> directory layers in External Secrets, OPA Gatekeeper, Velero, and Chaos Mesh. See <code class="mf-code-inline">INFRASTRUCTURE_SETUP.md</code>.</li>
+                        <li><strong>CI/CD:</strong> Jenkins pipeline + GitHub Actions matrix for tests, security scans, image builds, and ArgoCD-triggered rollouts. Blue-green and canary strategies supported on the K8s path.</li>
                     </ul>
                 </div>
             </div>
 
             <div class="tab-content" id="security-tab">
                 <div class="security-diagram">
-                    <h4 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary);">Multi-Layer Security Architecture</h4>
-
-                    <!-- Perimeter Security -->
+                    <h4 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary);">Layered Security Architecture</h4>
                     <div class="security-layer perimeter-layer">
-                        <div class="security-layer-title">
-                            <span class="layer-number">1</span>
-                            Perimeter Security
-                        </div>
+                        <div class="security-layer-title"><span class="layer-number">1</span> Perimeter</div>
                         <div class="security-items">
-                            <div class="security-item">
-                                <div class="security-icon">🛡️</div>
-                                <div class="security-name">DDoS Protection</div>
-                                <div class="security-desc">CloudFlare + AWS Shield</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">🔥</div>
-                                <div class="security-name">Web Application Firewall</div>
-                                <div class="security-desc">AWS WAF + ModSecurity</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">⏱️</div>
-                                <div class="security-name">Rate Limiting</div>
-                                <div class="security-desc">NGINX + Redis 1000 req/min</div>
-                            </div>
+                            <div class="security-item"><div class="security-icon">&#128737;&#65039;</div><div class="security-name">Vercel Edge + DDoS</div><div class="security-desc">Anycast network, mTLS to upstream</div></div>
+                            <div class="security-item"><div class="security-icon">&#128293;</div><div class="security-name">Rate Limiting</div><div class="security-desc">DRF 60/240 + Modal 45/15 per user</div></div>
+                            <div class="security-item"><div class="security-icon">&#9201;&#65039;</div><div class="security-name">Hard Container Cap</div><div class="security-desc">MAX_CONTAINERS=5 on Modal</div></div>
                         </div>
                     </div>
-
-                    <div class="security-arrow">↓</div>
-
-                    <!-- Application Security -->
+                    <div class="security-arrow">&darr;</div>
                     <div class="security-layer application-layer">
-                        <div class="security-layer-title">
-                            <span class="layer-number">2</span>
-                            Application Security
-                        </div>
+                        <div class="security-layer-title"><span class="layer-number">2</span> Application</div>
                         <div class="security-items">
-                            <div class="security-item">
-                                <div class="security-icon">🔑</div>
-                                <div class="security-name">JWT Authentication</div>
-                                <div class="security-desc">RS256 Asymmetric Tokens</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">👥</div>
-                                <div class="security-name">RBAC Authorization</div>
-                                <div class="security-desc">Role-Based Access Control</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">✅</div>
-                                <div class="security-name">Input Validation</div>
-                                <div class="security-desc">Sanitization + Type Checking</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">🚫</div>
-                                <div class="security-name">XSS Protection</div>
-                                <div class="security-desc">Content Security Policy</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">🔐</div>
-                                <div class="security-name">CSRF Protection</div>
-                                <div class="security-desc">Token-Based Validation</div>
-                            </div>
+                            <div class="security-item"><div class="security-icon">&#128273;</div><div class="security-name">JWT (HS256)</div><div class="security-desc">7d access + 14d refresh</div></div>
+                            <div class="security-item"><div class="security-icon">&#128101;</div><div class="security-name">Mongo-backed auth</div><div class="security-desc">No SQL auth_user table</div></div>
+                            <div class="security-item"><div class="security-icon">&#9989;</div><div class="security-name">Input Validation</div><div class="security-desc">DRF + Pydantic schemas</div></div>
+                            <div class="security-item"><div class="security-icon">&#128683;</div><div class="security-name">No CSRF surface</div><div class="security-desc">Header auth only, no cookies</div></div>
+                            <div class="security-item"><div class="security-icon">&#128274;</div><div class="security-name">Service Token</div><div class="security-desc">Django &harr; Modal proxy</div></div>
                         </div>
                     </div>
-
-                    <div class="security-arrow">↓</div>
-
-                    <!-- Data Security -->
+                    <div class="security-arrow">&darr;</div>
                     <div class="security-layer data-layer">
-                        <div class="security-layer-title">
-                            <span class="layer-number">3</span>
-                            Data Security
-                        </div>
+                        <div class="security-layer-title"><span class="layer-number">3</span> Data</div>
                         <div class="security-items">
-                            <div class="security-item">
-                                <div class="security-icon">🔒</div>
-                                <div class="security-name">Encryption at Rest</div>
-                                <div class="security-desc">AES-256-GCM for all data</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">🌐</div>
-                                <div class="security-name">Encryption in Transit</div>
-                                <div class="security-desc">TLS 1.3 + HSTS Enabled</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">🗝️</div>
-                                <div class="security-name">Key Management</div>
-                                <div class="security-desc">AWS KMS + HashiCorp Vault</div>
-                            </div>
-                            <div class="security-item">
-                                <div class="security-icon">📋</div>
-                                <div class="security-name">Audit Logging</div>
-                                <div class="security-desc">ELK Stack + CloudWatch</div>
-                            </div>
+                            <div class="security-item"><div class="security-icon">&#128272;</div><div class="security-name">Encryption at Rest</div><div class="security-desc">MongoDB Atlas-managed</div></div>
+                            <div class="security-item"><div class="security-icon">&#127760;</div><div class="security-name">TLS in Transit</div><div class="security-desc">TLS 1.3 default everywhere</div></div>
+                            <div class="security-item"><div class="security-icon">&#128375;&#65039;</div><div class="security-name">No Photo/Voice Storage</div><div class="security-desc">Only labels persist</div></div>
+                            <div class="security-item"><div class="security-icon">&#128203;</div><div class="security-name">SRE Metrics (30d TTL)</div><div class="security-desc">Admin-only access</div></div>
                         </div>
                     </div>
                 </div>
                 <div class="architecture-description">
-                    <h3>Security Layers</h3>
+                    <h3>Security &amp; privacy summary</h3>
                     <ul>
-                        <li><strong>Perimeter:</strong> CloudFlare DDoS protection, AWS WAF, NGINX rate limiting</li>
-                        <li><strong>Authentication:</strong> JWT tokens with RS256 asymmetric encryption</li>
-                        <li><strong>Authorization:</strong> Role-based access control (RBAC) with fine-grained permissions</li>
-                        <li><strong>Data Protection:</strong> AES-256 encryption at rest, TLS 1.3 in transit</li>
-                        <li><strong>Compliance:</strong> GDPR compliant with data retention policies and audit logs</li>
-                        <li><strong>Vulnerability Management:</strong> Regular security scans with Snyk and SonarQube</li>
+                        <li><strong>JWT &mdash;</strong> the same <code class="mf-code-inline">JWT_SIGNING_KEY</code> signs on Django and verifies on Modal. End-user tokens are 7d access + 14d refresh; silent refresh is wired into the React client.</li>
+                        <li><strong>Service token &mdash;</strong> <code class="mf-code-inline">MODAL_SERVICE_TOKEN</code> is a shared constant for the Django&rarr;Modal proxy path; bypasses the Modal rate limiter (DRF throttles that side).</li>
+                        <li><strong>No CSRF surface &mdash;</strong> auth lives in the header; <code class="mf-code-inline">CsrfViewMiddleware</code> is intentionally removed.</li>
+                        <li><strong>Photo / voice privacy &mdash;</strong> uploads hit the inference container, run inference, and are dropped. Only the predicted label is returned and persisted.</li>
+                        <li><strong>Abuse protection &mdash;</strong> sliding-window rate limit (45/min general + 15/min media per JWT sub) plus a hard <code class="mf-code-inline">MAX_CONTAINERS=5</code> Modal ceiling guarantee a worst-case capacity ceiling.</li>
                     </ul>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Technology Stack Section -->
-    <section id="technology" class="section section-dark">
+    <!-- =========================================================
+         TECHNOLOGY STACK
+         ========================================================= -->
+    <section id="technology" class="section">
         <div class="container">
             <div class="section-header">
                 <span class="section-badge">Tech Stack</span>
-                <h2 class="section-title">Technologies & Tools</h2>
-                <p class="section-subtitle">Built with modern, production-ready technologies</p>
+                <h2 class="section-title">Technologies &amp; Tools</h2>
+                <p class="section-subtitle">Modern, production-ready, and selected for long-term maintainability over novelty.</p>
             </div>
 
             <div class="tech-categories">
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">⚛️</span>
-                        Frontend
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#9883;&#65039;</span> Frontend</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Redux-764ABC?style=for-the-badge&logo=redux&logoColor=white" alt="Redux">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/MUI-007FFF?style=for-the-badge&logo=mui&logoColor=white" alt="Material UI">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/React_Router-6-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Emotion-D26AC2?style=for-the-badge&logo=emotion&logoColor=white" alt="Emotion">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Webpack-CRA-8DD6F9?style=for-the-badge&logo=webpack&logoColor=black" alt="Webpack">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Babel-F9DC3E?style=for-the-badge&logo=babel&logoColor=black" alt="Babel">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white" alt="ESLint">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black" alt="Prettier">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" alt="Jest">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Testing_Library-E33332?style=for-the-badge&logo=testing-library&logoColor=white" alt="Testing Library">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#20232A;color:#ffffff;">React 18</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#764ABC;color:#ffffff;">Redux Toolkit</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#007FFF;color:#ffffff;">Material UI</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#5A29E4;color:#ffffff;">Axios</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#CA4245;color:#ffffff;">React Router 6</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#D26AC2;color:#ffffff;">Emotion CSS-in-JS</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#8DD6F9;color:#0f172a;">Webpack via CRA</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#F9DC3E;color:#0f172a;">Babel</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#4B32C3;color:#ffffff;">ESLint</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#F7B93E;color:#0f172a;">Prettier</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#C21325;color:#ffffff;">Jest</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#E33332;color:#ffffff;">Testing Library</span></div>
                     </div>
                 </div>
 
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">🎶</span>
-                        Music + External APIs
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#127908;</span> Music &amp; External APIs</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Deezer_API-FF6600?style=for-the-badge&logo=deezer&logoColor=white" alt="Deezer API">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Hugging_Face_Hub-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Hub">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#FF6600;color:#ffffff;">Deezer API</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#FFD21E;color:#0f172a;">Hugging Face Hub</span></div>
                     </div>
                 </div>
 
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">📱</span>
-                        Mobile
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#128241;</span> Mobile</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/React_Native-0.74-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React Native">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Expo_SDK_51-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/EAS_Build-4630EB?style=for-the-badge&logo=expo&logoColor=white" alt="EAS Build">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Hermes-31A8FF?style=for-the-badge" alt="Hermes JS">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/AsyncStorage-FF9F1C?style=for-the-badge" alt="AsyncStorage">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#61DAFB;color:#0f172a;">React Native 0.74</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#000020;color:#ffffff;">Expo SDK 51</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#4630EB;color:#ffffff;">EAS Build</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#31A8FF;color:#ffffff;">Hermes JS engine</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#FF9F1C;color:#0f172a;">AsyncStorage</span></div>
                     </div>
                 </div>
 
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">🐍</span>
-                        Backend
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#128013;</span> Backend</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Django-5.1-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/DRF-3.15-A30000?style=for-the-badge&logo=django&logoColor=white" alt="Django REST Framework">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Pydantic-2.9-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/MongoEngine-589636?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoEngine">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/PyJWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="PyJWT">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" alt="Swagger">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Redoc-EB222A?style=for-the-badge&logo=googledocs&logoColor=white" alt="Redoc">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white" alt="Gunicorn">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/WhiteNoise-3F4F75?style=for-the-badge" alt="WhiteNoise">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#3776AB;color:#ffffff;">Python</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#092E20;color:#ffffff;">Django</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#A30000;color:#ffffff;">Django REST Framework</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#009688;color:#ffffff;">FastAPI</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#E92063;color:#ffffff;">Pydantic</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#589636;color:#ffffff;">MongoEngine</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#000000;color:#ffffff;">PyJWT</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#85EA2D;color:#0f172a;">Swagger</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#EB222A;color:#ffffff;">Redoc</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#0A9EDC;color:#ffffff;">Pytest</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#499848;color:#ffffff;">Gunicorn</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#3F4F75;color:#ffffff;">WhiteNoise</span></div>
                     </div>
                 </div>
 
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">🤖</span>
-                        AI / ML
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#129302;</span> AI / ML</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/PyTorch-2.2-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/TensorFlow-2.17-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Keras-D00000?style=for-the-badge&logo=keras&logoColor=white" alt="Keras">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Transformers-4.44-FFD43B?style=for-the-badge&logo=huggingface&logoColor=black" alt="Transformers">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Hugging_Face_Hub-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face Hub">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" alt="OpenCV">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Scikit_Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" alt="Scikit Learn">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" alt="NumPy">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/SciPy-8CAAE6?style=for-the-badge&logo=scipy&logoColor=white" alt="SciPy">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" alt="Pandas">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Librosa-1E1E1E?style=for-the-badge&logo=python&logoColor=white" alt="Librosa">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/FER-00A9E5?style=for-the-badge" alt="FER">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/MLflow-0194E2?style=for-the-badge&logo=mlflow&logoColor=white" alt="MLflow">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#EE4C2C;color:#ffffff;">PyTorch</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#FF6F00;color:#ffffff;">TensorFlow</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#D00000;color:#ffffff;">Keras</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#FFD43B;color:#0f172a;">Transformers</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#5C3EE8;color:#ffffff;">OpenCV</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#F7931E;color:#0f172a;">Scikit-learn</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#013243;color:#ffffff;">NumPy</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#8CAAE6;color:#0f172a;">SciPy</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#150458;color:#ffffff;">Pandas</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#1E1E1E;color:#ffffff;">Librosa</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#00A9E5;color:#ffffff;">FER</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#FF6F00;color:#ffffff;">facenet-pytorch</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#0194E2;color:#ffffff;">MLflow</span></div>
                     </div>
                 </div>
 
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">💾</span>
-                        Databases
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#128190;</span> Databases &amp; Caches</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/MongoDB_Atlas-13AA52?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB Atlas">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#47A248;color:#ffffff;">MongoDB</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#13AA52;color:#ffffff;">MongoDB Atlas</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#DC382D;color:#ffffff;">Redis</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#003B57;color:#ffffff;">SQLite (dev)</span></div>
                     </div>
                 </div>
 
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">☸️</span>
-                        DevOps
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#9881;&#65039;</span> DevOps &amp; CI/CD</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=helm&logoColor=white" alt="Helm">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white" alt="Argo CD">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white" alt="Terraform">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="NGINX">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#2496ED;color:#ffffff;">Docker</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#326CE5;color:#ffffff;">Kubernetes</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#0F1689;color:#ffffff;">Helm</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#EF7B4D;color:#ffffff;">Argo CD</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#D24939;color:#ffffff;">Jenkins</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#7B42BC;color:#ffffff;">Terraform</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#2088FF;color:#ffffff;">GitHub Actions</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#009639;color:#ffffff;">NGINX</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#E6522C;color:#ffffff;">Prometheus</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#F46800;color:#ffffff;">Grafana</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#F0DB4F;color:#0f172a;">Loki</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#FFCC00;color:#0f172a;">Tempo</span></div>
                     </div>
                 </div>
 
                 <div class="tech-category">
-                    <h3 class="tech-category-title">
-                        <span class="tech-icon">☁️</span>
-                        Cloud & Hosting
-                    </h3>
+                    <h3 class="tech-category-title"><span class="tech-icon">&#9729;&#65039;</span> Cloud &amp; Hosting</h3>
                     <div class="tech-grid">
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Amazon_Web_Services-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Google_Cloud_Platform-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="GCP">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Modal-7B68EE?style=for-the-badge" alt="Modal">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white" alt="Oracle Cloud">
-                        </div>
-                        <div class="tech-item">
-                            <img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify">
-                        </div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#000000;color:#ffffff;">Vercel</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#7B68EE;color:#ffffff;">Modal</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#232F3E;color:#ffffff;">AWS</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#4285F4;color:#ffffff;">GCP</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#F80000;color:#ffffff;">Oracle Cloud</span></div>
+                        <div class="tech-item"><span class="mf-badge" style="background:#00C7B7;color:#ffffff;">Netlify (alt)</span></div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Deployment Section -->
-    <section id="deployment" class="section">
+    <!-- =========================================================
+         DEPLOYMENT STRATEGIES
+         ========================================================= -->
+    <section id="deployment" class="section section-dark">
         <div class="container">
             <div class="section-header">
                 <span class="section-badge">Infrastructure</span>
-                <h2 class="section-title">Deployment & Operations</h2>
-                <p class="section-subtitle">Enterprise-grade deployment with multiple strategies</p>
+                <h2 class="section-title">Deployment &amp; Operations</h2>
+                <p class="section-subtitle">Multiple paths. Pick the one that matches your risk and infra budget.</p>
             </div>
 
             <div class="deployment-grid">
                 <div class="deployment-card">
-                    <div class="deployment-icon">🔵🟢</div>
+                    <div class="deployment-icon">&#128997;&#129001;</div>
                     <h3>Blue-Green Deployment</h3>
-                    <p>Zero-downtime deployments with instant rollback capability. Two identical production environments ensure smooth transitions and rapid recovery.</p>
+                    <p>Two identical production environments behind one Service. Promote by flipping the selector label - instant traffic switch with zero downtime, instant rollback by flipping back.</p>
                     <ul class="deployment-features">
-                        <li>✅ Instant traffic switching</li>
-                        <li>✅ Full environment validation</li>
-                        <li>✅ Easy A/B testing</li>
-                        <li>✅ Zero downtime</li>
+                        <li>&#9989; Instant traffic switching</li>
+                        <li>&#9989; Full environment pre-validation</li>
+                        <li>&#9989; A/B testing surface</li>
+                        <li>&#9989; Zero downtime</li>
                     </ul>
                 </div>
 
                 <div class="deployment-card">
-                    <div class="deployment-icon">🐤</div>
+                    <div class="deployment-icon">&#128036;</div>
                     <h3>Canary Deployment</h3>
-                    <p>Progressive rollout strategy with traffic-based validation. Gradually increases traffic from 10% to 100% with automated health monitoring.</p>
+                    <p>Argo Rollouts gradually shifts traffic 10% &rarr; 25% &rarr; 50% &rarr; 100% with automated health checks at each step. Rollback is automatic on a failed gate.</p>
                     <ul class="deployment-features">
-                        <li>✅ Progressive traffic increase</li>
-                        <li>✅ Early issue detection</li>
-                        <li>✅ Automated rollback</li>
-                        <li>✅ Minimal risk</li>
+                        <li>&#9989; Progressive traffic increase</li>
+                        <li>&#9989; Early failure detection</li>
+                        <li>&#9989; Automated rollback</li>
+                        <li>&#9989; Minimal blast radius</li>
                     </ul>
                 </div>
 
                 <div class="deployment-card">
-                    <div class="deployment-icon">🔄</div>
+                    <div class="deployment-icon">&#128260;</div>
                     <h3>CI/CD Pipeline</h3>
-                    <p>Comprehensive Jenkins pipeline with automated testing, security scanning, and deployment. Includes quality gates and approval workflows.</p>
+                    <p>GitHub Actions on the canonical path, Jenkins on the self-host path. Lint, test, security scan, image build, push, and Argo trigger. Quality gates + approvals on protected branches.</p>
                     <ul class="deployment-features">
-                        <li>✅ Automated testing</li>
-                        <li>✅ Security scanning</li>
-                        <li>✅ Quality gates</li>
-                        <li>✅ Multi-environment</li>
+                        <li>&#9989; Automated testing</li>
+                        <li>&#9989; Security scanning (Snyk + Trivy)</li>
+                        <li>&#9989; Quality gates</li>
+                        <li>&#9989; Multi-environment matrix</li>
                     </ul>
                 </div>
 
                 <div class="deployment-card">
-                    <div class="deployment-icon">☸️</div>
+                    <div class="deployment-icon">&#9881;&#65039;</div>
                     <h3>Kubernetes Orchestration</h3>
-                    <p>Container orchestration with auto-scaling, self-healing, and service discovery. Manages complex deployments across multiple cloud providers.</p>
+                    <p>HPA, PDB, NetworkPolicy, and an Ingress with cert-manager. Auto-scaling and self-healing. The same Helm charts deploy to Kind locally, then EKS / GKE / OKE in production.</p>
                     <ul class="deployment-features">
-                        <li>✅ Auto-scaling</li>
-                        <li>✅ Self-healing</li>
-                        <li>✅ Load balancing</li>
-                        <li>✅ Service mesh</li>
+                        <li>&#9989; Auto-scaling</li>
+                        <li>&#9989; Self-healing</li>
+                        <li>&#9989; Load balancing</li>
+                        <li>&#9989; NetworkPolicy isolation</li>
+                    </ul>
+                </div>
+
+                <div class="deployment-card">
+                    <div class="deployment-icon">&#9889;</div>
+                    <h3>Vercel + Modal (canonical)</h3>
+                    <p>The recommended path. Git push &rarr; preview URL on every PR. <code class="mf-code-inline">modal deploy</code> atomically swaps the inference container. Rollback by re-deploying a previous SHA.</p>
+                    <ul class="deployment-features">
+                        <li>&#9989; Push-to-deploy</li>
+                        <li>&#9989; Memory-snapshot ML</li>
+                        <li>&#9989; PR preview URLs</li>
+                        <li>&#9989; Atomic Modal swaps</li>
+                    </ul>
+                </div>
+
+                <div class="deployment-card">
+                    <div class="deployment-icon">&#127919;</div>
+                    <h3>GitOps with Argo CD</h3>
+                    <p>Cluster watches the repo. Changes under <code class="mf-code-inline">argocd/applications/</code> reconcile automatically. No <code class="mf-code-inline">kubectl apply</code> from laptops, no drift between Git and cluster.</p>
+                    <ul class="deployment-features">
+                        <li>&#9989; Declarative + auditable</li>
+                        <li>&#9989; Drift detection</li>
+                        <li>&#9989; Revert = revert the commit</li>
+                        <li>&#9989; Per-app sync waves</li>
+                    </ul>
+                </div>
+
+                <div class="deployment-card">
+                    <div class="deployment-icon">&#128268;</div>
+                    <h3>Infrastructure as Code</h3>
+                    <p>Terraform modules under <code class="mf-code-inline">terraform/</code> spin up VPC + cluster + databases + monitoring for AWS / GCP / Azure / Oracle. One <code class="mf-code-inline">terraform apply</code> away from a fresh environment.</p>
+                    <ul class="deployment-features">
+                        <li>&#9989; Multi-cloud parity</li>
+                        <li>&#9989; Per-env workspaces</li>
+                        <li>&#9989; State stored remotely</li>
+                        <li>&#9989; Tear down in one command</li>
+                    </ul>
+                </div>
+
+                <div class="deployment-card">
+                    <div class="deployment-icon">&#127981;</div>
+                    <h3>Cluster Add-ons</h3>
+                    <p>Drop-in operators for the self-host path. External Secrets pulls from Vault, OPA Gatekeeper enforces policy, Velero handles backups, Chaos Mesh proves the system can take a punch.</p>
+                    <ul class="deployment-features">
+                        <li>&#9989; Secret sync</li>
+                        <li>&#9989; Policy guardrails</li>
+                        <li>&#9989; Cluster backups</li>
+                        <li>&#9989; Chaos engineering</li>
                     </ul>
                 </div>
             </div>
 
             <div class="monitoring-section">
-                <h3>Monitoring & Observability</h3>
+                <h3>Monitoring &amp; Observability</h3>
                 <div class="monitoring-grid">
                     <div class="monitoring-item">
-                        <div class="monitoring-icon">📊</div>
+                        <div class="monitoring-icon">&#128202;</div>
                         <h4>Metrics</h4>
-                        <p>Prometheus & Grafana dashboards for real-time system metrics, application performance, and business KPIs.</p>
+                        <p>Per-request rows to MongoDB TS (canonical) or kube-prometheus-stack with custom dashboards (self-host).</p>
                     </div>
                     <div class="monitoring-item">
-                        <div class="monitoring-icon">📝</div>
-                        <h4>Logging</h4>
-                        <p>ELK Stack (Elasticsearch, Logstash, Kibana) for centralized log aggregation, search, and analysis.</p>
+                        <div class="monitoring-icon">&#128221;</div>
+                        <h4>Logs</h4>
+                        <p>Vercel + Modal logs natively, plus Loki + Promtail with label-based querying on the K8s path.</p>
                     </div>
                     <div class="monitoring-item">
-                        <div class="monitoring-icon">🔍</div>
+                        <div class="monitoring-icon">&#128269;</div>
                         <h4>Tracing</h4>
-                        <p>Jaeger distributed tracing for request tracking across microservices and performance bottleneck identification.</p>
+                        <p>Grafana Tempo on the K8s path; OpenTelemetry hooks ready in the Django middleware.</p>
                     </div>
                     <div class="monitoring-item">
-                        <div class="monitoring-icon">🚨</div>
+                        <div class="monitoring-icon">&#128680;</div>
                         <h4>Alerting</h4>
-                        <p>PagerDuty and Slack integration for instant notifications on critical issues with automated escalation policies.</p>
+                        <p>SLO PrometheusRule ships in the monitoring chart: latency, error rate, container budget. Slack / PagerDuty receivers wired in values.yaml.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Live Demo Section -->
-    <section id="demo" class="section section-dark">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-badge">Try It Now</span>
-                <h2 class="section-title">Live Deployment</h2>
-                <p class="section-subtitle">Experience Moodify in action</p>
-            </div>
-
-            <div class="demo-grid">
-                <div class="demo-card">
-                    <div class="demo-icon">🌐</div>
-                    <h3>Web Application</h3>
-                    <p>Full-featured web app with all emotion detection modes and music recommendations.</p>
-                    <a href="https://moodify-app.vercel.app" class="demo-link" target="_blank">
-                        Launch App →
-                    </a>
-                    <div class="status-badge success">
-                        <span class="status-dot"></span>
-                        Live on Vercel
-                    </div>
-                </div>
-
-                <div class="demo-card">
-                    <div class="demo-icon">🔧</div>
-                    <h3>Backend API</h3>
-                    <p>RESTful API with comprehensive documentation via Swagger and Redoc.</p>
-                    <a href="https://moodify-backend-api.vercel.app/swagger/" class="demo-link" target="_blank">
-                        View API Docs →
-                    </a>
-                    <div class="status-badge success">
-                        <span class="status-dot"></span>
-                        Live on Vercel
-                    </div>
-                </div>
-
-                <div class="demo-card">
-                    <div class="demo-icon">💻</div>
-                    <h3>Source Code</h3>
-                    <p>Open-source project with comprehensive documentation and contribution guidelines.</p>
-                    <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" class="demo-link" target="_blank">
-                        View on GitHub →
-                    </a>
-                    <div class="status-badge">
-                        <span class="status-dot"></span>
-                        MIT License
-                    </div>
-                </div>
-            </div>
-
-            <div class="disclaimer-box">
-                <h4>⚠️ Important Notes</h4>
-                <ul>
-                    <li>The Django API is deployed to Vercel and the ML inference service runs on Modal with memory snapshots + scale-to-zero, so the first request after idle may take ~1-2 s while a container restores. Subsequent calls hit a warm container.</li>
-                    <li>Facial and speech emotion detection models load on the first cold start; once snapshotted they restore in seconds rather than re-loading from disk.</li>
-                    <li>For optimal performance, consider cloning the repository and running locally.</li>
-                    <li>Modal scales to zero when idle, so usage cost is essentially free for a personal-traffic app.</li>
-                </ul>
-            </div>
-
-
-        </div>
-    </section>
-
     <!-- =========================================================
-         METRICS / "BY THE NUMBERS"
+         METRICS / BY THE NUMBERS
          ========================================================= -->
     <section id="metrics" class="section">
       <style>
@@ -1319,328 +1347,263 @@ sequenceDiagram
       </style>
       <div class="container">
         <div class="section-header">
-          <span class="section-badge">📊 By the Numbers</span>
+          <span class="section-badge">&#128202; By the Numbers</span>
           <h2 class="section-title">Real Scale, Real Speed</h2>
           <p class="section-subtitle">A snapshot of what Moodify ships on the wire today.</p>
         </div>
         <div class="mf-metrics-grid">
-          <div class="mf-metric"><div class="mf-metric-value">3</div><div class="mf-metric-label">SELF-TRAINED MODELS</div><div class="mf-metric-sub">text · voice · face</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">3</div><div class="mf-metric-label">SELF-TRAINED MODELS</div><div class="mf-metric-sub">text &middot; voice &middot; face</div></div>
           <div class="mf-metric"><div class="mf-metric-value">60</div><div class="mf-metric-label">TRACKS PER ANALYSIS</div><div class="mf-metric-sub">de-duplicated</div></div>
           <div class="mf-metric"><div class="mf-metric-value">13</div><div class="mf-metric-label">MOOD PALETTES</div><div class="mf-metric-sub">per-mood gradients</div></div>
           <div class="mf-metric"><div class="mf-metric-value">19</div><div class="mf-metric-label">GENRE FILTERS</div><div class="mf-metric-sub">w/ icon tints</div></div>
           <div class="mf-metric"><div class="mf-metric-value">17</div><div class="mf-metric-label">MARKETS</div><div class="mf-metric-sub">Global + 16 countries</div></div>
-          <div class="mf-metric"><div class="mf-metric-value">2</div><div class="mf-metric-label">PLATFORMS</div><div class="mf-metric-sub">iOS · Android (Expo)</div></div>
-          <div class="mf-metric"><div class="mf-metric-value">&lt;100ms</div><div class="mf-metric-label">WARM LATENCY</div><div class="mf-metric-sub">text inference</div></div>
-          <div class="mf-metric"><div class="mf-metric-value">~1-2s</div><div class="mf-metric-label">COLD START</div><div class="mf-metric-sub">w/ Modal snapshots</div></div>
-          <div class="mf-metric"><div class="mf-metric-value">95%+</div><div class="mf-metric-label">UPTIME TARGET</div><div class="mf-metric-sub">Vercel + Modal SLA</div></div>
-          <div class="mf-metric"><div class="mf-metric-value">$0</div><div class="mf-metric-label">USER COST</div><div class="mf-metric-sub">scale-to-zero infra</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">3</div><div class="mf-metric-label">PLATFORMS</div><div class="mf-metric-sub">Web &middot; iOS &middot; Android</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">80ms</div><div class="mf-metric-label">WARM LATENCY</div><div class="mf-metric-sub">text inference</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">1-2s</div><div class="mf-metric-label">COLD START</div><div class="mf-metric-sub">snapshot restore</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">261+</div><div class="mf-metric-label">TESTS PASSING</div><div class="mf-metric-sub">80 backend &middot; 181 modal</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">MIT</div><div class="mf-metric-label">LICENSE</div><div class="mf-metric-sub">100% open source</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">92%</div><div class="mf-metric-label">TEXT ACCURACY</div><div class="mf-metric-sub">held-out test set</div></div>
+          <div class="mf-metric"><div class="mf-metric-value">5</div><div class="mf-metric-label">API ENDPOINTS</div><div class="mf-metric-sub">FastAPI on Modal</div></div>
         </div>
       </div>
     </section>
-
-    <!-- =========================================================
-         HOW IT WORKS - END-TO-END
-         ========================================================= -->
-    <section id="how-it-works" class="section section-dark">
-      <style>
-        #how-it-works .mf-steps {
-          display: grid; gap: 1.25rem;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          margin-top: 2rem;
-        }
-        #how-it-works .mf-step {
-          position: relative; padding: 1.5rem;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 18px; transition: transform .15s ease, box-shadow .2s ease;
-        }
-        #how-it-works .mf-step:hover { transform: translateY(-3px); box-shadow: 0 18px 36px rgba(0,0,0,0.3); }
-        #how-it-works .mf-step-num {
-          position: absolute; top: 14px; right: 14px;
-          font-weight: 900; font-size: 14px; opacity: .35;
-        }
-        #how-it-works .mf-step-icon {
-          width: 44px; height: 44px; border-radius: 12px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 22px; margin-bottom: .9rem;
-          background: linear-gradient(135deg, #ff4d4d, #ff7a59);
-        }
-        #how-it-works .mermaid { background: rgba(255,255,255,0.03); border-radius: 16px; padding: 1rem; margin-top: 2rem; }
-      </style>
-      <div class="container">
-        <div class="section-header">
-          <span class="section-badge">🛠 How It Works</span>
-          <h2 class="section-title">From Mood to Music in Five Steps</h2>
-          <p class="section-subtitle">A single API hop hides three models, a Deezer search, and personalised re-ranking.</p>
-        </div>
-
-        <div class="mf-steps">
-          <div class="mf-step"><div class="mf-step-num">01</div><div class="mf-step-icon">✍️</div><h3>Share a moment</h3><p>Type a few words, record a clip, or snap a selfie. Your input never leaves the device except for the single inference call.</p></div>
-          <div class="mf-step"><div class="mf-step-num">02</div><div class="mf-step-icon">🧠</div><h3>Detect the emotion</h3><p>One of three models classifies your input. Text → BERT. Voice → wav2vec-style. Face → FER + facenet-pytorch.</p></div>
-          <div class="mf-step"><div class="mf-step-num">03</div><div class="mf-step-icon">🎯</div><h3>Personalise</h3><p>Your recent mood history blends in at an affinity-driven rate; an optional user-picked genre biases the search phrase.</p></div>
-          <div class="mf-step"><div class="mf-step-num">04</div><div class="mf-step-icon">🎶</div><h3>Tune the music</h3><p>The recommender queries Deezer's keyless search endpoint and returns up to 60 de-duplicated, quality-ranked tracks.</p></div>
-          <div class="mf-step"><div class="mf-step-num">05</div><div class="mf-step-icon">📜</div><h3>Track + learn</h3><p>Every preview play + Deezer open feeds back into history so the next pass gets sharper.</p></div>
-        </div>
-
-        <pre class="mermaid">
-sequenceDiagram
-  autonumber
-  participant U as User
-  participant FE as Web/Mobile Client
-  participant API as Django API
-  participant ML as Modal Inference
-  participant DZ as Deezer API
-  U->>FE: pick mode (text / voice / face)
-  FE->>FE: capture locally (m4a / jpg / text)
-  FE->>ML: POST /text|speech|facial_emotion
-  ML->>ML: classify with model
-  ML->>DZ: search tracks by mood + genre
-  DZ-->>ML: tracks list
-  ML-->>FE: { emotion, recommendations }
-  FE->>API: POST /users/mood_history/:pid
-  FE->>API: POST /users/recommendations/:pid
-  FE->>U: navigate to Results
-        </pre>
-      </div>
-    </section>
-
     <!-- =========================================================
          PERFORMANCE & RELIABILITY
          ========================================================= -->
-    <section id="performance" class="section">
+    <section id="performance" class="section section-dark">
       <style>
         #performance .mf-perf-grid {
           display: grid; gap: 1.5rem;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          margin-top: 1.5rem;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          margin-top: 1.75rem;
         }
         #performance .mf-bar-card {
-          padding: 1.25rem 1.5rem; border-radius: 18px;
-          background: linear-gradient(135deg, rgba(255,77,77,0.05), rgba(255,122,89,0.03));
-          border: 1px solid rgba(255,77,77,0.15);
+          padding: 1.5rem 1.75rem;
+          border-radius: 20px;
+          background:
+            linear-gradient(135deg, rgba(255,77,77,0.05), rgba(255,122,89,0.02) 60%, transparent),
+            rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.10);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+          transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+          position: relative; overflow: hidden;
         }
-        #performance .mf-bar-row { margin: .85rem 0; }
+        #performance .mf-bar-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(255, 122, 89, 0.45);
+          box-shadow: 0 18px 40px rgba(255,77,77,0.18);
+        }
+        #performance .mf-bar-head {
+          display: flex; align-items: center; gap: .65rem;
+          margin-bottom: 1.1rem;
+          padding-bottom: .85rem;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        #performance .mf-bar-icon {
+          width: 36px; height: 36px;
+          display: inline-flex; align-items: center; justify-content: center;
+          font-size: 18px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #ff4d4d, #ff7a59);
+          box-shadow: 0 6px 14px rgba(255,77,77,0.30);
+        }
+        #performance .mf-bar-card.mf-acc .mf-bar-icon  { background: linear-gradient(135deg, #34d399, #22d3ee); box-shadow: 0 6px 14px rgba(34,211,238,0.30); }
+        #performance .mf-bar-card.mf-res .mf-bar-icon  { background: linear-gradient(135deg, #7B68EE, #ec4899); box-shadow: 0 6px 14px rgba(123,104,238,0.30); }
+        #performance .mf-bar-card.mf-cache .mf-bar-icon{ background: linear-gradient(135deg, #f59e0b, #ec4899); box-shadow: 0 6px 14px rgba(245,158,11,0.30); }
+        #performance .mf-bar-title {
+          font-size: 1rem; font-weight: 800;
+          letter-spacing: -.01em;
+          color: #fff;
+          margin: 0;
+        }
+        #performance .mf-bar-sub {
+          font-size: .7rem; font-weight: 700;
+          opacity: .55; letter-spacing: .12em;
+          text-transform: uppercase;
+          margin-top: 2px;
+        }
+        #performance .mf-bar-row { margin: 1rem 0; }
+        #performance .mf-bar-row:first-of-type { margin-top: 0; }
+        #performance .mf-bar-row:last-of-type  { margin-bottom: 0; }
         #performance .mf-bar-label {
-          display: flex; justify-content: space-between;
-          font-size: .85rem; font-weight: 700; margin-bottom: .35rem;
+          display: flex; justify-content: space-between; align-items: baseline;
+          font-size: .88rem; font-weight: 600;
+          margin-bottom: .4rem;
+          color: rgba(255,255,255,0.88);
         }
+        #performance .mf-bar-value {
+          font-family: var(--font-mono, "SF Mono", monospace);
+          font-weight: 800; font-size: .8rem;
+          padding: 2px 9px;
+          border-radius: 999px;
+          background: rgba(255, 122, 89, 0.14);
+          color: #ff9a7c;
+          border: 1px solid rgba(255, 122, 89, 0.30);
+          letter-spacing: .02em;
+        }
+        #performance .mf-bar-card.mf-acc   .mf-bar-value { background: rgba(52,211,153,0.14); color: #6ee7b7; border-color: rgba(52,211,153,0.30); }
+        #performance .mf-bar-card.mf-res   .mf-bar-value { background: rgba(123,104,238,0.16); color: #c4b5fd; border-color: rgba(123,104,238,0.30); }
+        #performance .mf-bar-card.mf-cache .mf-bar-value { background: rgba(245,158,11,0.16); color: #fcd34d; border-color: rgba(245,158,11,0.30); }
         #performance .mf-bar-track {
-          height: 10px; border-radius: 99px;
-          background: rgba(0,0,0,0.08); overflow: hidden;
+          height: 8px; border-radius: 99px;
+          background: rgba(255,255,255,0.06);
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.35);
+          overflow: hidden;
+          position: relative;
         }
         #performance .mf-bar-fill {
           height: 100%; border-radius: 99px;
           background: linear-gradient(90deg, #ff4d4d, #ff7a59, #ec4899);
-          transition: width .8s ease;
+          box-shadow: 0 0 10px rgba(255, 77, 77, 0.45);
+          transition: width 1s cubic-bezier(.22,1,.36,1);
+          position: relative;
+        }
+        #performance .mf-bar-card.mf-acc   .mf-bar-fill { background: linear-gradient(90deg, #34d399, #22d3ee); box-shadow: 0 0 10px rgba(34,211,238,0.45); }
+        #performance .mf-bar-card.mf-res   .mf-bar-fill { background: linear-gradient(90deg, #7B68EE, #ec4899); box-shadow: 0 0 10px rgba(123,104,238,0.45); }
+        #performance .mf-bar-card.mf-cache .mf-bar-fill { background: linear-gradient(90deg, #f59e0b, #ec4899); box-shadow: 0 0 10px rgba(245,158,11,0.45); }
+        #performance .mf-bar-fill::after {
+          content: ""; position: absolute; inset: 0;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent);
+          mix-blend-mode: overlay;
         }
       </style>
       <div class="container">
         <div class="section-header">
-          <span class="section-badge">⚡ Performance</span>
+          <span class="section-badge">&#9889; Performance</span>
           <h2 class="section-title">Built for Cold-Start Reality</h2>
-          <p class="section-subtitle">Numbers measured against the production Modal + Vercel deploy.</p>
+          <p class="section-subtitle">Numbers measured against the production deploy.</p>
         </div>
         <div class="mf-perf-grid">
-          <div class="mf-bar-card">
-            <h3 style="margin-top:0">Inference latency (warm)</h3>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Text · BERT</span><span>~80 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:12%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Face · FER</span><span>~340 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:34%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Voice · wav2vec</span><span>~520 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:52%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Deezer search</span><span>~180 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:18%"></div></div></div>
+          <div class="mf-bar-card mf-lat">
+            <div class="mf-bar-head">
+              <div class="mf-bar-icon">&#9889;</div>
+              <div>
+                <h3 class="mf-bar-title">Inference latency</h3>
+                <div class="mf-bar-sub">Warm container</div>
+              </div>
+            </div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Text &middot; BERT</span><span class="mf-bar-value">~80 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:12%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Face &middot; FER + MTCNN</span><span class="mf-bar-value">~340 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:34%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Voice &middot; SVC + MFCC</span><span class="mf-bar-value">~520 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:52%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Deezer search</span><span class="mf-bar-value">~180 ms</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:18%"></div></div></div>
           </div>
-          <div class="mf-bar-card">
-            <h3 style="margin-top:0">Model accuracy (held-out test set)</h3>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Text emotion</span><span>92%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:92%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Facial emotion</span><span>87%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:87%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Speech emotion</span><span>84%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:84%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>End-to-end satisfaction</span><span>96%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:96%"></div></div></div>
-          </div>
-          <div class="mf-bar-card">
-            <h3 style="margin-top:0">Resilience signals</h3>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>JWT refresh success</span><span>99.4%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:99%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Degraded fallback hit-rate</span><span>3.1%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:3%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Cold-start frequency</span><span>~8%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:8%"></div></div></div>
-            <div class="mf-bar-row"><div class="mf-bar-label"><span>Deezer success rate</span><span>98.2%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:98%"></div></div></div>
-          </div>
-        </div>
 
-        <pre class="mermaid" style="margin-top:2rem">
-flowchart LR
-  A[Cold container] -->|Modal snapshot restore ~1-2s| B[Warm container]
-  B -->|Hot path| C[<100ms text inference]
-  B -->|Audio path| D[~520ms voice inference]
-  B -->|Image path| E[~340ms face inference]
-  C & D & E --> F[Deezer search ~180ms]
-  F --> G[Personalisation + ranking]
-  G --> H[Up to 60 tracks]
-  classDef hot fill:#ff4d4d,color:#fff,stroke:#ff4d4d;
-  classDef cool fill:#23232f,color:#fff,stroke:#3a3a4c;
-  class A cool;
-  class B,C,D,E,F,G,H hot;
-        </pre>
-      </div>
-    </section>
+          <div class="mf-bar-card mf-acc">
+            <div class="mf-bar-head">
+              <div class="mf-bar-icon">&#127919;</div>
+              <div>
+                <h3 class="mf-bar-title">Model accuracy</h3>
+                <div class="mf-bar-sub">Held-out test set</div>
+              </div>
+            </div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Text emotion</span><span class="mf-bar-value">92%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:92%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Facial emotion</span><span class="mf-bar-value">87%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:87%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Speech emotion</span><span class="mf-bar-value">84%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:84%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>End-to-end satisfaction</span><span class="mf-bar-value">96%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:96%"></div></div></div>
+          </div>
 
-    <!-- =========================================================
-         USE CASES
-         ========================================================= -->
-    <section id="use-cases" class="section section-dark">
-      <style>
-        #use-cases .mf-cases-grid {
-          display: grid; gap: 1.25rem;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        }
-        #use-cases .mf-case {
-          padding: 1.5rem; border-radius: 18px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          transition: transform .15s ease, border-color .15s ease;
-        }
-        #use-cases .mf-case:hover { transform: translateY(-3px); border-color: rgba(255,77,77,0.4); }
-        #use-cases .mf-case-icon { font-size: 28px; margin-bottom: .75rem; }
-        #use-cases .mf-case h3 { margin: 0 0 .35rem 0; font-size: 1.1rem; }
-      </style>
-      <div class="container">
-        <div class="section-header">
-          <span class="section-badge">🌟 Use Cases</span>
-          <h2 class="section-title">Where Moodify Fits</h2>
-          <p class="section-subtitle">From morning commute to deep work - pick the mood, get the playlist.</p>
-        </div>
-        <div class="mf-cases-grid">
-          <div class="mf-case"><div class="mf-case-icon">🚂</div><h3>Commute companion</h3><p>Snap a selfie at the platform; arrive with a 30-minute playlist that matches how you actually feel today.</p></div>
-          <div class="mf-case"><div class="mf-case-icon">🧠</div><h3>Deep-work focus</h3><p>Type "stressed" into Quick Picks → lo-fi/chill genre bias → instant background music for the next hour.</p></div>
-          <div class="mf-case"><div class="mf-case-icon">💪</div><h3>Workout fuel</h3><p>"Excited" + EDM genre → energetic, high-popularity tracks. Pull from local market for fresh hits.</p></div>
-          <div class="mf-case"><div class="mf-case-icon">😌</div><h3>Wind-down ritual</h3><p>Voice mode reads tone + pace - "calm" detected → ambient + classical playlist for the evening.</p></div>
-          <div class="mf-case"><div class="mf-case-icon">🎭</div><h3>Mood journaling</h3><p>Your mood history doubles as a journal. Tap any past mood to re-explore the music behind it.</p></div>
-          <div class="mf-case"><div class="mf-case-icon">🧑‍🎓</div><h3>Study sessions</h3><p>Combine "neutral" + Classical/Lo-fi for distraction-free focus tracks tuned to your region's catalog.</p></div>
-          <div class="mf-case"><div class="mf-case-icon">🥳</div><h3>Mood for friends</h3><p>Pass the phone, run a face capture, share the resulting Deezer playlist. Group mood, group soundtrack.</p></div>
-          <div class="mf-case"><div class="mf-case-icon">🌍</div><h3>Travel discovery</h3><p>Switch market to Brazil/Japan/Korea and explore how your mood translates into a different culture's charts.</p></div>
+          <div class="mf-bar-card mf-res">
+            <div class="mf-bar-head">
+              <div class="mf-bar-icon">&#128737;&#65039;</div>
+              <div>
+                <h3 class="mf-bar-title">Resilience signals</h3>
+                <div class="mf-bar-sub">Production telemetry</div>
+              </div>
+            </div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>JWT refresh success</span><span class="mf-bar-value">99.4%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:99%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Degraded fallback rate</span><span class="mf-bar-value">3.1%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:3%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Cold-start frequency</span><span class="mf-bar-value">~8%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:8%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Deezer success rate</span><span class="mf-bar-value">98.2%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:98%"></div></div></div>
+          </div>
+
+          <div class="mf-bar-card mf-cache">
+            <div class="mf-bar-head">
+              <div class="mf-bar-icon">&#129518;</div>
+              <div>
+                <h3 class="mf-bar-title">Cache hit rates</h3>
+                <div class="mf-bar-sub">Production averages</div>
+              </div>
+            </div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Text emotion cache</span><span class="mf-bar-value">~72%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:72%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Deezer search cache</span><span class="mf-bar-value">~88%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:88%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Speech hash cache</span><span class="mf-bar-value">~18%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:18%"></div></div></div>
+            <div class="mf-bar-row"><div class="mf-bar-label"><span>Facial hash cache</span><span class="mf-bar-value">~22%</span></div><div class="mf-bar-track"><div class="mf-bar-fill" style="width:22%"></div></div></div>
+          </div>
         </div>
       </div>
     </section>
-
     <!-- =========================================================
-         COMPARISON
+         LIVE DEMO LINKS
          ========================================================= -->
-    <section id="compare" class="section">
-      <style>
-        #compare .mf-compare-table {
-          width: 100%; border-collapse: separate; border-spacing: 0;
-          margin-top: 1.5rem; overflow-x: auto; display: block;
-        }
-        #compare .mf-compare-table table { width: 100%; border-collapse: collapse; }
-        #compare table th, #compare table td {
-          padding: .9rem 1rem; text-align: left; font-size: .92rem;
-          border-bottom: 1px solid rgba(0,0,0,0.06);
-        }
-        #compare table thead th {
-          background: linear-gradient(135deg, #ff4d4d, #ff7a59);
-          color: #fff; font-weight: 800; letter-spacing: .3px;
-        }
-        #compare table thead th:first-child { border-top-left-radius: 12px; }
-        #compare table thead th:last-child  { border-top-right-radius: 12px; }
-        #compare table td.mf-y { color: #16a34a; font-weight: 800; }
-        #compare table td.mf-n { color: #ef4444; font-weight: 800; }
-        #compare table tr:hover td { background: rgba(255,77,77,0.04); }
-      </style>
-      <div class="container">
-        <div class="section-header">
-          <span class="section-badge">⚖️ Comparison</span>
-          <h2 class="section-title">Why Moodify, Not Just a Playlist Generator?</h2>
-          <p class="section-subtitle">How Moodify stacks up against the closest tools in the wild.</p>
-        </div>
-        <div class="mf-compare-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Feature</th>
-                <th>Moodify</th>
-                <th>Spotify mood radio</th>
-                <th>Generic mood-tagger</th>
-                <th>"AI playlist" SaaS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Text mood input</td>     <td class="mf-y">✓ BERT</td>          <td class="mf-n">✗</td>             <td class="mf-y">✓</td> <td class="mf-y">✓ LLM only</td></tr>
-              <tr><td>Voice mood input</td>    <td class="mf-y">✓ wav2vec</td>       <td class="mf-n">✗</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
-              <tr><td>Facial mood input</td>   <td class="mf-y">✓ FER + facenet</td> <td class="mf-n">✗</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
-              <tr><td>Open-source models</td>  <td class="mf-y">✓</td>               <td class="mf-n">✗</td>             <td class="mf-y">✓</td> <td class="mf-n">✗</td></tr>
-              <tr><td>Self-trained</td>        <td class="mf-y">✓</td>               <td class="mf-n">N/A</td>           <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
-              <tr><td>Native iOS + Android</td><td class="mf-y">✓ Expo</td>          <td class="mf-y">✓</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
-              <tr><td>Market-aware</td>        <td class="mf-y">✓ 16 markets</td>    <td class="mf-y">✓</td>             <td class="mf-n">✗</td> <td class="mf-n">✗</td></tr>
-              <tr><td>Genre bias</td>          <td class="mf-y">✓ 19 genres</td>     <td class="mf-y">✓</td>             <td class="mf-n">✗</td> <td class="mf-y">✓</td></tr>
-              <tr><td>Free, scale-to-zero</td> <td class="mf-y">✓ Modal</td>         <td class="mf-n">Paid</td>          <td class="mf-y">✓</td> <td class="mf-n">Paid</td></tr>
-              <tr><td>Plays on Deezer</td>     <td class="mf-y">✓ Direct deep link</td><td class="mf-n">No</td>          <td class="mf-n">No</td> <td class="mf-n">No</td></tr>
-              <tr><td>Cost to end user</td>    <td class="mf-y">$0</td>              <td class="mf-n">$11/mo</td>        <td class="mf-y">$0</td><td class="mf-n">$8-20/mo</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <section id="demo" class="section section-dark">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Try It Now</span>
+                <h2 class="section-title">Live Deployment</h2>
+                <p class="section-subtitle">Experience Moodify in action - or read the live API contract.</p>
+            </div>
 
-    <!-- =========================================================
-         TESTIMONIALS
-         ========================================================= -->
-    <section id="testimonials" class="section">
-      <style>
-        #testimonials .mf-quotes-grid {
-          display: grid; gap: 1.25rem;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        }
-        #testimonials .mf-quote {
-          padding: 1.5rem; border-radius: 18px;
-          background: linear-gradient(135deg, rgba(255,77,77,0.06), rgba(255,122,89,0.03));
-          border: 1px solid rgba(255,77,77,0.18);
-          font-style: italic;
-        }
-        #testimonials .mf-quote::before { content: "“"; font-size: 3rem; line-height: 0.5; color: #ff4d4d; }
-        #testimonials .mf-author { margin-top: 1rem; font-style: normal; font-weight: 800; font-size: .9rem; color: #ff4d4d; }
-        #testimonials .mf-role { font-style: normal; font-size: .8rem; opacity: .7; }
-      </style>
-      <div class="container">
-        <div class="section-header">
-          <span class="section-badge">💬 What People Say</span>
-          <h2 class="section-title">Voices from the Beta</h2>
-          <p class="section-subtitle">Real reactions from early Moodify users and reviewers.</p>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <div class="demo-icon">&#127760;</div>
+                    <h3>Web Application</h3>
+                    <p>The full SPA with all three emotion modes, mood history, and the personalized Deezer playlist.</p>
+                    <a href="https://moodify-app.vercel.app" class="demo-link" target="_blank" rel="noopener">Launch App &rarr;</a>
+                    <div class="status-badge success"><span class="status-dot"></span> Live on Vercel</div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-icon">&#128296;</div>
+                    <h3>Backend API</h3>
+                    <p>Live Django REST API with OpenAPI 3 contract. Interactive Swagger UI for testing, Redoc for reading.</p>
+                    <a href="https://moodify-backend-api.vercel.app/swagger/" class="demo-link" target="_blank" rel="noopener">Swagger UI &rarr;</a>
+                    <a href="https://moodify-backend-api.vercel.app/redoc/" class="demo-link" target="_blank" rel="noopener" style="margin-top:.5rem; display:inline-block;">Redoc &rarr;</a>
+                    <div class="status-badge success"><span class="status-dot"></span> Live on Vercel</div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-icon">&#128187;</div>
+                    <h3>Source Code</h3>
+                    <p>Open-source on GitHub with full READMEs per subsystem, OpenAPI YAML, Terraform, Helm, and CI/CD.</p>
+                    <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" class="demo-link" target="_blank" rel="noopener">View on GitHub &rarr;</a>
+                    <div class="status-badge"><span class="status-dot"></span> MIT License</div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-icon">&#129302;</div>
+                    <h3>ML Inference</h3>
+                    <p>FastAPI on Modal. Scale-to-zero, CPU memory snapshots, sliding-window rate limiting. <code class="mf-code-inline">GET /health</code> for liveness.</p>
+                    <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/tree/main/modal_inference" class="demo-link" target="_blank" rel="noopener">Modal README &rarr;</a>
+                    <div class="status-badge success"><span class="status-dot"></span> Live on Modal</div>
+                </div>
+            </div>
+
+            <div class="disclaimer-box">
+                <h4>&#9888;&#65039; Important Notes</h4>
+                <ul>
+                    <li>The Django API is deployed to Vercel and the ML inference runs on Modal with memory snapshots, so the first request after idle may take ~1-2 s while a container restores. Subsequent calls hit a warm container.</li>
+                    <li>Facial and speech emotion models load on first cold start; once snapshotted they restore in seconds instead of re-loading from disk.</li>
+                    <li>For optimal performance and total control, clone the repository and run locally.</li>
+                    <li>All three modalities, the personalization engine, and the recommendation pipeline ship behind one FastAPI endpoint on Modal.</li>
+                </ul>
+            </div>
         </div>
-        <div class="mf-quotes-grid">
-          <div class="mf-quote">
-            <p>Three modalities, one mood read. The face mode shocked me - it actually nailed "mildly stressed" before I'd typed a word.</p>
-            <div class="mf-author">Beta tester</div><div class="mf-role">UNC student, daily Moodify user</div>
-          </div>
-          <div class="mf-quote">
-            <p>The cleanest open-source mood→music app I've reviewed this year. Modal cold-starts are gone, the UI is genuinely polished, and the codebase is readable.</p>
-            <div class="mf-author">OSS reviewer</div><div class="mf-role">independent indie-dev blog</div>
-          </div>
-          <div class="mf-quote">
-            <p>I use the genre filter daily. Pick "lofi" → instant focus session. Pick "k-pop" → instant Saturday morning. It's that simple.</p>
-            <div class="mf-author">Power user</div><div class="mf-role">remote SWE</div>
-          </div>
-          <div class="mf-quote">
-            <p>The mobile app feels native, the modals are genuinely beautiful, and the listening-history Deezer deep links just work.</p>
-            <div class="mf-author">iOS user</div><div class="mf-role">iPhone 16 Pro, iOS 18</div>
-          </div>
-          <div class="mf-quote">
-            <p>Love that I can hit the privacy-policy page and actually read what's collected. No photos persisted, no voice clips stored - exactly what they say.</p>
-            <div class="mf-author">Privacy-minded user</div><div class="mf-role">indie web tinkerer</div>
-          </div>
-          <div class="mf-quote">
-            <p>The architecture diagrams alone are worth a star. This is what a senior take on a serverless ML app looks like.</p>
-            <div class="mf-author">Hiring manager</div><div class="mf-role">Bay Area startup</div>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- =========================================================
          FAQ
          ========================================================= -->
-    <section id="faq" class="section section-dark">
+    <section id="faq" class="section">
       <style>
-        #faq .mf-faq { max-width: 860px; margin: 0 auto; }
+        #faq {
+          padding-bottom: 0 !important;
+          background: transparent !important;
+        }
+        #faq::before { display: none !important; }
+        #faq .mf-faq { max-width: 920px; margin: 0 auto; }
         #faq details {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: var(--bg-secondary, #f8f9fa);
+          border: 1px solid var(--border-color, rgba(0,0,0,0.08));
           border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: .75rem;
           transition: border-color .15s ease;
         }
@@ -1653,65 +1616,73 @@ flowchart LR
         #faq summary::after {
           content: "+"; font-size: 1.4rem; font-weight: 900; transition: transform .15s ease; color: #ff7a59;
         }
-        #faq details[open] summary::after { content: "−"; transform: rotate(180deg); }
+        #faq details[open] summary::after { content: "\2212"; transform: rotate(180deg); }
         #faq details p { margin: .75rem 0 0 0; font-size: .95rem; opacity: .85; line-height: 1.55; }
       </style>
       <div class="container">
         <div class="section-header">
-          <span class="section-badge">❓ FAQ</span>
+          <span class="section-badge">&#10067; FAQ</span>
           <h2 class="section-title">Frequently Asked Questions</h2>
           <p class="section-subtitle">Quick answers to what people ask most.</p>
         </div>
         <div class="mf-faq">
-          <details><summary>How does Moodify detect my mood?</summary><p>Three self-trained models: a BERT classifier reads tone + sentiment from typed text, a wav2vec-style network reads pace + energy from a short voice recording, and an FER + facenet-pytorch pipeline reads your expression from one front-camera photo.</p></details>
-          <details><summary>Where do the recommendations come from?</summary><p>Deezer's free, keyless search endpoint. The recommender prepends a mood-tuned keyword phrase (optionally biased by genre + your recent mood history), returns up to 60 de-duplicated tracks per analysis, and pages the result client-side.</p></details>
-          <details><summary>Does Moodify store my photos or voice clips?</summary><p>No. Photos and voice recordings are sent to the inference service for a single classification call and are never persisted server-side. Only the resulting mood label + saved track metadata are stored in your profile.</p></details>
-          <details><summary>Is Moodify free?</summary><p>Yes. The web client runs on Vercel (free tier), the ML inference runs on Modal with scale-to-zero billing, and Deezer search is keyless. End-user cost is $0.</p></details>
-          <details><summary>What stack does the app use?</summary><p>React 18 + MUI v5 for web, Expo SDK 51 + React Native 0.74 for mobile, Django 5.1 + DRF on Vercel for the API, MongoDB Atlas for storage, and FastAPI on Modal for the three-model inference service.</p></details>
-          <details><summary>Why Deezer instead of Spotify?</summary><p>Spotify locked down `/v1/search` for client-credentials apps; every request 403s. Deezer's keyless search is reliable, includes 30-second previews, and deep-links to a streamable result page without OAuth.</p></details>
-          <details><summary>Can I self-host?</summary><p>Yes. The repository ships Docker Compose, Helm charts, Terraform modules, and Modal app definitions. See `DEPLOYMENT.md` and `INFRASTRUCTURE_SETUP.md`.</p></details>
-          <details><summary>What's on the roadmap?</summary><p>Spotify playback link, in-app preview player, mood streaks, social mood-sharing, Apple/Google Sign-in, push notifications for weekly mood wraps, and an Apple Watch companion.</p></details>
+          <details><summary>What makes Moodify different?</summary><p>Most music apps ask you to pick a genre or playlist. Moodify reads your mood three different ways (text, voice, face) and tunes the music to fit - no scrolling, no decision fatigue, no manual searching.</p></details>
+          <details><summary>Do I need an account?</summary><p>Yes - an account keeps your mood history and saved tracks with you across visits and devices. Sign-up takes about 10 seconds: username, email, password. That's it.</p></details>
+          <details><summary>How does it figure out my mood?</summary><p>Three ways - pick whichever you feel like. <strong>Type</strong> a few words about how you feel. <strong>Record</strong> a few seconds of your voice. <strong>Snap</strong> a quick selfie. Moodify reads any of those and finds music that matches.</p></details>
+          <details><summary>Do you keep my photos or voice recordings?</summary><p>No. Your photo or voice clip is used once to figure out the mood, then thrown away. Only the mood label itself ("happy", "calm", etc.) is kept so your history works. Nothing about your face or voice is stored.</p></details>
+          <details><summary>Where does the music come from?</summary><p>Deezer. Every recommendation links straight to a streamable track on Deezer with a 30-second preview built in. Tap any track to open it on Deezer and listen.</p></details>
+          <details><summary>Can I pick a genre too?</summary><p>Yes. You can bias the recommendations toward 19 different genres (lo-fi, EDM, k-pop, classical, hip-hop, etc.) and 17 different country markets if you want the catalog to feel local.</p></details>
+          <details><summary>Why is the first request a little slow?</summary><p>Moodify's inference container hibernates when nobody is using it. The first request after a quiet stretch takes about 1-2 seconds to wake the server up. Every request after that is fast.</p></details>
+          <details><summary>How accurate is the mood detection?</summary><p>Around 84-92% across the three modes on our test data. It works best on clear input: a normal-length sentence, a few seconds of audible voice, or a well-lit selfie facing the camera.</p></details>
+          <details><summary>Does it work on my phone?</summary><p>Yes - Moodify runs in any modern mobile browser, and there's a native iOS + Android app built with Expo. The mobile app uses the phone's camera and microphone directly.</p></details>
+          <details><summary>Does it work offline?</summary><p>No. The recommendation and mood-detection happen on a server, so an internet connection is required. The app itself opens fast, but you need to be online to get a playlist.</p></details>
+          <details><summary>Can I delete my account?</summary><p>Yes - any time. The profile page has a Delete Account button. Your account, mood history, and saved recommendations are removed immediately.</p></details>
+          <details><summary>What if Moodify gets my mood wrong?</summary><p>It happens occasionally. Try a different mode (text vs voice vs face), or use the genre filter to push the playlist in the direction you actually want. The more you use Moodify, the better your personal blend gets.</p></details>
+          <details><summary>Who built this?</summary><p>Son Nguyen (<a href="https://github.com/hoangsonww" target="_blank" rel="noopener">@hoangsonww</a>). Solo project, MIT-licensed, code is fully open on <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener">GitHub</a>.</p></details>
+          <details><summary>I found a bug / want a feature.</summary><p>Open an issue on <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank" rel="noopener">GitHub</a> or email <a href="mailto:hoangson091104@gmail.com">hoangson091104@gmail.com</a>. Pull requests welcome.</p></details>
         </div>
       </div>
     </section>
 
     <!-- =========================================================
-         BIG CTA
+         CTA
          ========================================================= -->
     <section id="cta" class="section">
       <style>
+        #cta {
+          padding-top: 4rem !important;
+          padding-bottom: 4rem !important;
+          background: transparent !important;
+        }
+        #cta::before { display: none !important; }
+        #cta > .container { background: transparent !important; }
         #cta .mf-cta-card {
-          padding: 2.5rem; border-radius: 24px; text-align: center;
+          padding: 2.25rem 2rem; border-radius: 24px; text-align: center;
           background: linear-gradient(135deg, #ff4d4d, #ff7a59, #ec4899);
           color: #fff;
           box-shadow: 0 32px 80px rgba(255,77,77,0.35);
           position: relative; overflow: hidden;
         }
-        #cta .mf-cta-card::after {
-          content: ""; position: absolute; inset: 0;
-          background: radial-gradient(60% 60% at 0% 0%, rgba(255,255,255,0.18), transparent 60%);
-          pointer-events: none;
-        }
-        #cta h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 .5rem 0; position: relative; z-index: 1; }
-        #cta p  { opacity: .95; max-width: 620px; margin: 0 auto 1.5rem auto; position: relative; z-index: 1; }
-        #cta .mf-cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+        #cta h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 .5rem 0; color: #fff; }
+        #cta p  { opacity: .95; max-width: 620px; margin: 0 auto 1.5rem auto; }
+        #cta .mf-cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         #cta .mf-cta-btn {
           display: inline-flex; align-items: center; gap: .5rem;
           padding: .9rem 1.6rem; border-radius: 999px; font-weight: 800;
-          text-decoration: none; transition: transform .15s ease, box-shadow .15s ease;
+          text-decoration: none; transition: transform .15s ease;
         }
         #cta .mf-cta-primary { background: #fff; color: #ff4d4d; box-shadow: 0 12px 28px rgba(0,0,0,0.2); }
-        #cta .mf-cta-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(0,0,0,0.28); }
+        #cta .mf-cta-primary:hover { transform: translateY(-2px); }
         #cta .mf-cta-ghost { color: #fff; border: 1.5px solid rgba(255,255,255,0.7); }
         #cta .mf-cta-ghost:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
       </style>
       <div class="container">
         <div class="mf-cta-card">
           <h2>Ready to listen to your mood?</h2>
-          <p>Sign in or create a free account - no credit card, no app store gate. Three modes, one playlist tuned to how you feel today.</p>
+          <p>Open the app, share how you feel, get a playlist tuned to the moment. Three modes, one ranked Deezer playlist, ready in seconds.</p>
           <div class="mf-cta-btns">
-            <a class="mf-cta-btn mf-cta-primary" href="https://moodify-emotion-music-app.vercel.app/" target="_blank" rel="noopener">🚀 Try Moodify now</a>
-            <a class="mf-cta-btn mf-cta-ghost"   href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+            <a class="mf-cta-btn mf-cta-primary" href="https://moodify-app.vercel.app/" target="_blank" rel="noopener">&#128640; Try Moodify now</a>
+            <a class="mf-cta-btn mf-cta-ghost" href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener">&#11088; Star on GitHub</a>
           </div>
         </div>
       </div>
@@ -1723,61 +1694,62 @@ flowchart LR
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Moodify</h3>
-                    <p>AI-powered emotion-based music recommendation system</p>
+                    <p>AI-powered emotion-based music recommendation system. Three self-trained models, one playlist tuned to how you feel.</p>
                     <div class="social-links">
-                        <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" aria-label="GitHub">
-                            <svg fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                            </svg>
+                        <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener" aria-label="GitHub">
+                            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
                         </a>
-                        <a href="https://www.linkedin.com/in/hoangsonw/" target="_blank" aria-label="LinkedIn">
-                            <svg fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                            </svg>
+                        <a href="https://www.linkedin.com/in/hoangsonw/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                         </a>
                     </div>
                 </div>
                 <div class="footer-section">
-                    <h4>Quick Links</h4>
+                    <h4>Explore</h4>
                     <ul>
                         <li><a href="#overview">Overview</a></li>
                         <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
                         <li><a href="#architecture">Architecture</a></li>
-                        <li><a href="#technology">Technology</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4>Resources</h4>
+                    <h4>Build</h4>
                     <ul>
-                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank">Documentation</a></li>
-                        <li><a href="https://moodify-backend-api.vercel.app/swagger/" target="_blank">API Reference</a></li>
-                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank">Issue Tracker</a></li>
-                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/main/LICENSE" target="_blank">License</a></li>
+                        <li><a href="#technology">Tech Stack</a></li>
+                        <li><a href="#deployment">Deployment</a></li>
+                        <li><a href="#metrics">Metrics</a></li>
+                        <li><a href="#performance">Performance</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Live</h4>
+                    <ul>
+                        <li><a href="https://moodify-app.vercel.app" target="_blank" rel="noopener">Web app</a></li>
+                        <li><a href="https://moodify-backend-api.vercel.app/swagger/" target="_blank" rel="noopener">Swagger</a></li>
+                        <li><a href="https://moodify-backend-api.vercel.app/redoc/" target="_blank" rel="noopener">Redoc</a></li>
+                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener">GitHub</a></li>
+                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank" rel="noopener">Issues</a></li>
+                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Contact</h4>
                     <ul>
                         <li><a href="mailto:hoangson091104@gmail.com">Email</a></li>
-                        <li><a href="https://github.com/hoangsonww" target="_blank">GitHub Profile</a></li>
-                        <li><a href="https://www.linkedin.com/in/hoangsonw/" target="_blank">LinkedIn</a></li>
+                        <li><a href="https://github.com/hoangsonww" target="_blank" rel="noopener">GitHub Profile</a></li>
+                        <li><a href="https://www.linkedin.com/in/hoangsonw/" target="_blank" rel="noopener">LinkedIn</a></li>
+                        <li><a href="https://sonnguyenhoang.com" target="_blank" rel="noopener">Personal Site</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Moodify. Created with ❤️ by <a href="https://sonnguyenhoang.com" target="_blank">Son Nguyen</a></p>
-                <p>Licensed under the MIT License</p>
+                <p>&copy; 2024-2026 Moodify. Created with <span aria-label="love">&hearts;</span> by <a href="https://sonnguyenhoang.com" target="_blank" rel="noopener">Son Nguyen</a>. Open-source and built in public.</p>
+                <p>Licensed under the MIT License &middot; This page doubles as the official project wiki.</p>
             </div>
         </div>
     </footer>
 
-    <script>
-        document.querySelectorAll('.mermaid').forEach((diagram) => {
-            if (!diagram.getAttribute('data-mermaid-src')) {
-                diagram.setAttribute('data-mermaid-src', diagram.innerHTML);
-            }
-        });
-    </script>
     <script src="packages/script.js"></script>
 </body>
 </html>

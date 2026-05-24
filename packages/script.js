@@ -204,7 +204,7 @@ class ScrollManager {
         if (!document.getElementById('backToTop')) {
             const button = document.createElement('button');
             button.id = 'backToTop';
-            button.innerHTML = '↑';
+            button.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>';
             button.setAttribute('aria-label', 'Back to top');
             button.style.cssText = `
                 position: fixed;
@@ -217,8 +217,11 @@ class ScrollManager {
                 color: white;
                 border: none;
                 cursor: pointer;
-                font-size: 24px;
+                padding: 0;
+                line-height: 0;
                 display: none;
+                align-items: center;
+                justify-content: center;
                 z-index: 1000;
                 transition: all 0.3s ease;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -248,7 +251,7 @@ class ScrollManager {
         window.addEventListener('scroll', () => {
             const button = document.getElementById('backToTop');
             if (window.scrollY > 300) {
-                button.style.display = 'block';
+                button.style.display = 'flex';
             } else {
                 button.style.display = 'none';
             }

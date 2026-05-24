@@ -263,7 +263,7 @@ RESP_429 = error_response(
 SCHEMA_HEADER = """
 ## Overview
 
-REST API for [**Moodify**](https://moodify-emotion-music-app.vercel.app/) -- an emotion-driven music recommendation app. The Django service you're looking at handles user accounts, profiles, history, and proxies a subset of ML inference calls. The heavy ML lifting (text / speech / face emotion detection + the Deezer-backed recommender + the recency-weighted personalisation model) lives in a separate [scale-to-zero **Modal**](https://modal.com) service. The two share a JWT signing key, so the same access token you get from `/users/login/` works against Modal too -- web and mobile clients upload audio / images **directly** to Modal to avoid round-tripping multi-megabyte bodies through Vercel.
+REST API for [**Moodify**](https://moodify-app.vercel.app/) -- an emotion-driven music recommendation app. The Django service you're looking at handles user accounts, profiles, history, and proxies a subset of ML inference calls. The heavy ML lifting (text / speech / face emotion detection + the Deezer-backed recommender + the recency-weighted personalisation model) lives in a separate [scale-to-zero **Modal**](https://modal.com) service. The two share a JWT signing key, so the same access token you get from `/users/login/` works against Modal too -- web and mobile clients upload audio / images **directly** to Modal to avoid round-tripping multi-megabyte bodies through Vercel.
 
 ## Authentication
 
@@ -297,7 +297,7 @@ Both are tuned to never bite a real user -- only retry loops and scripted abuse 
 
 ## Useful links
 
-* Frontend: <https://moodify-emotion-music-app.vercel.app/>
+* Frontend: <https://moodify-app.vercel.app/>
 * Source: <https://github.com/hoangsonww/Moodify-Emotion-Music-App>
 * Modal inference service docs: see the `modal_inference/README.md`
 """

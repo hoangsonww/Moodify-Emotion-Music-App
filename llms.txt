@@ -29,7 +29,7 @@ crawlers can discover the project's structure and authoritative URLs.
 | Surface           | URL                                                                                           |
 | ----------------- | --------------------------------------------------------------------------------------------- |
 | Marketing landing | https://moodify-app.vercel.app                                                                |
-| Live web app      | https://moodify-emotion-music-app.vercel.app                                                  |
+| Live web app      | https://moodify-app.vercel.app                                                  |
 | Backend API       | https://moodify-backend-api.vercel.app                                                        |
 | ML inference      | https://hoangsonww--moodify-inference-inferenceservice-web.modal.run                          |
 | Source code       | https://github.com/hoangsonww/Moodify-Emotion-Music-App                                       |

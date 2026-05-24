@@ -340,7 +340,7 @@ def build_app(text_model, speech_model, facial_model) -> FastAPI:
                 "redoc":        "/redoc",
                 "openapi_json": "/openapi.json",
                 "health":       "/health",
-                "frontend":     "https://moodify-emotion-music-app.vercel.app",
+                "frontend":     "https://moodify-app.vercel.app",
                 "backend_api":  "https://moodify-emotion-music-app-backend.vercel.app",
                 "source":       "https://github.com/hoangsonww/Moodify-Emotion-Music-App",
             },
