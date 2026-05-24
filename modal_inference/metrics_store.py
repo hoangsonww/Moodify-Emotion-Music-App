@@ -118,7 +118,13 @@ def _get_collection():
                 connectTimeoutMS=2000,
                 socketTimeoutMS=2000,
             )
-            db = _client.get_default_database() or _client[config.MONGO_DB_NAME]
+            # PyMongo 4+ forbids truth-testing a Database (raises
+            # NotImplementedError on `db or other`) -- use an explicit
+            # `is None` check to fall back to the configured name when
+            # the URI does not embed a default database.
+            db = _client.get_default_database(default=None)
+            if db is None:
+                db = _client[config.MONGO_DB_NAME]
             coll_name = config.METRICS_COLLECTION
             # Time-series collections are created with createCollection +
             # timeseries options. Idempotent: if it already exists with
