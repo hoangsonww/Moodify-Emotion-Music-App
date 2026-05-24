@@ -59,9 +59,25 @@ a:hover {
 .demo-link, .demo-link:hover, .cta-button, .cta-button:hover { color: #fff !important; }
 .mf-cta-primary, .mf-cta-primary:hover { color: #ff4d4d !important; }
 .mf-cta-ghost, .mf-cta-ghost:hover { color: #fff !important; }
+.navbar .container {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+    gap: 1rem !important;
+}
+.nav-links {
+    gap: 6px !important;
+    padding: 4px !important;
+    overflow: visible !important;
+}
+.nav-links li { padding: 2px 0 !important; }
 .nav-links a {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 9px 16px !important;
+    line-height: 1 !important;
     color: var(--text-primary) !important;
     background: transparent !important;
+    border-radius: 999px !important;
     text-decoration: none !important;
 }
 .nav-links a::after { display: none !important; }
@@ -74,6 +90,7 @@ a:hover {
     color: var(--moodify-red) !important;
     background: var(--moodify-red-soft) !important;
     text-decoration: none !important;
+    box-shadow: 0 1px 0 rgba(255,77,77,0.15);
 }
 [data-theme="dark"] .nav-links a { color: #e2e8f0 !important; }
 [data-theme="dark"] .nav-links a:hover,

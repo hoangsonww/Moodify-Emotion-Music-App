@@ -51,10 +51,7 @@ import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../context/DarkModeContext";
 import { useToast } from "../components/Toast";
 import { API_URL, MODAL_API_URL } from "../config";
-import {
-  detectTextEmotion,
-  getRecommendations,
-} from "../services/recommend";
+import { detectTextEmotion, getRecommendations } from "../services/recommend";
 
 // ---------- shared mood palette (same colors as Results page) ----------
 const MOOD_PALETTE = {

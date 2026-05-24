@@ -130,7 +130,11 @@ export async function sendMoodFeedback({
  * @param {string} [args.contextEmotion] -- the mood the list was generated for.
  * @returns {Promise<boolean>} true on 2xx, false otherwise. Never throws.
  */
-export async function sendTrackFeedback({ track, signal, contextEmotion = null }) {
+export async function sendTrackFeedback({
+  track,
+  signal,
+  contextEmotion = null,
+}) {
   const headers = authHeaders();
   if (!headers) return false;
   if (!track || !signal) return false;

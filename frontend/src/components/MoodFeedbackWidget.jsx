@@ -29,10 +29,7 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 
 import { isAuthenticated } from "../services/auth";
-import {
-  CANONICAL_EMOTIONS,
-  sendMoodFeedback,
-} from "../services/feedback";
+import { CANONICAL_EMOTIONS, sendMoodFeedback } from "../services/feedback";
 
 const EMOTION_LABEL = {
   joy: "Joy",
@@ -181,7 +178,10 @@ export default function MoodFeedbackWidget({
           <Stack
             direction="row"
             spacing={0.75}
-            sx={{ flexShrink: 0, justifyContent: { xs: "flex-end", sm: "flex-start" } }}
+            sx={{
+              flexShrink: 0,
+              justifyContent: { xs: "flex-end", sm: "flex-start" },
+            }}
           >
             <Button
               size="small"

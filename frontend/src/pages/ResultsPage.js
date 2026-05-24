@@ -690,9 +690,7 @@ const ResultsPage = () => {
                 isDark={isDarkMode}
                 palette={palette}
                 onTrackOpen={onTrackOpen}
-                contextEmotion={String(
-                  selectedMood || "neutral",
-                ).toLowerCase()}
+                contextEmotion={String(selectedMood || "neutral").toLowerCase()}
               />
             ))}
           </Stack>
@@ -964,12 +962,7 @@ function TrackRow({
                 onClick={() => onVote("like")}
                 aria-label={vote === "like" ? "Remove like" : "Like track"}
                 sx={{
-                  color:
-                    vote === "like"
-                      ? "#22c55e"
-                      : isDark
-                        ? "#9aa"
-                        : "#777",
+                  color: vote === "like" ? "#22c55e" : isDark ? "#9aa" : "#777",
                   "&:hover": { color: "#22c55e" },
                 }}
               >
@@ -993,11 +986,7 @@ function TrackRow({
                 }
                 sx={{
                   color:
-                    vote === "unlike"
-                      ? "#ef4444"
-                      : isDark
-                        ? "#9aa"
-                        : "#777",
+                    vote === "unlike" ? "#ef4444" : isDark ? "#9aa" : "#777",
                   "&:hover": { color: "#ef4444" },
                 }}
               >
@@ -1025,8 +1014,7 @@ function TrackRow({
                 py: 0.5,
                 fontSize: 12.5,
                 color: "#fff",
-                background:
-                  "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 100%)",
+                background: "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 100%)",
                 boxShadow: "0 6px 14px rgba(255,77,77,0.32)",
                 flexShrink: 0,
                 transition: "transform .15s ease, filter .15s ease",

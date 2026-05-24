@@ -41,7 +41,9 @@ describe("<MoodFeedbackWidget />", () => {
     render(<MoodFeedbackWidget predicted="joy" inputType="text" />);
     expect(screen.getByText(/Was that right\?/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Yes$/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /No, it was/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /No, it was/ }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText(/Skip feedback/i)).toBeInTheDocument();
   });
 
