@@ -79,12 +79,23 @@ describe("<HomePage />", () => {
       screen.getByRole("button", { name: /Capture Image/i }),
     ).toBeInTheDocument();
 
-    // Upload label + hidden file input accept image/*.
-    expect(
-      screen.getByRole("button", { name: /Upload Image/i }),
-    ).toBeInTheDocument();
-    const fileInput = document.getElementById("upload-file");
-    expect(fileInput).toBeTruthy();
+    // Upload button now opens a modal that owns the file input. Click it
+    // and assert the modal-mounted picker accepts image/*.
+    const uploadButton = screen.getByRole("button", {
+      name: /Upload Image/i,
+    });
+    expect(uploadButton).toBeInTheDocument();
+    fireEvent.click(uploadButton);
+
+    // The modal's hidden <input type="file"> is the only file picker in
+    // the tree, so query by type instead of an id (the legacy
+    // `upload-file` id no longer exists).
+    await waitFor(() => {
+      expect(
+        document.querySelector('input[type="file"]'),
+      ).toBeInTheDocument();
+    });
+    const fileInput = document.querySelector('input[type="file"]');
     expect(fileInput).toHaveAttribute("accept", "image/*");
   });
 });
