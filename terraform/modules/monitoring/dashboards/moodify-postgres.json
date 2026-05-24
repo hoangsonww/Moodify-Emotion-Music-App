@@ -1,0 +1,54 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "id": null,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "CPU utilization",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "$datasource" },
+      "targets": [
+        { "expr": "avg by (dbinstance_identifier) (aws_rds_cpu_utilization_average)", "legendFormat": "{{dbinstance_identifier}}", "refId": "A" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Connections",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "$datasource" },
+      "targets": [
+        { "expr": "avg by (dbinstance_identifier) (aws_rds_database_connections_average)", "legendFormat": "{{dbinstance_identifier}}", "refId": "A" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Free storage (GB)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "$datasource" },
+      "targets": [
+        { "expr": "avg by (dbinstance_identifier) (aws_rds_free_storage_space_average) / 1024 / 1024 / 1024", "legendFormat": "{{dbinstance_identifier}}", "refId": "A" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "decgbytes" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Replication lag (ms)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "$datasource" },
+      "targets": [
+        { "expr": "avg by (dbinstance_identifier) (aws_rds_replica_lag_average) * 1000", "legendFormat": "{{dbinstance_identifier}}", "refId": "A" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms" } }
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": ["moodify", "rds", "postgres"],
+  "templating": { "list": [ { "name": "datasource", "type": "datasource", "query": "prometheus" } ] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Moodify — Postgres",
+  "uid": "moodify-postgres",
+  "version": 1
+}

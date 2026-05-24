@@ -1,0 +1,13 @@
+# =============================================================================
+# Moodify security.txt — RFC 9116
+# =============================================================================
+# Served at /.well-known/security.txt via snippets/well-known.conf.
+# Renew once a year; keep contact details synced with the company directory.
+# =============================================================================
+Contact: mailto:security@moodify.example.com
+Contact: https://moodify.example.com/security
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://moodify.example.com/.well-known/security.txt
+Policy: https://moodify.example.com/security/policy
+Acknowledgments: https://moodify.example.com/security/hall-of-fame

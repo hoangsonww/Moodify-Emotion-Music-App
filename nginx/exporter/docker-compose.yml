@@ -1,0 +1,45 @@
+# =============================================================================
+# nginx-prometheus-exporter — sidecar that scrapes /nginx_status and exports
+# Prometheus metrics on :9113.
+#
+# Stack: docker compose -f exporter/docker-compose.yml up -d
+# Scrape with:
+#   - job_name: nginx
+#     static_configs:
+#       - targets: ["nginx-exporter:9113"]
+# =============================================================================
+
+services:
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.3.0
+    container_name: moodify-nginx-exporter
+    restart: unless-stopped
+    command:
+      - "--nginx.scrape-uri=http://moodify-nginx/nginx_status"
+      - "--web.listen-address=:9113"
+      - "--web.telemetry-path=/metrics"
+      - "--nginx.retries=3"
+      - "--nginx.retry-interval=5s"
+    networks:
+      - moodify-edge
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9113/metrics"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 64M
+
+networks:
+  moodify-edge:
+    external: true
+    name: moodify-edge

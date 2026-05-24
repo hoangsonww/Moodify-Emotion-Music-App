@@ -1,0 +1,43 @@
+apiVersion: v2
+name: moodify-monitoring
+description: |
+  Umbrella chart that installs the full Moodify observability stack:
+  kube-prometheus-stack (Prometheus + Grafana + AlertManager), Loki for logs,
+  Tempo for traces, and Promtail for shipping. Pre-wired with Moodify
+  dashboards + alert rules so a single `helm install` brings the whole
+  stack up.
+type: application
+version: 1.0.0
+appVersion: "2026.03"
+keywords:
+  - moodify
+  - monitoring
+  - prometheus
+  - grafana
+  - loki
+  - tempo
+  - observability
+maintainers:
+  - name: Son Nguyen
+    email: hoangson091104@gmail.com
+home: https://github.com/hoangsonww/Moodify-Emotion-Music-App
+sources:
+  - https://github.com/hoangsonww/Moodify-Emotion-Music-App
+icon: https://raw.githubusercontent.com/hoangsonww/Moodify-Emotion-Music-App/master/frontend/web/public/logo512.png
+dependencies:
+  - name: kube-prometheus-stack
+    version: "65.5.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: kube-prometheus-stack.enabled
+  - name: loki
+    version: "6.20.0"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: loki.enabled
+  - name: promtail
+    version: "6.16.6"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: promtail.enabled
+  - name: tempo
+    version: "1.14.0"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: tempo.enabled

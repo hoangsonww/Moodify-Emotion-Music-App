@@ -20,11 +20,16 @@ RUN install -d -o nginx -g nginx -m 0755 \
     /var/cache/nginx /var/log/nginx /etc/nginx/tls /usr/share/nginx/html
 
 # --- App config -------------------------------------------------------------
-COPY nginx.conf /etc/nginx/conf.d/moodify.conf
+COPY nginx.conf            /etc/nginx/conf.d/moodify.conf
+COPY snippets/             /etc/nginx/snippets/
+COPY html/                 /usr/share/nginx/html/
+COPY well-known/           /var/www/well-known/
 
-# Optional: drop pre-built SPA assets in here when bundling the React
-# build into the edge image. Empty placeholder otherwise.
-# COPY ./html/ /usr/share/nginx/html/
+# Logrotate config — picked up by the host or a sidecar logrotate runner.
+COPY logrotate.conf        /etc/logrotate.d/nginx
+
+# Writable dirs that the snippets touch.
+RUN install -d -o nginx -g nginx -m 0755 /var/www/certbot /var/www/well-known
 
 # --- Health probe -----------------------------------------------------------
 HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=3 \

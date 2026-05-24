@@ -1,0 +1,43 @@
+# =============================================================================
+# Local / minikube overlay — small resource footprint, no PVCs, no ingress.
+# Apply with: helm upgrade --install monitoring helm/monitoring \
+#   -f helm/monitoring/values.yaml -f helm/monitoring/values-dev.yaml
+# =============================================================================
+
+"kube-prometheus-stack":
+  alertmanager:
+    alertmanagerSpec:
+      replicas: 1
+      storage:
+        volumeClaimTemplate: null
+  grafana:
+    replicas: 1
+    persistence:
+      enabled: false
+    ingress:
+      enabled: false
+  prometheus:
+    prometheusSpec:
+      replicas: 1
+      retention: 7d
+      retentionSize: "5GB"
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+      resources:
+        requests: { cpu: "100m", memory: "512Mi" }
+        limits:   { cpu: "500m", memory: "1Gi" }
+
+loki:
+  singleBinary:
+    replicas: 1
+    persistence:
+      size: 5Gi
+
+tempo:
+  persistence:
+    size: 5Gi

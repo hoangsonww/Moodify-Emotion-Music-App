@@ -1,0 +1,39 @@
+# =============================================================================
+# Example tfvars for the gcp/terraform root
+# =============================================================================
+# Copy to terraform.tfvars and fill in. Never commit a real one.
+# =============================================================================
+
+project_id  = "my-gcp-project"
+region      = "us-central1"
+environment = "production"
+
+domain_name = "moodify.example.com"
+
+# GKE
+gke_release_channel        = "REGULAR"
+gke_workload_machine_type  = "e2-standard-4"
+gke_workload_min_count     = 3
+gke_workload_max_count     = 12
+gke_master_authorized_networks = [
+  { cidr_block = "203.0.113.0/24", display_name = "office" },
+]
+
+# Cloud SQL Postgres
+postgres_tier           = "db-custom-2-7680"
+postgres_disk_gb        = 100
+postgres_backup_retention_d = 14
+
+# Memorystore Redis
+redis_tier               = "STANDARD_HA"
+redis_memory_size_gb     = 5
+
+# Observability
+grafana_admin_password   = "REPLACE_ME"
+slack_webhook_url        = ""
+
+# Labels merged into the provider default labels
+extra_labels = {
+  cost-center = "platform"
+  compliance  = "soc2"
+}

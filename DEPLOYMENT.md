@@ -76,6 +76,48 @@ modal deploy modal_app.py
 
 ---
 
+## Self-host quick start (Kubernetes)
+
+If you're taking the self-host path instead of Vercel + Modal:
+
+```bash
+# 1. Provision the cloud foundation
+cd aws/terraform                        # or gcp/terraform / oracle-cloud/terraform
+cp terraform.tfvars.example terraform.tfvars && $EDITOR terraform.tfvars
+cp backend.hcl.example backend.hcl     && $EDITOR backend.hcl
+terraform init -backend-config=backend.hcl
+terraform apply
+
+# 2. Kubeconfig from the outputs
+eval "$(terraform output -raw kubeconfig_command)"
+
+# 3. Cloud-specific overlays (IRSA / Workload Identity, StorageClass, Ingress)
+kubectl apply -f ../kubernetes/production/        # AWS
+# OR
+kubectl apply -f ../../gcp/kubernetes/            # GCP
+
+# 4. Argo CD GitOps (one-time)
+kubectl apply -f ../../argocd/install-argocd.yaml
+kubectl apply -f ../../argocd/applications/
+
+# 5. Or skip Argo CD and install charts directly
+helm dependency update helm/monitoring
+helm upgrade --install monitoring helm/monitoring -n monitoring --create-namespace \
+  -f helm/monitoring/values.yaml
+helm upgrade --install moodify-backend  helm/moodify-backend  -n moodify --create-namespace
+helm upgrade --install moodify-frontend helm/moodify-frontend -n moodify
+
+# 6. (Optional) front the cluster with the in-repo nginx edge
+cd nginx && make build && make up && make health
+```
+
+Roll back a chart with `helm rollback <release> <revision>`. Roll back
+Terraform with `terraform apply -var-file=previous.tfvars`. The
+GitOps-driven path rolls back by reverting the commit and letting Argo CD
+reconcile.
+
+---
+
 ## Table of Contents
 
 - [Deployment Overview](#deployment-overview)
@@ -286,12 +328,18 @@ export NAMESPACE=moodify-staging
 
 ### 2. Infrastructure
 
-- [ ] Terraform plan reviewed
+- [ ] `terraform plan` reviewed for the target cloud (`aws/terraform/`,
+      `gcp/terraform/`, `oracle-cloud/terraform/`)
+- [ ] All Terraform modules (`vpc`, `eks`/`gke`/`aks`, `rds`, `redis`,
+      `s3`, `monitoring`, `argocd`) pinned in `main.tf`
 - [ ] No breaking changes in dependencies
 - [ ] Database migrations tested
 - [ ] Redis cache warmed
-- [ ] SSL certificates valid (>30 days)
+- [ ] SSL certificates valid (>30 days) — run
+      `nginx/scripts/healthcheck.sh https://moodify.example.com`
 - [ ] DNS TTL reduced (if DNS changes)
+- [ ] If touching observability: `helm lint helm/monitoring &&
+      helm template helm/monitoring -f helm/monitoring/values.yaml`
 
 ### 3. Monitoring
 

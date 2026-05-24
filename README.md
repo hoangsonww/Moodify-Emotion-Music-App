@@ -140,11 +140,16 @@ make deploy-prod        # Modal deploy + Vercel deploy (web + api)
 make perf-smoke         # k6 smoke against prod
 ```
 
-Self-host paths (Kubernetes, AWS / GCP / OCI, Argo CD, Helm) live under
-[`terraform/`](terraform/), [`helm/`](helm/), [`kubernetes/`](kubernetes/),
-[`argocd/`](argocd/), [`k8s-addons/`](k8s-addons/), [`aws/`](aws/),
-[`gcp/`](gcp/), [`oracle-cloud/`](oracle-cloud/). Each directory has its
-own README. The canonical production path is **Vercel + Modal** — see
+Self-host paths (Kubernetes, AWS / GCP / OCI / Azure, Argo CD, Helm) live under
+[`terraform/`](terraform/) (modules: `vpc`, `eks`, `gke`, `aks`, `rds`,
+`redis`, `s3`, `monitoring`, `argocd`), [`helm/`](helm/) (`moodify-backend`,
+`moodify-frontend`, `monitoring` umbrella), [`kubernetes/`](kubernetes/),
+[`argocd/`](argocd/), [`k8s-addons/`](k8s-addons/),
+[`aws/`](aws/) (`terraform/`, `kubernetes/production/`, `iam/`, `cloudwatch/`),
+[`gcp/`](gcp/) (`terraform/`, `kubernetes/`, `monitoring/`),
+[`oracle-cloud/`](oracle-cloud/), and [`nginx/`](nginx/) (modular edge with
+`snippets/`, `scripts/`, `exporter/`). Each directory has its own README.
+The canonical production path is **Vercel + Modal** — see
 [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## **Table of Contents**

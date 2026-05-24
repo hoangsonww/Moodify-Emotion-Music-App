@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Moodify — scheduled maintenance</title>
+  <style>
+    :root { color-scheme: light dark; }
+    html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; }
+    body { display: grid; place-items: center; background: #0f172a; color: #e2e8f0; padding: 24px; }
+    .card { max-width: 520px; text-align: center; }
+    .card h1 { font-size: 1.75rem; margin: 0 0 12px; letter-spacing: -0.01em; }
+    .card p  { font-size: 1rem; line-height: 1.6; color: #94a3b8; }
+    .pulse { width: 56px; height: 56px; margin: 0 auto 24px; border-radius: 50%; background: #6366f1; animation: pulse 1.6s ease-in-out infinite; }
+    code { color: #c7d2fe; background: rgba(99,102,241,0.18); padding: 2px 6px; border-radius: 6px; font-family: ui-monospace, monospace; }
+    @keyframes pulse { 0%,100% { transform: scale(0.9); opacity: 0.6; } 50% { transform: scale(1.1); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="pulse" aria-hidden="true"></div>
+    <h1>We're tuning a few things.</h1>
+    <p>Moodify is briefly offline while we ship an update. Hang tight — we'll be
+       back in a moment. If this drags on, ping <code>status.moodify.example.com</code>.</p>
+  </div>
+</body>
+</html>

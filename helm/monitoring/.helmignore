@@ -1,0 +1,12 @@
+# Patterns to ignore when packaging the chart.
+# Pinned dependency archives live in charts/ but should not ship in the package.
+.DS_Store
+*.swp
+*.bak
+*.tmp
+*.orig
+.idea/
+.vscode/
+*.tgz
+# Source-controlled state we don't ship to consumers.
+charts/

@@ -7,7 +7,9 @@ Kubernetes clusters as an optional alternative.
 ```
 helm/
 ├── moodify-backend/    Django backend chart (blue/green-aware, HPA, PDB, ingress, network policy)
-└── monitoring/         Wrapper / values for kube-prometheus-stack (see terraform/modules/monitoring/)
+├── moodify-frontend/   React SPA chart (runtime env.js, read-only rootfs, ingress + cert-manager)
+└── monitoring/         Umbrella chart wrapping kube-prometheus-stack + Loki + Tempo + Promtail
+                        Ships Moodify dashboards, SLO PrometheusRule, extra ServiceMonitors
 ```
 
 ## Quick start

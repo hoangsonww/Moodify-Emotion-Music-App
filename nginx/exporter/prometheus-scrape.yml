@@ -1,0 +1,30 @@
+# =============================================================================
+# Drop-in scrape stanza for your Prometheus config (`prometheus.yml`).
+# Either append to `scrape_configs:` or load via `--config.file` overlay.
+# =============================================================================
+
+scrape_configs:
+  - job_name: nginx-edge
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["nginx-exporter:9113"]
+        labels:
+          service: nginx
+          tier: edge
+
+  # Optional: direct stub_status scrape if the exporter is unavailable.
+  # Requires the `metrics-server` to live on the same Docker network as nginx.
+  - job_name: nginx-stub
+    scrape_interval: 30s
+    metrics_path: /nginx_status
+    static_configs:
+      - targets: ["moodify-nginx:80"]
+        labels:
+          service: nginx
+          tier: edge
+
+# Optional alert rules — wire into your alertmanager via `rule_files:`.
+# rule_files:
+#   - "/etc/prometheus/rules/nginx.yml"

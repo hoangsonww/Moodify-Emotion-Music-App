@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "moodify-frontend.fullname" . }}-runtime
+  labels:
+    {{- include "moodify-frontend.labels" . | nindent 4 }}
+data:
+  # Loaded by the SPA at runtime (window.__env). Edit `runtimeConfig` in
+  # values.yaml to point at a different backend without re-baking the image.
+  env.js: |-
+    window.__env = {
+    {{- range $k, $v := .Values.runtimeConfig }}
+      {{ $k | quote }}: {{ $v | quote }},
+    {{- end }}
+    };

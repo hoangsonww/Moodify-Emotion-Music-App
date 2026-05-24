@@ -11,10 +11,36 @@ load balancer that doesn't terminate TLS for you.
 
 ```
 nginx/
-├── nginx.conf            production-tuned http-context config
-├── Dockerfile            pinned (nginx:1.27-alpine) + non-root + healthcheck
-├── docker-compose.yml    local one-shot for self-host smoke tests
-└── start_nginx.sh        wrapper: build/start/stop/restart/reload/test
+├── nginx.conf                production-tuned http-context config
+├── Dockerfile                pinned (nginx:1.27-alpine), non-root, healthcheck
+├── docker-compose.yml        local one-shot for self-host smoke tests
+├── start_nginx.sh            top-level wrapper (build/start/stop/reload/test/clean)
+├── Makefile                  shorthand for every operator action
+├── .env.example              env template (DOMAIN, backend, modal, TLS dir)
+├── logrotate.conf            daily rotation, 14d retention, USR1 reopen
+├── snippets/                 reusable include fragments — see snippets/README.md
+│   ├── security-headers.conf HSTS, CSP, X-Frame-Options, Permissions-Policy, COOP, CORP
+│   ├── ssl-params.conf       Mozilla Intermediate, OCSP, session cache, 0-RTT
+│   ├── proxy-common.conf     proxy_set_header + sane timeouts + failover
+│   ├── cors.conf             origin allowlist + preflight short-circuit
+│   ├── well-known.conf       ACME challenge, security.txt, app-links manifest
+│   └── maintenance.conf      503 drain flag + branded maintenance page
+├── scripts/                  bash helpers — see scripts/README.md
+│   ├── generate-dev-tls.sh   self-signed cert for local HTTPS
+│   ├── test-config.sh        `nginx -t` in a throwaway container
+│   ├── reload.sh             validate + SIGHUP running container
+│   ├── healthcheck.sh        external probe + TLS expiry guard
+│   ├── renew-certs.sh        cron-friendly certbot renewal
+│   └── maintenance.sh        flip drain mode on/off/status
+├── exporter/                 prometheus-nginx-exporter sidecar
+│   ├── docker-compose.yml    pinned, hardened, listens on :9113
+│   ├── prometheus-scrape.yml drop-in scrape stanza
+│   └── alerts.yml            down / 5xx / connections / cert-expiry rules
+├── html/                     custom error + maintenance pages
+│   ├── maintenance.html      branded 503 page
+│   └── 50x.html              custom upstream-error page
+└── well-known/               RFC 8615 assets
+    └── security.txt          RFC 9116 contact + policy
 ```
 
 ## What the config does
@@ -34,25 +60,24 @@ nginx/
 ## Quick start (local Docker)
 
 ```bash
-# Build the image
-./start_nginx.sh build
-
-# Bring it up on :80 / :443
-./start_nginx.sh start
-
-# Validate the config inside the container
-./start_nginx.sh test
-
-# Tail logs
-./start_nginx.sh logs
-
-# Stop + cleanup
-./start_nginx.sh clean
+# 1. Local TLS material (self-signed for dev only)
+make tls-dev DOMAIN=moodify.local
+# 2. Build + start
+make build && make up
+# 3. Smoke test
+make test && make health
+# 4. Iterate — edit a snippet, then graceful reload
+$EDITOR snippets/security-headers.conf && make reload
+# 5. Drain for deploy
+make maintenance-on   # ... ship new build ...
+make maintenance-off
 ```
 
-The first request to `https://localhost/healthz` should return `ok` (you'll
-need a self-signed cert at `./tls/{fullchain,privkey}.pem` for HTTPS — the
-HTTP listener also serves `/healthz` for cloud LB probes).
+`make help` lists every target. Each target wraps a script under `scripts/`,
+so the same actions work outside Make (CI, ad-hoc, systemd timers).
+
+The first request to `https://localhost/healthz` should return `ok` (the HTTP
+listener also serves `/healthz` for cloud LB probes that don't speak TLS).
 
 ## Wiring to your deploy
 
@@ -66,15 +91,22 @@ HTTP listener also serves `/healthz` for cloud LB probes).
 
 ## Production tuning checklist
 
-- [ ] Replace `moodify.example.com` with your real domain.
+- [ ] Replace `moodify.example.com` with your real domain (in `nginx.conf`
+      and `well-known/security.txt`).
 - [ ] Replace the upstream `server …` line with your real backend host.
-- [ ] Mount valid TLS certs at `/etc/nginx/tls/{fullchain,privkey}.pem`.
+- [ ] Mount valid TLS certs at `/etc/nginx/tls/{fullchain,privkey,chain,dhparam}.pem`.
+      For Let's Encrypt, run `scripts/renew-certs.sh` from cron or a systemd timer.
 - [ ] Front this image with a cloud LB that adds `X-Forwarded-Proto` (most do).
-- [ ] Wire `/nginx_status` to your prometheus exporter and add a scrape config.
-- [ ] Confirm CSP matches the actual third-party origins your client uses
-      (Deezer, Modal, Vercel, Fonts).
+- [ ] Bring up the `exporter/` sidecar and add `exporter/prometheus-scrape.yml`
+      + `exporter/alerts.yml` to your Prometheus.
+- [ ] Confirm CSP in `snippets/security-headers.conf` matches the actual
+      third-party origins your client uses (Deezer, Modal, Vercel, Fonts).
 - [ ] Set a sensible `client_max_body_size` (we ship `12m`, matching the
       inference upload cap).
+- [ ] Install `logrotate.conf` on the host (or run a sidecar logrotate)
+      so JSON access logs don't fill the disk.
+- [ ] Rehearse the drain switch: `make maintenance-on` → verify 503 page →
+      `make maintenance-off`.
 
 ## Why not use the prod URLs directly?
 

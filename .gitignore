@@ -26,3 +26,7 @@ __pycache__/
 .coverage
 coverage.xml
 /backend/staticfiles/
+
+# Helm dep cache — downloaded by `helm dependency update`. Chart.lock pins versions.
+helm/*/charts/*.tgz
+helm/*/charts/

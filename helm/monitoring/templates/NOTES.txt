@@ -1,0 +1,33 @@
+Moodify monitoring stack installed.
+
+Components (toggle via --set):
+{{- if (index .Values "kube-prometheus-stack").enabled }}
+  ✓ kube-prometheus-stack (Prometheus, Grafana, AlertManager)
+{{- end }}
+{{- if .Values.loki.enabled }}
+  ✓ Loki (logs)
+{{- end }}
+{{- if .Values.promtail.enabled }}
+  ✓ Promtail (log shipper)
+{{- end }}
+{{- if .Values.tempo.enabled }}
+  ✓ Tempo (traces)
+{{- end }}
+
+Get the Grafana admin password:
+  kubectl --namespace {{ .Release.Namespace }} get secret grafana -o jsonpath="{.data.admin-password}" | base64 -d
+
+Port-forward Grafana (if no ingress):
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/grafana 3000:80
+
+Dashboards loaded:
+{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+  - {{ base $path }}
+{{- end }}
+
+Next steps:
+  1. Replace Slack / PagerDuty placeholders in values.yaml.
+  2. Verify ServiceMonitors are picked up:
+       kubectl get servicemonitors -A
+  3. Open Grafana → Dashboards → Moodify folder.
+  4. Add the nginx exporter sidecar (see nginx/exporter/README.md).

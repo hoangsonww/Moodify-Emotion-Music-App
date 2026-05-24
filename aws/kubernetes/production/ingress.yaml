@@ -1,0 +1,51 @@
+# =============================================================================
+# AWS ingress — ALB via aws-load-balancer-controller
+# =============================================================================
+# Requires the AWS Load Balancer Controller installed in the cluster
+# (the EKS module installs it as a Helm release). cert-manager + ACM
+# certificate via the alb.ingress.kubernetes.io/certificate-arn
+# annotation; or use the cert-manager ClusterIssuer path from
+# ../../kubernetes/common/ingress.yaml.
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: moodify
+  namespace: moodify
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/load-balancer-name: moodify-prod
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/healthcheck-path: /users/health/
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/group.name: moodify
+    alb.ingress.kubernetes.io/wafv2-acl-arn: "REPLACE_WITH_WAF_ARN"
+    # ACM cert (alternative: cert-manager TLS)
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:123:certificate/xxx
+spec:
+  rules:
+    - host: api.moodify.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-backend
+                port:
+                  number: 8000
+    - host: moodify.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: moodify-frontend
+                port:
+                  number: 80

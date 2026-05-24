@@ -803,6 +803,28 @@ graph TB
     style S3 fill:#569A31
 ```
 
+### Self-host module map
+
+The Kubernetes / hybrid path is composed entirely from in-repo modules; nothing
+is fetched from a private chart museum. The table below maps each layer to
+the Terraform module or Helm chart that owns it.
+
+| Layer            | Owner (repo path)                               | Notes |
+| ---------------- | ----------------------------------------------- | ----- |
+| Network          | `terraform/modules/vpc/`                        | VPC + 3 AZ subnets + flow logs |
+| K8s control plane| `terraform/modules/{eks,gke,aks}/`              | One module per cloud; per-cloud root in `aws/terraform/`, `gcp/terraform/`, `oracle-cloud/terraform/` |
+| Postgres         | `terraform/modules/rds/`                        | Multi-AZ + KMS + Secrets Manager |
+| Cache            | `terraform/modules/redis/`                      | ElastiCache replication group + AUTH token |
+| Object storage   | `terraform/modules/s3/`                         | TLS-only bucket policy + lifecycle |
+| GitOps           | `terraform/modules/argocd/` + `argocd/applications/` | Argo CD HA install + app-of-apps pattern |
+| Observability    | `helm/monitoring/` (umbrella)                   | kube-prometheus-stack + Loki + Promtail + Tempo + Moodify dashboards |
+| Backend chart    | `helm/moodify-backend/`                         | Blue/green-aware, HPA, PDB, ingress, network policy |
+| Frontend chart   | `helm/moodify-frontend/`                        | Runtime `env.js`, read-only rootfs, cert-manager-issued TLS |
+| Edge proxy       | `nginx/` + `nginx/snippets/` + `nginx/exporter/` | Optional; covers single-VM + "single ingress" cluster cases |
+| Identity         | `aws/iam/irsa-examples.tf` (AWS) · Workload Identity bindings in `gcp/kubernetes/external-secrets.yaml` (GCP) · Federated Identity in `terraform/modules/aks/` (Azure) | One ServiceAccount → one cloud IAM role |
+| Secrets sync     | `aws/kubernetes/production/external-secrets.yaml` · `gcp/kubernetes/external-secrets.yaml` | External Secrets Operator pulls Secrets Manager / Secret Manager into Kubernetes Secrets |
+| Out-of-band view | `aws/cloudwatch/{dashboard,alarms}.tf` · `gcp/monitoring/{dashboard,alerts}.tf` | Survives a Prometheus outage |
+
 ### Kubernetes Deployment
 
 ```mermaid

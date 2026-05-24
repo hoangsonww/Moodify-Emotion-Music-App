@@ -1,0 +1,33 @@
+# =============================================================================
+# Default storage class — pd-ssd, WaitForFirstConsumer
+# =============================================================================
+# pd-ssd is regional on GKE Autopilot and zonal on Standard; the binding
+# mode below avoids cross-zone PV/Node mismatches. Marked default so any
+# PVC without an explicit className lands here.
+# =============================================================================
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: pd-ssd
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+parameters:
+  type: pd-ssd
+  replication-type: none
+---
+# Standard balanced disk for non-critical / dev workloads
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: pd-balanced
+provisioner: pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+parameters:
+  type: pd-balanced
