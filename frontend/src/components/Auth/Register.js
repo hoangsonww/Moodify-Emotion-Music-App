@@ -60,7 +60,7 @@ const Register = () => {
         password,
       });
       if (response.status === 201) {
-        toast.success("Account created — please sign in.");
+        toast.success("Account created - please sign in.");
         navigate("/login");
       } else {
         toast.error("Registration didn't go through. Try again.");

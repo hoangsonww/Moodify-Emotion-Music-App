@@ -18,7 +18,7 @@ function key(profileId, track) {
 
 function entryFor(track) {
   if (!track || !track.name) return null;
-  return track.artist ? `${track.name} — ${track.artist}` : track.name;
+  return track.artist ? `${track.name} - ${track.artist}` : track.name;
 }
 
 /**

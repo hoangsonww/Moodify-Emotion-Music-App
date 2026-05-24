@@ -18,7 +18,7 @@ const PrivacyPolicyPage = () => (
             <ul>
               <li>
                 <strong>Personal Information:</strong> Username, email address,
-                and (hashed) password — only what's required to create and
+                and (hashed) password - only what's required to create and
                 protect your account.
               </li>
               <li>
@@ -47,7 +47,7 @@ const PrivacyPolicyPage = () => (
                 on-the-fly recency-weighted model that runs per request.
               </li>
               <li>
-                To diagnose problems and improve the service in aggregate — we
+                To diagnose problems and improve the service in aggregate - we
                 never inspect individual accounts unless required by law.
               </li>
             </ul>
@@ -109,7 +109,7 @@ const PrivacyPolicyPage = () => (
         body: (
           <>
             <p>
-              Passwords are stored using PBKDF2 hashing — never in plain text.
+              Passwords are stored using PBKDF2 hashing - never in plain text.
               All traffic is TLS-encrypted in transit. Auth uses short-lived JWT
               access tokens with silent refresh; tokens live only in your
               browser's localStorage.

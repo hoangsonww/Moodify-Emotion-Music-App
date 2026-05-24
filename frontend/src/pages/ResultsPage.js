@@ -727,7 +727,7 @@ function Pill({ icon, label, onClick, isDark, disabled }) {
         px: 2,
         py: 0.85,
         // Always solid bg so the pill doesn't ghost-out over the hero
-        // gradient or the page background — both states are opaque.
+        // gradient or the page background - both states are opaque.
         backgroundColor: isDark ? "#23232f" : "#ffffff",
         color: isDark ? "#f6f6f8" : "#1a1a1a",
         border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
@@ -942,7 +942,7 @@ function TrackRow({ track, rank, isDark, palette, onTrackOpen }) {
               mt: 0.5,
             }}
           >
-            No preview — open on Deezer to listen
+            No preview - open on Deezer to listen
           </Typography>
         )}
       </Box>

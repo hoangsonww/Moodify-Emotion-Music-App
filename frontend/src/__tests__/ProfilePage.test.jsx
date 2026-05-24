@@ -60,7 +60,7 @@ describe("<ProfilePage />", () => {
     // Loading indicator
     expect(screen.getByText(/Loading\.\.\./i)).toBeInTheDocument();
 
-    // Wait for data load — username appears inside the hero welcome line.
+    // Wait for data load - username appears inside the hero welcome line.
     expect(await screen.findByText(/Welcome, testuser!/i)).toBeInTheDocument();
 
     // Identity card was removed; assert mood + rec history rendered instead.

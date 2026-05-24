@@ -64,7 +64,7 @@ const Login = () => {
       toast.error(
         status === 401
           ? "Invalid username or password."
-          : "Login failed. Our servers may be having a moment — try again shortly.",
+          : "Login failed. Our servers may be having a moment - try again shortly.",
       );
     } finally {
       setLoading(false);

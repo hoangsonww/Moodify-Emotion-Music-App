@@ -1,5 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import ResultsPage from "../pages/ResultsPage";
 import { DarkModeContext } from "../context/DarkModeContext";
 import axios from "axios";
@@ -95,7 +101,7 @@ describe("<ResultsPage />", () => {
 
     setup();
 
-    // Click the mood pill button — its label includes "Mood: Happy".
+    // Click the mood pill button - its label includes "Mood: Happy".
     fireEvent.click(screen.getByRole("button", { name: /Mood:\s*Happy/i }));
 
     // Pick "Joyful" (label for the joy emotion in MOOD_PALETTE).

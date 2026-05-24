@@ -95,7 +95,7 @@ const Footer = () => {
               </Typography>
             </Box>
             <Typography sx={styles.tagline}>
-              Music that matches your mood — text, voice, or a single photo.
+              Music that matches your mood - text, voice, or a single photo.
             </Typography>
           </Box>
 
@@ -142,7 +142,9 @@ const Footer = () => {
                   href={href}
                   target={href.startsWith("mailto:") ? undefined : "_blank"}
                   rel={
-                    href.startsWith("mailto:") ? undefined : "noopener noreferrer"
+                    href.startsWith("mailto:")
+                      ? undefined
+                      : "noopener noreferrer"
                   }
                   aria-label={label}
                   sx={styles.socialButton}
@@ -162,9 +164,8 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} Moodify. All rights reserved.
           </Typography>
           <Typography sx={styles.madeWith}>
-            Made with{" "}
-            <Favorite sx={styles.heart} aria-label="love" />{" "}
-            in San Francisco, CA
+            Made with <Favorite sx={styles.heart} aria-label="love" /> in San
+            Francisco, CA
           </Typography>
         </Box>
       </Box>
@@ -176,7 +177,7 @@ const styles = {
   footer: {
     position: "relative",
     color: "white",
-    // Brand gradient — same coral/red palette the rest of the app uses,
+    // Brand gradient - same coral/red palette the rest of the app uses,
     // but with a soft angle so the footer doesn't read as a flat block.
     background:
       "linear-gradient(135deg, #ff4d4d 0%, #ff6b6b 45%, #ff8a5b 100%)",

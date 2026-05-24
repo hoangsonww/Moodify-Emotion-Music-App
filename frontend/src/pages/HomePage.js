@@ -163,7 +163,7 @@ const STEPS = [
   {
     icon: Insights,
     title: "Share a moment",
-    body: "Pick a mode — type, talk, or smile — and we'll read your vibe.",
+    body: "Pick a mode - type, talk, or smile - and we'll read your vibe.",
   },
   {
     icon: AutoAwesome,
@@ -870,7 +870,7 @@ const HomePage = () => {
               maxWidth: 480,
             }}
           >
-            Our servers may spin down after periods of inactivity — first calls
+            Our servers may spin down after periods of inactivity - first calls
             can take up to 2 minutes. Thanks for hanging in.
           </Typography>
         </Box>
@@ -898,7 +898,7 @@ const HomePage = () => {
               </Box>
             </Typography>
             <Typography sx={styles.heroSub(isDarkMode)}>
-              Share your vibe through text, voice or a selfie — we'll tune the
+              Share your vibe through text, voice or a selfie - we'll tune the
               music to it.
             </Typography>
           </Box>
@@ -1177,7 +1177,7 @@ const HomePage = () => {
               icon={<Mic sx={{ color: "#fff", fontSize: 26 }} />}
               eyebrow="VOICE MODE"
               title="Record your audio"
-              subtitle="Speak naturally for a few seconds — we'll read the tone, pace and energy of your voice."
+              subtitle="Speak naturally for a few seconds - we'll read the tone, pace and energy of your voice."
               onClose={handleModalClose}
             />
             <Box sx={styles.modalBody(isDarkMode)}>
@@ -1364,7 +1364,7 @@ const HomePage = () => {
               subtitle={
                 capturedImage
                   ? "Confirm to send this photo or retake if you blinked."
-                  : "Position your face inside the ring. We only send one photo — no continuous capture."
+                  : "Position your face inside the ring. We only send one photo - no continuous capture."
               }
               onClose={handleModalClose}
             />

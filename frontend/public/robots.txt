@@ -1,9 +1,9 @@
-# Moodify — frontend SPA
+# Moodify - frontend SPA
 # https://www.robotstxt.org/robotstxt.html
 
 User-agent: *
 Allow: /
-# Authenticated screens carry no public content — keep them out of the
+# Authenticated screens carry no public content - keep them out of the
 # index so search snippets always point at a usable logged-out page.
 Disallow: /home
 Disallow: /profile

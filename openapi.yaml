@@ -1,436 +1,1231 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: Moodify Emotion Music App API
-  version: 1.0.0
-  description: API for managing users, detecting emotions, and accessing admin and documentation endpoints for the Moodify Emotion Music App
+  title: Moodify API
+  version: "1.1.0"
+  description: |
+    _Emotion-driven music recommendation API — Django backend + Modal inference service._
+
+    Single source of truth for **both** HTTP surfaces that make up Moodify in
+    production:
+
+    * The **Django backend** at `https://moodify-emotion-music-app-backend.vercel.app`
+      (also exposed locally on `http://127.0.0.1:8000`). Owns user accounts,
+      JWTs, mood / listening / saved-recommendation history, and proxies the
+      cheap text-emotion + recommendation calls.
+    * The **Modal inference service** at
+      `https://hoangsonww--moodify-inference-inferenceservice-web.modal.run`.
+      Owns the ML models (text, speech, face) plus the Deezer-backed
+      recommender. Web + mobile clients call Modal directly for speech and
+      facial uploads to avoid round-tripping multi-megabyte bodies through
+      Vercel.
+
+    Both services share the same `JWT_SIGNING_KEY` — one access token,
+    one identity, two backends. The Django service additionally accepts a
+    shared `MODAL_SERVICE_TOKEN` so its server-side calls bypass per-user
+    rate limits.
+
+    ## Authentication
+
+    | Header | Used by |
+    |---|---|
+    | `Authorization: Bearer <access JWT>` | End-user calls to Django + Modal |
+    | `Authorization: Bearer <service token>` | Server-to-server (`/api/metrics/`, Modal `/metrics`) |
+
+    Access tokens live 7 days, refresh tokens 14 days. Tokens come from
+    `POST /users/login/` (Django) and are accepted as-is by Modal.
+
+    ## Rate limiting
+
+    * Django: DRF `AnonRateThrottle` 60/min, `UserRateThrottle` 240/min.
+    * Modal: per-user sliding window — 45/min general (text + recs), 15/min
+      media (speech + facial). Service-token callers bypass both.
+
+    ## Conventions
+
+    * Success bodies are either a typed payload or `{"message": "..."}`.
+    * Error bodies are always `{"error": "<human readable>"}` matching the
+      4xx / 5xx status.
+    * Timestamps are ISO 8601 UTC; IDs are Mongo ObjectIds (24-hex).
   contact:
     name: Son Nguyen
     email: hoangson091104@gmail.com
+    url: https://moodify-emotion-music-app.vercel.app/
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://moodify-emotion-music-app.vercel.app/terms-of-service
+  x-logo:
+    url: https://raw.githubusercontent.com/hoangsonww/Moodify-Emotion-Music-App/master/frontend/web/public/logo512.png
+    altText: Moodify
+
+externalDocs:
+  description: Source code + READMEs
+  url: https://github.com/hoangsonww/Moodify-Emotion-Music-App
+
 servers:
-  - url: https://moodify-emotion-music-app.onrender.com/
-    description: Production server
-  - url: http://127.0.0.1:8000/
-    description: Local development server
+  - url: https://moodify-emotion-music-app-backend.vercel.app
+    description: Django backend — production (Vercel)
+  - url: http://127.0.0.1:8000
+    description: Django backend — local
+  - url: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+    description: Modal inference service — production
+  - url: http://127.0.0.1:8001
+    description: Modal inference service — local (FastAPI dev runner)
+
+tags:
+  - name: Authentication
+    description: |
+      Create accounts, sign in, refresh tokens, validate a session. All
+      authenticated endpoints expect `Authorization: Bearer <access>`.
+  - name: Password Reset
+    description: |
+      Two-step API-driven reset (verify identity → set new password). No
+      email magic link in this build.
+  - name: Profile
+    description: |
+      Read, update, and delete the signed-in user's profile. Deleting the
+      profile cascades to mood / listening / saved-recommendation history.
+  - name: Mood History
+    description: |
+      Append-only log of detected moods. Powers the recurring-mood blend
+      in the personalised recommender.
+  - name: Listening History
+    description: |
+      Tracks the user has opened. Used to dim already-heard tracks and
+      bias the recommender against duplicates.
+  - name: Saved Recommendations
+    description: |
+      Pinned tracks. Two URL shapes (split + combined multi-method) exist
+      for backwards compatibility; they're equivalent.
+  - name: Emotion Inference
+    description: |
+      Text → emotion. Django proxies this to Modal; the Modal endpoint is
+      also reachable directly with the same JWT.
+  - name: Music Recommendations
+    description: |
+      Mood-matched Deezer tracks with optional history blend.
+  - name: Media Inference (Modal only)
+    description: |
+      Speech + facial emotion. Multipart uploads (≤12 MB). Browsers / mobile
+      clients call Modal directly with the user's own JWT.
+  - name: System
+    description: |
+      Liveness + SRE metrics. Metrics endpoints require the shared service
+      token, not end-user JWTs.
+
+security:
+  - bearerAuth: []
+
 paths:
+  # ===========================================================================
+  # Django — Authentication
+  # ===========================================================================
   /users/register/:
     post:
-      summary: Register a new user
-      tags:
-        - User
+      tags: [Authentication]
+      summary: Register a new account
+      description: |
+        Creates a `User` document + empty `UserProfile`. Username and email
+        are unique; password is stored as a PBKDF2 hash.
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegister'
+              $ref: '#/components/schemas/RegisterBody'
       responses:
         '201':
-          description: User registered successfully
+          $ref: '#/components/responses/Created'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Username already taken.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Username already taken." }
+
   /users/login/:
     post:
-      summary: Login a user and obtain a JWT token
-      tags:
-        - User
+      tags: [Authentication]
+      summary: Sign in (issue access + refresh tokens)
+      description: |
+        Verifies the password against the PBKDF2 hash and returns a fresh
+        `(access, refresh)` pair. The same signing key is shared with
+        Modal, so this access token works against both services.
+      security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/UserLogin'
+            schema: { $ref: '#/components/schemas/LoginBody' }
       responses:
         '200':
-          description: Login successful
-  /users/user/profile/:
-    get:
-      summary: Retrieve the authenticated user's profile
-      tags:
-        - User
-      responses:
-        '200':
-          description: User profile retrieved
-    put:
-      summary: Update the authenticated user's profile
-      tags:
-        - User
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserProfile'
-      responses:
-        '200':
-          description: User profile updated
-    delete:
-      summary: Delete the authenticated user's profile
-      tags:
-        - User
-      responses:
-        '204':
-          description: User profile deleted
-  /users/recommendations/:
+          description: Authenticated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/token/refresh/:
     post:
-      summary: Save recommendations for a user
-      tags:
-        - User
+      tags: [Authentication]
+      summary: Refresh an expired access token
+      description: |
+        Trade a valid refresh token for a new `(access, refresh)` pair.
+        Rotation is intentional — overwrite both stored tokens with the
+        new pair.
+      security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/UserRecommendations'
-      responses:
-        '201':
-          description: Recommendations saved successfully
-  /users/recommendations/{username}/:
-    get:
-      summary: Retrieve recommendations for a user by username
-      tags:
-        - User
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
+            schema: { $ref: '#/components/schemas/RefreshBody' }
       responses:
         '200':
-          description: Recommendations retrieved successfully
-    delete:
-      summary: Delete all recommendations for a user
-      tags:
-        - User
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Recommendations deleted
-  /users/recommendations/{username}/{recommendation_id}/:
-    delete:
-      summary: Delete a specific recommendation for a user
-      tags:
-        - User
-      parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: recommendation_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Recommendation deleted
-  /users/mood_history/{user_id}/:
-    post:
-      summary: Add a mood to the user's mood history
-      tags:
-        - User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MoodHistory'
-      responses:
-        '201':
-          description: Mood added successfully
+          description: Refreshed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/validate_token/:
     get:
-      summary: Retrieve mood history for a user
-      tags:
-        - User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
+      tags: [Authentication]
+      summary: Validate an access token
+      description: Cheap probe — 200 only if the bearer token decodes to a real, active user.
       responses:
         '200':
-          description: Mood history retrieved successfully
-    delete:
-      summary: Delete a specific mood from the user's history
-      tags:
-        - User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Mood deleted
-  /users/listening_history/{user_id}/:
-    post:
-      summary: Add a track to the user's listening history
-      tags:
-        - User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ListeningHistory'
-      responses:
-        '201':
-          description: Track added successfully
-    get:
-      summary: Retrieve listening history for a user
-      tags:
-        - User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Listening history retrieved successfully
-    delete:
-      summary: Delete a specific track from the user's history
-      tags:
-        - User
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Track deleted
+          description: Token is valid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "Token is valid." }
+                  username: { type: string, example: "moodify_user" }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ===========================================================================
+  # Django — Password reset
+  # ===========================================================================
   /users/verify-username-email/:
     post:
-      summary: Verify if a username and email are valid
-      tags:
-        - User
+      tags: [Password Reset]
+      summary: Step 1 — verify a username/email pair
+      description: |
+        Returns 200 if the pair matches an existing account, 404 otherwise.
+        Same 404 for "wrong username" and "wrong email" — does not disclose
+        which.
+      security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                email:
-                  type: string
+            schema: { $ref: '#/components/schemas/VerifyBody' }
       responses:
         '200':
-          description: Verification successful
+          description: Pair verified.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Username and email combination verified." }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+
   /users/reset-password/:
     post:
-      summary: Reset a user's password
-      tags:
-        - User
+      tags: [Password Reset]
+      summary: Step 2 — set a new password
+      description: |
+        Sets the account password (PBKDF2 hash). Old JWTs become unverifiable
+        because the signing inputs change — clients must re-login.
+      security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                newPassword:
-                  type: string
+            schema: { $ref: '#/components/schemas/ResetBody' }
       responses:
         '200':
-          description: Password reset successfully
-  /users/verify-token/:
+          description: Password reset.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Password reset successfully." }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+
+  # ===========================================================================
+  # Django — Profile
+  # ===========================================================================
+  /users/user/profile/:
     get:
-      summary: Verify a user's token
-      tags:
-        - User
+      tags: [Profile]
+      summary: Get the signed-in user's profile
+      description: |
+        Canonical "who am I" call — clients hit this on app boot to hydrate
+        UI state (mood history, listening history, saved recommendations).
       responses:
         '200':
-          description: Token verified successfully
+          description: Profile.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Profile missing.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "User profile not found." }
+
+  /users/user/profile/update/:
+    put:
+      tags: [Profile]
+      summary: Update mutable profile fields (PATCH-style)
+      description: |
+        Missing fields are left untouched. Renaming the username returns a
+        fresh `(access, refresh)` pair in the body so the client can swap
+        tokens without forcing a re-login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileUpdateBody' }
+      responses:
+        '200':
+          description: Profile updated.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProfileUpdateResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Profile missing.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "User profile not found." }
+        '409':
+          description: Username taken.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "That username is already taken." }
+
+  /users/user/profile/delete/:
+    delete:
+      tags: [Profile]
+      summary: Permanently delete the signed-in account
+      description: |
+        Hard-deletes `User` + `UserProfile`. Irreversible — there is no
+        soft-delete, recycle bin, or grace period.
+      responses:
+        '200':
+          description: Deleted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Profile deleted successfully." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ===========================================================================
+  # Django — Saved recommendations (split URLs)
+  # ===========================================================================
+  /users/recommendations/save/{user_id}/:
+    post:
+      tags: [Saved Recommendations]
+      summary: Append tracks to saved recommendations
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecommendationsBody' }
+      responses:
+        '201':
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Recommendations saved successfully." }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+
+  /users/recommendations/get/{user_id}/:
+    get:
+      tags: [Saved Recommendations]
+      summary: List saved recommendations
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Saved tracks.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecommendationsBody' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+
+  /users/recommendations/delete/{user_id}/:
+    delete:
+      tags: [Saved Recommendations]
+      summary: Clear all saved recommendations
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Cleared.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "All recommendations deleted." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+
+  # ===========================================================================
+  # Django — Saved recommendations (combined multi-method URL)
+  # ===========================================================================
+  /users/recommendations/{user_id}/:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Saved Recommendations]
+      summary: List saved recommendations (combined)
+      responses:
+        '200':
+          description: Saved tracks.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecommendationsBody' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+    post:
+      tags: [Saved Recommendations]
+      summary: Append tracks (combined)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecommendationsBody' }
+      responses:
+        '201':
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Recommendations saved successfully." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+    delete:
+      tags: [Saved Recommendations]
+      summary: Clear all saved recommendations (combined)
+      responses:
+        '200':
+          description: Cleared.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "All recommendations deleted." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+
+  # ===========================================================================
+  # Django — Mood history
+  # ===========================================================================
+  /users/mood_history/{user_id}/:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Mood History]
+      summary: List the user's mood history
+      responses:
+        '200':
+          description: Mood history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mood_history:
+                    type: array
+                    items: { type: string }
+                    example: ["joy", "sadness", "calm", "anger"]
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+    post:
+      tags: [Mood History]
+      summary: Append a mood to history
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MoodEntry' }
+      responses:
+        '201':
+          description: Appended.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Mood history updated." }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+    delete:
+      tags: [Mood History]
+      summary: Remove the first occurrence of a mood
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MoodEntry' }
+      responses:
+        '200':
+          description: Removed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Mood deleted." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: Mood (or user) not found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Mood not found in history." }
+
+  # ===========================================================================
+  # Django — Listening history
+  # ===========================================================================
+  /users/listening_history/{user_id}/:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Listening History]
+      summary: List the user's listening history
+      responses:
+        '200':
+          description: Listening history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listening_history:
+                    type: array
+                    items: { $ref: '#/components/schemas/Track' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+    post:
+      tags: [Listening History]
+      summary: Append a track to listening history
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TrackEntry' }
+      responses:
+        '201':
+          description: Appended.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Listening history updated." }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFoundUser' }
+    delete:
+      tags: [Listening History]
+      summary: Remove a single track from listening history
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TrackEntry' }
+      responses:
+        '200':
+          description: Removed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Track deleted." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: Track (or user) not found.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Track not found in history." }
+
+  # ===========================================================================
+  # Django — Inference proxies + system
+  # ===========================================================================
+  /api/health/:
+    get:
+      tags: [System]
+      summary: Liveness probe (Django)
+      description: Cheapest possible probe — doesn't touch Mongo or Modal.
+      security: []
+      responses:
+        '200':
+          description: Alive.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "ok" }
+
   /api/text_emotion/:
     post:
-      summary: Analyze text for emotional content
-      tags:
-        - Emotion Detection
+      tags: [Emotion Inference]
+      summary: Detect emotion from text (Django proxy)
+      description: |
+        Proxies to Modal's `/text_emotion`. No auth required — Django uses
+        the shared service token to call Modal on behalf of anonymous
+        callers. DRF `AnonRateThrottle` 60/min applies. Text is capped at
+        5000 chars.
+      security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                text:
-                  type: string
+            schema: { $ref: '#/components/schemas/TextEmotionRequest' }
       responses:
         '200':
-          description: Text emotion analysis successful
-  /api/speech_emotion/:
-    post:
-      summary: Analyze speech for emotional content
-      tags:
-        - Emotion Detection
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                audioFile:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: Speech emotion analysis successful
-  /api/facial_emotion/:
-    post:
-      summary: Analyze facial expressions for emotions
-      tags:
-        - Emotion Detection
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                imageFile:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: Facial emotion analysis successful
+          description: Predicted emotion + recommendations.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmotionResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+
   /api/music_recommendation/:
     post:
-      summary: Get music recommendations based on emotion
-      tags:
-        - Emotion Detection
+      tags: [Music Recommendations]
+      summary: Mood → Deezer recommendations (Django proxy)
+      description: |
+        Returns a list of Deezer tracks matched to the emotion. When
+        `history` is provided, the recommender blends in tracks for the
+        recurring mood via a recency-weighted affinity model + first-order
+        Markov transitions.
+      security: []
       requestBody:
         required: true
         content:
           application/json:
+            schema: { $ref: '#/components/schemas/MusicRecommendationRequest' }
+      responses:
+        '200':
+          description: Mood + recommendations.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmotionResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '502': { $ref: '#/components/responses/BadGateway' }
+
+  /api/metrics/:
+    get:
+      tags: [System]
+      summary: SRE metrics — Django (admin only)
+      description: |
+        Aggregated request count, error rate, latency p50/p95/p99.
+        **Service token only** (`Authorization: Bearer <ADMIN_METRICS_TOKEN>`).
+        Falls back to `MODAL_SERVICE_TOKEN` if the dedicated admin token
+        isn't set.
+      parameters:
+        - in: query
+          name: window
+          schema:
+            type: string
+            enum: [5m, 15m, 1h, 6h, 24h, 7d, 30d]
+            default: 1h
+        - in: query
+          name: endpoint
+          schema: { type: string }
+          required: false
+          description: Optional endpoint filter (e.g. `/users/login/`).
+      responses:
+        '200':
+          description: Aggregated + live metrics.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MetricsResponse' }
+        '401':
+          description: Missing or non-admin Authorization header.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Service-token authentication required." }
+
+  # ===========================================================================
+  # Modal — direct endpoints
+  # ===========================================================================
+  /health:
+    get:
+      tags: [System]
+      summary: Liveness + cache + rate-limit stats (Modal)
+      description: |
+        Reports model load status, per-cache hit/miss stats, and per-tier
+        rate-limit stats. Status flips to `degraded` if any sub-system
+        failed to report. Never 500s (defensive `_safe_stats` wrapper).
+      security: []
+      servers:
+        - url: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+      responses:
+        '200':
+          description: Health snapshot.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthResponse' }
+
+  /text_emotion:
+    post:
+      tags: [Emotion Inference]
+      summary: Detect emotion from text (Modal direct)
+      description: |
+        End-user JWT required. Falls back to a neutral emotion with
+        `degraded: true` instead of 500 when a model is unavailable.
+      servers:
+        - url: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TextEmotionRequest' }
+      responses:
+        '200':
+          description: Predicted emotion + recommendations.
+          headers:
+            X-RateLimit-Limit:
+              schema: { type: integer }
+            X-RateLimit-Remaining:
+              schema: { type: integer }
+            X-RateLimit-Window:
+              schema: { type: integer }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmotionResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /music_recommendation:
+    post:
+      tags: [Music Recommendations]
+      summary: Mood → Deezer recommendations (Modal direct)
+      description: |
+        Adds an optional `genre` keyword over the Django proxy schema
+        (e.g. `lofi`, `hip-hop`, `jazz`). End-user JWT required.
+      servers:
+        - url: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MusicRecommendationRequest' }
+      responses:
+        '200':
+          description: Mood + recommendations.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmotionResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /speech_emotion:
+    post:
+      tags: [Media Inference (Modal only)]
+      summary: Detect emotion from a voice clip
+      description: |
+        Multipart upload, ≤12 MB. Identical uploads (same sha256) within
+        the media-cache TTL skip the model entirely. Falls back to neutral
+        + `degraded: true` on a model error.
+      servers:
+        - url: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
             schema:
               type: object
-              required:
-                - emotion
+              required: [file]
               properties:
-                emotion:
+                file:
                   type: string
-                  description: The detected emotion to recommend music for.
-                market:
+                  format: binary
+                  description: WAV / WebM / OGG / MP3 ≤ 12 MB.
+      responses:
+        '200':
+          description: Predicted emotion + recommendations.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmotionResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413':
+          description: Upload exceeds 12 MB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FastApiError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /facial_emotion:
+    post:
+      tags: [Media Inference (Modal only)]
+      summary: Detect emotion from a face photo
+      description: |
+        Multipart upload, ≤12 MB. Uses the `fer` library's bundled
+        pretrained model. Falls back to neutral + `degraded: true` if no
+        face is detected.
+      servers:
+        - url: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
                   type: string
-                  description: Optional ISO 3166-1 alpha-2 country code to scope results.
-                history:
-                  type: array
-                  maxItems: 50
-                  items:
-                    type: string
-                  description: >-
-                    Optional recent detected moods (oldest first). When given,
-                    a lightweight personalization model blends in tracks for
-                    the user's recurring mood.
+                  format: binary
+                  description: JPEG / PNG / WebP ≤ 12 MB.
       responses:
         '200':
-          description: Music recommendations retrieved
-  /admin/:
+          description: Predicted emotion + recommendations.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmotionResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '413':
+          description: Upload exceeds 12 MB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FastApiError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /metrics:
     get:
-      summary: Access the Django Admin interface
-      tags:
-        - Admin Interface
+      tags: [System]
+      summary: SRE metrics — Modal (admin only)
+      description: |
+        Same shape as Django's `/api/metrics/`. Aggregates the time-series
+        events the middleware writes to MongoDB. **Service token only.**
+      servers:
+        - url: https://hoangsonww--moodify-inference-inferenceservice-web.modal.run
+      parameters:
+        - in: query
+          name: window
+          schema:
+            type: string
+            enum: [5m, 15m, 1h, 6h, 24h, 7d, 30d]
+            default: 1h
+        - in: query
+          name: endpoint
+          schema: { type: string }
       responses:
         '200':
-          description: Admin interface accessed
-  /swagger/:
-    get:
-      summary: Access the Swagger UI API documentation
-      tags:
-        - Documentation
-      responses:
-        '200':
-          description: Swagger UI accessed
-  /redoc/:
-    get:
-      summary: Access the Redoc API documentation
-      tags:
-        - Documentation
-      responses:
-        '200':
-          description: Redoc accessed
-  /:
-    get:
-      summary: Access the API root endpoint (Swagger UI)
-      tags:
-        - Documentation
-      responses:
-        '200':
-          description: API root accessed
+          description: Aggregated + live metrics.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MetricsResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
 components:
+  # ---------------------------------------------------------------------------
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        End-user JWT (issued by `POST /users/login/`) on every request. The
+        same token works against the Django backend AND the Modal service
+        because they share `JWT_SIGNING_KEY`. Service-token callers
+        substitute the shared `MODAL_SERVICE_TOKEN`.
+
+  # ---------------------------------------------------------------------------
+  parameters:
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      description: Mongo ObjectId of the target user profile.
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{24}$'
+        example: 65f3a1b2c4d5e6f7a8b9c0d1
+
+  # ---------------------------------------------------------------------------
+  responses:
+    Created:
+      description: Resource created.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+          example: { message: "User created successfully." }
+
+    BadRequest:
+      description: Validation failure.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "Password must be at least 8 characters." }
+
+    Unauthorized:
+      description: Missing, invalid, or expired credentials.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "Authentication credentials were not provided." }
+
+    Forbidden:
+      description: Authenticated but the resource does not belong to the caller.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "Forbidden." }
+
+    NotFoundUser:
+      description: No such user / profile.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "User not found." }
+
+    BadGateway:
+      description: Modal inference service is unreachable.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "The inference service is currently unavailable." }
+
+    Unprocessable:
+      description: Malformed request body (FastAPI validation error).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/FastApiError' }
+
+    RateLimited:
+      description: |
+        Per-user sliding-window limit exceeded. The body includes a
+        `Retry-After` header (seconds) and `X-RateLimit-*` headers so the
+        client can back off cleanly.
+      headers:
+        Retry-After:
+          schema: { type: integer }
+        X-RateLimit-Limit:
+          schema: { type: integer }
+        X-RateLimit-Remaining:
+          schema: { type: integer }
+        X-RateLimit-Window:
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/FastApiError' }
+          example: { detail: "Rate limit exceeded -- slow down and retry shortly." }
+
+  # ---------------------------------------------------------------------------
   schemas:
-    UserRegister:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: "Invalid credentials."
+
+    Message:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: "Operation completed successfully."
+
+    FastApiError:
+      type: object
+      description: FastAPI's standard error envelope (used by Modal).
+      properties:
+        detail:
+          oneOf:
+            - type: string
+            - type: array
+              items: { type: object }
+          example: "Unauthenticated request."
+
+    Track:
+      type: object
+      required: [name, artist]
+      properties:
+        name:         { type: string, example: "Blinding Lights" }
+        artist:       { type: string, example: "The Weeknd" }
+        album:        { type: string, nullable: true, example: "After Hours" }
+        preview_url:  { type: string, format: uri, nullable: true,
+                        example: "https://cdns-preview-1.dzcdn.net/.../preview.mp3" }
+        external_url: { type: string, format: uri, nullable: true,
+                        example: "https://www.deezer.com/track/916424" }
+        image_url:    { type: string, format: uri, nullable: true,
+                        example: "https://cdns-images.dzcdn.net/.../250x250.jpg" }
+        popularity:   { type: integer, minimum: 0, maximum: 100, example: 92 }
+        duration_ms:  { type: integer, minimum: 0, example: 200000 }
+        release_date: { type: string, nullable: true, example: null }
+
+    EmotionResponse:
+      type: object
+      required: [emotion, recommendations]
+      properties:
+        emotion: { type: string, example: "joy" }
+        recommendations:
+          type: array
+          items: { $ref: '#/components/schemas/Track' }
+        degraded:
+          type: boolean
+          default: false
+          description: True if a model failure forced a fallback emotion.
+        market:
+          type: string
+          nullable: true
+          description: Echo of the caller-supplied market (ignored by Deezer).
+
+    HealthResponse:
+      type: object
+      required: [status, models_loaded]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        models_loaded:
+          type: object
+          additionalProperties: { type: boolean }
+          example: { text: true, speech: true, facial: true }
+        caches:
+          type: object
+          additionalProperties: { type: object }
+          description: Per-cache hit/miss/size stats.
+        rate_limit:
+          type: object
+          additionalProperties: true
+
+    # ----- auth bodies ------------------------------------------------------
+    RegisterBody:
+      type: object
+      required: [username, email, password]
+      properties:
+        username: { type: string, minLength: 3, maxLength: 30, example: "moodify_user" }
+        email:    { type: string, format: email, example: "user@example.com" }
+        password: { type: string, format: password, minLength: 8, example: "hunter2-correct-horse" }
+
+    LoginBody:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, example: "moodify_user" }
+        password: { type: string, format: password, example: "hunter2-correct-horse" }
+
+    RefreshBody:
+      type: object
+      required: [refresh]
+      properties:
+        refresh:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NWY..."
+
+    VerifyBody:
+      type: object
+      required: [username, email]
+      properties:
+        username: { type: string, example: "moodify_user" }
+        email:    { type: string, format: email, example: "user@example.com" }
+
+    ResetBody:
+      type: object
+      required: [username, new_password]
+      properties:
+        username:     { type: string, example: "moodify_user" }
+        new_password: { type: string, format: password, minLength: 8,
+                        example: "new-strong-password-123" }
+
+    TokenPair:
+      type: object
+      required: [access, refresh]
+      properties:
+        access:  { type: string, description: "Short-lived JWT (default 7 days)." }
+        refresh: { type: string, description: "Refresh JWT (default 14 days)." }
+
+    # ----- profile -----------------------------------------------------------
+    Profile:
+      type: object
+      properties:
+        id:       { type: string, example: "65f3a1b2c4d5e6f7a8b9c0d1" }
+        username: { type: string, example: "moodify_user" }
+        email:    { type: string, format: email, example: "user@example.com" }
+        listening_history:
+          type: array
+          items: { $ref: '#/components/schemas/Track' }
+        mood_history:
+          type: array
+          items: { type: string }
+          example: ["joy", "sadness", "calm"]
+        recommendations:
+          type: array
+          items: { $ref: '#/components/schemas/Track' }
+
+    ProfileUpdateBody:
       type: object
       properties:
         username:
           type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[A-Za-z0-9_.\-]+$'
+          description: New username. Letters / digits / `_.-` only.
         email:
           type: string
-        password:
-          type: string
-    UserLogin:
+          format: email
+
+    ProfileUpdateResponse:
+      allOf:
+        - $ref: '#/components/schemas/Message'
+        - type: object
+          properties:
+            username: { type: string, example: "newhandle" }
+            access:
+              type: string
+              description: Present only when the username actually changed.
+            refresh:
+              type: string
+              description: Present only when the username actually changed.
+
+    # ----- recs / mood / listening ------------------------------------------
+    RecommendationsBody:
       type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
-    UserProfile:
-      type: object
-      properties:
-        username:
-          type: string
-        email:
-          type: string
-        bio:
-          type: string
-    UserRecommendations:
-      type: object
+      required: [recommendations]
       properties:
         recommendations:
           type: array
-          items:
-            type: string
-    MoodHistory:
+          items: { $ref: '#/components/schemas/Track' }
+
+    MoodEntry:
       type: object
+      required: [mood]
       properties:
         mood:
           type: string
-        timestamp:
+          example: "joy"
+          description: One of the model's emotion labels.
+
+    TrackEntry:
+      type: object
+      required: [track]
+      properties:
+        track: { $ref: '#/components/schemas/Track' }
+
+    # ----- inference --------------------------------------------------------
+    TextEmotionRequest:
+      type: object
+      required: [text]
+      properties:
+        text:
           type: string
-          format: date-time
-    ListeningHistory:
+          minLength: 1
+          maxLength: 5000
+          example: "I just got the job I've been hoping for. Feels unreal."
+
+    MusicRecommendationRequest:
+      type: object
+      required: [emotion]
+      properties:
+        emotion:
+          type: string
+          example: "joy"
+          description: Emotion label (e.g. one returned by `/text_emotion/`).
+        market:
+          type: string
+          nullable: true
+          example: "US"
+          description: Accepted for parity with the legacy Spotify recommender; ignored by Deezer.
+        history:
+          type: array
+          maxItems: 50
+          items: { type: string }
+          example: ["sadness", "sadness", "joy"]
+          description: Recent moods (oldest first) for the recurring-mood blend.
+        genre:
+          type: string
+          maxLength: 40
+          nullable: true
+          example: "lofi"
+          description: |
+            Optional genre keyword. **Modal-only** — the Django proxy
+            ignores this field. When supplied, the recommender prepends it
+            to the Deezer search phrase so the result skews toward that
+            genre while still honouring the mood.
+
+    # ----- metrics ----------------------------------------------------------
+    MetricsResponse:
       type: object
       properties:
-        track:
-          type: string
-        artist:
-          type: string
-        album:
-          type: string
+        service: { type: string, enum: [django, modal] }
+        window:
+          type: object
+          properties:
+            label:   { type: string, example: "1h" }
+            since:   { type: string, format: date-time }
+            until:   { type: string, format: date-time }
+            seconds: { type: integer, example: 3600 }
+        persisted:
+          type: object
+          description: Aggregated across every container that wrote into the window.
+          properties:
+            available: { type: boolean }
+            endpoints:
+              type: array
+              items:
+                type: object
+                properties:
+                  endpoint:     { type: string, example: "/text_emotion" }
+                  method:       { type: string, example: "POST" }
+                  count:        { type: integer, example: 412 }
+                  error_count:  { type: integer, example: 3 }
+                  error_rate:   { type: number, format: float, example: 0.0073 }
+                  latency_ms:
+                    type: object
+                    properties:
+                      p50:     { type: number }
+                      p95:     { type: number }
+                      p99:     { type: number }
+                      max:     { type: number }
+                      mean:    { type: number }
+                      samples: { type: integer }
+                  status_codes:
+                    type: object
+                    additionalProperties: { type: integer }
+        live:
+          type: object
+          description: Calling container's in-process counters since startup.
+          properties:
+            container:        { type: string }
+            uptime_seconds:   { type: number }
+            endpoints:
+              type: array
+              items: { type: object }
