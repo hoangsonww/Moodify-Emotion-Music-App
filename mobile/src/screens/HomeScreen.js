@@ -121,7 +121,7 @@ export default function HomeScreen({ navigation }) {
   );
 
   const goToResults = useCallback(
-    (data) => {
+    (data, inputType = null) => {
       const emotion = data.emotion;
       const recommendations = data.recommendations || [];
       if (profileId) {
@@ -134,18 +134,22 @@ export default function HomeScreen({ navigation }) {
         degraded: !!data.degraded,
         history: moodHistory,
         profileId,
+        // Threaded for the mood-correction widget on the results
+        // screen. null means "no real model run" (fallback / shortcut)
+        // and the widget skips itself.
+        inputType,
       });
     },
     [navigation, profileId, moodHistory],
   );
 
   const runAnalysis = useCallback(
-    async (task) => {
+    async (task, inputType) => {
       setBusy(true);
       try {
-        goToResults(await task());
+        goToResults(await task(), inputType);
       } catch (e) {
-        goToResults({ emotion: 'calm', recommendations: [], degraded: true });
+        goToResults({ emotion: 'calm', recommendations: [], degraded: true }, null);
       } finally {
         setBusy(false);
       }
@@ -158,7 +162,7 @@ export default function HomeScreen({ navigation }) {
       toast.show({ type: 'warning', title: 'Say something', message: 'Type a few words about how you feel.' });
       return;
     }
-    runAnalysis(() => analyzeText(text.trim()));
+    runAnalysis(() => analyzeText(text.trim()), 'text');
   };
 
   const startRecording = async () => {
@@ -192,7 +196,7 @@ export default function HomeScreen({ navigation }) {
       await rec.stopAndUnloadAsync();
       await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
       const uri = rec.getURI();
-      if (uri) runAnalysis(() => analyzeSpeech(uri));
+      if (uri) runAnalysis(() => analyzeSpeech(uri), 'speech');
     } catch (e) {
       hapticError();
       toast.show({ type: 'error', title: 'Recording error', message: 'Could not save the recording.' });
@@ -342,7 +346,7 @@ export default function HomeScreen({ navigation }) {
           {mode === 'face' && (
             <View style={[styles.panel, styles.center, shadows.md]}>
               <FaceCapture
-                onCapture={(uri) => runAnalysis(() => analyzeFace(uri))}
+                onCapture={(uri) => runAnalysis(() => analyzeFace(uri), 'facial')}
                 onError={(msg) =>
                   toast.show({ type: 'error', title: 'Camera error', message: msg })
                 }

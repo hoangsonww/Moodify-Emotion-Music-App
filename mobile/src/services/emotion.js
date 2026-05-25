@@ -10,8 +10,25 @@
 import axios from 'axios';
 
 import { API_URL, MODAL_API_URL } from '../../config';
+import { isAuthenticated } from './auth';
 
 const TIMEOUT = 60000; // inference can incur a Modal cold start
+
+// Authed callers hit Django so the per-user calibration map +
+// Thompson-Sampling bandit re-rank can act on the response. Anonymous
+// callers stay on the direct Modal path -- there is nothing to
+// personalise for them, so the extra hop would just be latency.
+function textEmotionUrl() {
+  return isAuthenticated()
+    ? `${API_URL}/api/text_emotion/`
+    : `${MODAL_API_URL}/text_emotion`;
+}
+
+function musicRecommendationUrl() {
+  return isAuthenticated()
+    ? `${API_URL}/api/music_recommendation/`
+    : `${MODAL_API_URL}/music_recommendation`;
+}
 
 // Curated last-resort tracks for when the service is unreachable. The
 // external_url is a Deezer search link, so it always resolves.
@@ -54,7 +71,7 @@ const fallbackResult = (emotion = 'calm') => ({
 export async function analyzeText(text) {
   try {
     const { data } = await axios.post(
-      `${MODAL_API_URL}/text_emotion`,
+      textEmotionUrl(),
       { text },
       { timeout: TIMEOUT },
     );
@@ -95,7 +112,7 @@ export function analyzeFace(uri) {
 export async function getRecommendations(emotion, market, history) {
   try {
     const { data } = await axios.post(
-      `${MODAL_API_URL}/music_recommendation`,
+      musicRecommendationUrl(),
       {
         emotion,
         market: market || undefined,
