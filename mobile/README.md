@@ -52,13 +52,11 @@
 18. [Android emulator one-liner](#android-emulator-one-liner)
 19. [EAS production build](#eas-production-build)
 20. [Build + release flow](#build--release-flow)
-21. [Screens at a glance](#screens-at-a-glance)
-22. [Capturing screenshots](#capturing-screenshots)
-23. [Performance + accessibility](#performance--accessibility)
-24. [Platform differences](#platform-differences)
-25. [Troubleshooting](#troubleshooting)
-26. [FAQ](#faq)
-27. [License](#license)
+21. [Performance + accessibility](#performance--accessibility)
+22. [Platform differences](#platform-differences)
+23. [Troubleshooting](#troubleshooting)
+24. [FAQ](#faq)
+25. [License](#license)
 
 ---
 
@@ -586,61 +584,6 @@ flowchart LR
 
 OTA updates (Expo Updates) let small JS-only changes ship without a
 store re-review, while native dependency bumps require a fresh EAS build.
-
----
-
-## Screens at a glance
-
-A one-line summary per screen — full descriptions and side-by-side
-iOS/Android shots are in [`../MOBILE_APPS.md`](../MOBILE_APPS.md).
-
-- **Login** — `Welcome back` hero with three feature chips and a
-  gradient-bordered sign-in card.
-- **Register** — Two sub-cards (identity / secure) with a live password
-  strength meter and four rule chips.
-- **Forgot password** — Single screen, two animated steps (Verify →
-  Reset) with a progress rail and palette swap.
-- **Home** — Time-aware greeting, last-mood chip, three mode cards
-  (Text / Voice / Face), and a recent-moods strip.
-- **Results** — `MoodHero` palette card + sort/market pills + paginated
-  `TrackCard` list + shuffle + analyze-another CTA.
-- **Profile** — Gradient avatar ring, three stat tiles, recent-mood
-  chips and recent-listening rows; pull-to-refresh.
-- **Settings** — Account (email + password), data (3 clears), danger
-  zone (delete + logout).
-
----
-
-## Capturing screenshots
-
-The 14 + 14 captures in `docs/screenshots/` were driven through the app
-in this order:
-
-```mermaid
-flowchart TD
-    A[Sign in] --> B[Home / Text]
-    B --> C[Tap Voice → record]
-    C --> D[Stop → Tap Face → grant cam]
-    D --> E[Tap Text → analyze]
-    E --> F[Results]
-    F --> G[Sort pill → sheet]
-    G --> H[Close → Market pill → sheet]
-    H --> I[Back → Profile tab]
-    I --> J[Settings tab]
-    J --> K[Tap Email row → modal]
-    K --> L[Cancel → Tap Password row → modal]
-    L --> M[Cancel → Logout]
-    M --> N[Login → Register]
-    N --> O[Back → Forgot password]
-    O --> P[Verify → Reset]
-```
-
-Each frame is snapped natively:
-
-```bash
-xcrun simctl io booted screenshot docs/screenshots/ios/NN-name.png
-adb exec-out screencap -p     >  docs/screenshots/android/NN-name.png
-```
 
 ---
 
