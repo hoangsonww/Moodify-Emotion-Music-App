@@ -801,43 +801,6 @@ const HomePage = () => {
     }
   };
 
-  const moodMap = {
-    joy: "hip-hop",
-    happy: "happy",
-    sadness: "sad",
-    anger: "metal",
-    love: "romance",
-    fear: "sad",
-    neutral: "pop",
-    calm: "chill",
-    disgust: "blues",
-    surprised: "party",
-    surprise: "party",
-    excited: "party",
-    bored: "pop",
-    tired: "chill",
-    relaxed: "chill",
-    stressed: "chill",
-    anxious: "chill",
-    depressed: "sad",
-    lonely: "sad",
-    energetic: "hip-hop",
-    nostalgic: "pop",
-    confused: "pop",
-    frustrated: "metal",
-    hopeful: "romance",
-    proud: "hip-hop",
-    guilty: "blues",
-    jealous: "pop",
-    ashamed: "blues",
-    disappointed: "pop",
-    content: "chill",
-    insecure: "pop",
-    embarrassed: "blues",
-    overwhelmed: "chill",
-    amused: "party",
-  };
-
   const handleAudioUpload = async () => {
     if (!audioBlob) {
       console.log("No audio blob available for upload.");
