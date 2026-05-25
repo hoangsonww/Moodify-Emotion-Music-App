@@ -102,6 +102,30 @@ jobs:
         run: pytest tests -q
         working-directory: modal_inference
 
+  ai-ml-tests:
+    name: 🤖 AI/ML Module Tests
+    runs-on: ubuntu-latest
+    # Same `needs: formatting` as modal-tests so the two ML jobs fan out
+    # in parallel rather than chaining. The ai_ml suite is pure-Python
+    # (no torch / transformers / fer); pytest alone is the only dep.
+    needs: formatting
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install ai_ml test dependencies
+        run: pip install --no-cache-dir pytest
+
+      - name: Run ai_ml module tests
+        # Cwd at repo root so `ai_ml.src.rl ...` imports resolve via
+        # the conftest's sys.path injection.
+        run: pytest ai_ml/tests -q
+
   frontend-tests:
     name: 🌐 Frontend Build & Test
     runs-on: ubuntu-latest
