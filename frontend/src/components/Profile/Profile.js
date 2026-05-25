@@ -368,8 +368,13 @@ const ProfilePage = () => {
   // ``moods`` keeps the raw history so the stat card can show the
   // total number of detections; ``recentMoods`` is the deduped,
   // newest-first list rendered as chips (repeats collapse into a
-  // single chip).
-  const moods = userData?.mood_history || [];
+  // single chip). Both wrapped in useMemo so their identity is stable
+  // -- the `|| []` fallback would otherwise allocate a fresh array on
+  // every render and invalidate every downstream memo.
+  const moods = useMemo(
+    () => userData?.mood_history || [],
+    [userData?.mood_history],
+  );
   const recentMoods = useMemo(() => uniqRecent(moods), [moods]);
   const recs = useMemo(
     () => userData?.recommendations || [],
@@ -430,7 +435,13 @@ const ProfilePage = () => {
   useEffect(() => {
     setRecsVisible(RECS_PAGE);
   }, [recsQuery, recsSort]);
-  const listening = userData?.listening_history || [];
+  // Wrapped in useMemo so the `|| []` fallback's identity stays
+  // stable across renders -- prevents the downstream `recentListening`
+  // memo from invalidating every paint.
+  const listening = useMemo(
+    () => userData?.listening_history || [],
+    [userData?.listening_history],
+  );
   // Deduped, newest-first view of the listening log. Stat card still
   // reads ``listening.length`` for the raw total.
   const recentListening = useMemo(
