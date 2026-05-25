@@ -366,7 +366,7 @@ graph TB
     DA1 & DA2 & DA3 --> MD1 & MD2 & MD3 & MD4
 ```
 
-### Reinforcement-Learning / Personalisation Layer
+### Reinforcement-Learning / Personalization Layer
 
 Two surfaces share one HTTP endpoint and one persistence pattern:
 

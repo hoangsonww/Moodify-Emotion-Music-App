@@ -488,6 +488,12 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
 </p>
 
+### Explore Page 
+
+<p align="center">
+  <img src="images/explore.png" alt="Explore Page" width="100%" style="border-radius: 10px">
+</p>
+
 ### Login Page
 
 <p align="center">
@@ -869,6 +875,10 @@ familiar admin login page lives at `/admin/`.
   <img src="images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
 </p>
 
+<p align="center">
+  <img src="images/admin-django.png" alt="Admin Login" width="100%" style="border-radius: 10px">
+</p>
+
 <h2 id="-backend-apis-documentation">🚀 Backend APIs Documentation</h2>
 
 Our backend APIs are all well-documented using Swagger UI and Redoc. You can access the API documentation at the following URLs:
@@ -1038,6 +1048,10 @@ refresh, mood-tinted theming, and graceful offline-degraded inference.
 | Forgot — Verify | Forgot — Reset |
 |:---:|:---:|
 | <img src="mobile/docs/screenshots/ios/13-forgot-verify.png" width="190" /> | <img src="mobile/docs/screenshots/android/14-forgot-reset.png" width="190" /> |
+
+| Explore — iOS | Explore — Android |
+|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/15-explore.png" width="190" /> | <img src="mobile/docs/screenshots/android/15-explore.png" width="190" /> |
 
 ### Mobile architecture
 

@@ -103,11 +103,11 @@
 |:---:|:---:|:---:|:---:|
 | <img src="docs/screenshots/android/02-home-text.png" width="200" /> | <img src="docs/screenshots/ios/04-home-face.png" width="200" /> | <img src="docs/screenshots/android/06-sort-sheet.png" width="200" /> | <img src="docs/screenshots/ios/07-market-sheet.png" width="200" /> |
 
-| Register | Forgot — Verify |
-|:---:|:---:|
-| <img src="docs/screenshots/ios/12-register.png" width="200" /> | <img src="docs/screenshots/android/13-forgot-verify.png" width="200" /> |
+| Register | Forgot — Verify | Explore (iOS) | Explore (Android) |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/ios/12-register.png" width="200" /> | <img src="docs/screenshots/android/13-forgot-verify.png" width="200" /> | <img src="docs/screenshots/ios/15-explore.png" width="200" /> | <img src="docs/screenshots/android/15-explore.png" width="200" /> |
 
-The full **14 iOS + 14 Android** captures live in
+The full **15 iOS + 15 Android** captures live in
 [`docs/screenshots/`](docs/screenshots) and are walked through one-by-one
 in [`../MOBILE_APPS.md`](../MOBILE_APPS.md).
 
@@ -276,7 +276,8 @@ sequenceDiagram
         X-->>U: data
     else refresh fails
         S-->>X: false
-        X->>X: clearTokens(); onSessionExpired()
+        X->>X: clearTokens()
+        X->>X: onSessionExpired()
         X-->>U: reject
     end
 ```

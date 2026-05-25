@@ -13,6 +13,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Audio } from 'expo-av';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import axios from 'axios';
+
+import { MODAL_API_URL } from '../../config';
 
 import Screen from '../components/Screen';
 import TextField from '../components/TextField';
@@ -21,6 +26,7 @@ import FaceCapture from '../components/FaceCapture';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { tapLight, tapMedium, error as hapticError } from '../util/haptics';
+import { uniqRecent } from '../util/dedupe';
 import {
   analyzeFace,
   analyzeSpeech,
@@ -203,9 +209,104 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  // File-upload variant of the three analysis paths. Picks via
+  // expo-document-picker with MIME hints; validates extension + 10 MB
+  // cap; then dispatches to the same code that drives the in-app
+  // recorder / camera so the result flow (history save, navigate,
+  // inputType for the feedback widget) stays identical.
+  const TEXT_EXTS = ['.txt', '.md', '.csv', '.log', '.text'];
+  const AUDIO_EXTS = ['.wav', '.mp3', '.m4a', '.mp4', '.ogg', '.webm'];
+  const MAX_BYTES = 10 * 1024 * 1024;
+
+  const pickAndAnalyze = useCallback(async () => {
+    let type;
+    let exts;
+    if (mode === 'text') {
+      type = ['text/*', 'application/json'];
+      exts = TEXT_EXTS;
+    } else if (mode === 'speech') {
+      type = 'audio/*';
+      exts = AUDIO_EXTS;
+    } else {
+      type = 'image/*';
+      exts = null; // any image MIME is fine
+    }
+
+    let res;
+    try {
+      res = await DocumentPicker.getDocumentAsync({
+        type,
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+    } catch (e) {
+      hapticError();
+      toast.show({ type: 'error', title: 'Picker error', message: 'Could not open the file picker.' });
+      return;
+    }
+    if (res.canceled) return;
+
+    const asset = res.assets && res.assets[0];
+    if (!asset || !asset.uri) return;
+    const name = (asset.name || '').toLowerCase();
+    const size = asset.size || 0;
+
+    if (size > MAX_BYTES) {
+      toast.show({ type: 'warning', title: 'Too big', message: 'File must be under 10 MB.' });
+      return;
+    }
+    if (exts && !exts.some((ext) => name.endsWith(ext))) {
+      toast.show({
+        type: 'warning',
+        title: 'Wrong type',
+        message: `Allowed: ${exts.join(', ')}`,
+      });
+      return;
+    }
+
+    if (mode === 'text') {
+      try {
+        const content = await FileSystem.readAsStringAsync(asset.uri);
+        if (!content.trim()) {
+          toast.show({ type: 'warning', title: 'Empty file', message: 'Nothing to analyze.' });
+          return;
+        }
+        runAnalysis(() => analyzeText(content.trim()), 'text');
+      } catch (e) {
+        hapticError();
+        toast.show({ type: 'error', title: 'Read error', message: 'Could not read that file.' });
+      }
+      return;
+    }
+
+    // speech / face: multipart upload to Modal direct (parity with the
+    // in-app recorder + camera paths). The auth interceptor attaches
+    // the JWT automatically.
+    const path = mode === 'speech' ? '/speech_emotion' : '/facial_emotion';
+    const inputType = mode === 'speech' ? 'speech' : 'facial';
+    const mime =
+      asset.mimeType ||
+      (mode === 'speech' ? 'audio/mpeg' : 'image/jpeg');
+
+    runAnalysis(async () => {
+      const form = new FormData();
+      form.append('file', { uri: asset.uri, type: mime, name: asset.name || 'upload' });
+      try {
+        const { data } = await axios.post(`${MODAL_API_URL}${path}`, form, {
+          timeout: 60000,
+        });
+        return data;
+      } catch (e) {
+        return { emotion: 'calm', recommendations: [], degraded: true };
+      }
+    }, inputType);
+  }, [mode, runAnalysis, toast]);
+
   const lastMood = moodHistory.length > 0 ? moodHistory[moodHistory.length - 1] : null;
   const lastPalette = lastMood ? moodPaletteFor(lastMood) : null;
-  const recentChips = moodHistory.slice(-6).reverse();
+  // Dedupe so repeated moods (e.g. three "joy" detections in a row)
+  // collapse into a single chip. uniqRecent returns newest-first.
+  const recentChips = uniqRecent(moodHistory).slice(0, 6);
 
   const ringScale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] });
   const ringOpacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.6, 0] });
@@ -305,6 +406,16 @@ export default function HomeScreen({ navigation }) {
                 multiline
               />
               <AppButton title="Analyze my mood" icon="sparkles" onPress={onAnalyzeText} />
+              <OrDivider />
+              <AppButton
+                title="Upload a text file"
+                icon="document-text-outline"
+                variant="ghost"
+                onPress={pickAndAnalyze}
+              />
+              <Text style={styles.uploadHint}>
+                .txt · .md · .csv · .log — up to 10 MB
+              </Text>
             </View>
           )}
 
@@ -340,6 +451,19 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.hint}>
                 {recording ? 'Recording — tap to stop & analyze' : 'Tap to record your voice'}
               </Text>
+              <View style={{ alignSelf: 'stretch', marginTop: spacing.md }}>
+                <OrDivider />
+              </View>
+              <AppButton
+                title="Upload an audio file"
+                icon="cloud-upload-outline"
+                variant="ghost"
+                onPress={pickAndAnalyze}
+                style={{ alignSelf: 'stretch' }}
+              />
+              <Text style={styles.uploadHint}>
+                .wav · .mp3 · .m4a · .ogg · .webm — up to 10 MB
+              </Text>
             </View>
           )}
 
@@ -351,6 +475,19 @@ export default function HomeScreen({ navigation }) {
                   toast.show({ type: 'error', title: 'Camera error', message: msg })
                 }
               />
+              <View style={{ alignSelf: 'stretch', marginTop: spacing.md }}>
+                <OrDivider />
+              </View>
+              <AppButton
+                title="Upload a photo"
+                icon="image-outline"
+                variant="ghost"
+                onPress={pickAndAnalyze}
+                style={{ alignSelf: 'stretch' }}
+              />
+              <Text style={styles.uploadHint}>
+                .jpg · .png · .webp — up to 10 MB
+              </Text>
             </View>
           )}
 
@@ -361,10 +498,30 @@ export default function HomeScreen({ navigation }) {
                 {recentChips.map((m, i) => {
                   const p = moodPaletteFor(m);
                   return (
-                    <View key={`${m}-${i}`} style={styles.recentChip}>
+                    <Pressable
+                      key={`${m}-${i}`}
+                      onPress={() => {
+                        tapLight();
+                        // Same shortcut Profile uses: jump straight to
+                        // Results with the picked mood; the screen will
+                        // fetch a fresh list. No inputType -> the mood
+                        // feedback widget skips itself (this was the
+                        // user's choice, not a model prediction).
+                        navigation.navigate('Results', {
+                          emotion: m,
+                          recommendations: [],
+                          history: moodHistory,
+                          profileId,
+                        });
+                      }}
+                      style={({ pressed }) => [
+                        styles.recentChip,
+                        pressed && { opacity: 0.7 },
+                      ]}
+                    >
                       <Text style={styles.recentEmoji}>{p.emoji}</Text>
                       <Text style={styles.recentLabel}>{p.label}</Text>
-                    </View>
+                    </Pressable>
                   );
                 })}
               </ScrollView>
@@ -380,6 +537,18 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
     </Screen>
+  );
+}
+
+// Hairline "or" separator that sits between the primary action and
+// the upload fallback on every mode panel.
+function OrDivider() {
+  return (
+    <View style={styles.orWrap}>
+      <View style={styles.orRule} />
+      <Text style={styles.orText}>OR</Text>
+      <View style={styles.orRule} />
+    </View>
   );
 }
 
@@ -442,6 +611,27 @@ const styles = StyleSheet.create({
   },
   center: { alignItems: 'center', paddingVertical: spacing.xl },
   hint: { color: colors.textMuted, fontSize: 14, marginTop: spacing.lg, textAlign: 'center' },
+  uploadHint: {
+    color: colors.textFaint,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  orWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginVertical: spacing.sm,
+  },
+  orRule: { flex: 1, height: 1, backgroundColor: colors.border },
+  orText: {
+    color: colors.textFaint,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+  },
   micStage: {
     width: 160,
     height: 160,

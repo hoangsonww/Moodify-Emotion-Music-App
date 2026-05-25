@@ -11,18 +11,6 @@ without opening the source.
   <img src="images/moodify-logo.png" alt="Moodify" width="160" />
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Expo-SDK%2051-000020?style=for-the-badge&logo=expo&logoColor=white" />
-  <img src="https://img.shields.io/badge/React_Native-0.74-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/iOS-18+-000000?style=for-the-badge&logo=apple&logoColor=white" />
-  <img src="https://img.shields.io/badge/Android-15+-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
-  <img src="https://img.shields.io/badge/JWT-Silent_Refresh-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
-  <img src="https://img.shields.io/badge/Modal-Inference-7B68EE?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Deezer-Recommend-FF6600?style=for-the-badge&logo=deezer&logoColor=white" />
-  <img src="https://img.shields.io/badge/Axios-1.7-5A29E4?style=for-the-badge&logo=axios&logoColor=white" />
-</p>
-
 ---
 
 ## Table of contents
@@ -118,6 +106,7 @@ the custom pill-shaped tab bar across both OSes.
 | 12 | Register | <img src="mobile/docs/screenshots/ios/12-register.png" width="260" /> | <img src="mobile/docs/screenshots/android/12-register.png" width="260" /> |
 | 13 | Forgot password — verify | <img src="mobile/docs/screenshots/ios/13-forgot-verify.png" width="260" /> | <img src="mobile/docs/screenshots/android/13-forgot-verify.png" width="260" /> |
 | 14 | Forgot password — reset | <img src="mobile/docs/screenshots/ios/14-forgot-reset.png" width="260" /> | <img src="mobile/docs/screenshots/android/14-forgot-reset.png" width="260" /> |
+| 15 | Explore — Results + RL feedback widget + 👍/👎 | <img src="mobile/docs/screenshots/ios/15-explore.png" width="260" /> | <img src="mobile/docs/screenshots/android/15-explore.png" width="260" /> |
 
 ---
 

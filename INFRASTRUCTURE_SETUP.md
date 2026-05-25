@@ -2,11 +2,29 @@
 
 Complete guide for setting up the production-ready deployment infrastructure for Moodify.
 
+> [!NOTE]
 > 💡 **Heads up — this guide covers the self-host path.** If you're
 > running Moodify on Vercel + Modal (the canonical production path),
 > none of this is needed — skip to [`DEPLOYMENT.md`](DEPLOYMENT.md)
 > instead. The infra below is for clusters you own, on AWS / GCP /
 > Oracle Cloud / Azure.
+
+## Table of Contents
+
+- [At a glance — what gets built](#at-a-glance--what-gets-built)
+- [Module / chart inventory](#module--chart-inventory)
+- [Prerequisites](#prerequisites)
+- [Infrastructure Overview](#infrastructure-overview)
+- [Initial Setup](#initial-setup)
+- [Kubernetes Cluster Setup](#kubernetes-cluster-setup)
+- [Configure Blue-Green Deployment](#configure-blue-green-deployment)
+- [Configure Canary Deployment](#configure-canary-deployment)
+- [Setup Traffic Management](#setup-traffic-management)
+- [Configure CI/CD Pipeline](#configure-cicd-pipeline)
+- [Setup Monitoring](#setup-monitoring)
+- [Security Configuration](#security-configuration)
+- [Verification](#verification)
+- [Troubleshooting](#troubleshooting)
 
 ## At a glance — what gets built
 
@@ -47,21 +65,6 @@ Complete guide for setting up the production-ready deployment infrastructure for
 | **Helm charts** | `helm/moodify-backend/` (Django, blue/green) · `helm/moodify-frontend/` (React SPA, runtime env.js) · `helm/monitoring/` (umbrella + Moodify SLO rules + Grafana dashboards) |
 | **Edge proxy** | `nginx/` — `nginx.conf` + `snippets/{security,ssl,proxy,cors,well-known,maintenance}.conf` + `scripts/{generate-dev-tls,test-config,reload,healthcheck,renew-certs,maintenance}.sh` + `exporter/` (prometheus sidecar) |
 | **GitOps** | `argocd/applications/*` — one Application per chart, pulls from `helm/` |
-
-## Table of Contents
-
-- [Prerequisites](#prerequisites)
-- [Infrastructure Overview](#infrastructure-overview)
-- [Initial Setup](#initial-setup)
-- [Kubernetes Cluster Setup](#kubernetes-cluster-setup)
-- [Configure Blue-Green Deployment](#configure-blue-green-deployment)
-- [Configure Canary Deployment](#configure-canary-deployment)
-- [Setup Traffic Management](#setup-traffic-management)
-- [Configure CI/CD Pipeline](#configure-cicd-pipeline)
-- [Setup Monitoring](#setup-monitoring)
-- [Security Configuration](#security-configuration)
-- [Verification](#verification)
-- [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 

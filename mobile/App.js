@@ -48,7 +48,14 @@ function RootNavigator() {
             <Stack.Screen
               name="Results"
               component={ResultsScreen}
-              options={{ title: 'Your Vibe', headerTransparent: true, headerTitle: '' }}
+              options={{
+                title: 'Your Vibe',
+                headerTransparent: true,
+                headerTitle: '',
+                // iOS shows the parent route name ("Tabs") next to the
+                // chevron by default -- override to a clean "Back".
+                headerBackTitle: 'Back',
+              }}
             />
           </>
         ) : (

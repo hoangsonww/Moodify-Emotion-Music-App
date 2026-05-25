@@ -21,6 +21,7 @@ import SectionHeader from '../components/SectionHeader';
 import EmptyState from '../components/EmptyState';
 import { useAuth } from '../context/AuthContext';
 import { tapLight } from '../util/haptics';
+import { uniqRecent } from '../util/dedupe';
 import { getProfile } from '../services/emotion';
 import { colors, gradient, moodPaletteFor, radius, shadows, spacing, typography } from '../../theme';
 
@@ -52,9 +53,14 @@ export default function ProfileScreen({ navigation }) {
   );
 
   const moodsAll = profile?.mood_history || [];
-  const moods = moodsAll.slice(-15).reverse();
+  // Deduped, newest-first. Caps at 15 distinct moods so the chip row
+  // doesn't grow unbounded for a power user.
+  const moods = uniqRecent(moodsAll).slice(0, 15);
   const username = profile?.username || user?.username || 'You';
   const tracksAll = profile?.listening_history || [];
+  // Same dedupe for the listening history -- the row shows the
+  // 15 most-recent distinct tracks, newest first.
+  const recentTracks = uniqRecent(tracksAll).slice(0, 15);
 
   if (loading) {
     return (
@@ -175,7 +181,7 @@ export default function ProfileScreen({ navigation }) {
           <SectionHeader title="Recent tracks" subtitle="Recently opened from your results." />
           {tracksAll.length ? (
             <View style={styles.trackList}>
-              {tracksAll.slice(-15).reverse().map((track, index) => (
+              {recentTracks.map((track, index) => (
                 <Pressable
                   key={`${track}-${index}`}
                   onPress={() => openInPlayer(track)}

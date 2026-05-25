@@ -428,26 +428,30 @@ const ResultsPage = () => {
                   ? `${sortedTracks.length} tracks tuned to how you feel`
                   : "Pick a mood or shuffle for a fresh playlist"}
               </Typography>
-              {/* Feedback widget renders only for authed callers whose
-                  mood came from real model inference (inputType set). */}
-              {incomingInputType ? (
-                <MoodFeedbackWidget
-                  predicted={String(selectedMood || "neutral").toLowerCase()}
-                  inputType={incomingInputType}
-                  isDarkMode={isDarkMode}
-                  onCorrected={(actual) => {
-                    setSelectedMood(actual);
-                    refetch({ mood: actual });
-                  }}
-                />
-              ) : null}
             </Box>
           </Stack>
         </Box>
       </Box>
 
-      {/* Controls --------------------------------------------------------- */}
+      {/* Controls + feedback widget --------------------------------------
+          Both live inside the same maxWidth wrapper so they're guaranteed
+          to share the same horizontal extents (the widget used to live
+          inside the hero stack and stretched edge-to-edge, looking wider
+          than the controls card directly below it). */}
       <Box sx={styles.controlsWrap}>
+        {incomingInputType ? (
+          <Box sx={{ mb: 1.5 }}>
+            <MoodFeedbackWidget
+              predicted={String(selectedMood || "neutral").toLowerCase()}
+              inputType={incomingInputType}
+              isDarkMode={isDarkMode}
+              onCorrected={(actual) => {
+                setSelectedMood(actual);
+                refetch({ mood: actual });
+              }}
+            />
+          </Box>
+        ) : null}
         <Paper elevation={0} sx={styles.controlsPaper(isDarkMode)}>
           <TextField
             value={query}

@@ -192,6 +192,7 @@ export default function MoodFeedbackWidget({
 const styles = StyleSheet.create({
   panel: {
     marginTop: spacing.md,
+    marginBottom: spacing.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
     borderRadius: radius.md,

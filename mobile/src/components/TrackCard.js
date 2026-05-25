@@ -11,6 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
+import TrackPlayer from './TrackPlayer';
 import { sendTrackFeedback } from '../services/feedback';
 import { tapLight } from '../util/haptics';
 import { colors, gradient, radius, shadows, spacing } from '../../theme';
@@ -61,46 +62,49 @@ export default function TrackCard({ track, onPlay, rank, contextEmotion = null }
   const unlikeColor = vote === 'unlike' ? colors.danger : colors.textMuted;
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <Pressable
-        onPress={open}
-        onPressIn={() => animateTo(0.98)}
-        onPressOut={() => animateTo(1)}
-        style={styles.card}
-      >
-        <View style={styles.artWrap}>
-          {track.image_url ? (
-            <Image source={{ uri: track.image_url }} style={styles.art} />
-          ) : (
-            <LinearGradient
-              colors={gradient.colors}
-              start={gradient.start}
-              end={gradient.end}
-              style={[styles.art, styles.artFallback]}
-            >
-              <Ionicons name="musical-note" size={22} color="#fff" />
-            </LinearGradient>
-          )}
-          {rank ? (
-            <View style={styles.rank}>
-              <Text style={styles.rankText}>{rank}</Text>
-            </View>
-          ) : null}
-        </View>
-        <View style={styles.meta}>
-          <Text style={styles.name} numberOfLines={1}>
-            {track.name || 'Unknown track'}
-          </Text>
-          <Text style={styles.artist} numberOfLines={1}>
-            {track.artist || 'Unknown artist'}
-          </Text>
-          {typeof track.popularity === 'number' && track.popularity > 0 ? (
-            <View style={styles.popRow}>
-              <Ionicons name="flame" size={10} color={colors.accent} />
-              <Text style={styles.popText}>{track.popularity}</Text>
-            </View>
-          ) : null}
-        </View>
+    <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
+      <View style={styles.row}>
+        <Pressable
+          onPress={open}
+          onPressIn={() => animateTo(0.98)}
+          onPressOut={() => animateTo(1)}
+          style={styles.openTarget}
+          accessibilityLabel={`Open ${track.name || 'track'} in Deezer`}
+        >
+          <View style={styles.artWrap}>
+            {track.image_url ? (
+              <Image source={{ uri: track.image_url }} style={styles.art} />
+            ) : (
+              <LinearGradient
+                colors={gradient.colors}
+                start={gradient.start}
+                end={gradient.end}
+                style={[styles.art, styles.artFallback]}
+              >
+                <Ionicons name="musical-note" size={22} color="#fff" />
+              </LinearGradient>
+            )}
+            {rank ? (
+              <View style={styles.rank}>
+                <Text style={styles.rankText}>{rank}</Text>
+              </View>
+            ) : null}
+          </View>
+          <View style={styles.meta}>
+            <Text style={styles.name} numberOfLines={1}>
+              {track.name || 'Unknown track'}
+            </Text>
+            <Text style={styles.artist} numberOfLines={1}>
+              {track.artist || 'Unknown artist'}
+            </Text>
+            {typeof track.popularity === 'number' && track.popularity > 0 ? (
+              <View style={styles.popRow}>
+                <Ionicons name="flame" size={10} color={colors.accent} />
+                <Text style={styles.popText}>{track.popularity}</Text>
+              </View>
+            ) : null}
+          </View>
+        </Pressable>
         <View style={styles.actions}>
           <Pressable
             onPress={() => onVote('like')}
@@ -128,19 +132,27 @@ export default function TrackCard({ track, onPlay, rank, contextEmotion = null }
               color={unlikeColor}
             />
           </Pressable>
-          <View style={styles.openBadge}>
-            <Ionicons name="play" size={14} color={colors.text} />
-          </View>
+          <Pressable
+            onPress={open}
+            hitSlop={6}
+            accessibilityLabel="Open in Deezer"
+            style={({ pressed }) => [styles.openBadge, pressed && { opacity: 0.7 }]}
+          >
+            {/* Was a play icon -- moved to the inline preview player
+                below. The badge now signals "open externally". */}
+            <Ionicons name="open-outline" size={14} color={colors.text} />
+          </Pressable>
         </View>
-      </Pressable>
+      </View>
+      {track.preview_url ? (
+        <TrackPlayer src={track.preview_url} onPlay={() => onPlay && onPlay(track)} />
+      ) : null}
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radius.md,
     padding: 10,
@@ -148,6 +160,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     ...shadows.sm,
+  },
+  row: { flexDirection: 'row', alignItems: 'center' },
+  openTarget: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   artWrap: { position: 'relative' },
   art: {

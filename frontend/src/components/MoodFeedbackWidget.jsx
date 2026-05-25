@@ -106,41 +106,50 @@ export default function MoodFeedbackWidget({
     if (ok) onCorrected(actual);
   };
 
-  // Color cues match the rest of the app: warm primary on light, soft
-  // panel on dark. Sticking to neutral tones so it doesn't compete with
-  // the hero detected-mood text.
-  const panelBg = isDarkMode
-    ? "rgba(255,255,255,0.04)"
-    : "rgba(255,77,77,0.04)";
+  // Frosted-glass panel so the widget stays legible against any mood
+  // gradient backdrop. Solid-ish surface + subtle shadow gives it
+  // visual weight; text colors stay high-contrast regardless of the
+  // hero color sitting behind the panel.
+  const panelBg = isDarkMode ? "rgba(20,20,28,0.92)" : "rgba(255,255,255,0.96)";
   const border = isDarkMode
-    ? "1px solid rgba(255,255,255,0.08)"
-    : "1px solid rgba(255,77,77,0.18)";
-  const textColor = isDarkMode ? "#eaeaea" : "#1a1a1a";
-  const subText = isDarkMode ? "#bbbbbb" : "#555555";
+    ? "1px solid rgba(255,255,255,0.1)"
+    : "1px solid rgba(0,0,0,0.06)";
+  const textColor = isDarkMode ? "#f1f1f4" : "#1a1a1a";
+  const subText = isDarkMode ? "#aaaab4" : "#555555";
+  const shadow = isDarkMode
+    ? "0 8px 24px rgba(0,0,0,0.45)"
+    : "0 8px 24px rgba(0,0,0,0.12)";
+
+  const noBg = isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+  const noBgHover = isDarkMode ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.09)";
 
   if (stage === "done") {
     return (
       <Box
         sx={{
           background: panelBg,
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
           border,
-          borderRadius: "12px",
+          borderRadius: "14px",
           px: 2,
-          py: 1.25,
-          mt: 1.5,
+          py: 1.5,
+          mt: 2,
+          boxShadow: shadow,
         }}
       >
         <Typography
           sx={{
             fontFamily: "Poppins",
-            fontSize: 13,
+            fontSize: 13.5,
+            fontWeight: 500,
             color: subText,
             display: "flex",
             alignItems: "center",
             gap: 0.75,
           }}
         >
-          <CheckCircleOutlineIcon sx={{ fontSize: 16, color: "#22c55e" }} />
+          <CheckCircleOutlineIcon sx={{ fontSize: 18, color: "#22c55e" }} />
           Thanks — we'll tune your detections.
         </Typography>
       </Box>
@@ -152,25 +161,30 @@ export default function MoodFeedbackWidget({
       data-testid="mood-feedback-widget"
       sx={{
         background: panelBg,
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
         border,
-        borderRadius: "12px",
+        borderRadius: "14px",
         px: 2,
-        py: 1.25,
-        mt: 1.5,
+        py: 1.5,
+        mt: 2,
+        boxShadow: shadow,
       }}
     >
       {stage === "ask" && (
         <Stack
           direction={{ xs: "column", sm: "row" }}
           alignItems={{ xs: "stretch", sm: "center" }}
-          spacing={1}
+          spacing={{ xs: 1.25, sm: 1.5 }}
         >
           <Typography
             sx={{
               fontFamily: "Poppins",
-              fontSize: 13.5,
+              fontSize: 14,
+              fontWeight: 600,
               color: textColor,
               flex: 1,
+              letterSpacing: "-0.005em",
             }}
           >
             Was that right?
@@ -178,6 +192,7 @@ export default function MoodFeedbackWidget({
           <Stack
             direction="row"
             spacing={0.75}
+            alignItems="center"
             sx={{
               flexShrink: 0,
               justifyContent: { xs: "flex-end", sm: "flex-start" },
@@ -186,35 +201,46 @@ export default function MoodFeedbackWidget({
             <Button
               size="small"
               variant="contained"
+              disableElevation
               startIcon={<CheckCircleOutlineIcon />}
               onClick={onConfirm}
               disabled={busy}
               sx={{
                 textTransform: "none",
                 fontFamily: "Poppins",
-                fontWeight: 600,
-                borderRadius: "8px",
+                fontWeight: 700,
+                fontSize: 13,
+                borderRadius: "10px",
+                px: 1.75,
+                py: 0.6,
                 background: "#22c55e",
-                "&:hover": { background: "#16a34a" },
+                color: "#fff",
+                boxShadow: "0 2px 6px rgba(34,197,94,0.35)",
+                "&:hover": {
+                  background: "#16a34a",
+                  boxShadow: "0 3px 10px rgba(34,197,94,0.45)",
+                },
               }}
             >
               Yes
             </Button>
             <Button
               size="small"
-              variant="outlined"
+              variant="text"
               startIcon={<CancelOutlinedIcon />}
               onClick={() => setStage("choose")}
               disabled={busy}
               sx={{
                 textTransform: "none",
                 fontFamily: "Poppins",
-                fontWeight: 600,
-                borderRadius: "8px",
-                borderColor: isDarkMode
-                  ? "rgba(255,255,255,0.2)"
-                  : "rgba(0,0,0,0.2)",
+                fontWeight: 700,
+                fontSize: 13,
+                borderRadius: "10px",
+                px: 1.75,
+                py: 0.6,
                 color: textColor,
+                background: noBg,
+                "&:hover": { background: noBgHover },
               }}
             >
               No, it was…
@@ -223,7 +249,12 @@ export default function MoodFeedbackWidget({
               <IconButton
                 size="small"
                 onClick={() => setStage("done")}
-                sx={{ color: subText }}
+                sx={{
+                  color: subText,
+                  width: 30,
+                  height: 30,
+                  "&:hover": { background: noBg },
+                }}
                 aria-label="Skip feedback"
               >
                 <CloseIcon sx={{ fontSize: 18 }} />
@@ -239,8 +270,9 @@ export default function MoodFeedbackWidget({
             sx={{
               fontFamily: "Poppins",
               fontSize: 13,
+              fontWeight: 500,
               color: subText,
-              mb: 0.75,
+              mb: 1,
             }}
           >
             Pick what you actually felt:
@@ -254,16 +286,12 @@ export default function MoodFeedbackWidget({
                 disabled={busy}
                 sx={{
                   fontFamily: "Poppins",
-                  fontWeight: 500,
-                  background: isDarkMode
-                    ? "rgba(255,255,255,0.08)"
-                    : "rgba(0,0,0,0.04)",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  height: 30,
+                  background: noBg,
                   color: textColor,
-                  "&:hover": {
-                    background: isDarkMode
-                      ? "rgba(255,255,255,0.14)"
-                      : "rgba(255,77,77,0.16)",
-                  },
+                  "&:hover": { background: noBgHover },
                 }}
               />
             ))}
@@ -274,10 +302,13 @@ export default function MoodFeedbackWidget({
               disabled={busy}
               sx={{
                 fontFamily: "Poppins",
+                fontWeight: 600,
+                fontSize: 13,
+                height: 30,
                 color: subText,
                 borderColor: isDarkMode
-                  ? "rgba(255,255,255,0.2)"
-                  : "rgba(0,0,0,0.2)",
+                  ? "rgba(255,255,255,0.18)"
+                  : "rgba(0,0,0,0.14)",
               }}
             />
           </Stack>

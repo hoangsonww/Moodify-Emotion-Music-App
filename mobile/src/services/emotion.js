@@ -30,40 +30,18 @@ function musicRecommendationUrl() {
     : `${MODAL_API_URL}/music_recommendation`;
 }
 
-// Curated last-resort tracks for when the service is unreachable. The
-// external_url is a Deezer search link, so it always resolves.
-const _FALLBACK = [
-  ['Blinding Lights', 'The Weeknd'],
-  ['Levitating', 'Dua Lipa'],
-  ['As It Was', 'Harry Styles'],
-  ['good 4 u', 'Olivia Rodrigo'],
-  ['Sunflower', 'Post Malone, Swae Lee'],
-  ['Uptown Funk', 'Mark Ronson, Bruno Mars'],
-  ['Someone Like You', 'Adele'],
-  ['Counting Stars', 'OneRepublic'],
-  ['Stay', 'The Kid LAROI, Justin Bieber'],
-  ['Shape of You', 'Ed Sheeran'],
-  ['Believer', 'Imagine Dragons'],
-  ['Riptide', 'Vance Joy'],
-  ['Heat Waves', 'Glass Animals'],
-  ["Don't Start Now", 'Dua Lipa'],
-];
-
-export const FALLBACK_TRACKS = _FALLBACK.map(([name, artist]) => ({
-  name,
-  artist,
-  album: null,
-  preview_url: null,
-  external_url: 'https://www.deezer.com/search/' + encodeURIComponent(`${name} ${artist}`),
-  image_url: null,
-  popularity: 0,
-  duration_ms: 0,
-  release_date: null,
-}));
+// No client-side track fallback. Returning a hard-coded list when the
+// recommender was slow / unreachable was actively misleading: users
+// saw the same 14 generic tracks every time the Modal proxy timed
+// out, even when the real result eventually came back fine upstream.
+// We now return an empty list + a `degraded: true` flag and let the
+// UI surface "couldn't load" honestly. Kept exported as an empty
+// array so any consumer importing the symbol still resolves.
+export const FALLBACK_TRACKS = [];
 
 const fallbackResult = (emotion = 'calm') => ({
   emotion,
-  recommendations: FALLBACK_TRACKS,
+  recommendations: [],
   degraded: true,
 });
 
@@ -122,7 +100,10 @@ export async function getRecommendations(emotion, market, history) {
     );
     return data;
   } catch (e) {
-    return { emotion, market, recommendations: FALLBACK_TRACKS };
+    // Honest degraded state -- empty list + flag. The UI's EmptyState
+    // already renders a "no tracks" pane with a Shuffle CTA, which is
+    // a better signal than 14 unrelated stand-ins.
+    return { emotion, market, recommendations: [], degraded: true };
   }
 }
 

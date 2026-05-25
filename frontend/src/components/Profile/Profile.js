@@ -52,6 +52,7 @@ import TrackPlayer from "../TrackPlayer";
 import { logTrackOpen } from "../../services/listening";
 import { API_URL, MODAL_API_URL } from "../../config";
 import { logout as clearAuthTokens, setTokens } from "../../services/auth";
+import { uniqRecent } from "../../utils/dedupe";
 
 const USERNAME_RE = /^[A-Za-z0-9_.-]{3,30}$/;
 
@@ -364,7 +365,12 @@ const ProfilePage = () => {
   };
 
   // ------------ derived ------------
+  // ``moods`` keeps the raw history so the stat card can show the
+  // total number of detections; ``recentMoods`` is the deduped,
+  // newest-first list rendered as chips (repeats collapse into a
+  // single chip).
   const moods = userData?.mood_history || [];
+  const recentMoods = useMemo(() => uniqRecent(moods), [moods]);
   const recs = useMemo(
     () => userData?.recommendations || [],
     [userData?.recommendations],
@@ -425,6 +431,12 @@ const ProfilePage = () => {
     setRecsVisible(RECS_PAGE);
   }, [recsQuery, recsSort]);
   const listening = userData?.listening_history || [];
+  // Deduped, newest-first view of the listening log. Stat card still
+  // reads ``listening.length`` for the raw total.
+  const recentListening = useMemo(
+    () => uniqRecent(listening, (entry) => String(entry || "")),
+    [listening],
+  );
 
   // ------------ render ------------
   return (
@@ -544,7 +556,7 @@ const ProfilePage = () => {
               />
             ) : (
               <Box sx={styles.chipsWrap}>
-                {moods.map((mood, i) => (
+                {recentMoods.map((mood, i) => (
                   <Chip
                     key={`${mood}-${i}`}
                     label={
@@ -580,7 +592,7 @@ const ProfilePage = () => {
               </Box>
               <SectionTitle
                 text="Your saved recommendations"
-                hint="Tracks you got after analysing a mood."
+                hint="Tracks you got after analyzing a mood."
               />
             </Stack>
             {recs.length > 0 && (
@@ -871,17 +883,14 @@ const ProfilePage = () => {
               />
             ) : (
               <Stack spacing={1.5}>
-                {listening
-                  .slice()
-                  .reverse()
-                  .map((entry, i) => (
-                    <ListenRow
-                      key={`${entry}-${i}`}
-                      entry={entry}
-                      isDark={isDarkMode}
-                      profileId={userData?.id}
-                    />
-                  ))}
+                {recentListening.map((entry, i) => (
+                  <ListenRow
+                    key={`${entry}-${i}`}
+                    entry={entry}
+                    isDark={isDarkMode}
+                    profileId={userData?.id}
+                  />
+                ))}
               </Stack>
             )}
           </Paper>

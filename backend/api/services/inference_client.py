@@ -14,7 +14,13 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-_TIMEOUT_SECONDS = 15
+# Modal cold starts on the inference container routinely run 20-30 s
+# (loading BERT + FER + speech model into memory). 15 s was too tight
+# and meant the first request after a scale-to-zero window 502'd while
+# Modal eventually completed -- the upstream logs showed 200 OK but
+# the caller saw a gateway error and fell back. 60 s comfortably
+# covers a fresh container; warm calls return in well under a second.
+_TIMEOUT_SECONDS = 60
 _MAX_RETRIES = 1
 _RETRY_BACKOFF_SECONDS = 1.0
 

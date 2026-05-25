@@ -52,6 +52,7 @@ import { DarkModeContext } from "../context/DarkModeContext";
 import { useToast } from "../components/Toast";
 import { API_URL, MODAL_API_URL } from "../config";
 import { detectTextEmotion, getRecommendations } from "../services/recommend";
+import { uniqRecent } from "../utils/dedupe";
 
 // ---------- shared mood palette (same colors as Results page) ----------
 const MOOD_PALETTE = {
@@ -605,30 +606,14 @@ const HomePage = () => {
         `Error uploading ${activeTab} file or request timed out:`,
         error,
       );
-
-      // Fallback to a random mood in case of an error
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await getRecommendations({ emotion: newMood });
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error("Error fetching recommendations:", recommendationError);
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      // No more random-mood theatre. Falling back to a randomly picked
+      // emotion was actively misleading: users saw "Joy detected" when
+      // the inference call had actually failed, polluted the UI, and
+      // confused the per-user calibration map. Surface the failure
+      // honestly and let the user retry.
+      toast.error(
+        "Couldn't read that file — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       handleModalClose();
       setIsLoading(false);
@@ -699,30 +684,9 @@ const HomePage = () => {
       });
     } catch (error) {
       console.error("Error or timeout occurred:", error);
-
-      // Fallback to a random mood in case of an error or timeout
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await getRecommendations({ emotion: newMood });
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error("Error fetching recommendations:", recommendationError);
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      toast.error(
+        "Couldn't read your face — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       handleModalClose();
       setIsLoading(false);
@@ -756,30 +720,9 @@ const HomePage = () => {
       });
     } catch (error) {
       console.error("Error processing text or request timed out:", error);
-
-      // Fallback to a random mood in case of an error
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await getRecommendations({ emotion: newMood });
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error("Error fetching recommendations:", recommendationError);
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      toast.error(
+        "Couldn't read your text — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       setIsLoading(false);
       setInputValue("");
@@ -895,12 +838,6 @@ const HomePage = () => {
     amused: "party",
   };
 
-  const getRandomMood = () => {
-    const moods = Object.keys(moodMap);
-    const randomIndex = Math.floor(Math.random() * moods.length);
-    return moods[randomIndex];
-  };
-
   const handleAudioUpload = async () => {
     if (!audioBlob) {
       console.log("No audio blob available for upload.");
@@ -937,33 +874,9 @@ const HomePage = () => {
       });
     } catch (error) {
       console.error("Error uploading audio or request timed out:", error);
-
-      // Fallback to a random mood in case of an error or timeout
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await getRecommendations({ emotion: newMood });
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error(
-          "Error fetching fallback recommendations:",
-          recommendationError,
-        );
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      toast.error(
+        "Couldn't read your voice — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -1001,9 +914,10 @@ const HomePage = () => {
   };
 
   const username = userData?.username || "";
-  const recentMoods = Array.isArray(userData?.mood_history)
-    ? userData.mood_history.slice(-6).reverse()
-    : [];
+  // Deduped + newest-first so repeated moods (e.g. three "joy"
+  // detections in a row) collapse into a single chip. Cap at 6 to
+  // match the original visual budget.
+  const recentMoods = uniqRecent(userData?.mood_history).slice(0, 6);
   const recommendationsCount = Array.isArray(userData?.recommendations)
     ? userData.recommendations.length
     : 0;
