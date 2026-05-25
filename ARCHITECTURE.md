@@ -38,12 +38,12 @@ infra bootstrap.
 
 ### Key Capabilities
 
+- **🎯 Online Reinforcement Learning** — every Moodify user trains their own playlist ranker in real time. A **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** re-ranks recommendation results from 👍 / 👎 / open-in-Deezer signals, and a per-user **mood-calibration map** corrects mis-classified emotions from the BERT detector. Both stream through a single `POST /api/feedback/` endpoint into Mongo time-series collections, are applied inline on the next request, and stay cold-start safe (anonymous + new users see the rule-based pipeline unchanged). See §5 "Reinforcement-Learning / Personalisation Layer".
 - **Multi-Modal Emotion Detection**: Text, speech, and facial expression analysis
 - **Real-Time Processing**: Sub-second response times for emotion detection
 - **Scalable Architecture**: Containerized microservices with horizontal scaling
 - **High Availability**: 99.9% uptime through redundancy and load balancing
 - **Security-First Design**: JWT authentication, encrypted communications, rate limiting
-- **Online Personalisation**: per-user mood-detection calibration map + Thompson-Sampling contextual bandit re-ranker over the recommendation list, both fed by a unified `POST /api/feedback/` endpoint and persisted to Mongo time-series collections. See §6.4 for the data model and §5.5 for the request flow.
 
 ## 2. System Overview
 

@@ -648,7 +648,7 @@ adb exec-out screencap -p     >  docs/screenshots/android/NN-name.png
 
 | Concern                  | Mitigation                                                       |
 | ------------------------ | ---------------------------------------------------------------- |
-| FlatList scroll perf     | `removeClippedSubviews`, PAGE = 12, lightweight `TrackCard`       |
+| FlatList scroll perf     | `removeClippedSubviews`, PAGE = 12, compact `TrackCard`           |
 | Animated loops           | `useNativeDriver: true` wherever possible                         |
 | Concurrent 401s          | Single in-flight refresh via `refreshInFlight`                    |
 | Modal cold starts        | 60 s timeout + automatic fallback playlist (`degraded: true`)     |

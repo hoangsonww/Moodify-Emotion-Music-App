@@ -326,6 +326,7 @@ For your information, the front-end's production (deployment) branch is `fronten
 
 The Moodify project aims to provide the following features:
 
+- 🎯 **Online reinforcement learning** — every user trains their own playlist ranker in real time. A "Was this right?" widget records per-user mood corrections, and 👍 / 👎 / open-in-Deezer signals feed a **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** that re-ranks every subsequent recommendation list. Mood-calibration map kicks in after 3 same-direction corrections; bandit kicks in after 20 logged signals. New and anonymous users see the rule-based pipeline unchanged.
 - User registration and login functionality.
 - Input analysis through text, speech, and facial expressions.
 - Real-time music recommendations based on emotion detection.
@@ -333,7 +334,6 @@ The Moodify project aims to provide the following features:
 - Data analytics scripts for emotion trends and model performance.
 - AI/ML models for text, speech, and facial emotion detection.
 - User profile management and customization.
-- **Reinforcement-learning feedback loop** — a "Was this right?" widget under every detection records per-user mood corrections, and 👍 / 👎 / open-in-Deezer signals on every track feed a Thompson-Sampling contextual bandit that re-ranks subsequent recommendation lists. Cold-start guarantee: new and anonymous users see exactly the rule-based EWMA+Markov order until they cross 20 logged signals.
 - Mobile app version for seamless user experience.
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.

@@ -1335,7 +1335,7 @@ flowchart TB
 
 | Concern                        | Mitigation                                                                  |
 | ------------------------------ | --------------------------------------------------------------------------- |
-| FlatList scroll perf           | Lightweight `TrackCard` rows; `onEndReached` page size 12; `removeClippedSubviews` default-on |
+| FlatList scroll perf           | Compact `TrackCard` rows; `onEndReached` page size 12; `removeClippedSubviews` default-on |
 | Multiple `Animated` loops      | Native-driver wherever possible (opacity / scale / translate)               |
 | Large profile payloads         | `mood_history` and `listening_history` are sliced to last 15 for display    |
 | Re-renders on focus            | `useFocusEffect` with cleanup flag prevents stale-render on swipe-back      |

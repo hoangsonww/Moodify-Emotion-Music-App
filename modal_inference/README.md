@@ -8,9 +8,10 @@
   Standalone serverless ML inference service for Moodify, deployed on
   <a href="https://modal.com"><strong>Modal</strong></a>. Hosts three
   emotion-recognition models (text, speech, face), drives a Deezer-backed
-  music recommender, and runs a lightweight personalization model that
-  blends each user's recurring moods into every result — all behind a
-  single FastAPI surface that scales to zero when idle.
+  music recommender, and feeds a <strong>Thompson-Sampling contextual
+  bandit</strong> that personalises every user's playlist from real-time
+  👍 / 👎 / open-in-Deezer signals — all behind a single FastAPI surface
+  that scales to zero when idle.
 </p>
 
 <p align="center">
@@ -39,7 +40,7 @@
 4. [Request lifecycle](#request-lifecycle)
 5. [The three emotion models](#the-three-emotion-models)
 6. [Recommendation pipeline](#recommendation-pipeline)
-7. [Personalization model (lightweight ML)](#personalization-model-lightweight-ml)
+7. [Reinforcement-learning personalization (Thompson Sampling bandit)](#reinforcement-learning-personalization-thompson-sampling-bandit)
 8. [Authentication](#authentication)
 9. [Rate limiting](#rate-limiting)
 10. [Caching](#caching)
@@ -69,8 +70,15 @@ each request:
 
 1. **Mood detection** from text, audio, or a photo.
 2. **Live recommendations** from Deezer's public Search API.
-3. **Personalization** that blends a user's recurring mood into the
-   ranked result set, driven by a recency-weighted affinity model.
+3. **Personalization** with two stacked layers:
+   * a **recency-weighted affinity model** (EWMA + first-order Markov)
+     that blends a user's recurring mood into the ranked result set,
+     and
+   * a downstream **Thompson-Sampling contextual bandit** (in the Django
+     backend, fed by 👍 / 👎 / open-in-Deezer signals via `POST
+     /api/feedback/`) that re-ranks the candidate list per user once
+     they have ≥ 20 logged events. Cold-start safe — anonymous and
+     new callers see the base order unchanged.
 
 It runs on Modal as a `@modal.asgi_app()` exposing a FastAPI app, scales
 to zero when idle, and uses CPU memory snapshots so cold starts restore
@@ -295,10 +303,100 @@ flowchart TD
 
 ---
 
-## Personalization model (lightweight ML)
+## Reinforcement-learning personalization (Thompson Sampling bandit)
 
-In `recommendation/personalization.py`. Three classical, sub-millisecond
-techniques compose into the blend:
+Moodify learns from every user interaction. Each 👍 / 👎 / open-in-Deezer
+tap on a track card becomes training signal that **personalises the
+ranking of every subsequent recommendation list for that user
+specifically** — no global re-train, no cohort buckets, no nightly
+batch. The mechanism is a **Thompson-Sampling contextual bandit over a
+Beta-Bernoulli posterior**, and the wire-up is:
+
+```mermaid
+flowchart LR
+    User -->|"👍 / 👎 / Open in Deezer"| FE[Frontend TrackCard]
+    User -->|"Was this right? ✓ / ✗"| FW[MoodFeedbackWidget]
+    FE & FW -->|POST /api/feedback/| FB[Django<br/>feedback_views]
+    FB --> TS1[(mood_feedback<br/>TS coll.)]
+    FB --> TS2[(track_feedback<br/>TS coll.)]
+    FB --> UP1[UserProfile.mood_calibration]
+    FB --> UP2["UserProfile.taste_profile<br/>α(22), β(22), events"]
+
+    Caller -->|POST /text_emotion| Modal1[Modal BERT]
+    Modal1 --> CAL[apply_calibration<br/>in Django]
+    UP1 -.->|read at inference| CAL
+    CAL --> Resp1[Response]
+
+    Caller -->|POST /music_recommendation| Modal2[Modal<br/>EWMA + Markov]
+    Modal2 --> BND[bandit.rerank<br/>in Django]
+    UP2 -.->|read at inference| BND
+    BND --> Resp2[Response]
+
+    style FB fill:#3b82f6,stroke:#fff,color:#fff
+    style CAL fill:#7c3aed,stroke:#fff,color:#fff
+    style BND fill:#d946ef,stroke:#fff,color:#fff
+    style UP2 fill:#ec4899,stroke:#fff,color:#fff
+```
+
+### Two stacked personalisation layers
+
+| Layer                     | Where it runs       | Reads                       | Effect                                                              |
+| ------------------------- | ------------------- | --------------------------- | ------------------------------------------------------------------- |
+| **L1 — per-user mood calibration** | Django, after Modal returns | `UserProfile.mood_calibration` | Rewrites the predicted emotion once a `(predicted → actual)` correction has been logged ≥ 3 times. |
+| **L2 — Thompson Sampling bandit re-rank** | Django, after Modal returns | `UserProfile.taste_profile`  | Re-orders the candidate list using a Beta-Bernoulli posterior over a fixed 22-dim feature vector (emotion × 6, decade × 7, duration × 4, popularity-quintile × 5). |
+| **L3 — EWMA + Markov base scorer** | **Modal** (this service) | request `history`            | Produces the base candidate ordering that the bandit re-ranks. The bandit can only reorder, never inject or drop. |
+
+### The bandit (L2 — `backend/api/bandit.py`)
+
+* **Algorithm:** Thompson Sampling. Each axis of the 22-dim feature
+  vector carries a `Beta(α, β)` posterior; on every recommendation
+  request we sample one Bernoulli probability per axis, then score each
+  candidate track by the dot-product with its feature vector and sort
+  descending. One fresh sample per axis per request — the canonical
+  contextual-bandit Thompson trick.
+* **Reward weights:** `like → +1 α`, `unlike → +1 β`, `open_deezer →
+  +0.5 α`. The update touches every active feature for the track.
+* **Identity-when-cold:** with `events < 20` (or zero, the anonymous
+  case) the bandit returns the input order unchanged. New users and
+  anonymous Modal traffic are therefore **unaffected**.
+* **Bounded blast radius:** the bandit can only reorder the candidate
+  list; it never injects, drops, or invents tracks. Worst case is "a
+  slightly worse ordering of a still-relevant list".
+
+### The calibration map (L1 — `backend/api/calibration.py`)
+
+* **Storage:** nested counter on `UserProfile.mood_calibration`,
+  `{predicted: {actual: count}}`.
+* **Apply rule:** if the dominant `(predicted → actual)` correction has
+  count ≥ 3, the text-emotion view rewrites the predicted label for
+  that user and adds a `calibrated_from` field to the response. Ties
+  resolve to "no change".
+* **Anonymous callers untouched:** `_profile_for_request` short-circuits
+  on `AnonymousUser`; there is nowhere to land per-user signal.
+
+### Why this split (Modal stays stateless)
+
+* Modal is **identity-free** and **stateless**. It accepts the shared
+  service-token from Django for anonymous proxy traffic; it never reads
+  user JWTs on the text / music endpoints and never holds RL state.
+* All per-user state (Beta posterior, mood calibration map, feedback
+  event log) lives in Mongo and is owned by the Django app. The bandit
+  re-ranks **after** Modal returns; the calibration map rewrites the
+  predicted emotion **after** Modal's BERT call returns.
+
+See `backend/api/bandit.py`, `backend/api/track_features.py`,
+`backend/api/calibration.py`, and the
+[ARCHITECTURE.md "Reinforcement-Learning / Personalisation Layer"](../ARCHITECTURE.md)
+section for the end-to-end flow.
+
+---
+
+## Recommendation base scorer (EWMA + first-order Markov)
+
+The Modal recommender produces the **base ordering** that the bandit
+re-ranks. Three classical, sub-millisecond techniques compose into
+the blend; everything is integer/float counting that adds well under
+a millisecond per request.
 
 ```mermaid
 flowchart LR
@@ -333,37 +431,7 @@ flowchart LR
 | **Adaptive `blend_ratio`** | `round(current_affinity / other_affinity)`, clamped `[1, 5]`. | A strongly recurring mood interleaves often; a faint one only occasionally. |
 | **`interleave`** | One recurring-mood track per N current ones; deduplicated by external URL. | The current mood stays the backbone; the recurring mood is a flavour. |
 
-Everything is O(history + tracks) integer/float counting. Adds well
-under a millisecond per request — fast enough to run inline on every
-recommendation call. 14 unit tests in `tests/test_personalization.py`
-cover the maths.
-
-### Per-user RL re-rank (applied downstream in Django)
-
-The Modal recommender produces the **base** ordering described above.
-For authenticated callers, the Django backend applies a second pass
-on top — a Thompson-Sampling contextual bandit driven by the user's
-👍 / 👎 / open-in-Deezer signals. The split is deliberate:
-
-* Modal stays **identity-free** and **stateless**. It accepts the
-  shared service token from Django for anonymous proxy traffic; it
-  never reads user JWTs on the text / music endpoints and never holds
-  RL state.
-* All per-user state (Beta posterior, mood calibration map, feedback
-  event log) lives in Mongo and is owned by the Django app. The
-  bandit re-ranks **after** Modal returns; the calibration map
-  rewrites the predicted emotion **after** Modal's BERT call returns.
-
-See `backend/api/bandit.py`, `backend/api/track_features.py`, and
-`backend/api/calibration.py` for the implementation, and the
-ARCHITECTURE.md "Reinforcement-Learning / Personalisation Layer"
-section for the end-to-end flow.
-
-The bandit is **identity-when-cold** by construction: with fewer than
-20 logged signals (or zero, the anonymous case) it returns the input
-order unchanged. Anonymous Modal traffic is therefore unaffected, and
-new users see exactly the base EWMA + Markov ordering until they
-cross the threshold.
+18 unit tests in `tests/test_personalization.py` cover the maths.
 
 ---
 
@@ -746,7 +814,7 @@ modal_inference/
 ├── conftest.py             autouse fixture clears caches + limiters + metrics per test
 ├── requirements.txt        CPU dependencies (production)
 ├── requirements-gpu.txt    NVIDIA path (future)
-└── requirements-dev.txt    lightweight test dependencies (no ML)
+└── requirements-dev.txt    fast test dependencies (no ML stack)
 ```
 
 ---
@@ -873,7 +941,7 @@ production deploy is via `modal deploy`.
 ## Testing
 
 ```bash
-# Lightweight suite -- 171 tests, no ML stack required, runs in <10s.
+# Fast suite -- 171 tests, no ML stack required, runs in <10s.
 pip install -r requirements-dev.txt
 pytest tests/ -q -k "not functional"
 
@@ -901,7 +969,7 @@ pytest tests/ -q
 limiter (and restores configured limits) between tests, so module-level
 state can't leak across cases.
 
-CI runs only the lightweight suite — no GPU, no model weights, no
+CI runs only the fast suite — no GPU, no model weights, no
 network. The full suite is for local pre-deploy verification.
 
 ---
