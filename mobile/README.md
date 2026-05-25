@@ -25,9 +25,6 @@
   <img src="https://img.shields.io/badge/Dark_Mode_Only-0b0b11?style=for-the-badge" />
 </p>
 
-> 📘 For the full deep dive — every screen, every flow, every diagram —
-> see **[`../MOBILE_APPS.md`](../MOBILE_APPS.md)** (at repo root).
-
 ---
 
 ## Table of contents
