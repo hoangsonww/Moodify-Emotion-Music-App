@@ -409,7 +409,7 @@ Here is the list of technologies used in the Moodify project:
 - **Modal**: For hosting the ML inference service (memory snapshots, scale-to-zero).
 - **Vercel**: For hosting the frontend application.
 - **Netlify**: For hosting the frontend application (backup).
-- **GitHub Actions**: For automating workflows and deployments.
+- **GitHub Actions**: For automating CI workflows and deployments.
 - **Docker Compose**: For managing multi-container application.
 
 <h2 id="-user-interface">🖼️ User Interface</h2>
