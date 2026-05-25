@@ -14,7 +14,13 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-_TIMEOUT_SECONDS = 15
+# Modal cold starts on the inference container routinely run 20-30 s
+# (loading BERT + FER + speech model into memory). 15 s was too tight
+# and meant the first request after a scale-to-zero window 502'd while
+# Modal eventually completed -- the upstream logs showed 200 OK but
+# the caller saw a gateway error and fell back. 60 s comfortably
+# covers a fresh container; warm calls return in well under a second.
+_TIMEOUT_SECONDS = 60
 _MAX_RETRIES = 1
 _RETRY_BACKOFF_SECONDS = 1.0
 
@@ -53,10 +59,19 @@ def text_emotion(text: str) -> dict:
 
 
 def music_recommendation(
-    emotion: str, market: str | None = None, history: list[str] | None = None
+    emotion: str,
+    market: str | None = None,
+    history: list[str] | None = None,
+    genre: str | None = None,
 ) -> dict:
     """Proxy a music-recommendation request."""
-    return _post(
-        "/music_recommendation",
-        {"emotion": emotion, "market": market, "history": history or []},
-    )
+    payload: dict = {
+        "emotion": emotion,
+        "market": market,
+        "history": history or [],
+    }
+    # Only forward genre when set; Modal treats the field as optional but
+    # avoids an extra null hop when we don't have a value.
+    if genre:
+        payload["genre"] = genre
+    return _post("/music_recommendation", payload)

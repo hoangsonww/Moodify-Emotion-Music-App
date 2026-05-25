@@ -52,6 +52,7 @@ import TrackPlayer from "../TrackPlayer";
 import { logTrackOpen } from "../../services/listening";
 import { API_URL, MODAL_API_URL } from "../../config";
 import { logout as clearAuthTokens, setTokens } from "../../services/auth";
+import { uniqRecent } from "../../utils/dedupe";
 
 const USERNAME_RE = /^[A-Za-z0-9_.-]{3,30}$/;
 
@@ -364,7 +365,12 @@ const ProfilePage = () => {
   };
 
   // ------------ derived ------------
+  // ``moods`` keeps the raw history so the stat card can show the
+  // total number of detections; ``recentMoods`` is the deduped,
+  // newest-first list rendered as chips (repeats collapse into a
+  // single chip).
   const moods = userData?.mood_history || [];
+  const recentMoods = useMemo(() => uniqRecent(moods), [moods]);
   const recs = useMemo(
     () => userData?.recommendations || [],
     [userData?.recommendations],
@@ -425,6 +431,12 @@ const ProfilePage = () => {
     setRecsVisible(RECS_PAGE);
   }, [recsQuery, recsSort]);
   const listening = userData?.listening_history || [];
+  // Deduped, newest-first view of the listening log. Stat card still
+  // reads ``listening.length`` for the raw total.
+  const recentListening = useMemo(
+    () => uniqRecent(listening, (entry) => String(entry || "")),
+    [listening],
+  );
 
   // ------------ render ------------
   return (
@@ -544,7 +556,7 @@ const ProfilePage = () => {
               />
             ) : (
               <Box sx={styles.chipsWrap}>
-                {moods.map((mood, i) => (
+                {recentMoods.map((mood, i) => (
                   <Chip
                     key={`${mood}-${i}`}
                     label={
@@ -580,7 +592,7 @@ const ProfilePage = () => {
               </Box>
               <SectionTitle
                 text="Your saved recommendations"
-                hint="Tracks you got after analysing a mood."
+                hint="Tracks you got after analyzing a mood."
               />
             </Stack>
             {recs.length > 0 && (
@@ -871,17 +883,14 @@ const ProfilePage = () => {
               />
             ) : (
               <Stack spacing={1.5}>
-                {listening
-                  .slice()
-                  .reverse()
-                  .map((entry, i) => (
-                    <ListenRow
-                      key={`${entry}-${i}`}
-                      entry={entry}
-                      isDark={isDarkMode}
-                      profileId={userData?.id}
-                    />
-                  ))}
+                {recentListening.map((entry, i) => (
+                  <ListenRow
+                    key={`${entry}-${i}`}
+                    entry={entry}
+                    isDark={isDarkMode}
+                    profileId={userData?.id}
+                  />
+                ))}
               </Stack>
             )}
           </Paper>
@@ -1139,13 +1148,12 @@ function Stat({ icon, label, value, tint }) {
   return (
     <Box
       sx={{
-        flex: 1,
         minWidth: 0,
         background: "rgba(255,255,255,0.08)",
         backdropFilter: "blur(6px)",
         borderRadius: "14px",
         border: "1px solid rgba(255,255,255,0.18)",
-        p: 1.75,
+        p: { xs: 1.5, sm: 1.75 },
         display: "flex",
         alignItems: "center",
         gap: 1.5,
@@ -1167,14 +1175,31 @@ function Stat({ icon, label, value, tint }) {
       >
         {icon}
       </Box>
-      <Box sx={{ minWidth: 0 }}>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography
-          sx={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: "#fff" }}
+          sx={{
+            fontSize: 22,
+            fontWeight: 800,
+            lineHeight: 1,
+            color: "#fff",
+            // 3-digit values like 250 + a small card -- never let the
+            // number wrap; truncate instead.
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
         >
           {value}
         </Typography>
         <Typography
-          sx={{ fontSize: 12, color: "rgba(255,255,255,0.85)", mt: 0.25 }}
+          sx={{
+            fontSize: 12,
+            color: "rgba(255,255,255,0.85)",
+            mt: 0.25,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
         >
           {label}
         </Typography>
@@ -1762,9 +1787,11 @@ const getStyles = (isDark) => ({
   },
   statsRow: {
     mt: 3,
-    display: "flex",
+    display: "grid",
+    // 1-up on phones (each card gets full width so the label never
+    // wraps awkwardly under a 3-digit value), 3-up from tablet up.
+    gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
     gap: 1.5,
-    flexWrap: "wrap",
     position: "relative",
   },
 

@@ -1,22 +1,28 @@
 # **Emotion-Based Music Recommendation - AI/ML Directory**
 
-The `ai_ml` directory contains all the necessary components for building, training, and testing the emotion detection models and integrating them with the emotion-based music recommendation system. This directory handles three main types of emotion detection: text-based, speech-based, and facial-based, with each component designed to work seamlessly with the backend recommendation tool.
+The `ai_ml` directory contains all the necessary components for building, training, and testing the emotion detection models and integrating them with the emotion-based music recommendation system. This directory handles three main types of emotion detection (text, speech, facial) **and** the reinforcement-learning personalization layer that the production stack uses to re-rank recommendations per user.
 
 ## Table of Contents
 
+- [AI/ML System Architecture](#aiml-system-architecture)
 - [Directory Structure](#directory-structure)
 - [Getting Started](#getting-started)
-- [Install Dependencies](#1-install-dependencies)
-- [Install PyTorch (GPU Support)](#2-install-pytorch-gpu-support)
-- [Setting Up Configuration](#3-setting-up-configuration)
-- [Training the Text Emotion Model](#4-training-the-text-emotion-model)
-- [Testing the Emotion Detection Models](#5-testing-the-emotion-detection-models)
-- [Running the Flask APIs](#6-running-the-flask-apis)
+  - [Install Dependencies](#1-install-dependencies)
+  - [Install PyTorch (GPU Support)](#2-install-pytorch-gpu-support)
+  - [Setting Up Configuration](#3-setting-up-configuration)
+  - [Training the Text Emotion Model](#4-training-the-text-emotion-model)
+  - [Testing the Emotion Detection Models](#5-testing-the-emotion-detection-models)
+  - [Running the Flask APIs](#6-running-the-flask-apis)
 - [Testing the APIs on Windows and macOS](#testing-the-apis-on-windows-and-macos)
   - [Testing `/text_emotion` Endpoint](#1-testing-text_emotion-endpoint)
   - [Testing `/speech_emotion` Endpoint](#2-testing-speech_emotion-endpoint)
   - [Testing `/facial_emotion` Endpoint](#3-testing-facial_emotion-endpoint)
   - [Testing `/music_recommendation` Endpoint](#4-testing-music_recommendation-endpoint)
+- [Reinforcement-learning personalization](#reinforcement-learning-personalization)
+  - [Modules](#modules)
+  - [Example: offline backtest](#example-offline-backtest)
+  - [Reward weights + cold-start guarantee](#reward-weights--cold-start-guarantee)
+- [Running the test suite](#running-the-test-suite)
 - [Notes and Tips](#notes-and-tips)
 
 ## **AI/ML System Architecture**
@@ -110,7 +116,13 @@ ai_ml/
     ├── utils.py                    # Utility functions, including fetching Spotify access tokens
     │
     ├── recommendation/
-    │   └── music_recommendation.py # Contains logic to fetch music recommendations based on detected emotions
+    │   ├── music_recommendation.py            # Legacy Spotify-backed recommender (kept for reference)
+    │   └── personalized_recommendation.py     # End-to-end personalized pipeline: EWMA + Markov + bandit re-rank
+    │
+    ├── rl/
+    │   ├── track_features.py        # Fixed 22-dim feature extractor (one-hot emotion/decade/duration/popularity)
+    │   ├── bandit.py                # Thompson Sampling re-ranker over a Beta-Bernoulli posterior
+    │   └── calibration.py           # Per-user mood-detection calibration map
     │
     ├── models/
     │   ├── text_emotion.py         # Code for predicting emotions from text inputs
@@ -530,10 +542,117 @@ curl -X POST "http://127.0.0.1:5000/music_recommendation" \
   - The `-F` flag is used for uploading files, while `-d` is used to send data in JSON format.
 
 
+## Reinforcement-learning personalization
+
+`src/rl/` and `src/recommendation/personalized_recommendation.py` mirror the production RL stack from `backend/api/`. Everything is pure Python — no Django, no Mongo, no Flask — so the modules can be imported from a Jupyter notebook, fed against an offline export of the `track_feedback` / `mood_feedback` Mongo time-series collections, and used for backtests, ablations, or A/B simulations.
+
+```mermaid
+flowchart LR
+    Hist["mood_history"] --> Base[score_mood_history<br/>EWMA + Markov]
+    Base --> Rank[rank_by_quality<br/>curated + popularity]
+    Rank --> Inter[interleave<br/>1 recurring per N current]
+    Inter --> BND[bandit.rerank<br/>Thompson Sampling]
+    Posterior["UserProfile.taste_profile<br/>α(22), β(22), events"] -.->|read| BND
+    Cal["mood_calibration<br/>{predicted: {actual: count}}"] -.->|rewrite predicted| Base
+    BND --> Out[Personalized list]
+
+    style Base fill:#8b5cf6,stroke:#fff,color:#fff
+    style BND fill:#d946ef,stroke:#fff,color:#fff
+    style Cal fill:#7c3aed,stroke:#fff,color:#fff
+```
+
+### Modules
+
+| Module | What it exports | Mirrors |
+|---|---|---|
+| `src/rl/track_features.py` | `featurize(track, context_emotion, sorted_pops)`, `featurize_batch(...)`, `FEATURE_DIM = 22` (emotion×6, decade×7, duration×4, popularity-quintile×5) | `backend/api/track_features.py` |
+| `src/rl/bandit.py` | `update_posterior(taste_profile, features, signal)`, `rerank(tracks, taste_profile, context_emotion)`, `replay(events)`, `COLD_START_MIN_EVENTS = 20`, `WEIGHTS = {like: 1.0, unlike: 1.0, open_deezer: 0.5}` | `backend/api/bandit.py` |
+| `src/rl/calibration.py` | `apply_calibration(predicted, map)`, `bump_calibration(map, predicted, actual)`, `build_from_log(events)`, `CALIBRATION_THRESHOLD = 3` | `backend/api/calibration.py` |
+| `src/recommendation/personalized_recommendation.py` | `personalized_pipeline(...)`, `score_mood_history`, `rank_by_quality`, `interleave` — composes everything end-to-end | new |
+
+### Example: offline backtest
+
+```python
+from ai_ml.src.rl import bandit, calibration
+from ai_ml.src.recommendation.personalized_recommendation import personalized_pipeline
+
+# 1. Roll a mood_feedback CSV export into a calibration map.
+mood_log = [
+    {"predicted": "joy", "actual": "love"},
+    {"predicted": "joy", "actual": "love"},
+    {"predicted": "joy", "actual": "love"},
+]
+cal_map = calibration.build_from_log(mood_log)
+
+# 2. Roll a track_feedback CSV export into a warm taste_profile.
+track_events = [
+    {"track": {"release_date": "2020-01-01", "duration_ms": 200_000, "popularity": 70},
+     "signal": "like", "context_emotion": "joy"}
+    for _ in range(25)
+]
+profile = bandit.replay(track_events)
+
+# 3. Run the full personalized pipeline against a candidate list.
+result = personalized_pipeline(
+    detected_emotion="joy",
+    current_tracks=[
+        {"name": "old", "release_date": "1985-01-01",
+         "duration_ms": 200_000, "popularity": 50},
+        {"name": "new", "release_date": "2020-01-01",
+         "duration_ms": 200_000, "popularity": 50},
+    ],
+    mood_history=["sadness", "sadness", "joy"],
+    taste_profile=profile,
+    mood_calibration=cal_map,
+)
+# result == {
+#   "emotion": "love",           # calibrated from "joy"
+#   "calibrated_from": "joy",
+#   "recurring_mood": "sadness",
+#   "blend_ratio": 1,
+#   "recommendations": [<new>, <old>],   # bandit pushed 2020+ track up
+# }
+```
+
+### Reward weights + cold-start guarantee
+
+| Signal | Posterior update |
+|---|---|
+| `like` | `+1.0` on `α` for every active feature |
+| `unlike` | `+1.0` on `β` for every active feature |
+| `open_deezer` | `+0.5` on `α` for every active feature |
+
+The bandit is **identity-when-cold**: with `events < 20` (or zero) it returns the input list unchanged. The mood-calibration map only acts when the dominant correction has been logged at least three times. Both are read-only at inference — no I/O, no thread state — and both are forward-compatible (older stored vectors are padded with the Beta(1, 1) prior on read).
+
+---
+
+## Running the test suite
+
+The RL stack and the personalized pipeline are covered by a fast, fully offline pytest suite — no GPU, no model weights, no network.
+
+```bash
+# From repo root
+python3 -m pytest ai_ml/tests/ -q
+```
+
+Coverage:
+
+| File | Tests | Covers |
+|---|---|---|
+| `test_track_features.py` | 22 | Vector shape, every bucket on every axis, list-relative popularity, garbage inputs |
+| `test_bandit.py` | 17 | `update_posterior` (like / unlike / open_deezer / unknown / dim-mismatch / accumulation / forward-compat padding / no mutation), `rerank` (cold / warm / set-preservation), `replay` |
+| `test_calibration.py` | 14 | `apply_calibration` (empty / no-bucket / below-threshold / at-threshold / dominant / tie / garbage), `bump_calibration` (fresh / accumulate / self-confirm / preserves), `build_from_log`, end-to-end |
+| `test_personalized_recommendation.py` | 36 | EWMA + Markov scoring, recurring-mood pick, blend ratio, `rank_by_quality`, `interleave` (dedup), full `personalized_pipeline` (cold passthrough, calibration rewrite, recurring mood, warm rerank, track-set preservation, calibration-feeds-bandit-context) |
+
+**89 tests total**, runs in ~0.1 s.
+
+---
+
 ### **Notes and Tips**
 
 - **Pre-trained Models:** The `download_models.py` script in `models/` can be used to download pre-trained models for speech and facial emotion detection. These models should be saved in their respective directories (`models/speech_emotion_model` and `models/facial_emotion_model`).
 - **Data Handling:** Place your datasets (training and test data) in the `data/` folder before training or testing.
+- **Offline RL backtests:** the `src/rl/` modules are pure Python and have no Django / Mongo dependencies — they can be imported from any notebook against a CSV export of `track_feedback` / `mood_feedback` for ablations or A/B simulations. See [§ Reinforcement-learning personalization](#reinforcement-learning-personalization).
 
 ## Contact
 

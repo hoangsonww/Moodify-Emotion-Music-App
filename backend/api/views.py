@@ -22,10 +22,37 @@ from backend.api_docs import (
     _obj,
 )
 
+from . import bandit
+from .calibration import apply_calibration
+from .models import UserProfile
 from .services.inference_client import InferenceServiceError, music_recommendation as modal_music
 from .services.inference_client import text_emotion as modal_text
 
 logger = logging.getLogger(__name__)
+
+
+def _profile_for_request(request):
+    """Return the caller's UserProfile if they are signed in, else None.
+
+    Anonymous and unrecognised users never trigger a DB hit beyond the
+    cheap username lookup -- and never block the request path on
+    Mongo: every failure falls back to None and the rule-based
+    pipeline runs unchanged.
+    """
+    user = getattr(request, "user", None)
+    if user is None or not getattr(user, "is_authenticated", False):
+        return None
+    username = getattr(user, "username", None)
+    if not username:
+        return None
+    try:
+        return UserProfile.objects(username=username).first()
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "profile lookup failed for user=%s -- skipping personalisation",
+            username,
+        )
+        return None
 
 _BAD_GATEWAY = {"error": "The inference service is currently unavailable."}
 
@@ -149,6 +176,18 @@ def text_emotion(request):
         logger.exception("text_emotion proxy call failed")
         return Response(_BAD_GATEWAY, status=status.HTTP_502_BAD_GATEWAY)
 
+    # L1 mood calibration: rewrite the predicted emotion for authenticated
+    # callers when they have a dominant correction on record. Anonymous
+    # callers see the model's raw output -- no calibration, no DB hit.
+    profile = _profile_for_request(request)
+    if profile is not None and isinstance(result, dict) and result.get("emotion"):
+        original = result["emotion"]
+        calibrated = apply_calibration(original, profile.mood_calibration or {})
+        if calibrated != original:
+            result = dict(result)
+            result["emotion"] = calibrated
+            result["calibrated_from"] = original
+
     return Response(result, status=status.HTTP_200_OK)
 
 
@@ -184,6 +223,7 @@ def music_recommendation(request):
     emotion = (request.data.get("emotion") or "") if request.data else ""
     market = request.data.get("market") if request.data else None
     history = (request.data.get("history") or []) if request.data else []
+    genre = (request.data.get("genre") or None) if request.data else None
     if not emotion:
         return Response({"error": "No emotion provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -193,10 +233,38 @@ def music_recommendation(request):
         history = []
     history = [str(mood) for mood in history[-50:]]
 
+    if genre is not None and not isinstance(genre, str):
+        genre = None
+
     try:
-        result = modal_music(emotion, market, history)
+        result = modal_music(emotion, market, history, genre)
     except InferenceServiceError:
         logger.exception("music_recommendation proxy call failed")
         return Response(_BAD_GATEWAY, status=status.HTTP_502_BAD_GATEWAY)
+
+    # Bandit re-rank: when the caller is signed in AND has cleared the
+    # cold-start floor, reorder the candidate list by Thompson-sampled
+    # posterior score. Cold users (and anonymous traffic) get the
+    # EWMA+Markov order back unchanged -- the bandit is identity-when-cold
+    # by construction.
+    profile = _profile_for_request(request)
+    if profile is not None and isinstance(result, dict):
+        recs = result.get("recommendations") or []
+        if recs:
+            try:
+                reranked = bandit.rerank(
+                    list(recs),
+                    taste_profile=profile.taste_profile or {},
+                    context_emotion=result.get("emotion") or emotion,
+                )
+                if reranked is not recs:
+                    result = dict(result)
+                    result["recommendations"] = reranked
+            except Exception:  # noqa: BLE001
+                logger.warning(
+                    "bandit rerank failed for user=%s -- returning base order",
+                    profile.username,
+                    exc_info=False,
+                )
 
     return Response(result, status=status.HTTP_200_OK)

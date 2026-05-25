@@ -107,7 +107,17 @@ class _FakeCollection:
 
 
 @pytest.fixture
-def fake_store(monkeypatch):
+def fake_store(monkeypatch, settings):
+    """Stub Mongo + force METRICS_ENABLED=True for the test.
+
+    The local dev `.env` sometimes sets `METRICS_ENABLED=False` so a
+    dev's request path doesn't touch the metrics store; that override
+    leaks into the test process via `decouple.config()` and the
+    middleware would then short-circuit, leaving the fake collection
+    empty. Pin the setting to True for the lifetime of this fixture
+    so the middleware always writes when the test expects it to.
+    """
+    settings.METRICS_ENABLED = True
     coll = _FakeCollection()
     monkeypatch.setattr(store_module, "_get_collection", lambda: coll)
     return coll

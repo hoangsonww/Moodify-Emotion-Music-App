@@ -78,7 +78,7 @@ class TestMusicRecommendation:
     def test_history_is_capped_and_stringified(self, monkeypatch):
         captured = {}
 
-        def capture(emotion, market=None, history=None):
+        def capture(emotion, market=None, history=None, genre=None):
             captured["history"] = history
             return {"emotion": emotion, "recommendations": []}
 
@@ -97,7 +97,7 @@ class TestMusicRecommendation:
     def test_malformed_history_is_ignored(self, monkeypatch):
         captured = {}
 
-        def capture(emotion, market=None, history=None):
+        def capture(emotion, market=None, history=None, genre=None):
             captured["history"] = history
             return {"emotion": emotion, "recommendations": []}
 
@@ -113,7 +113,7 @@ class TestMusicRecommendation:
         assert captured["history"] == []
 
     def test_502_when_inference_unavailable(self, monkeypatch):
-        def boom(_emotion, _market=None, _history=None):
+        def boom(_emotion, _market=None, _history=None, _genre=None):
             raise InferenceServiceError("modal down")
 
         monkeypatch.setattr(views, "modal_music", boom)

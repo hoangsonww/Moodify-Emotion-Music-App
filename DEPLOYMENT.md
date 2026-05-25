@@ -2,19 +2,40 @@
 
 Comprehensive deployment procedures, runbooks, and operational guidelines for Moodify production environments.
 
-> ## Two production paths
->
-> Moodify supports two production deployment topologies. Pick the one
-> that matches your environment — they don't overlap.
->
-> | Path                          | When to use                                                                                            | Where it lives in this repo                                          |
-> | ----------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-> | **🟢 Vercel + Modal (canonical)** | Default. Zero-ops, scale-to-zero, what the public Moodify deployment uses.                          | `make deploy-prod` (orchestrates `deploy-modal` + `deploy-vercel-*`)   |
-> | **🔵 Self-host on Kubernetes**    | Compliance, data residency, air-gapped, or org-mandated cloud (AWS / GCP / OCI / Azure).            | `terraform/` + `helm/` + `kubernetes/` + `argocd/`                    |
->
-> Sections **Quick Start** below cover the Vercel + Modal path. Sections
-> **Blue-Green Deployment**, **Canary Deployment**, **CI/CD Pipeline**,
-> **Operational Runbooks** target the Kubernetes self-host path.
+## Table of Contents
+
+- [Two Production Paths](#two-production-paths)
+- [Vercel + Modal Quick Start (canonical)](#vercel--modal-quick-start-canonical)
+- [Vercel + Modal Smoke Verify](#vercel--modal-smoke-verify)
+- [Self-host Quick Start (Kubernetes)](#self-host-quick-start-kubernetes)
+- [Deployment Overview](#deployment-overview)
+  - [Deployment Architecture](#deployment-architecture)
+  - [Deployment Strategies](#deployment-strategies)
+- [Quick Start](#quick-start)
+- [Pre-Deployment Checklist](#pre-deployment-checklist)
+- [Deployment Procedures](#deployment-procedures)
+  - [Blue-Green Deployment](#blue-green-deployment)
+  - [Canary Deployment](#canary-deployment)
+  - [Automated CI/CD Pipeline](#automated-cicd-pipeline)
+- [Rollback Procedures](#rollback-procedures)
+- [Incident Response](#incident-response)
+- [Operational Runbooks](#operational-runbooks)
+- [Monitoring and Alerting](#monitoring-and-alerting)
+- [Infrastructure Components](#infrastructure-components)
+
+---
+
+## Two production paths
+
+Moodify supports two production deployment topologies. Pick the one
+that matches your environment — they don't overlap.
+
+| Path                              | When to use                                                                              | Where it lives in this repo                                          |
+|-----------------------------------|------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| **🟢 Vercel + Modal (canonical)** | Default. Zero-ops, scale-to-zero, what the public Moodify deployment uses.               | `make deploy-prod` (orchestrates `deploy-modal` + `deploy-vercel-*`) |
+| **🔵 Self-host on Kubernetes**    | Compliance, data residency, air-gapped, or org-mandated cloud (AWS / GCP / OCI / Azure). | `terraform/` + `helm/` + `kubernetes/` + `argocd/`                   |
+
+The two **Quick Start** sections immediately below cover each path. The deeper sections — **Blue-Green Deployment**, **Canary Deployment**, **CI/CD Pipeline**, **Operational Runbooks** — target the Kubernetes self-host path.
 
 ## Vercel + Modal quick start (canonical)
 
@@ -117,23 +138,6 @@ GitOps-driven path rolls back by reverting the commit and letting Argo CD
 reconcile.
 
 ---
-
-## Table of Contents
-
-- [Deployment Overview](#deployment-overview)
-  - [Deployment Architecture](#deployment-architecture)
-  - [Deployment Strategies](#deployment-strategies)
-- [Quick Start](#quick-start)
-- [Pre-Deployment Checklist](#pre-deployment-checklist)
-- [Deployment Procedures](#deployment-procedures)
-  - [Blue-Green Deployment](#blue-green-deployment)
-  - [Canary Deployment](#canary-deployment)
-  - [Automated CI/CD Pipeline](#automated-cicd-pipeline)
-- [Rollback Procedures](#rollback-procedures)
-- [Incident Response](#incident-response)
-- [Operational Runbooks](#operational-runbooks)
-- [Monitoring and Alerting](#monitoring-and-alerting)
-- [Infrastructure Components](#infrastructure-components)
 
 ## Deployment Overview
 

@@ -14,6 +14,7 @@ import AppButton from '../components/AppButton';
 import TrackCard from '../components/TrackCard';
 import OptionSheet from '../components/OptionSheet';
 import MoodHero from '../components/MoodHero';
+import MoodFeedbackWidget from '../components/MoodFeedbackWidget';
 import EmptyState from '../components/EmptyState';
 import { SkeletonRow } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
@@ -73,13 +74,18 @@ function deviceMarket() {
 
 export default function ResultsScreen({ route, navigation }) {
   const {
-    emotion = 'neutral',
+    emotion: initialEmotion = 'neutral',
     recommendations = [],
     degraded = false,
     history = [],
     profileId = null,
+    inputType = null,
   } = route.params || {};
 
+  // Emotion is stateful so the mood-correction widget can rewrite it
+  // (and re-trigger a refetch against the corrected mood) without
+  // popping back to HomeScreen.
+  const [emotion, setEmotion] = useState(initialEmotion);
   const palette = moodPaletteFor(emotion);
   const toast = useToast();
 
@@ -94,10 +100,10 @@ export default function ResultsScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [sheet, setSheet] = useState(null);
 
-  const loadFor = async (mkt) => {
+  const loadFor = async (mkt, mood = emotion) => {
     setLoading(true);
     try {
-      const data = await getRecommendations(emotion, mkt, history);
+      const data = await getRecommendations(mood, mkt, history);
       setTracks(data.recommendations || []);
       setVisible(PAGE);
     } catch (e) {
@@ -124,7 +130,12 @@ export default function ResultsScreen({ route, navigation }) {
         data={shown}
         keyExtractor={(item, index) => `${item.external_url || item.name || 'track'}-${index}`}
         renderItem={({ item, index }) => (
-          <TrackCard track={item} onPlay={onPlay} rank={sortKey === 'popular' ? index + 1 : undefined} />
+          <TrackCard
+            track={item}
+            onPlay={onPlay}
+            rank={sortKey === 'popular' ? index + 1 : undefined}
+            contextEmotion={emotion}
+          />
         )}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
@@ -133,6 +144,17 @@ export default function ResultsScreen({ route, navigation }) {
         ListHeaderComponent={
           <View>
             <MoodHero emotion={emotion} degraded={degraded} style={styles.hero} />
+
+            {inputType ? (
+              <MoodFeedbackWidget
+                predicted={String(emotion || '').toLowerCase()}
+                inputType={inputType}
+                onCorrected={(actual) => {
+                  setEmotion(actual);
+                  loadFor(market, actual);
+                }}
+              />
+            ) : null}
 
             <View style={styles.controls}>
               <ControlPill icon="swap-vertical" label={sortLabel} onPress={() => { tapLight(); setSheet('sort'); }} />

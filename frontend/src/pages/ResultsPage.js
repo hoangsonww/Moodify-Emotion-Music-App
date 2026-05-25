@@ -14,6 +14,7 @@ import {
   Skeleton,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import {
@@ -46,6 +47,10 @@ import {
   Sort,
   Stars,
   TextFields,
+  ThumbDown,
+  ThumbDownOutlined,
+  ThumbUp,
+  ThumbUpOutlined,
   Waves,
   WbSunny,
   Whatshot,
@@ -54,8 +59,11 @@ import axios from "axios";
 
 import { DarkModeContext } from "../context/DarkModeContext";
 import TrackPlayer from "../components/TrackPlayer";
-import { API_URL, MODAL_API_URL } from "../config";
+import MoodFeedbackWidget from "../components/MoodFeedbackWidget";
+import { API_URL } from "../config";
 import { logTrackOpen } from "../services/listening";
+import { sendTrackFeedback } from "../services/feedback";
+import { getRecommendations } from "../services/recommend";
 
 // User-facing genre catalog. The token sent to the recommender goes
 // straight into a Deezer search keyword, so each entry maps a friendly
@@ -205,8 +213,15 @@ const ResultsPage = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useContext(DarkModeContext);
 
-  const { emotion: incomingEmotion, recommendations: incomingTracks } =
-    location.state || { emotion: "neutral", recommendations: [] };
+  const {
+    emotion: incomingEmotion,
+    recommendations: incomingTracks,
+    inputType: incomingInputType,
+  } = location.state || {
+    emotion: "neutral",
+    recommendations: [],
+    inputType: null,
+  };
 
   const [selectedMood, setSelectedMood] = useState(
     incomingEmotion || "neutral",
@@ -285,8 +300,8 @@ const ResultsPage = () => {
         if (profile.data?.id) setProfileId(profile.data.id);
         if (history.length === 0) return;
         setLoading(true);
-        const res = await axios.post(`${MODAL_API_URL}/music_recommendation`, {
-          emotion: String(selectedMood || "neutral").toLowerCase(),
+        const res = await getRecommendations({
+          emotion: selectedMood,
           history: history.slice(-50),
           genre: selectedGenre || undefined,
         });
@@ -309,10 +324,8 @@ const ResultsPage = () => {
   const refetch = async (overrides = {}) => {
     setLoading(true);
     try {
-      const res = await axios.post(`${MODAL_API_URL}/music_recommendation`, {
-        emotion: String(
-          overrides.mood ?? selectedMood ?? "neutral",
-        ).toLowerCase(),
+      const res = await getRecommendations({
+        emotion: overrides.mood ?? selectedMood ?? "neutral",
         market: (overrides.market ?? selectedMarket) || undefined,
         history: moodHistory.slice(-50),
         genre: (overrides.genre ?? selectedGenre) || undefined,
@@ -420,8 +433,25 @@ const ResultsPage = () => {
         </Box>
       </Box>
 
-      {/* Controls --------------------------------------------------------- */}
+      {/* Controls + feedback widget --------------------------------------
+          Both live inside the same maxWidth wrapper so they're guaranteed
+          to share the same horizontal extents (the widget used to live
+          inside the hero stack and stretched edge-to-edge, looking wider
+          than the controls card directly below it). */}
       <Box sx={styles.controlsWrap}>
+        {incomingInputType ? (
+          <Box sx={{ mb: 1.5 }}>
+            <MoodFeedbackWidget
+              predicted={String(selectedMood || "neutral").toLowerCase()}
+              inputType={incomingInputType}
+              isDarkMode={isDarkMode}
+              onCorrected={(actual) => {
+                setSelectedMood(actual);
+                refetch({ mood: actual });
+              }}
+            />
+          </Box>
+        ) : null}
         <Paper elevation={0} sx={styles.controlsPaper(isDarkMode)}>
           <TextField
             value={query}
@@ -664,6 +694,7 @@ const ResultsPage = () => {
                 isDark={isDarkMode}
                 palette={palette}
                 onTrackOpen={onTrackOpen}
+                contextEmotion={String(selectedMood || "neutral").toLowerCase()}
               />
             ))}
           </Stack>
@@ -760,10 +791,40 @@ function Pill({ icon, label, onClick, isDark, disabled }) {
   );
 }
 
-function TrackRow({ track, rank, isDark, palette, onTrackOpen }) {
+function TrackRow({
+  track,
+  rank,
+  isDark,
+  palette,
+  onTrackOpen,
+  contextEmotion,
+}) {
   const pop = track.popularity || 0;
+  // Per-row vote: null until the user clicks, then "like" or "unlike".
+  // Repeated clicks toggle off (sends nothing new, the local state just
+  // resets visually so the user can correct an accidental tap).
+  const [vote, setVote] = useState(null);
+
   const reportOpen = () => {
     if (onTrackOpen) onTrackOpen(track);
+    // Intercept: every "Open in Deezer" click is also a soft positive
+    // signal for the bandit. Fired before navigation so the request is
+    // in flight even though the new tab is opening on top of us.
+    sendTrackFeedback({
+      track,
+      signal: "open_deezer",
+      contextEmotion,
+    });
+  };
+
+  const onVote = (signal) => {
+    // Tap-the-active-vote-to-unset toggle.
+    if (vote === signal) {
+      setVote(null);
+      return;
+    }
+    setVote(signal);
+    sendTrackFeedback({ track, signal, contextEmotion });
   };
   return (
     <Card
@@ -893,36 +954,85 @@ function TrackRow({ track, rank, isDark, palette, onTrackOpen }) {
               {track.artist || "Unknown artist"}
             </Typography>
           </Box>
-          <Button
-            component="a"
-            href={track.external_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={reportOpen}
-            startIcon={<HeadphonesOutlined sx={{ fontSize: 16 }} />}
-            endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
-            sx={{
-              fontFamily: "Poppins",
-              fontWeight: 700,
-              textTransform: "none",
-              borderRadius: "999px",
-              px: 1.5,
-              py: 0.5,
-              fontSize: 12.5,
-              color: "#fff",
-              background: "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 100%)",
-              boxShadow: "0 6px 14px rgba(255,77,77,0.32)",
-              flexShrink: 0,
-              transition: "transform .15s ease, filter .15s ease",
-              "&:hover": {
-                background: "linear-gradient(135deg, #ff5e5e 0%, #ff8a6b 100%)",
-                filter: "brightness(1.05)",
-                transform: "translateY(-1px)",
-              },
-            }}
+          <Stack
+            direction="row"
+            spacing={0.5}
+            alignItems="center"
+            sx={{ flexShrink: 0 }}
           >
-            Open in Deezer
-          </Button>
+            <Tooltip title={vote === "like" ? "Undo like" : "Like this track"}>
+              <IconButton
+                size="small"
+                onClick={() => onVote("like")}
+                aria-label={vote === "like" ? "Remove like" : "Like track"}
+                sx={{
+                  color: vote === "like" ? "#22c55e" : isDark ? "#9aa" : "#777",
+                  "&:hover": { color: "#22c55e" },
+                }}
+              >
+                {vote === "like" ? (
+                  <ThumbUp sx={{ fontSize: 18 }} />
+                ) : (
+                  <ThumbUpOutlined sx={{ fontSize: 18 }} />
+                )}
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              title={
+                vote === "unlike" ? "Undo dislike" : "Don't recommend like this"
+              }
+            >
+              <IconButton
+                size="small"
+                onClick={() => onVote("unlike")}
+                aria-label={
+                  vote === "unlike" ? "Remove dislike" : "Dislike track"
+                }
+                sx={{
+                  color:
+                    vote === "unlike" ? "#ef4444" : isDark ? "#9aa" : "#777",
+                  "&:hover": { color: "#ef4444" },
+                }}
+              >
+                {vote === "unlike" ? (
+                  <ThumbDown sx={{ fontSize: 18 }} />
+                ) : (
+                  <ThumbDownOutlined sx={{ fontSize: 18 }} />
+                )}
+              </IconButton>
+            </Tooltip>
+            <Button
+              component="a"
+              href={track.external_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={reportOpen}
+              startIcon={<HeadphonesOutlined sx={{ fontSize: 16 }} />}
+              endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
+              sx={{
+                fontFamily: "Poppins",
+                fontWeight: 700,
+                textTransform: "none",
+                borderRadius: "999px",
+                px: 1.5,
+                py: 0.5,
+                fontSize: 12.5,
+                color: "#fff",
+                background: "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 100%)",
+                boxShadow: "0 6px 14px rgba(255,77,77,0.32)",
+                flexShrink: 0,
+                transition: "transform .15s ease, filter .15s ease",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #ff5e5e 0%, #ff8a6b 100%)",
+                  filter: "brightness(1.05)",
+                  transform: "translateY(-1px)",
+                },
+              }}
+            >
+              Open in Deezer
+            </Button>
+          </Stack>
         </Stack>
 
         {track.preview_url ? (

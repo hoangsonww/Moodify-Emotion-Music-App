@@ -326,6 +326,7 @@ For your information, the front-end's production (deployment) branch is `fronten
 
 The Moodify project aims to provide the following features:
 
+- 🎯 **Online reinforcement learning** — every user trains their own playlist ranker in real time. A "Was this right?" widget records per-user mood corrections, and 👍 / 👎 / open-in-Deezer signals feed a **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** that re-ranks every subsequent recommendation list. Mood-calibration map kicks in after 3 same-direction corrections; bandit kicks in after 20 logged signals. New and anonymous users see the rule-based pipeline unchanged.
 - User registration and login functionality.
 - Input analysis through text, speech, and facial expressions.
 - Real-time music recommendations based on emotion detection.
@@ -337,6 +338,16 @@ The Moodify project aims to provide the following features:
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
 - And so much more!
+
+### Personalisation pipeline (RL layer)
+
+| Layer | What it does | Where |
+|---|---|---|
+| L1 — per-user mood calibration | Persistent `{predicted: {actual: count}}` map on `UserProfile`. After ≥ 3 same-direction corrections, the text-emotion view rewrites the predicted label for that user only. Anonymous callers unaffected. | `backend/api/calibration.py`, applied in `api/views.py:text_emotion` |
+| L2 — disagreement / signal log | Two MongoDB time-series collections, `mood_feedback` and `track_feedback`, capture every `POST /api/feedback/` event for analysis and future LoRA fine-tunes. | `backend/api/feedback_store.py` |
+| L3 — Thompson-Sampling bandit re-rank | Beta-Bernoulli posterior over a fixed 22-dim feature vector (emotion×6, decade×7, duration×4, popularity-quintile×5). 👍 → +1 α, 👎 → +1 β, open-in-Deezer → +0.5 α. Re-orders the candidate list returned by the EWMA + Markov base scorer; can never inject, drop, or invent tracks. | `backend/api/bandit.py` + `backend/api/track_features.py`, applied in `api/views.py:music_recommendation` |
+
+All three layers are user-scoped and authentication-gated. The feedback endpoint is `POST /api/feedback/` and accepts both `{kind: "mood", ...}` and `{kind: "track", ...}` payloads (see `backend/openapi.yaml`).
 
 <h2 id="-technologies">🛠️ Technologies</h2>
 
@@ -475,6 +486,12 @@ Here is the list of technologies used in the Moodify project:
 
 <p align="center">
   <img src="images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Explore Page 
+
+<p align="center">
+  <img src="images/explore.png" alt="Explore Page" width="100%" style="border-radius: 10px">
 </p>
 
 ### Login Page
@@ -858,6 +875,10 @@ familiar admin login page lives at `/admin/`.
   <img src="images/admin-panel.png" alt="Admin Login" width="100%" style="border-radius: 10px">
 </p>
 
+<p align="center">
+  <img src="images/admin-django.png" alt="Admin Login" width="100%" style="border-radius: 10px">
+</p>
+
 <h2 id="-backend-apis-documentation">🚀 Backend APIs Documentation</h2>
 
 Our backend APIs are all well-documented using Swagger UI and Redoc. You can access the API documentation at the following URLs:
@@ -1027,6 +1048,10 @@ refresh, mood-tinted theming, and graceful offline-degraded inference.
 | Forgot — Verify | Forgot — Reset |
 |:---:|:---:|
 | <img src="mobile/docs/screenshots/ios/13-forgot-verify.png" width="190" /> | <img src="mobile/docs/screenshots/android/14-forgot-reset.png" width="190" /> |
+
+| Explore — iOS | Explore — Android |
+|:---:|:---:|
+| <img src="mobile/docs/screenshots/ios/15-explore.png" width="190" /> | <img src="mobile/docs/screenshots/android/15-explore.png" width="190" /> |
 
 ### Mobile architecture
 

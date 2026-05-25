@@ -161,7 +161,10 @@
             "Real-time ML inference",
             "Sliding-window rate limiting",
             "LRU + TTL caching layer",
-            "EWMA + Markov personalization"
+            "EWMA + Markov personalization",
+            "Thompson Sampling contextual bandit re-ranker",
+            "Per-user mood-detection calibration map",
+            "Online reinforcement learning from 👍 / 👎 / open-in-Deezer signals"
           ],
           "aggregateRating": {
             "@type": "AggregateRating",
@@ -420,6 +423,7 @@
                         <div class="feature-pill"><span class="pill-icon">&#9889;</span><span>&lt;2s Cold Start</span></div>
                         <div class="feature-pill"><span class="pill-icon">&#128274;</span><span>JWT + Sliding-Window Limits</span></div>
                         <div class="feature-pill"><span class="pill-icon">&#127757;</span><span>Web + iOS + Android</span></div>
+                        <div class="feature-pill"><span class="pill-icon">&#127919;</span><span>Thompson Sampling RL</span></div>
                     </div>
                     <div class="mf-now-playing" aria-label="Now playing preview">
                         <div class="mf-now-cover">&#127925;</div>
@@ -601,8 +605,8 @@
                 </div>
                 <div class="overview-card">
                     <div class="card-icon">&#127921;</div>
-                    <h3>Learns your taste</h3>
-                    <p>Your recent moods quietly shape every new playlist. Two listens later it already feels personal; a week later it feels like a friend who actually pays attention.</p>
+                    <h3>Learns your taste - with real RL</h3>
+                    <p>Every 👍, 👎, and open-in-Deezer trains <strong>your</strong> playlist ranker. A Thompson Sampling contextual bandit re-orders the list in real time; a per-user calibration map even corrects mis-classified emotions. New &amp; anonymous users see the rule-based pipeline untouched.</p>
                 </div>
                 <div class="overview-card">
                     <div class="card-icon">&#127881;</div>
@@ -671,9 +675,30 @@
                     </div>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon">&#127919;</div>
+                    <h3>Reinforcement Learning Loop</h3>
+                    <p><strong>Thompson Sampling contextual bandit</strong> over a Beta-Bernoulli posterior. Every 👍 / 👎 / open-in-Deezer tap updates a 22-dim posterior (emotion &times; decade &times; duration &times; popularity-quintile) that re-ranks the next recommendation list. Cold-start safe: anonymous + new users see the base order until they cross 20 logged events.</p>
+                    <div class="feature-tags">
+                        <span class="tag">Thompson Sampling</span>
+                        <span class="tag">Beta-Bernoulli</span>
+                        <span class="tag">Contextual Bandit</span>
+                        <span class="tag">Online RL</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#128302;</div>
+                    <h3>Per-user Mood Calibration</h3>
+                    <p>A &quot;Was this right?&quot; widget captures every disagreement with the BERT detector. After three same-direction corrections (e.g. <em>joy &rarr; love</em>), the inference path rewrites the predicted label for that user only - immediate, no retrain, anonymous callers untouched.</p>
+                    <div class="feature-tags">
+                        <span class="tag">Online Calibration</span>
+                        <span class="tag">Per-user</span>
+                        <span class="tag">No Retrain</span>
+                    </div>
+                </div>
+                <div class="feature-card">
                     <div class="feature-icon">&#129504;</div>
-                    <h3>Personalization Engine</h3>
-                    <p>EWMA-weighted history + first-order Markov chain + adaptive blend ratio. Recurring moods seep into your current playlist at a clamped, recency-decayed rate.</p>
+                    <h3>Base Personalization (EWMA + Markov)</h3>
+                    <p>Recency-weighted EWMA + first-order Markov chain + adaptive blend ratio produce the candidate list the bandit re-ranks. Recurring moods seep into the current playlist at a clamped, recency-decayed rate.</p>
                     <div class="feature-tags">
                         <span class="tag">EWMA</span>
                         <span class="tag">Markov</span>
@@ -1043,11 +1068,11 @@
                 <div class="architecture-description">
                     <h3>Security &amp; privacy summary</h3>
                     <ul>
-                        <li><strong>JWT &mdash;</strong> the same <code class="mf-code-inline">JWT_SIGNING_KEY</code> signs on Django and verifies on Modal. End-user tokens are 7d access + 14d refresh; silent refresh is wired into the React client.</li>
-                        <li><strong>Service token &mdash;</strong> <code class="mf-code-inline">MODAL_SERVICE_TOKEN</code> is a shared constant for the Django&rarr;Modal proxy path; bypasses the Modal rate limiter (DRF throttles that side).</li>
-                        <li><strong>No CSRF surface &mdash;</strong> auth lives in the header; <code class="mf-code-inline">CsrfViewMiddleware</code> is intentionally removed.</li>
-                        <li><strong>Photo / voice privacy &mdash;</strong> uploads hit the inference container, run inference, and are dropped. Only the predicted label is returned and persisted.</li>
-                        <li><strong>Abuse protection &mdash;</strong> sliding-window rate limit (45/min general + 15/min media per JWT sub) plus a hard <code class="mf-code-inline">MAX_CONTAINERS=5</code> Modal ceiling guarantee a worst-case capacity ceiling.</li>
+                        <li><strong>JWT -</strong> the same <code class="mf-code-inline">JWT_SIGNING_KEY</code> signs on Django and verifies on Modal. End-user tokens are 7d access + 14d refresh; silent refresh is wired into the React client.</li>
+                        <li><strong>Service token -</strong> <code class="mf-code-inline">MODAL_SERVICE_TOKEN</code> is a shared constant for the Django&rarr;Modal proxy path; bypasses the Modal rate limiter (DRF throttles that side).</li>
+                        <li><strong>No CSRF surface -</strong> auth lives in the header; <code class="mf-code-inline">CsrfViewMiddleware</code> is intentionally removed.</li>
+                        <li><strong>Photo / voice privacy -</strong> uploads hit the inference container, run inference, and are dropped. Only the predicted label is returned and persisted.</li>
+                        <li><strong>Abuse protection -</strong> sliding-window rate limit (45/min general + 15/min media per JWT sub) plus a hard <code class="mf-code-inline">MAX_CONTAINERS=5</code> Modal ceiling guarantee a worst-case capacity ceiling.</li>
                     </ul>
                 </div>
             </div>
@@ -1466,6 +1491,50 @@
           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.30), transparent);
           mix-blend-mode: overlay;
         }
+        /* Light-mode overrides -- the perf cards were authored against a
+           dark background; in light mode the white text + transparent
+           card surfaces collapse into white-on-white. Swap to dark text
+           on a soft surface scoped to [data-theme="light"]. */
+        [data-theme="light"] #performance .mf-bar-card {
+          background:
+            linear-gradient(135deg, rgba(255,77,77,0.05), rgba(255,122,89,0.02) 60%, transparent),
+            rgba(0,0,0,0.025);
+          border: 1px solid rgba(0,0,0,0.08);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] #performance .mf-bar-head {
+          border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] #performance .mf-bar-title { color: #1a1a1a; }
+        [data-theme="light"] #performance .mf-bar-sub   { color: #6b6b78; opacity: 1; }
+        [data-theme="light"] #performance .mf-bar-label { color: rgba(20,20,28,0.85); }
+        [data-theme="light"] #performance .mf-bar-track {
+          background: rgba(0,0,0,0.06);
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+        }
+        /* Value pills: pale tinted text on pale tinted bg vanishes on a
+           white page. Darken text + slightly deepen the bg so each pill
+           reads as a stamped chip in light mode. */
+        [data-theme="light"] #performance .mf-bar-value {
+          background: rgba(234, 88, 12, 0.14);
+          color: #c2410c;
+          border-color: rgba(234, 88, 12, 0.35);
+        }
+        [data-theme="light"] #performance .mf-bar-card.mf-acc .mf-bar-value {
+          background: rgba(5, 150, 105, 0.14);
+          color: #047857;
+          border-color: rgba(5, 150, 105, 0.35);
+        }
+        [data-theme="light"] #performance .mf-bar-card.mf-res .mf-bar-value {
+          background: rgba(99, 102, 241, 0.14);
+          color: #4338ca;
+          border-color: rgba(99, 102, 241, 0.35);
+        }
+        [data-theme="light"] #performance .mf-bar-card.mf-cache .mf-bar-value {
+          background: rgba(217, 119, 6, 0.16);
+          color: #92400e;
+          border-color: rgba(217, 119, 6, 0.40);
+        }
       </style>
       <div class="container">
         <div class="section-header">
@@ -1730,7 +1799,7 @@
                         <li><a href="https://moodify-backend-api.vercel.app/redoc/" target="_blank" rel="noopener">Redoc</a></li>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener">GitHub</a></li>
                         <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank" rel="noopener">Issues</a></li>
-                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a></li>
+                        <li><a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/blob/master/LICENSE" target="_blank" rel="noopener">License (MIT)</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">

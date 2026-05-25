@@ -38,6 +38,7 @@ infra bootstrap.
 
 ### Key Capabilities
 
+- **🎯 Online Reinforcement Learning** — every Moodify user trains their own playlist ranker in real time. A **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** re-ranks recommendation results from 👍 / 👎 / open-in-Deezer signals, and a per-user **mood-calibration map** corrects mis-classified emotions from the BERT detector. Both stream through a single `POST /api/feedback/` endpoint into Mongo time-series collections, are applied inline on the next request, and stay cold-start safe (anonymous + new users see the rule-based pipeline unchanged). See §5 "Reinforcement-Learning / Personalisation Layer".
 - **Multi-Modal Emotion Detection**: Text, speech, and facial expression analysis
 - **Real-Time Processing**: Sub-second response times for emotion detection
 - **Scalable Architecture**: Containerized microservices with horizontal scaling
@@ -365,6 +366,52 @@ graph TB
     DA1 & DA2 & DA3 --> MD1 & MD2 & MD3 & MD4
 ```
 
+### Reinforcement-Learning / Personalization Layer
+
+Two surfaces share one HTTP endpoint and one persistence pattern:
+
+```mermaid
+flowchart LR
+    User -->|"👍 / 👎 / Open in Deezer"| FE[Frontend TrackCard]
+    User -->|"Was this right? ✓ / ✗ → love"| FW[MoodFeedbackWidget]
+    FE & FW -->|POST /api/feedback/| FB[feedback_views.feedback]
+    FB --> TS1[(mood_feedback<br/>TS collection)]
+    FB --> TS2[(track_feedback<br/>TS collection)]
+    FB --> UP1[UserProfile.mood_calibration]
+    FB --> UP2[UserProfile.taste_profile]
+
+    Caller -->|POST /api/text_emotion/| TE[text_emotion view]
+    TE --> Modal1[Modal BERT]
+    Modal1 --> CAL[apply_calibration]
+    UP1 -.->|read at inference| CAL
+    CAL --> Resp1[Response]
+
+    Caller -->|POST /api/music_recommendation/| MR[music_recommendation view]
+    MR --> Modal2[Modal EWMA + Markov]
+    Modal2 --> BND[bandit.rerank]
+    UP2 -.->|read at inference| BND
+    BND --> Resp2[Response]
+
+    style FB fill:#3b82f6,stroke:#fff,color:#fff
+    style CAL fill:#7c3aed,stroke:#fff,color:#fff
+    style BND fill:#3b82f6,stroke:#fff,color:#fff
+```
+
+| Module | Role |
+|---|---|
+| `backend/api/feedback_views.py` | `POST /api/feedback/` — strict validator for `kind ∈ {mood, track}`, JWT-required, returns 202. |
+| `backend/api/feedback_store.py` | Lazy-init two MongoDB time-series collections (`mood_feedback`, `track_feedback`). 365-day TTL. Never raises (telemetry must not break a write path). |
+| `backend/api/calibration.py` | Pure function `apply_calibration(predicted, map)` — rewrites the predicted label when the dominant correction has crossed the threshold (default 3, ties = no change). |
+| `backend/api/track_features.py` | Fixed 22-dim feature extractor: emotion one-hot, decade, duration bucket, list-relative popularity quintile. Layout is forward-compatible (padding on shorter stored vectors) but never reorderable. |
+| `backend/api/bandit.py` | Thompson Sampling over a Beta-Bernoulli posterior. `update_posterior(profile, features, signal)` for writes; `rerank(tracks, taste_profile, context_emotion)` for reads. Identity-when-cold (`events < 20`). |
+
+Design constraints honoured:
+
+- **Augmentation, not replacement.** The bandit can only reorder the EWMA + Markov base list — never inject, drop, or invent tracks. Bounded blast radius.
+- **Stateless inference service.** All RL state lives in Mongo and is applied in Django after the Modal proxy returns; Modal stays identity-free and continues to accept the shared service token.
+- **Per-user posterior.** No cross-user influence, no global leaderboard signals. Feedback gaming caps at one Beta unit per active feature per event.
+- **Anonymous callers unchanged.** `_profile_for_request` returns `None` for anonymous traffic; both views short-circuit before touching the calibration map / bandit.
+
 ### AI/ML Architecture
 
 ```mermaid
@@ -438,6 +485,10 @@ erDiagram
     USER ||--o{ RECOMMENDATIONS : receives
     USER ||--o{ SESSION : authenticates
     USER ||--o{ PREFERENCES : configures
+    USER ||--o{ MOOD_FEEDBACK : corrects
+    USER ||--o{ TRACK_FEEDBACK : rates
+    USER ||--o{ MOOD_CALIBRATION : owns
+    USER ||--o{ TASTE_PROFILE : owns
 
     USER {
         ObjectId _id PK
@@ -538,8 +589,31 @@ erDiagram
         datetime evaluated_at
     }
 
+    MOOD_FEEDBACK {
+        datetime ts PK "Time-series timeField"
+        json meta "username, input_type, predicted, actual"
+        float confidence "Softmax prob for the predicted label"
+        string session_id "Optional client-side correlation id"
+    }
+
+    TRACK_FEEDBACK {
+        datetime ts PK "Time-series timeField"
+        json meta "username, signal, context_emotion"
+        string track_id "Stable per-track key"
+    }
+
+    MOOD_CALIBRATION {
+        json mood_calibration "Nested dict: {predicted: {actual: count}}"
+    }
+
+    TASTE_PROFILE {
+        json taste_profile "{alpha: float[22], beta: float[22], events: int}"
+    }
+
     USER ||--o{ ANALYTICS_EVENT : generates
 ```
+
+**RL collections** are Mongo *time-series* collections (`mood_feedback`, `track_feedback`) with a 365-day TTL — old samples drop automatically without a cron. The `MOOD_CALIBRATION` and `TASTE_PROFILE` rows live inside the existing `UserProfile` document as `DictField`s (schemaless, no migration needed) and are read on every authenticated text-emotion / music-recommendation request to apply the personalisation layer. See `backend/api/feedback_store.py` and `backend/api/models.py:UserProfile`.
 
 ### Data Flow
 

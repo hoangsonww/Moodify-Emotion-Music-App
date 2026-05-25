@@ -23,6 +23,12 @@ crawlers can discover the project's structure and authoritative URLs.
   previews and an "Open in Deezer" button to the full track.
 - Persists mood + listening history per user; clients can clear any
   list at any time.
+- Learns from explicit user feedback over time. A "Was this right?"
+  widget under every detection captures mood corrections; 👍 / 👎 /
+  open-in-Deezer signals on every track feed a Thompson-Sampling
+  contextual bandit that re-ranks subsequent recommendation lists.
+  Cold-start safe (new and anonymous users see the base order until
+  they cross 20 logged events).
 
 ## Surfaces
 

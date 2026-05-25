@@ -51,6 +51,8 @@ import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../context/DarkModeContext";
 import { useToast } from "../components/Toast";
 import { API_URL, MODAL_API_URL } from "../config";
+import { detectTextEmotion, getRecommendations } from "../services/recommend";
+import { uniqRecent } from "../utils/dedupe";
 
 // ---------- shared mood palette (same colors as Results page) ----------
 const MOOD_PALETTE = {
@@ -558,16 +560,9 @@ const HomePage = () => {
           return;
         }
         response = await Promise.race([
-          axios.post(
-            `${MODAL_API_URL}/text_emotion`,
-            { text: textContent },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          ),
+          // Authed callers hit Django so per-user calibration applies;
+          // anon callers fall through to Modal directly.
+          detectTextEmotion({ text: textContent, token }),
           timeout(60000), // Timeout set to 1 minute
         ]);
       } else if (activeTab === "face") {
@@ -595,41 +590,30 @@ const HomePage = () => {
       // Save both mood and recommendations to history
       await saveToHistory(emotion, recommendations);
 
-      navigate("/results", { state: { emotion, recommendations } });
+      // Modality flows through to ResultsPage so the mood-correction
+      // widget can label the disagreement event correctly.
+      const inputType =
+        activeTab === "face"
+          ? "facial"
+          : activeTab === "speech"
+            ? "speech"
+            : "text";
+      navigate("/results", {
+        state: { emotion, recommendations, inputType },
+      });
     } catch (error) {
       console.error(
         `Error uploading ${activeTab} file or request timed out:`,
         error,
       );
-
-      // Fallback to a random mood in case of an error
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error("Error fetching recommendations:", recommendationError);
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      // No more random-mood theatre. Falling back to a randomly picked
+      // emotion was actively misleading: users saw "Joy detected" when
+      // the inference call had actually failed, polluted the UI, and
+      // confused the per-user calibration map. Surface the failure
+      // honestly and let the user retry.
+      toast.error(
+        "Couldn't read that file — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       handleModalClose();
       setIsLoading(false);
@@ -695,38 +679,14 @@ const HomePage = () => {
       // Save both mood and recommendations to history
       await saveToHistory(emotion, recommendations);
 
-      navigate("/results", { state: { emotion, recommendations } });
+      navigate("/results", {
+        state: { emotion, recommendations, inputType: "facial" },
+      });
     } catch (error) {
       console.error("Error or timeout occurred:", error);
-
-      // Fallback to a random mood in case of an error or timeout
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error("Error fetching recommendations:", recommendationError);
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      toast.error(
+        "Couldn't read your face — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       handleModalClose();
       setIsLoading(false);
@@ -744,16 +704,8 @@ const HomePage = () => {
     try {
       // Race the text submission request against a 1-minute timeout
       const response = await Promise.race([
-        axios.post(
-          `${MODAL_API_URL}/text_emotion`,
-          { text: inputValue.trim() },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        ),
+        // Authed callers hit Django so per-user calibration applies.
+        detectTextEmotion({ text: inputValue.trim(), token }),
         timeout(60000), // Timeout set to 1 minute
       ]);
 
@@ -763,38 +715,14 @@ const HomePage = () => {
       await saveToHistory(emotion, recommendations);
 
       // Navigate to the results page with the response data
-      navigate("/results", { state: { emotion, recommendations } });
+      navigate("/results", {
+        state: { emotion, recommendations, inputType: "text" },
+      });
     } catch (error) {
       console.error("Error processing text or request timed out:", error);
-
-      // Fallback to a random mood in case of an error
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error("Error fetching recommendations:", recommendationError);
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      toast.error(
+        "Couldn't read your text — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       setIsLoading(false);
       setInputValue("");
@@ -910,12 +838,6 @@ const HomePage = () => {
     amused: "party",
   };
 
-  const getRandomMood = () => {
-    const moods = Object.keys(moodMap);
-    const randomIndex = Math.floor(Math.random() * moods.length);
-    return moods[randomIndex];
-  };
-
   const handleAudioUpload = async () => {
     if (!audioBlob) {
       console.log("No audio blob available for upload.");
@@ -947,41 +869,14 @@ const HomePage = () => {
       ]);
 
       const { emotion, recommendations } = response.data;
-      navigate("/results", { state: { emotion, recommendations } });
+      navigate("/results", {
+        state: { emotion, recommendations, inputType: "speech" },
+      });
     } catch (error) {
       console.error("Error uploading audio or request timed out:", error);
-
-      // Fallback to a random mood in case of an error or timeout
-      const randomMood = getRandomMood();
-      const newMood = moodMap[randomMood];
-      console.log(`Fallback to random mood: ${randomMood} -> ${newMood}`);
-
-      try {
-        // Call the API with the randomly selected mood
-        const response = await axios.post(
-          `${MODAL_API_URL}/music_recommendation`,
-          {
-            emotion: newMood.toLowerCase(),
-          },
-        );
-
-        const newRecommendations = response.data.recommendations || [];
-
-        // Navigate to the results page with the fallback mood and recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: newRecommendations },
-        });
-      } catch (recommendationError) {
-        console.error(
-          "Error fetching fallback recommendations:",
-          recommendationError,
-        );
-
-        // In case of failure, navigate with the fallback mood and empty recommendations
-        navigate("/results", {
-          state: { emotion: randomMood, recommendations: [] },
-        });
-      }
+      toast.error(
+        "Couldn't read your voice — the inference service is slow or unavailable. Try again in a moment.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -1005,9 +900,7 @@ const HomePage = () => {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const res = await axios.post(`${MODAL_API_URL}/music_recommendation`, {
-        emotion: String(mood).toLowerCase(),
-      });
+      const res = await getRecommendations({ emotion: mood });
       const recommendations = res.data?.recommendations || [];
       if (token) {
         await saveToHistory(mood, recommendations);
@@ -1021,9 +914,10 @@ const HomePage = () => {
   };
 
   const username = userData?.username || "";
-  const recentMoods = Array.isArray(userData?.mood_history)
-    ? userData.mood_history.slice(-6).reverse()
-    : [];
+  // Deduped + newest-first so repeated moods (e.g. three "joy"
+  // detections in a row) collapse into a single chip. Cap at 6 to
+  // match the original visual budget.
+  const recentMoods = uniqRecent(userData?.mood_history).slice(0, 6);
   const recommendationsCount = Array.isArray(userData?.recommendations)
     ? userData.recommendations.length
     : 0;

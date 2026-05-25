@@ -384,6 +384,12 @@ sequenceDiagram
   <img src="../images/results.png" alt="Results Page" width="100%" style="border-radius: 10px">
 </p>
 
+### Explore Page
+
+<p align="center">
+  <img src="../images/explore.png" alt="Results Page" width="100%" style="border-radius: 10px">
+</p>
+
 ### Login Page
 
 <p align="center">

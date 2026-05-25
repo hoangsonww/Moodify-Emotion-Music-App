@@ -41,7 +41,7 @@ export const moodPalette = {
   surprise:  { tint: '#22d3ee', colors: ['#06b6d4', '#22d3ee', '#a855f7'], emoji: '😲', label: 'Surprised' },
   surprised: { tint: '#22d3ee', colors: ['#06b6d4', '#22d3ee', '#a855f7'], emoji: '😲', label: 'Surprised' },
   calm:      { tint: '#34d399', colors: ['#10b981', '#22d3ee', '#3b82f6'], emoji: '😌', label: 'Calm' },
-  neutral:   { tint: '#94a3b8', colors: ['#475569', '#64748b', '#94a3b8'], emoji: '😌', label: 'Neutral' },
+  neutral:   { tint: '#94a3b8', colors: ['#475569', '#64748b', '#94a3b8'], emoji: '😐', label: 'Neutral' },
   sad:       { tint: '#60a5fa', colors: ['#1e3a8a', '#3b82f6', '#60a5fa'], emoji: '😢', label: 'Sad' },
   sadness:   { tint: '#60a5fa', colors: ['#1e3a8a', '#3b82f6', '#60a5fa'], emoji: '😢', label: 'Sad' },
   fear:      { tint: '#a855f7', colors: ['#4c1d95', '#7c3aed', '#a855f7'], emoji: '😨', label: 'Anxious' },

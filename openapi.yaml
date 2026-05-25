@@ -677,6 +677,55 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "Service-token authentication required." }
 
+  /api/feedback/:
+    post:
+      tags: [Emotion Inference]
+      summary: Submit mood / track feedback (RL surfaces)
+      description: |
+        Unified intake for both reinforcement-learning surfaces. The
+        request body's `kind` discriminator selects the payload shape.
+
+        * **`kind: "mood"`** — record an agreement or correction on a
+          previously detected emotion. Persisted to the `mood_feedback`
+          time-series collection; corrections also bump the per-user
+          mood-calibration map on `UserProfile.mood_calibration`. Once
+          a `(predicted → actual)` correction has been logged ≥ 3
+          times, `/api/text_emotion/` rewrites that user's predicted
+          label automatically.
+
+        * **`kind: "track"`** — record a 👍 / 👎 / open-in-Deezer
+          event for a specific track. Persisted to the `track_feedback`
+          time-series collection. When the optional `track` object is
+          supplied, the bandit posterior on
+          `UserProfile.taste_profile` is updated via the Thompson
+          Sampling update step.
+
+        Requires a user JWT (`Authorization: Bearer <access>`). Returns
+        **202** on success because the downstream effects (calibration
+        map, bandit posterior) settle out-of-band.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/MoodFeedbackRequest'
+                - $ref: '#/components/schemas/TrackFeedbackRequest'
+              discriminator:
+                propertyName: kind
+                mapping:
+                  mood: '#/components/schemas/MoodFeedbackRequest'
+                  track: '#/components/schemas/TrackFeedbackRequest'
+      responses:
+        '202':
+          description: Feedback accepted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Feedback recorded." }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   # ===========================================================================
   # Modal — direct endpoints
   # ===========================================================================
@@ -1176,10 +1225,67 @@ components:
           nullable: true
           example: "lofi"
           description: |
-            Optional genre keyword. **Modal-only** — the Django proxy
-            ignores this field. When supplied, the recommender prepends it
-            to the Deezer search phrase so the result skews toward that
-            genre while still honouring the mood.
+            Optional genre keyword. The Django proxy forwards it to Modal,
+            which prepends it to the Deezer search phrase so the result
+            skews toward that genre while still honouring the mood.
+
+    # ----- RL feedback ------------------------------------------------------
+    MoodFeedbackRequest:
+      type: object
+      required: [kind, predicted, actual, input_type]
+      properties:
+        kind:        { type: string, enum: [mood], example: "mood" }
+        predicted:
+          type: string
+          enum: [sadness, joy, love, anger, fear, neutral]
+          example: "joy"
+          description: The label the model returned.
+        actual:
+          type: string
+          enum: [sadness, joy, love, anger, fear, neutral]
+          example: "love"
+          description: The label the user says is correct.
+        input_type:  { type: string, enum: [text, speech, facial], example: "text" }
+        confidence:
+          type: number
+          format: float
+          nullable: true
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.82
+          description: Optional softmax probability for the predicted label.
+        session_id:
+          type: string
+          nullable: true
+          maxLength: 128
+          example: "b1c8-uuid"
+          description: Optional client-side correlation id.
+
+    TrackFeedbackRequest:
+      type: object
+      required: [kind, track_id, signal]
+      properties:
+        kind:     { type: string, enum: [track], example: "track" }
+        track_id:
+          type: string
+          maxLength: 128
+          example: "deezer:12345"
+          description: Stable identifier for the rated track. The frontend derives this from the Deezer external_url when possible.
+        signal:   { type: string, enum: [like, unlike, open_deezer], example: "like" }
+        context_emotion:
+          type: string
+          enum: [sadness, joy, love, anger, fear, neutral]
+          nullable: true
+          example: "joy"
+          description: The emotion that produced the recommendation list this rating belongs to.
+        track:
+          type: object
+          nullable: true
+          description: |
+            Optional full track dict (same shape `/api/music_recommendation/`
+            returns). When supplied, the bandit posterior is updated for the
+            signed-in user; when omitted, only the event log is written and
+            the posterior is left untouched.
 
     # ----- metrics ----------------------------------------------------------
     MetricsResponse:
