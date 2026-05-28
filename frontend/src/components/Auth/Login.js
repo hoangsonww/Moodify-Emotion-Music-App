@@ -1,8 +1,9 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useMemo } from "react";
 import {
   Box,
   Button,
   CircularProgress,
+  Divider,
   IconButton,
   InputAdornment,
   Paper,
@@ -10,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import {
+  Fingerprint,
   LockOutlined,
   PersonOutline,
   Visibility,
@@ -23,18 +25,25 @@ import { DarkModeContext } from "../../context/DarkModeContext";
 import { useToast } from "../Toast";
 import { API_URL } from "../../config";
 import { setTokens } from "../../services/auth";
+import {
+  isPasskeySupported,
+  loginWithPasskey,
+  PasskeyError,
+} from "../../services/passkeys";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
 
   const { isDarkMode } = useContext(DarkModeContext);
   const styles = getStyles(isDarkMode);
+  const passkeySupported = useMemo(() => isPasskeySupported(), []);
 
   // If RequireAuth bounced the user here, send them back to where they
   // were trying to go after a successful sign-in.
@@ -68,6 +77,40 @@ const Login = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    setPasskeyLoading(true);
+    try {
+      // Pass the typed username when present to scope the prompt; otherwise
+      // a usernameless prompt lets the authenticator offer any saved passkey.
+      const data = await loginWithPasskey({
+        username: username.trim() || undefined,
+      });
+      if (data?.access) {
+        setTokens(data.access, data.refresh);
+        toast.success("Signed in with your passkey.");
+        navigate(redirectTo, { replace: true });
+      } else {
+        toast.error("Passkey sign-in failed. Please try again.");
+      }
+    } catch (error) {
+      const status = error?.response?.status;
+      if (error instanceof PasskeyError && error.code === "cancelled") {
+        toast.info("Passkey sign-in cancelled.");
+      } else if (status === 400 || status === 401) {
+        toast.error(
+          "No matching passkey found. Try your password, or add a passkey from your profile.",
+        );
+      } else {
+        toast.error(
+          (error instanceof PasskeyError && error.message) ||
+            "Passkey sign-in failed. Please try again.",
+        );
+      }
+    } finally {
+      setPasskeyLoading(false);
     }
   };
 
@@ -164,7 +207,7 @@ const Login = () => {
             variant="contained"
             fullWidth
             onClick={handleLogin}
-            disabled={loading}
+            disabled={loading || passkeyLoading}
             sx={styles.cta}
           >
             {loading ? (
@@ -173,6 +216,25 @@ const Login = () => {
               "Sign in"
             )}
           </Button>
+
+          {passkeySupported && (
+            <>
+              <Divider sx={styles.divider}>or</Divider>
+              <Button
+                fullWidth
+                onClick={handlePasskeyLogin}
+                disabled={loading || passkeyLoading}
+                startIcon={!passkeyLoading && <Fingerprint />}
+                sx={styles.passkeyBtn}
+              >
+                {passkeyLoading ? (
+                  <CircularProgress size={22} sx={{ color: "#ff4d4d" }} />
+                ) : (
+                  "Sign in with a passkey"
+                )}
+              </Button>
+            </>
+          )}
 
           <Typography sx={styles.footer}>
             New to Moodify?{" "}
@@ -338,6 +400,39 @@ const getStyles = (isDark) => ({
       transform: "translateY(-1px)",
     },
     mb: 2,
+  },
+  divider: {
+    my: 1,
+    fontFamily: "Poppins",
+    fontSize: 12,
+    fontWeight: 600,
+    color: isDark ? "#888" : "#aaa",
+    "&::before, &::after": {
+      borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)",
+    },
+  },
+  passkeyBtn: {
+    py: 1.4,
+    mt: 1,
+    mb: 2,
+    borderRadius: "999px",
+    fontFamily: "Poppins",
+    fontSize: 15,
+    fontWeight: 700,
+    textTransform: "none",
+    color: isDark ? "#ff7a7a" : "#ff4d4d",
+    background: "transparent",
+    border: `1.5px solid ${isDark ? "rgba(255,122,122,0.5)" : "rgba(255,77,77,0.5)"}`,
+    transition: "transform .2s ease, background .2s ease, border-color .2s ease",
+    "&:hover": {
+      background: "rgba(255,77,77,0.08)",
+      borderColor: "#ff4d4d",
+      transform: "translateY(-1px)",
+    },
+    "&.Mui-disabled": {
+      color: isDark ? "#666" : "#bbb",
+      borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)",
+    },
   },
   footer: {
     fontFamily: "Poppins",

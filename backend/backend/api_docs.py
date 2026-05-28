@@ -41,6 +41,7 @@ from drf_yasg.generators import OpenAPISchemaGenerator
 
 class Tags:
     AUTH = "Authentication"
+    PASSKEYS = "Passkeys"
     PASSWORD_RESET = "Password Reset"
     PROFILE = "Profile"
     MOOD_HISTORY = "Mood History"
@@ -61,6 +62,17 @@ TAGS: list[dict[str, str]] = [
             "All authenticated endpoints expect a `Authorization: Bearer "
             "<access-token>` header; access tokens live for 7 days, refresh "
             "tokens for 14."
+        ),
+    },
+    {
+        "name": Tags.PASSKEYS,
+        "description": (
+            "WebAuthn / FIDO2 passwordless sign-in. Each user can enroll many "
+            "passkeys (phone, laptop, hardware key) and manage them from the "
+            "app. Every ceremony is two calls -- `begin` (server issues a "
+            "single-use challenge + `flowId`) then `complete` (client returns "
+            "the signed credential). A verified login assertion mints the same "
+            "`(access, refresh)` JWT pair as `/users/login/`."
         ),
     },
     {

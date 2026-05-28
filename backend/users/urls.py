@@ -1,5 +1,13 @@
 from django.urls import path
 
+from .passkey_views import (
+    passkey_detail,
+    passkey_list,
+    passkey_login_begin,
+    passkey_login_complete,
+    passkey_register_begin,
+    passkey_register_complete,
+)
 from .views import (
     delete_all_recommendations,
     get_recommendations,
@@ -28,6 +36,13 @@ urlpatterns = [
     path("user/profile/", user_profile, name="user_profile"),
     path("user/profile/update/", user_profile_update, name="user_profile_update"),
     path("user/profile/delete/", user_profile_delete, name="user_profile_delete"),
+    # --- WebAuthn / passkeys ---
+    path("passkeys/register/begin/", passkey_register_begin, name="passkey_register_begin"),
+    path("passkeys/register/complete/", passkey_register_complete, name="passkey_register_complete"),
+    path("passkeys/login/begin/", passkey_login_begin, name="passkey_login_begin"),
+    path("passkeys/login/complete/", passkey_login_complete, name="passkey_login_complete"),
+    path("passkeys/", passkey_list, name="passkey_list"),
+    path("passkeys/<str:passkey_id>/", passkey_detail, name="passkey_detail"),
     path("recommendations/<str:user_id>/", user_recommendations, name="user_recommendations"),
     path("recommendations/save/<str:user_id>/", save_recommendations, name="save_recommendations"),
     path("recommendations/get/<str:user_id>/", get_recommendations, name="get_recommendations"),

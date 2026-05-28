@@ -24,6 +24,9 @@ dnspython==2.6.1
 # --- Auth + outbound HTTP to the Modal inference service ---
 PyJWT==2.9.0
 requests==2.32.3
+# WebAuthn / passkeys. Pulls in cryptography + cbor2 (small, wheels only --
+# no extra build toolchain needed on Vercel).
+webauthn==2.7.1
 
 # --- Config / static / serving ---
 python-decouple==3.8

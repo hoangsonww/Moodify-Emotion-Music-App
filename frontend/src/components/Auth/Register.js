@@ -23,6 +23,9 @@ import axios from "axios";
 import { DarkModeContext } from "../../context/DarkModeContext";
 import { useToast } from "../Toast";
 import { API_URL } from "../../config";
+import { setTokens } from "../../services/auth";
+import { isPasskeySupported } from "../../services/passkeys";
+import PasskeyPromptModal from "../Passkeys/PasskeyPromptModal";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -32,6 +35,12 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  // After a successful sign-up we transiently authenticate (without
+  // persisting tokens to localStorage, which would trip RedirectIfAuthed and
+  // unmount this page) so we can offer passkey setup. Tokens are persisted
+  // only once the user creates a passkey or skips.
+  const [passkeyPromptOpen, setPasskeyPromptOpen] = useState(false);
+  const [pendingAuth, setPendingAuth] = useState(null);
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -60,6 +69,26 @@ const Register = () => {
         password,
       });
       if (response.status === 201) {
+        // On a passkey-capable browser, sign in behind the scenes and offer
+        // to set up a passkey before sending the user into the app.
+        if (isPasskeySupported()) {
+          try {
+            const loginRes = await axios.post(`${API_URL}/users/login/`, {
+              username,
+              password,
+            });
+            if (loginRes?.data?.access) {
+              setPendingAuth({
+                access: loginRes.data.access,
+                refresh: loginRes.data.refresh,
+              });
+              setPasskeyPromptOpen(true);
+              return; // the modal drives the rest of the flow
+            }
+          } catch {
+            // Auto-login hiccup -- fall back to the classic sign-in flow.
+          }
+        }
         toast.success("Account created - please sign in.");
         navigate("/login");
       } else {
@@ -80,6 +109,22 @@ const Register = () => {
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter") handleRegister();
+  };
+
+  // Persist the transient tokens and drop the user into the app.
+  const persistAndEnter = () => {
+    if (pendingAuth?.access) {
+      setTokens(pendingAuth.access, pendingAuth.refresh);
+    }
+    setPasskeyPromptOpen(false);
+    navigate("/home", { replace: true });
+  };
+
+  const handlePasskeyCreated = () => persistAndEnter();
+
+  const handlePasskeySkip = () => {
+    toast.info("You're all set! You can add a passkey anytime from Account.");
+    persistAndEnter();
   };
 
   return (
@@ -247,6 +292,13 @@ const Register = () => {
           </Typography>
         </Box>
       </Paper>
+
+      <PasskeyPromptModal
+        open={passkeyPromptOpen}
+        accessToken={pendingAuth?.access}
+        onCreated={handlePasskeyCreated}
+        onSkip={handlePasskeySkip}
+      />
     </div>
   );
 };
