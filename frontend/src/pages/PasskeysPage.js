@@ -410,6 +410,12 @@ const PasskeysPage = () => {
             placeholder="e.g. My MacBook"
             value={addName}
             onChange={(e) => setAddName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !busy) {
+                e.preventDefault();
+                handleAdd();
+              }
+            }}
             inputProps={{ maxLength: PASSKEY_NAME_MAX }}
             disabled={busy}
             sx={{ mt: 1 }}
@@ -458,6 +464,12 @@ const PasskeysPage = () => {
             label="Passkey name"
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !busy) {
+                e.preventDefault();
+                handleRename();
+              }
+            }}
             inputProps={{ maxLength: PASSKEY_NAME_MAX }}
             disabled={busy}
             sx={{ mt: 1 }}
