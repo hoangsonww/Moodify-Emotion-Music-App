@@ -8,9 +8,9 @@
 //   toast.error("Login failed.");
 //   toast.show({ severity: "warning", message: "Heads up", duration: 6000 });
 //
-// Toasts stack at the top-right (top-center on mobile), auto-dismiss
-// after `duration` ms (default 4000), and respect dark mode by pulling
-// MUI's Alert styling from the active theme.
+// Toasts stack at the bottom-center (on both mobile and desktop),
+// auto-dismiss after `duration` ms (default 4000), and respect dark
+// mode by pulling MUI's Alert styling from the active theme.
 
 import React, {
   createContext,
@@ -19,7 +19,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Alert, Slide, Snackbar, Stack, useMediaQuery } from "@mui/material";
+import { Alert, Slide, Snackbar, Stack } from "@mui/material";
 
 const ToastContext = createContext(null);
 
@@ -30,12 +30,11 @@ const nextId = () => {
 };
 
 function SlideTransition(props) {
-  return <Slide {...props} direction="left" />;
+  return <Slide {...props} direction="up" />;
 }
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-  const isMobile = useMediaQuery("(max-width: 600px)");
 
   const dismiss = useCallback((id) => {
     setToasts((current) => current.filter((t) => t.id !== id));
@@ -77,13 +76,12 @@ export function ToastProvider({ children }) {
       <Snackbar
         open={toasts.length > 0}
         anchorOrigin={{
-          vertical: "top",
-          horizontal: isMobile ? "center" : "right",
+          vertical: "bottom",
+          horizontal: "center",
         }}
         sx={{
-          top: { xs: 16, sm: 24 },
-          right: { xs: 16, sm: 24 },
-          left: { xs: 16, sm: "auto" },
+          bottom: { xs: 16, sm: 24 },
+          width: { xs: "calc(100% - 32px)", sm: 420 },
           maxWidth: { xs: "calc(100% - 32px)", sm: 420 },
         }}
         TransitionComponent={SlideTransition}

@@ -157,6 +157,7 @@ The canonical production path is **Vercel + Modal** — see
 - [**🎵 Overview**](#-overview)
 - [**🌐 Live Deployment**](#-live-frontend-demo)
 - [**🌟 Features**](#-features)
+- [**🔐 Passkeys (WebAuthn)**](#passkeys-webauthn)
 - [**🛠️ Technologies**](#-technologies)
 - [**🖼️ User Interface**](#-user-interface)
 - [**📂 Complete File Structure**](#-complete-file-structure)
@@ -167,6 +168,7 @@ The canonical production path is **Vercel + Modal** — see
     - [**Install and Run the Frontend**](#3-install-and-run-the-frontend)
 - [**📋 API Endpoints**](#-api-endpoints)
     - [**User Endpoints**](#user-endpoints)
+    - [**Passkey Endpoints (WebAuthn / FIDO2)**](#passkey-endpoints-webauthn--fido2)
     - [**Emotion Detection Endpoints**](#emotion-detection-endpoints)
     - [**Admin Interface Endpoints**](#admin-interface-endpoints)
     - [**Admin Interface**](#admin-interface)
@@ -327,6 +329,7 @@ For your information, the front-end's production (deployment) branch is `fronten
 The Moodify project aims to provide the following features:
 
 - 🎯 **Online reinforcement learning** — every user trains their own playlist ranker in real time. A "Was this right?" widget records per-user mood corrections, and 👍 / 👎 / open-in-Deezer signals feed a **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** that re-ranks every subsequent recommendation list. Mood-calibration map kicks in after 3 same-direction corrections; bandit kicks in after 20 logged signals. New and anonymous users see the rule-based pipeline unchanged.
+- 🔐 **Passwordless sign-in with passkeys (WebAuthn / FIDO2)** — users enroll multiple passkeys (Face ID, Touch ID, Windows Hello, Android screen lock, or a hardware security key) and sign in without a password. Passkeys are managed on a dedicated **Account → Passkeys** page (add, rename, delete), a styled prompt offers setup right after sign-up, and a verified assertion mints the same JWT pair as password login. See [Passkeys (WebAuthn)](#passkeys-webauthn).
 - User registration and login functionality.
 - Input analysis through text, speech, and facial expressions.
 - Real-time music recommendations based on emotion detection.
@@ -349,6 +352,38 @@ The Moodify project aims to provide the following features:
 
 All three layers are user-scoped and authentication-gated. The feedback endpoint is `POST /api/feedback/` and accepts both `{kind: "mood", ...}` and `{kind: "track", ...}` payloads (see `backend/openapi.yaml`).
 
+## Passkeys (WebAuthn)
+
+Moodify supports **passwordless sign-in with passkeys** (WebAuthn / FIDO2) layered on top of the existing JWT auth — passwords keep working unchanged.
+
+- **Multiple passkeys per account.** Enroll a phone, a laptop, and a hardware security key; each is stored as its own credential.
+- **Manage them in-app.** A dedicated **Account → Passkeys** page (the "Log Out" button becomes an **Account** dropdown when signed in → **Passkeys** / **Log Out**) lets users add, rename, and delete passkeys, with device + "Synced" badges and last-used times.
+- **Set-up prompt after sign-up.** A styled, on-brand modal (never a browser `alert`) offers passkey creation right after registration.
+- **Usernameless login.** The login screen has a **"Sign in with a passkey"** option that works with discoverable credentials — no username required.
+
+How it works (each ceremony is two calls):
+
+```
+register/begin   →  server issues PublicKeyCredentialCreationOptions + a single-use flowId
+                    (the user's existing passkeys go in excludeCredentials)
+register/complete→  server verifies the attestation (py_webauthn) and stores the public key
+login/begin      →  server issues PublicKeyCredentialRequestOptions + flowId
+login/complete   →  server verifies the assertion, advances the signature counter,
+                    and returns the same { access, refresh } JWT pair as /users/login/
+```
+
+The server-issued challenge is persisted as a **single-use, expiring** record keyed by the opaque `flowId`, so the two-step handshake works statelessly across serverless instances. Verification is delegated to the audited [`py_webauthn`](https://github.com/duo-labs/py_webauthn) library; the login `begin` response never discloses whether a username exists.
+
+| Setting | Default | Production value |
+|---|---|---|
+| `WEBAUTHN_RP_ID` | `localhost` | your **frontend** domain, e.g. `moodify-app.vercel.app` (bare host, no scheme) |
+| `WEBAUTHN_RP_NAME` | `Moodify` | shown in the OS passkey sheet |
+| `WEBAUTHN_EXPECTED_ORIGINS` | `http://localhost:3000,http://localhost:3001` | comma-separated full origins, e.g. `https://moodify-app.vercel.app` |
+| `WEBAUTHN_CHALLENGE_TTL_SECONDS` | `300` | how long a begun ceremony stays valid |
+
+> [!IMPORTANT]
+> The RP id and expected origins must point at the **frontend** domain the browser is on — not the backend API host — because WebAuthn binds a passkey to the page's origin. Full endpoint reference lives in `openapi.yaml` (the **Passkeys** tag) and the live Swagger UI.
+
 <h2 id="-technologies">🛠️ Technologies</h2>
 
 Here is the list of technologies used in the Moodify project:
@@ -367,6 +402,7 @@ Here is the list of technologies used in the Moodify project:
 - **Django REST Framework (DRF)**: For creating RESTful APIs.
 - **MongoEngine**: For MongoDB integration with Django.
 - **JWT**: For user authentication and authorization.
+- **py_webauthn**: For WebAuthn / FIDO2 passkey registration and assertion verification.
 - **Deezer API**: For fetching music recommendations (free, keyless).
 - **Swagger**: For API documentation.
 - **Redoc**: For API documentation.
@@ -492,6 +528,12 @@ Here is the list of technologies used in the Moodify project:
 
 <p align="center">
   <img src="images/explore.png" alt="Explore Page" width="100%" style="border-radius: 10px">
+</p>
+
+### Passkeys Management Page
+
+<p align="center">
+  <img src="images/passkeys.png" alt="Passkeys Management Page" width="100%" style="border-radius: 10px">
 </p>
 
 ### Login Page
@@ -723,6 +765,11 @@ Once the AI/ML models are ready, proceed with setting up the backend.
       DEBUG=True
       ALLOWED_HOSTS=<your_hosts>
       MONGODB_URI=<your_mongodb_uri>
+      # Passkeys / WebAuthn — defaults below work for local dev as-is.
+      # In production set the RP id/origins to your FRONTEND domain.
+      WEBAUTHN_RP_ID=localhost
+      WEBAUTHN_RP_NAME=Moodify
+      WEBAUTHN_EXPECTED_ORIGINS=http://localhost:3000,http://localhost:3001
       ```
     - Visit `backend/settings.py` and add `SECRET_KEY` & set `DEBUG` to `True`.
 
@@ -790,6 +837,20 @@ Finally, set up the frontend to interact with the backend.
 | `POST`      | `/users/verify-username-email/`                                  | Verify if a username and email are valid        |
 | `POST`      | `/users/reset-password/`                                         | Reset a user's password                         |
 | `GET`       | `/users/verify-token/`                                           | Verify a user's token                           |
+
+### **Passkey Endpoints (WebAuthn / FIDO2)**
+
+Every ceremony is two calls — `begin` returns server options + an opaque `flowId`, `complete` posts the signed credential back. A verified login assertion returns the same `{access, refresh}` JWT pair as `/users/login/`.
+
+| HTTP Method | Endpoint                                  | Auth   | Description                                                  |
+|-------------|-------------------------------------------|--------|-------------------------------------------------------------|
+| `POST`      | `/users/passkeys/register/begin/`         | Bearer | Start enrolling a passkey (returns creation options)        |
+| `POST`      | `/users/passkeys/register/complete/`      | Bearer | Verify the attestation and store the new passkey            |
+| `POST`      | `/users/passkeys/login/begin/`            | none   | Start a passkey sign-in (username-scoped or usernameless)   |
+| `POST`      | `/users/passkeys/login/complete/`         | none   | Verify the assertion and issue a JWT pair                   |
+| `GET`       | `/users/passkeys/`                         | Bearer | List the signed-in user's passkeys                          |
+| `PATCH`     | `/users/passkeys/<str:passkey_id>/`        | Bearer | Rename a passkey                                            |
+| `DELETE`    | `/users/passkeys/<str:passkey_id>/`        | Bearer | Delete a passkey                                            |
 
 ### **Emotion Detection Endpoints**
 

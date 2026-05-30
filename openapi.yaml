@@ -77,6 +77,13 @@ tags:
     description: |
       Create accounts, sign in, refresh tokens, validate a session. All
       authenticated endpoints expect `Authorization: Bearer <access>`.
+  - name: Passkeys
+    description: |
+      WebAuthn / FIDO2 passwordless sign-in. Users enroll many passkeys
+      (phone, laptop, hardware key) and manage them in-app. Each ceremony is
+      two calls — `begin` issues a single-use challenge + opaque `flowId`,
+      `complete` returns the signed credential. A verified login assertion
+      mints the same `(access, refresh)` pair as `/users/login/`.
   - name: Password Reset
     description: |
       Two-step API-driven reset (verify identity → set new password). No
@@ -209,6 +216,179 @@ paths:
                   username: { type: string, example: "moodify_user" }
         '401':
           $ref: '#/components/responses/Unauthorized'
+
+  # ===========================================================================
+  # Django — Passkeys (WebAuthn / FIDO2)
+  # ===========================================================================
+  /users/passkeys/register/begin/:
+    post:
+      tags: [Passkeys]
+      summary: Begin passkey registration
+      description: |
+        Step 1 of enrolling a passkey for the signed-in user. Returns the
+        `PublicKeyCredentialCreationOptions` to pass to
+        `navigator.credentials.create()`, plus an opaque `flowId`. The user's
+        existing passkeys are listed in `excludeCredentials` so the same
+        authenticator can't be enrolled twice.
+      responses:
+        '200':
+          description: Creation options + flowId.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasskeyBeginResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /users/passkeys/register/complete/:
+    post:
+      tags: [Passkeys]
+      summary: Complete passkey registration
+      description: |
+        Step 2 of enrolling a passkey. Verifies the attestation against the
+        challenge from step 1 and stores the credential's public key. An
+        optional `name` labels the passkey in the management UI.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasskeyRegisterCompleteBody' }
+      responses:
+        '201':
+          description: Passkey registered.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasskeyMutationResponse' }
+        '400':
+          description: Verification failed or the registration session expired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Could not verify the passkey." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Authenticator already registered.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "This passkey is already registered." }
+
+  /users/passkeys/login/begin/:
+    post:
+      tags: [Passkeys]
+      summary: Begin passkey login
+      description: |
+        Step 1 of signing in with a passkey. Returns
+        `PublicKeyCredentialRequestOptions` for `navigator.credentials.get()`
+        plus a `flowId`. Pass a `username` to scope the prompt to one account,
+        or omit it for a usernameless (discoverable-credential) prompt. The
+        response is identical whether or not the username exists — it never
+        discloses account existence.
+      security: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasskeyLoginBeginBody' }
+      responses:
+        '200':
+          description: Request options + flowId.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasskeyBeginResponse' }
+
+  /users/passkeys/login/complete/:
+    post:
+      tags: [Passkeys]
+      summary: Complete passkey login
+      description: |
+        Step 2 of signing in with a passkey. Verifies the assertion against the
+        stored public key and challenge, advances the signature counter (a
+        non-increasing counter — a possible cloned authenticator — is
+        rejected), then returns the same `(access, refresh)` JWT pair as
+        `/users/login/`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasskeyLoginCompleteBody' }
+      responses:
+        '200':
+          description: Authenticated — returns access + refresh JWTs plus the username.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasskeyTokenPair' }
+        '400':
+          description: Malformed request or the login session expired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Login session expired. Please try again." }
+        '401':
+          description: Assertion could not be verified.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Could not verify the passkey." }
+
+  /users/passkeys/:
+    get:
+      tags: [Passkeys]
+      summary: List the signed-in user's passkeys
+      description: Returns every passkey on the account, newest first. No secret material is included.
+      responses:
+        '200':
+          description: The user's passkeys.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasskeyList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /users/passkeys/{passkey_id}/:
+    parameters:
+      - $ref: '#/components/parameters/PasskeyId'
+    patch:
+      tags: [Passkeys]
+      summary: Rename a passkey
+      description: Updates the friendly label of one of the caller's passkeys.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasskeyRenameBody' }
+      responses:
+        '200':
+          description: Renamed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PasskeyMutationResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: No such passkey for this user.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Passkey not found." }
+    delete:
+      tags: [Passkeys]
+      summary: Delete a passkey
+      description: |
+        Permanently removes one of the caller's passkeys. The user can still
+        sign in with their password (and any remaining passkeys).
+      responses:
+        '200':
+          description: Deleted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: "Passkey removed." }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: No such passkey for this user.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "Passkey not found." }
 
   # ===========================================================================
   # Django — Password reset
@@ -926,6 +1106,16 @@ components:
         pattern: '^[0-9a-fA-F]{24}$'
         example: 65f3a1b2c4d5e6f7a8b9c0d1
 
+    PasskeyId:
+      name: passkey_id
+      in: path
+      required: true
+      description: Mongo ObjectId of the target passkey (from `GET /users/passkeys/`).
+      schema:
+        type: string
+        pattern: '^[0-9a-fA-F]{24}$'
+        example: 65f3a1b2c4d5e6f7a8b9c0d1
+
   # ---------------------------------------------------------------------------
   responses:
     Created:
@@ -1120,6 +1310,100 @@ components:
       properties:
         access:  { type: string, description: "Short-lived JWT (default 7 days)." }
         refresh: { type: string, description: "Refresh JWT (default 14 days)." }
+
+    # ----- passkeys (WebAuthn / FIDO2) ---------------------------------------
+    PasskeyBeginResponse:
+      type: object
+      description: |
+        Server-issued ceremony options plus the opaque `flowId` that ties the
+        `begin` and `complete` calls together. `options` is the raw
+        `PublicKeyCredential{Creation,Request}Options` (camelCase, base64url
+        challenge/ids) handed straight to the browser WebAuthn API.
+      required: [options, flowId]
+      properties:
+        options:
+          type: object
+          description: Passed to `navigator.credentials.create()`/`get()`.
+        flowId:
+          type: string
+          description: Single-use, expiring reference echoed back on `complete`.
+          example: "65f3a1b2c4d5e6f7a8b9c0d1"
+
+    PasskeyRegisterCompleteBody:
+      type: object
+      required: [flowId, credential]
+      properties:
+        flowId:     { type: string, example: "65f3a1b2c4d5e6f7a8b9c0d1" }
+        name:       { type: string, maxLength: 60, example: "MacBook Touch ID" }
+        credential:
+          type: object
+          description: The `PublicKeyCredential` returned by `navigator.credentials.create()`.
+
+    PasskeyLoginBeginBody:
+      type: object
+      properties:
+        username:
+          type: string
+          description: |
+            Optional. When given, only that account's passkeys are offered;
+            omit for a usernameless (discoverable-credential) prompt.
+          example: "moodify_user"
+
+    PasskeyLoginCompleteBody:
+      type: object
+      required: [flowId, credential]
+      properties:
+        flowId:     { type: string, example: "65f3a1b2c4d5e6f7a8b9c0d1" }
+        credential:
+          type: object
+          description: The `PublicKeyCredential` returned by `navigator.credentials.get()`.
+
+    PasskeyTokenPair:
+      type: object
+      required: [access, refresh]
+      properties:
+        access:   { type: string, description: "Short-lived JWT (default 7 days)." }
+        refresh:  { type: string, description: "Refresh JWT (default 14 days)." }
+        username: { type: string, example: "moodify_user" }
+
+    Passkey:
+      type: object
+      description: Public, non-sensitive view of an enrolled passkey.
+      properties:
+        id:           { type: string, example: "65f3a1b2c4d5e6f7a8b9c0d1" }
+        name:         { type: string, example: "MacBook Touch ID" }
+        transports:
+          type: array
+          items: { type: string, example: "internal" }
+        device_type:
+          type: string
+          nullable: true
+          enum: [single_device, multi_device]
+          example: "multi_device"
+        backed_up:    { type: boolean, description: "Synced to a cloud keychain.", example: true }
+        aaguid:       { type: string, nullable: true, example: "00000000-0000-0000-0000-000000000000" }
+        created_at:   { type: string, format: date-time, example: "2026-05-30T12:00:00Z" }
+        last_used_at: { type: string, format: date-time, nullable: true, example: "2026-05-30T13:30:00Z" }
+
+    PasskeyList:
+      type: object
+      required: [passkeys]
+      properties:
+        passkeys:
+          type: array
+          items: { $ref: '#/components/schemas/Passkey' }
+
+    PasskeyMutationResponse:
+      type: object
+      properties:
+        message: { type: string, example: "Passkey registered." }
+        passkey: { $ref: '#/components/schemas/Passkey' }
+
+    PasskeyRenameBody:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, maxLength: 60, example: "Work laptop" }
 
     # ----- profile -----------------------------------------------------------
     Profile:

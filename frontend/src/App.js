@@ -12,6 +12,7 @@ import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
+import PasskeysPage from "./pages/PasskeysPage";
 import ResultsPage from "./pages/ResultsPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import Footer from "./components/Footer";
@@ -96,6 +97,14 @@ function AppLayout() {
           element={
             <RequireAuth>
               <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/passkeys"
+          element={
+            <RequireAuth>
+              <PasskeysPage />
             </RequireAuth>
           }
         />

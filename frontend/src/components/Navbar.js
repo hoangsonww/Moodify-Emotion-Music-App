@@ -10,6 +10,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
   Switch,
   Toolbar,
   Tooltip,
@@ -26,6 +28,8 @@ import RecommendIcon from "@mui/icons-material/Recommend";
 import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import FingerprintIcon from "@mui/icons-material/Fingerprint";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { DarkModeContext } from "../context/DarkModeContext";
@@ -59,6 +63,7 @@ const Navbar = () => {
   const isMobile = useMediaQuery("(max-width:760px)");
   const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
   const [showMenu, setShowMenu] = useState(false);
+  const [accountAnchor, setAccountAnchor] = useState(null);
 
   const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
 
@@ -83,11 +88,13 @@ const Navbar = () => {
     logout();
     setIsLoggedIn(false);
     setShowMenu(false);
+    setAccountAnchor(null);
     navigate("/login");
   };
 
   const goto = (path) => {
     setShowMenu(false);
+    setAccountAnchor(null);
     navigate(path);
   };
 
@@ -103,6 +110,15 @@ const Navbar = () => {
       label: arrivedFromAnalysis ? item.resultsLabel : item.label,
     };
   });
+
+  // The mobile drawer lists Passkeys inline (the desktop nav hides it behind
+  // the Account dropdown). Only meaningful when signed in.
+  const drawerItems = isLoggedIn
+    ? [
+        ...visibleItems,
+        { label: "Passkeys", path: "/passkeys", icon: FingerprintIcon },
+      ]
+    : visibleItems;
 
   // ---- desktop button ----
   const NavButton = ({ item }) => {
@@ -255,23 +271,102 @@ const Navbar = () => {
             ))}
 
             {isLoggedIn ? (
-              <Button
-                onClick={handleLogout}
-                startIcon={<LogoutIcon sx={{ fontSize: 18 }} />}
-                sx={{
-                  fontFamily: "Poppins",
-                  color: "#ff4d4d",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  borderRadius: "999px",
-                  textTransform: "none",
-                  px: 2,
-                  py: 0.85,
-                  "&:hover": { background: "rgba(255,77,77,0.10)" },
-                }}
-              >
-                Logout
-              </Button>
+              <>
+                <Button
+                  onClick={(e) => setAccountAnchor(e.currentTarget)}
+                  startIcon={<AccountCircleIcon sx={{ fontSize: 18 }} />}
+                  endIcon={
+                    <KeyboardArrowDownIcon
+                      sx={{
+                        fontSize: 18,
+                        transition: "transform .2s ease",
+                        transform: accountAnchor
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
+                      }}
+                    />
+                  }
+                  aria-haspopup="true"
+                  aria-expanded={Boolean(accountAnchor)}
+                  sx={{
+                    fontFamily: "Poppins",
+                    color: isDarkMode ? "#eee" : "#222",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    borderRadius: "999px",
+                    textTransform: "none",
+                    px: 2,
+                    py: 0.85,
+                    border: isDarkMode
+                      ? "1px solid rgba(255,255,255,0.12)"
+                      : "1px solid rgba(0,0,0,0.08)",
+                    background: accountAnchor
+                      ? "rgba(255,77,77,0.10)"
+                      : "transparent",
+                    "&:hover": { background: "rgba(255,77,77,0.10)" },
+                  }}
+                >
+                  Account
+                </Button>
+                <Menu
+                  anchorEl={accountAnchor}
+                  open={Boolean(accountAnchor)}
+                  onClose={() => setAccountAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  transformOrigin={{ vertical: "top", horizontal: "right" }}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        mt: 1,
+                        minWidth: 200,
+                        borderRadius: "14px",
+                        overflow: "hidden",
+                        background: isDarkMode ? "#1a1a25" : "#ffffff",
+                        border: isDarkMode
+                          ? "1px solid #2a2a36"
+                          : "1px solid #f0e8e6",
+                        boxShadow: isDarkMode
+                          ? "0 18px 44px rgba(0,0,0,0.55)"
+                          : "0 18px 44px rgba(255,77,77,0.18)",
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem
+                    onClick={() => goto("/passkeys")}
+                    sx={{
+                      fontFamily: "Poppins",
+                      fontWeight: 600,
+                      fontSize: 14,
+                      py: 1.25,
+                      color: isDarkMode ? "#f6f6f8" : "#1a1a1a",
+                      "&:hover": { background: "rgba(255,77,77,0.10)" },
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 24, color: "#ff4d4d" }}>
+                      <FingerprintIcon fontSize="small" />
+                    </ListItemIcon>
+                    Passkeys
+                  </MenuItem>
+                  <Divider sx={{ my: 0.5 }} />
+                  <MenuItem
+                    onClick={handleLogout}
+                    sx={{
+                      fontFamily: "Poppins",
+                      fontWeight: 700,
+                      fontSize: 14,
+                      py: 1.25,
+                      color: "#ff4d4d",
+                      "&:hover": { background: "rgba(255,77,77,0.12)" },
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 24, color: "#ff4d4d" }}>
+                      <LogoutIcon fontSize="small" />
+                    </ListItemIcon>
+                    Log Out
+                  </MenuItem>
+                </Menu>
+              </>
             ) : (
               <Button
                 onClick={() => navigate("/login")}
@@ -401,7 +496,7 @@ const Navbar = () => {
         </Box>
 
         <List sx={{ flexGrow: 1 }}>
-          {visibleItems.map((item) => (
+          {drawerItems.map((item) => (
             <DrawerItem key={item.path} item={item} />
           ))}
         </List>

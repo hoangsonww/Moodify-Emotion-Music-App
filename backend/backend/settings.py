@@ -217,6 +217,33 @@ REST_FRAMEWORK = {
 JWT_ACCESS_TOKEN_DAYS = config("JWT_ACCESS_TOKEN_DAYS", default=7, cast=int)
 JWT_REFRESH_TOKEN_DAYS = config("JWT_REFRESH_TOKEN_DAYS", default=14, cast=int)
 
+# --- WebAuthn / passkeys (consumed by users/passkey_views.py) -------------
+# A passkey is bound to a Relying Party (RP) identified by a domain. The
+# RP ID MUST be the registrable domain the USER's browser is on -- i.e. the
+# FRONTEND origin, not this API's host. The browser refuses a ceremony when
+# the page origin is not same-site with the RP ID, so for split
+# frontend/backend deploys these must point at the frontend.
+#
+#   WEBAUTHN_RP_ID          bare domain, no scheme/port  (e.g. moodify-app.vercel.app)
+#   WEBAUTHN_RP_NAME        human label shown in the OS passkey sheet
+#   WEBAUTHN_EXPECTED_ORIGINS  comma-separated full origins allowed to finish
+#                              a ceremony (scheme + host + optional port). Supports
+#                              several so prod + localhost dev can share a build.
+#   WEBAUTHN_CHALLENGE_TTL_SECONDS  how long a begun ceremony stays valid.
+WEBAUTHN_RP_ID = config("WEBAUTHN_RP_ID", default="localhost")
+WEBAUTHN_RP_NAME = config("WEBAUTHN_RP_NAME", default="Moodify")
+WEBAUTHN_EXPECTED_ORIGINS = [
+    o.strip()
+    for o in config(
+        "WEBAUTHN_EXPECTED_ORIGINS",
+        default="http://localhost:3000,http://localhost:3001",
+    ).split(",")
+    if o.strip()
+]
+WEBAUTHN_CHALLENGE_TTL_SECONDS = config(
+    "WEBAUTHN_CHALLENGE_TTL_SECONDS", default=300, cast=int
+)
+
 # --- ML inference service (Modal) -----------------------------------------
 MODAL_INFERENCE_URL = config("MODAL_INFERENCE_URL", default="")
 MODAL_SERVICE_TOKEN = config("MODAL_SERVICE_TOKEN", default="")
