@@ -7,7 +7,7 @@
          PRIMARY META
          ========================================================= -->
     <title>Moodify - AI Emotion-Based Music Recommendation Platform & Wiki</title>
-    <meta name="description" content="Moodify reads your mood from text, voice or a selfie with three self-trained AI models and curates a personalized Deezer playlist that matches how you feel. Open-source, web + mobile, privacy-first. This page doubles as the project wiki: architecture, model details, API reference, infrastructure, security and self-hosting.">
+    <meta name="description" content="Moodify reads your mood from text, voice or a selfie with three self-trained AI models and curates a personalized Deezer playlist that matches how you feel. Open-source, web + mobile, privacy-first. This page doubles as the project wiki: architecture, model details, API reference, infrastructure, security (incl. passwordless passkeys / WebAuthn) and self-hosting.">
     <meta name="keywords" content="Moodify, mood music, emotion detection, music recommendation, AI music app, BERT, PyTorch, TensorFlow, FER, MTCNN, MFCC, facial expression recognition, speech emotion recognition, text emotion detection, Deezer, React, React Native, Django, Modal, MongoDB, mood playlist, personalized music, mood tracker, open source music app, EWMA, Markov, wiki, architecture, self-hosting, Helm, Terraform, EKS, GKE, Vercel">
     <meta name="author" content="Son Nguyen (hoangsonww)">
     <meta name="copyright" content="(c) 2024-2026 Son Nguyen">
@@ -716,6 +716,17 @@
                     </div>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon">&#128272;</div>
+                    <h3>Passwordless Passkeys</h3>
+                    <p>Sign in with Face ID, Touch ID, Windows Hello, or a hardware security key - no password. <strong>WebAuthn / FIDO2</strong> verified by py_webauthn. Users enroll multiple passkeys and manage them (add / rename / delete) on a dedicated Account &rarr; Passkeys page; a verified assertion mints the same JWT pair as password login.</p>
+                    <div class="feature-tags">
+                        <span class="tag">WebAuthn</span>
+                        <span class="tag">FIDO2</span>
+                        <span class="tag">Passwordless</span>
+                        <span class="tag">py_webauthn</span>
+                    </div>
+                </div>
+                <div class="feature-card">
                     <div class="feature-icon">&#128241;</div>
                     <h3>Mobile Application</h3>
                     <p>Expo SDK 51 + React Native 0.74 with Hermes engine. AsyncStorage for tokens, EAS Build for both stores, native camera + microphone for the three modalities.</p>
@@ -1069,6 +1080,7 @@
                     <h3>Security &amp; privacy summary</h3>
                     <ul>
                         <li><strong>JWT -</strong> the same <code class="mf-code-inline">JWT_SIGNING_KEY</code> signs on Django and verifies on Modal. End-user tokens are 7d access + 14d refresh; silent refresh is wired into the React client.</li>
+                        <li><strong>Passkeys (WebAuthn / FIDO2) -</strong> optional passwordless sign-in. Many passkeys per user; verification via py_webauthn; single-use, expiring challenges; signature-counter clone detection; login never discloses whether an account exists. A verified assertion yields the same JWT pair as a password login.</li>
                         <li><strong>Service token -</strong> <code class="mf-code-inline">MODAL_SERVICE_TOKEN</code> is a shared constant for the Django&rarr;Modal proxy path; bypasses the Modal rate limiter (DRF throttles that side).</li>
                         <li><strong>No CSRF surface -</strong> auth lives in the header; <code class="mf-code-inline">CsrfViewMiddleware</code> is intentionally removed.</li>
                         <li><strong>Photo / voice privacy -</strong> uploads hit the inference container, run inference, and are dropped. Only the predicted label is returned and persisted.</li>
@@ -1697,6 +1709,7 @@
         <div class="mf-faq">
           <details><summary>What makes Moodify different?</summary><p>Most music apps ask you to pick a genre or playlist. Moodify reads your mood three different ways (text, voice, face) and tunes the music to fit - no scrolling, no decision fatigue, no manual searching.</p></details>
           <details><summary>Do I need an account?</summary><p>Yes - an account keeps your mood history and saved tracks with you across visits and devices. Sign-up takes about 10 seconds: username, email, password. That's it.</p></details>
+          <details><summary>Can I sign in without a password?</summary><p>Yes - Moodify supports <strong>passkeys</strong>. Right after sign-up (or anytime from <em>Account &rarr; Passkeys</em>) you can add a passkey and then sign in with Face ID, your fingerprint, Windows Hello, or a hardware security key - no password to type. You can add several (phone, laptop, security key), rename or remove them, and your password keeps working as a fallback.</p></details>
           <details><summary>How does it figure out my mood?</summary><p>Three ways - pick whichever you feel like. <strong>Type</strong> a few words about how you feel. <strong>Record</strong> a few seconds of your voice. <strong>Snap</strong> a quick selfie. Moodify reads any of those and finds music that matches.</p></details>
           <details><summary>Do you keep my photos or voice recordings?</summary><p>No. Your photo or voice clip is used once to figure out the mood, then thrown away. Only the mood label itself ("happy", "calm", etc.) is kept so your history works. Nothing about your face or voice is stored.</p></details>
           <details><summary>Where does the music come from?</summary><p>Deezer. Every recommendation links straight to a streamable track on Deezer with a 30-second preview built in. Tap any track to open it on Deezer and listen.</p></details>
