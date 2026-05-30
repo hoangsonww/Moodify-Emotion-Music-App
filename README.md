@@ -530,6 +530,12 @@ Here is the list of technologies used in the Moodify project:
   <img src="images/explore.png" alt="Explore Page" width="100%" style="border-radius: 10px">
 </p>
 
+### Passkeys Management Page
+
+<p align="center">
+  <img src="images/passkeys.png" alt="Passkeys Management Page" width="100%" style="border-radius: 10px">
+</p>
+
 ### Login Page
 
 <p align="center">

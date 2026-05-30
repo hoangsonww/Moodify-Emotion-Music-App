@@ -114,7 +114,10 @@ const Navbar = () => {
   // The mobile drawer lists Passkeys inline (the desktop nav hides it behind
   // the Account dropdown). Only meaningful when signed in.
   const drawerItems = isLoggedIn
-    ? [...visibleItems, { label: "Passkeys", path: "/passkeys", icon: FingerprintIcon }]
+    ? [
+        ...visibleItems,
+        { label: "Passkeys", path: "/passkeys", icon: FingerprintIcon },
+      ]
     : visibleItems;
 
   // ---- desktop button ----
@@ -340,7 +343,7 @@ const Navbar = () => {
                       "&:hover": { background: "rgba(255,77,77,0.10)" },
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 36, color: "#ff4d4d" }}>
+                    <ListItemIcon sx={{ minWidth: 24, color: "#ff4d4d" }}>
                       <FingerprintIcon fontSize="small" />
                     </ListItemIcon>
                     Passkeys
@@ -357,7 +360,7 @@ const Navbar = () => {
                       "&:hover": { background: "rgba(255,77,77,0.12)" },
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 36, color: "#ff4d4d" }}>
+                    <ListItemIcon sx={{ minWidth: 24, color: "#ff4d4d" }}>
                       <LogoutIcon fontSize="small" />
                     </ListItemIcon>
                     Log Out

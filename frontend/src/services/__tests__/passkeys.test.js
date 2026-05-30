@@ -120,9 +120,14 @@ describe("registerPasskey", () => {
           },
         },
       })
-      .mockResolvedValueOnce({ data: { passkey: { id: "pk1", name: "Laptop" } } });
+      .mockResolvedValueOnce({
+        data: { passkey: { id: "pk1", name: "Laptop" } },
+      });
 
-    const passkey = await registerPasskey({ name: "Laptop", accessToken: "tok" });
+    const passkey = await registerPasskey({
+      name: "Laptop",
+      accessToken: "tok",
+    });
 
     expect(passkey).toEqual({ id: "pk1", name: "Laptop" });
     expect(create).toHaveBeenCalledTimes(1);
@@ -159,7 +164,10 @@ describe("registerPasskey", () => {
       );
     installWebAuthn({ create });
     axios.post.mockResolvedValueOnce({
-      data: { flowId: "f", options: { user: { id: "AQID" }, challenge: "AQID" } },
+      data: {
+        flowId: "f",
+        options: { user: { id: "AQID" }, challenge: "AQID" },
+      },
     });
 
     await expect(registerPasskey({})).rejects.toMatchObject({
@@ -179,7 +187,11 @@ describe("loginWithPasskey", () => {
       .mockResolvedValueOnce({
         data: {
           flowId: "flow-2",
-          options: { challenge: "AQID", allowCredentials: [], rpId: "localhost" },
+          options: {
+            challenge: "AQID",
+            allowCredentials: [],
+            rpId: "localhost",
+          },
         },
       })
       .mockResolvedValueOnce({
@@ -211,7 +223,10 @@ describe("loginWithPasskey", () => {
     installWebAuthn({ get });
     axios.post
       .mockResolvedValueOnce({
-        data: { flowId: "f", options: { challenge: "AQID", allowCredentials: [] } },
+        data: {
+          flowId: "f",
+          options: { challenge: "AQID", allowCredentials: [] },
+        },
       })
       .mockResolvedValueOnce({ data: { access: "a", refresh: "r" } });
 
@@ -232,7 +247,9 @@ describe("management calls", () => {
   });
 
   it("renamePasskey PATCHes the new name", async () => {
-    axios.patch.mockResolvedValueOnce({ data: { passkey: { id: "1", name: "X" } } });
+    axios.patch.mockResolvedValueOnce({
+      data: { passkey: { id: "1", name: "X" } },
+    });
     const out = await renamePasskey("1", "X");
     expect(out).toEqual({ id: "1", name: "X" });
     expect(axios.patch).toHaveBeenCalledWith(

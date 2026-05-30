@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   Box,
   Button,
@@ -86,7 +92,10 @@ function describeDevice(pk) {
   if (t.some((x) => ["usb", "nfc", "ble"].includes(x))) {
     return { label: "Security key", Icon: UsbOutlined };
   }
-  return { label: pk.backed_up ? "Synced passkey" : "Passkey", Icon: KeyRounded };
+  return {
+    label: pk.backed_up ? "Synced passkey" : "Passkey",
+    Icon: KeyRounded,
+  };
 }
 
 const PasskeysPage = () => {
@@ -138,7 +147,10 @@ const PasskeysPage = () => {
     } catch (err) {
       if (err instanceof PasskeyError && err.code === "cancelled") {
         toast.info("Passkey setup cancelled.");
-      } else if (err instanceof PasskeyError && err.code === "already_registered") {
+      } else if (
+        err instanceof PasskeyError &&
+        err.code === "already_registered"
+      ) {
         toast.warning("This device already has a passkey for your account.");
       } else {
         toast.error(
@@ -217,8 +229,8 @@ const PasskeysPage = () => {
                 Your passkeys
               </Typography>
               <Typography sx={styles.heroSub}>
-                Sign in with Face ID, a fingerprint, or your screen lock —
-                no password required.
+                Sign in with Face ID, a fingerprint, or your screen lock — no
+                password required.
               </Typography>
             </Box>
           </Box>
@@ -278,7 +290,9 @@ const PasskeysPage = () => {
             </Box>
           ) : error ? (
             <Box sx={styles.center}>
-              <Typography sx={{ color: "#ff4d4d", mb: 2, fontFamily: "Poppins" }}>
+              <Typography
+                sx={{ color: "#ff4d4d", mb: 2, fontFamily: "Poppins" }}
+              >
                 {error}
               </Typography>
               <Button
@@ -386,7 +400,7 @@ const PasskeysPage = () => {
         <DialogContent>
           <DialogContentText sx={styles.dialogText}>
             Your device will ask you to confirm with Face ID, your fingerprint,
-            or screen lock. Give this passkey a name so you can recognise it
+            or screen lock. Give this passkey a name so you can recognize it
             later.
           </DialogContentText>
           <TextField
@@ -719,7 +733,8 @@ const getStyles = (isDark) => ({
     borderRadius: "16px",
     border: `1px solid ${isDark ? "#2a2a2a" : "#eeeeee"}`,
     background: isDark ? "#191919" : "#fff",
-    transition: "transform .2s ease, box-shadow .2s ease, border-color .15s ease",
+    transition:
+      "transform .2s ease, box-shadow .2s ease, border-color .15s ease",
     "&:hover": {
       transform: "translateY(-2px)",
       boxShadow: "0 14px 30px rgba(255,77,77,0.16)",
@@ -798,6 +813,12 @@ const getStyles = (isDark) => ({
     fontWeight: 700,
     textTransform: "none",
     color: isDark ? "#ccc" : "#555",
+    backgroundColor: "transparent",
+    "&:hover": {
+      backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+      color: isDark ? "#fff" : "#333",
+      boxShadow: "none",
+    },
   },
   dangerBtn: {
     borderRadius: "999px",

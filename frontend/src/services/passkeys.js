@@ -127,7 +127,9 @@ async function runRegistrationCeremony(options) {
 
   const response = credential.response;
   const transports =
-    typeof response.getTransports === "function" ? response.getTransports() : [];
+    typeof response.getTransports === "function"
+      ? response.getTransports()
+      : [];
 
   return {
     id: credential.id,
@@ -196,7 +198,10 @@ async function runAuthenticationCeremony(options) {
 // interceptor handles auth, so no token is passed.
 export async function registerPasskey({ name, accessToken } = {}) {
   if (!isPasskeySupported()) {
-    throw new PasskeyError("This browser doesn't support passkeys.", "unsupported");
+    throw new PasskeyError(
+      "This browser doesn't support passkeys.",
+      "unsupported",
+    );
   }
   const authConfig = accessToken
     ? { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -223,7 +228,10 @@ export async function registerPasskey({ name, accessToken } = {}) {
 // (discoverable-credential) prompt. Returns the { access, refresh } pair.
 export async function loginWithPasskey({ username } = {}) {
   if (!isPasskeySupported()) {
-    throw new PasskeyError("This browser doesn't support passkeys.", "unsupported");
+    throw new PasskeyError(
+      "This browser doesn't support passkeys.",
+      "unsupported",
+    );
   }
   const begin = await axios.post(
     `${API_URL}/users/passkeys/login/begin/`,

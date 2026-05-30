@@ -423,7 +423,8 @@ const getStyles = (isDark) => ({
     color: isDark ? "#ff7a7a" : "#ff4d4d",
     background: "transparent",
     border: `1.5px solid ${isDark ? "rgba(255,122,122,0.5)" : "rgba(255,77,77,0.5)"}`,
-    transition: "transform .2s ease, background .2s ease, border-color .2s ease",
+    transition:
+      "transform .2s ease, background .2s ease, border-color .2s ease",
     "&:hover": {
       background: "rgba(255,77,77,0.08)",
       borderColor: "#ff4d4d",
