@@ -36,16 +36,23 @@ frontend/
 │   │   │   ├── ListeningHistory.js  # Listening history component
 │   │   │   ├── MoodHistory.js       # Mood history component
 │   │   │   └── Recommendations.js   # Music recommendations component
+│   │   ├── Passkeys/
+│   │   │   └── PasskeyPromptModal.jsx # Post-sign-up "set up a passkey?" modal
 │   │   ├── Footer.js                # Footer component
-│   │   ├── Navbar.js                # Header component
+│   │   ├── Navbar.js                # Header (Account dropdown → Passkeys / Log Out)
 │   │   └── ModalComponent.js        # Modal component for user input
 │   │
 │   ├── pages/                       # Contains main pages of the app
 │   │   ├── HomePage.js              # Home page component
 │   │   ├── ProfilePage.js           # Profile page component
+│   │   ├── PasskeysPage.js          # Passkey management (add / rename / delete)
 │   │   ├── ResultsPage.js           # Results page component
 │   │   ├── NotFoundPage.js          # 404 page component
 │   │   └── RecommendationsPage.js   # Recommendations page component
+│   │
+│   ├── services/                    # API + browser-capability clients
+│   │   ├── auth.js                  # Token storage + 401-refresh interceptor
+│   │   └── passkeys.js              # WebAuthn ceremony helpers + passkey API
 │   │
 │   ├── styles/                      # Contains global styles and themes
 │   │   └── styles.css               # Main CSS file
@@ -316,6 +323,10 @@ sequenceDiagram
 ## Features
 
 - User registration and login functionality.
+- **Passwordless sign-in with passkeys (WebAuthn / FIDO2).** Sign in with Face ID, Touch ID, Windows Hello, or a security key. Users can:
+  - Enroll **multiple passkeys** and manage them on a dedicated **Account → Passkeys** page (add, rename, delete) — reached from the navbar **Account** dropdown that replaces the lone Log Out button when signed in.
+  - Get a styled, on-brand **set-up prompt right after sign-up** (never a browser `alert`).
+  - Use **"Sign in with a passkey"** on the login screen, including usernameless flows.
 - Ability to analyze user input through:
   - Text input.
   - Speech input (recording or file upload).

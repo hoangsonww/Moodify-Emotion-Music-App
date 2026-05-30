@@ -39,11 +39,12 @@ infra bootstrap.
 ### Key Capabilities
 
 - **🎯 Online Reinforcement Learning** — every Moodify user trains their own playlist ranker in real time. A **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** re-ranks recommendation results from 👍 / 👎 / open-in-Deezer signals, and a per-user **mood-calibration map** corrects mis-classified emotions from the BERT detector. Both stream through a single `POST /api/feedback/` endpoint into Mongo time-series collections, are applied inline on the next request, and stay cold-start safe (anonymous + new users see the rule-based pipeline unchanged). See §5 "Reinforcement-Learning / Personalisation Layer".
+- **🔐 Passwordless Auth (Passkeys / WebAuthn)** — users enroll multiple FIDO2 passkeys (platform authenticators or hardware keys), manage them in-app, and sign in without a password. Verification is delegated to `py_webauthn`; a verified assertion mints the same JWT pair as password login, so the rest of the system is unchanged. See §7 "Security Architecture".
 - **Multi-Modal Emotion Detection**: Text, speech, and facial expression analysis
 - **Real-Time Processing**: Sub-second response times for emotion detection
 - **Scalable Architecture**: Containerized microservices with horizontal scaling
 - **High Availability**: 99.9% uptime through redundancy and load balancing
-- **Security-First Design**: JWT authentication, encrypted communications, rate limiting
+- **Security-First Design**: JWT + passkey (WebAuthn) authentication, encrypted communications, rate limiting
 
 ## 2. System Overview
 
@@ -489,6 +490,7 @@ erDiagram
     USER ||--o{ TRACK_FEEDBACK : rates
     USER ||--o{ MOOD_CALIBRATION : owns
     USER ||--o{ TASTE_PROFILE : owns
+    USER ||--o{ WEBAUTHN_CREDENTIAL : "enrolls (passkeys)"
 
     USER {
         ObjectId _id PK
@@ -501,6 +503,20 @@ erDiagram
         boolean email_verified
         boolean is_active
         json deezer_profile
+    }
+
+    WEBAUTHN_CREDENTIAL {
+        ObjectId _id PK
+        string user_id FK "Owning account"
+        string credential_id UK "base64url"
+        string public_key "COSE, base64url"
+        int sign_count "Anti-clone counter"
+        array transports "internal|hybrid|usb|nfc|ble"
+        string name "User-facing label"
+        boolean backed_up "Synced keychain"
+        string device_type "single_device|multi_device"
+        datetime created_at
+        datetime last_used_at
     }
 
     MOOD_HISTORY {
@@ -780,11 +796,52 @@ sequenceDiagram
     end
 ```
 
+### Passkey Authentication (WebAuthn / FIDO2)
+
+Passwordless sign-in is layered on top of the same JWT scheme — a verified passkey assertion produces the identical `(access, refresh)` pair as a password login, so every downstream component is unchanged. Verification (attestation, assertion, COSE keys, signature counter) is delegated to the audited `py_webauthn` library.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant BE as Backend
+    participant WA as py_webauthn
+    participant DB as MongoDB
+
+    Note over U,DB: Registration (authenticated) — enroll a passkey
+    FE->>BE: POST /users/passkeys/register/begin/ (Bearer)
+    BE->>DB: store single-use WebAuthnChallenge
+    BE-->>FE: { options (excludeCredentials), flowId }
+    FE->>U: navigator.credentials.create() → OS prompt
+    U-->>FE: signed attestation
+    FE->>BE: POST .../register/complete/ { flowId, credential, name }
+    BE->>DB: load + delete challenge (single use)
+    BE->>WA: verify_registration_response()
+    WA-->>BE: public key + sign_count + aaguid
+    BE->>DB: save WebAuthnCredential (many per user)
+    BE-->>FE: 201 { passkey }
+
+    Note over U,DB: Login (public) — sign in with a passkey
+    FE->>BE: POST /users/passkeys/login/begin/ { username? }
+    BE->>DB: store single-use challenge
+    BE-->>FE: { options, flowId }
+    FE->>U: navigator.credentials.get() → OS prompt
+    U-->>FE: signed assertion
+    FE->>BE: POST .../login/complete/ { flowId, credential }
+    BE->>DB: load + delete challenge; look up credential by rawId
+    BE->>WA: verify_authentication_response(stored pubkey, sign_count)
+    WA-->>BE: new_sign_count (rejects non-increasing = cloned key)
+    BE->>DB: advance sign_count + last_used_at
+    BE-->>FE: 200 { access, refresh, username }
+```
+
+Design notes: the server-issued challenge is persisted as a **single-use, expiring** record referenced by an opaque `flowId`, so the two-step handshake is stateless across serverless instances; the login `begin` response is identical whether or not a username exists (no account-existence disclosure); and the Relying-Party id / expected origins are env-configured to the **frontend** domain because WebAuthn binds a credential to the page's origin.
+
 ### Security Controls
 
 | Control | Implementation | Purpose |
 |---------|---------------|---------|
-| Authentication | JWT with RS256 | Stateless auth with asymmetric encryption |
+| Authentication | JWT (HS256) + passkeys (WebAuthn / FIDO2) | Stateless token auth plus phishing-resistant passwordless sign-in |
 | Authorization | RBAC with user roles | Fine-grained access control |
 | Rate Limiting | Token bucket (100 req/min) | Prevent abuse and DoS |
 | Input Validation | Pydantic models, DRF serializers | Prevent injection attacks |

@@ -20,7 +20,7 @@
   <img src="https://img.shields.io/badge/Vercel-Serverless-000000?style=for-the-badge&logo=vercel&logoColor=white" />
   <img src="https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
   <img src="https://img.shields.io/badge/Modal-Proxy-7B68EE?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Tests-80_passing-34d399?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Tests-221_passing-34d399?style=for-the-badge" />
 </p>
 
 ---
@@ -197,13 +197,15 @@ sequenceDiagram
 
 ## Data model
 
-Two MongoDB documents, both via `mongoengine`. Indexes managed in Atlas
-(the app sets `auto_create_index=False`, which is the right pattern for
-serverless — see [serverless gotchas](#resilience--serverless-gotchas)).
+The core documents, all via `mongoengine` (passkey + feedback collections
+are listed in the table below). Indexes managed in Atlas (the app sets
+`auto_create_index=False`, which is the right pattern for serverless — see
+[serverless gotchas](#resilience--serverless-gotchas)).
 
 ```mermaid
 erDiagram
     USERS ||--|| USER_PROFILE : "1:1 via username"
+    USERS ||--o{ WEBAUTHN_CREDENTIALS : "1:N passkeys via user_id"
 
     USERS {
         ObjectId _id
@@ -212,6 +214,18 @@ erDiagram
         string password "PBKDF2 hash"
         bool is_active
         datetime created_at "tz-aware UTC"
+    }
+
+    WEBAUTHN_CREDENTIALS {
+        ObjectId _id
+        string user_id "FK to USERS._id"
+        string credential_id "unique, base64url"
+        string public_key "COSE, base64url"
+        int sign_count "anti-clone counter"
+        list~string~ transports
+        string name "user label"
+        bool backed_up "synced keychain?"
+        datetime last_used_at
     }
 
     USER_PROFILE {
@@ -232,6 +246,8 @@ erDiagram
 | `user_profile` | `api/models.py` | Re-exported from `users/models.py` so both apps share one definition. Owns the two RL fields below. |
 | `mood_feedback` | `api/feedback_store.py` | Mongo time-series; one row per mood correction. Lazy-created. 365-day TTL. |
 | `track_feedback` | `api/feedback_store.py` | Mongo time-series; one row per 👍 / 👎 / open-in-Deezer signal. Lazy-created. 365-day TTL. |
+| `webauthn_credentials` | `users/documents.py` | One row per enrolled passkey (many per user, keyed by `user_id`). Stores the COSE public key + signature counter; never any private key. |
+| `webauthn_challenges` | `users/documents.py` | Short-lived, single-use ceremony challenges referenced by an opaque `flowId`. Deleted on `complete`; expired rows are swept opportunistically. |
 
 **Personalisation fields** (`UserProfile.mood_calibration`, `UserProfile.taste_profile`) are `DictField`s — schemaless, so no migration is needed when the layout evolves. The bandit's feature extractor is forward-compatible: shorter stored vectors are padded with the prior on read (`api/bandit.py:_read_posterior`).
 
@@ -269,6 +285,26 @@ flowchart TD
 - **No sessions, no CSRF.** Auth travels in the header.
   `CsrfViewMiddleware` is intentionally omitted (silenced via
   `SILENCED_SYSTEM_CHECKS`).
+
+### Passkeys (WebAuthn / FIDO2)
+
+Passwordless sign-in is layered on top of the same JWT scheme — a verified
+passkey assertion mints the identical `(access, refresh)` pair as a password
+login, so everything downstream (`MongoJWTAuthentication`, Modal) is unchanged.
+
+- **Two-step ceremonies** (`begin` → `complete`) for both registration and
+  login, implemented in `users/passkey_views.py`. The server-issued challenge
+  is persisted as a single-use `WebAuthnChallenge` and referenced by an opaque
+  `flowId`, so the handshake is stateless across serverless instances.
+- **Verification** (attestation + assertion, COSE keys, signature counter) is
+  delegated to the audited [`py_webauthn`](https://github.com/duo-labs/py_webauthn);
+  the login `begin` response never discloses whether a username exists.
+- **Multiple passkeys per user**, managed via `GET/PATCH/DELETE` routes with
+  strict per-user ownership checks.
+- **RP config is env-driven** — `WEBAUTHN_RP_ID`, `WEBAUTHN_RP_NAME`,
+  `WEBAUTHN_EXPECTED_ORIGINS`, `WEBAUTHN_CHALLENGE_TTL_SECONDS`. The RP id /
+  origins must be the **frontend** domain, since WebAuthn binds a passkey to
+  the page's origin (not this API's host).
 
 ---
 
@@ -415,6 +451,20 @@ For the matching Modal-side design, see
 | `PUT`  | `/users/user/profile/update/` | bearer | `{email}` | Updates mutable profile fields. |
 | `DELETE` | `/users/user/profile/delete/` | bearer | — | Permanently deletes the account + profile. |
 
+### Passkeys (WebAuthn) — `/users/passkeys/`
+
+Each ceremony is two calls; `begin` returns `{options, flowId}`, `complete` posts the signed credential back. A verified login assertion returns `{access, refresh, username}`.
+
+| Method | Path | Auth | Body | Effect |
+|---|---|---|---|---|
+| `POST` | `/users/passkeys/register/begin/` | bearer | — | Issues creation options (existing passkeys in `excludeCredentials`). |
+| `POST` | `/users/passkeys/register/complete/` | bearer | `{flowId, credential, name?}` | Verifies attestation; stores the passkey. `201`. |
+| `POST` | `/users/passkeys/login/begin/` | none | `{username?}` | Issues request options (usernameless when `username` omitted). |
+| `POST` | `/users/passkeys/login/complete/` | none | `{flowId, credential}` | Verifies assertion; returns a JWT pair. |
+| `GET`  | `/users/passkeys/` | bearer | — | Lists the signed-in user's passkeys. |
+| `PATCH` | `/users/passkeys/<id>/` | bearer | `{name}` | Renames a passkey (owner only). |
+| `DELETE` | `/users/passkeys/<id>/` | bearer | — | Deletes a passkey (owner only). |
+
 ### History — `/users/{kind}/<user_id>/`
 
 | Kind | Methods | Body |
@@ -470,6 +520,7 @@ backend/
 │       └── inference_client.py    HTTP client to Modal, with retry
 ├── users/
 │   ├── views.py            register, login, refresh, profile, password-reset, history
+│   ├── passkey_views.py    WebAuthn passkey ceremonies + management (py_webauthn)
 │   ├── urls.py
 │   ├── authentication.py   MongoJWTAuthentication (replaces SQL auth)
 │   ├── documents.py        User (Mongo, with PBKDF2 hashing)
@@ -479,7 +530,7 @@ backend/
 │   ├── store.py            Mongo time-series persistence (backend_metrics)
 │   ├── middleware.py       Per-request timing + insert
 │   └── views.py            GET /api/metrics/ (admin-only)
-├── tests/                  99 tests, runs against mongomock
+├── tests/                  221 tests, runs against mongomock
 └── .env.example
 ```
 
@@ -502,6 +553,10 @@ in your Vercel project's Environment Variables for production.
 | `JWT_SIGNING_KEY` | yes | **Must match Modal**'s `JWT_SIGNING_KEY` |
 | `JWT_ACCESS_TOKEN_DAYS` | no | Default 7 |
 | `JWT_REFRESH_TOKEN_DAYS` | no | Default 14 |
+| `WEBAUTHN_RP_ID` | no | Passkey Relying-Party id = the **frontend** bare domain (no scheme/port). Default `localhost`. Set to e.g. `moodify-app.vercel.app` in prod. |
+| `WEBAUTHN_RP_NAME` | no | Label in the OS passkey sheet. Default `Moodify`. |
+| `WEBAUTHN_EXPECTED_ORIGINS` | no | Comma-separated full frontend origins allowed to finish a ceremony. Default `http://localhost:3000,http://localhost:3001`. |
+| `WEBAUTHN_CHALLENGE_TTL_SECONDS` | no | Lifetime of an in-flight ceremony challenge. Default `300`. |
 | `MODAL_INFERENCE_URL` | yes | URL printed by `modal deploy modal_app.py` |
 | `MODAL_SERVICE_TOKEN` | yes | **Must match Modal**'s `MODAL_SERVICE_TOKEN` |
 | `CORS_ALLOW_ALL_ORIGINS` | no | Default `True`; flip to lock down |
@@ -541,7 +596,7 @@ needs the Mongo `User` collection will simply hit Atlas.
 
 ```bash
 pip install -r requirements.txt
-pytest -q                                     # 99 tests, runs against mongomock
+pytest -q                                     # 221 tests, runs against mongomock
 ```
 
 The whole suite is offline — `conftest.py` swaps the live mongoengine

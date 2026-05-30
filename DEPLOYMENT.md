@@ -67,6 +67,13 @@ Required envs for the **backend** Vercel project:
 
 * `MONGO_URI`, `JWT_SIGNING_KEY`, `MODAL_INFERENCE_URL`,
   `MODAL_SERVICE_TOKEN`, `CORS_ALLOWED_ORIGINS`.
+* **Passkeys (WebAuthn):** `WEBAUTHN_RP_ID` and `WEBAUTHN_EXPECTED_ORIGINS`
+  must point at the **frontend** domain (not this API's host), e.g.
+  `WEBAUTHN_RP_ID=moodify-app.vercel.app` and
+  `WEBAUTHN_EXPECTED_ORIGINS=https://moodify-app.vercel.app`. Optional:
+  `WEBAUTHN_RP_NAME` (default `Moodify`), `WEBAUTHN_CHALLENGE_TTL_SECONDS`
+  (default `300`). Defaults target `localhost` for local dev. If these don't
+  match the domain the browser is on, passkey ceremonies fail in the browser.
 
 Required envs for the **mobile** Expo app (set via `eas env:create` or
 in `mobile/.env`):
