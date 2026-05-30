@@ -1,87 +1,159 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Button } from "@mui/material";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import PriorityHighRoundedIcon from "@mui/icons-material/PriorityHighRounded";
 import { DarkModeContext } from "../context/DarkModeContext";
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
-  const { isDarkMode } = useContext(DarkModeContext); // Access the dark mode state
+  const { isDarkMode } = useContext(DarkModeContext);
 
-  const styles = getStyles(isDarkMode); // Get styles based on dark mode
+  const styles = getStyles(isDarkMode);
 
   return (
     <Box sx={styles.container}>
-      {/* Animated illustration with pulse effect */}
-      <Box sx={styles.illustration} className="pulse-animation">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          width="150px"
-          height="150px"
-          fill="#ff4d4d"
+      {/* Soft brand glow behind the card */}
+      <Box sx={styles.glow} aria-hidden />
+
+      <Box sx={styles.card} className="fade-in">
+        {/* Gradient alert badge with pulse effect */}
+        <Box sx={styles.badge} className="pulse-animation">
+          <PriorityHighRoundedIcon sx={styles.badgeIcon} />
+        </Box>
+
+        <Typography component="div" sx={styles.code}>
+          404
+        </Typography>
+
+        <Typography component="h1" sx={styles.title}>
+          Page Not Found
+        </Typography>
+
+        <Typography sx={styles.message}>
+          Oops! The page you are looking for does not exist or has been moved.
+        </Typography>
+
+        <Button
+          onClick={() => navigate("/")}
+          startIcon={<HomeRoundedIcon />}
+          sx={styles.button}
         >
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v6h2V7zm0 8h-2v2h2v-2z" />
-        </svg>
+          Go Back Home
+        </Button>
       </Box>
-
-      <Typography variant="h3" style={styles.title} className="fade-in">
-        404 - Page Not Found
-      </Typography>
-      <Typography variant="body1" style={styles.message} className="fade-in">
-        Oops! The page you are looking for does not exist or has been moved.
-      </Typography>
-
-      <Button
-        variant="contained"
-        onClick={() => navigate("/")}
-        style={styles.button}
-        className="fade-in"
-      >
-        Go Back Home
-      </Button>
     </Box>
   );
 };
 
-// Function to dynamically return styles based on dark mode
-const getStyles = (isDarkMode) => ({
+// Dynamically return styles based on dark mode, matching the global theme.
+const getStyles = (isDark) => ({
   container: {
-    height: "100vh",
+    position: "relative",
+    minHeight: "100vh",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: isDarkMode ? "#121212" : "#f9f9f9", // Dark mode background
-    padding: "20px",
-    fontFamily: "Poppins",
+    overflow: "hidden",
+    px: 2,
+    py: 8,
+    fontFamily: "Poppins, sans-serif",
+    background: isDark
+      ? "radial-gradient(1200px 600px at 50% -10%, #20141a 0%, #121212 60%)"
+      : "radial-gradient(1200px 600px at 50% -10%, #fff1f0 0%, #f9f9f9 60%)",
   },
-  illustration: {
-    marginBottom: "20px",
+  glow: {
+    position: "absolute",
+    top: "12%",
+    width: { xs: 280, sm: 420 },
+    height: { xs: 280, sm: 420 },
+    borderRadius: "50%",
+    background:
+      "radial-gradient(circle, rgba(255,77,77,0.28) 0%, rgba(255,77,77,0) 70%)",
+    filter: "blur(8px)",
+    pointerEvents: "none",
+  },
+  card: {
+    position: "relative",
+    zIndex: 1,
+    width: "100%",
+    maxWidth: 480,
+    textAlign: "center",
+    px: { xs: 3, sm: 5 },
+    py: { xs: 4, sm: 5 },
+    borderRadius: "24px",
+    background: isDark ? "rgba(31,31,31,0.85)" : "rgba(255,255,255,0.9)",
+    border: isDark ? "1px solid #2a2a36" : "1px solid #f0e8e6",
+    boxShadow: isDark
+      ? "0 24px 60px rgba(0,0,0,0.55)"
+      : "0 24px 60px rgba(255,77,77,0.18)",
+    backdropFilter: "blur(6px)",
+  },
+  badge: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: { xs: 92, sm: 108 },
+    height: { xs: 92, sm: 108 },
+    mx: "auto",
+    mb: 2,
+    borderRadius: "50%",
+    background:
+      "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 50%, #ec4899 100%)",
+    border: isDark ? "5px solid rgba(255,255,255,0.06)" : "5px solid #ffffff",
+    boxShadow: isDark
+      ? "0 14px 34px rgba(255,77,77,0.45)"
+      : "0 14px 34px rgba(255,77,77,0.40)",
     animation: "pulse 1.5s infinite",
   },
+  badgeIcon: {
+    color: "#fff",
+    fontSize: { xs: 50, sm: 60 },
+  },
+  code: {
+    fontFamily: "Poppins, sans-serif",
+    fontWeight: 800,
+    lineHeight: 1,
+    fontSize: { xs: 64, sm: 84 },
+    letterSpacing: "-2px",
+    background:
+      "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 50%, #ec4899 100%)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    backgroundClip: "text",
+  },
   title: {
-    color: "#ff4d4d",
-    font: "inherit",
-    fontSize: "32px",
-    fontWeight: "bold",
-    marginBottom: "10px",
-    textAlign: "center",
+    fontFamily: "Poppins, sans-serif",
+    fontWeight: 700,
+    fontSize: { xs: 22, sm: 26 },
+    color: isDark ? "#f6f6f8" : "#1a1a1a",
+    mt: 1,
+    mb: 1,
   },
   message: {
-    color: isDarkMode ? "#ccc" : "#666", // Adjust text color for dark mode
-    font: "inherit",
-    marginBottom: "20px",
-    textAlign: "center",
+    fontFamily: "Poppins, sans-serif",
+    fontSize: { xs: 14, sm: 15 },
+    color: isDark ? "#b8b8c2" : "#5a5a66",
+    maxWidth: 360,
+    mx: "auto",
+    mb: 3,
   },
   button: {
-    backgroundColor: "#ff4d4d",
-    color: "white",
+    fontFamily: "Poppins, sans-serif",
+    fontWeight: 700,
     textTransform: "none",
-    font: "inherit",
-    fontWeight: "normal",
-    padding: "10px 20px",
+    color: "#fff",
+    px: 3,
+    py: 1.1,
+    borderRadius: "999px",
+    background: "linear-gradient(135deg, #ff4d4d 0%, #ff6b6b 100%)",
+    boxShadow: "0 10px 22px rgba(255,77,77,0.35)",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
     "&:hover": {
-      backgroundColor: "#ff1a1a",
+      background: "linear-gradient(135deg, #ff5e5e 0%, #ff7d7d 100%)",
+      boxShadow: "0 14px 28px rgba(255,77,77,0.45)",
+      transform: "translateY(-2px)",
     },
   },
 });
