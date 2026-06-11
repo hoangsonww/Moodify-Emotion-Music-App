@@ -1,0 +1,92 @@
+/* Full-page living gradient background.
+   - background-position is driven by the scroll variable --sy (set in JS),
+     so the whole wash glides smoothly as the user scrolls up/down.
+   - a slow transform animation adds gentle idle drift.
+   Works on every device (pure CSS); the 3D canvas layers on top when the GPU
+   can handle it. */
+
+.moodify-aurora {
+  --sy: 0;
+  position: fixed;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size:
+    200% 200%,
+    200% 200%,
+    220% 220%;
+  background-position:
+    calc(20% + (var(--sy) * 18%)) calc(12% + (var(--sy) * 46%)),
+    calc(80% - (var(--sy) * 22%)) calc(46% - (var(--sy) * 30%)),
+    50% calc(96% - (var(--sy) * 62%));
+  transition: background-position 0.18s linear;
+  animation: moodifyAuroraDrift 30s ease-in-out infinite alternate;
+  will-change: transform, background-position;
+}
+
+.moodify-aurora[data-theme="dark"] {
+  background-color: #0d0f14;
+  background-image: radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 77, 77, 0.24),
+      transparent 55%
+    ),
+    radial-gradient(circle at 50% 50%, rgba(43, 179, 177, 0.2), transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(124, 92, 255, 0.2), transparent 58%);
+}
+
+.moodify-aurora[data-theme="light"] {
+  background-color: #f5f2ef;
+  background-image: radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 77, 77, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(43, 179, 177, 0.16),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(124, 92, 255, 0.14),
+      transparent 58%
+    );
+}
+
+.moodify-canvas-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* The global `canvas { height: auto }` rule in index.css would collapse the
+   r3f canvas — these scoped rules (higher specificity) keep it full-bleed. */
+.moodify-canvas-layer > div,
+.moodify-canvas-layer canvas {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  display: block;
+}
+
+@keyframes moodifyAuroraDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
+  50% {
+    transform: translate3d(1.5%, -2%, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-1.2%, 1.6%, 0) scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moodify-aurora {
+    animation: none;
+    transition: none;
+  }
+}

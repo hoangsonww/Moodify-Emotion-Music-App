@@ -130,6 +130,15 @@ body.dark-mode textarea:focus {
   }
 }
 
+@keyframes moodifyMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 .pulse-animation {
   animation: pulse 1.5s infinite;
 }
@@ -183,5 +192,59 @@ body.light-mode a {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+}
+
+/* Route page transitions: each page slides up into view on arrival and slides
+   down out of view on departure (SwitchTransition mode="out-in"). */
+.page-anim {
+  will-change: transform, opacity;
+}
+
+.page-enter,
+.page-appear {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.page-enter-active,
+.page-appear-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.48s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* No transform at rest so position:fixed descendants behave normally. */
+.page-enter-done,
+.page-appear-done {
+  transform: none;
+}
+
+.page-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-anim,
+  .page-enter,
+  .page-enter-active,
+  .page-appear,
+  .page-appear-active,
+  .page-exit,
+  .page-exit-active {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
   }
 }
