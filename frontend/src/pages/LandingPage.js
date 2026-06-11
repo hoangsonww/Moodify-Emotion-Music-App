@@ -50,6 +50,34 @@ import {
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from "../context/DarkModeContext";
 import "../App.css";
+import PageBackground from "../components/PageBackground";
+
+// Thin gradient bar pinned to the top that fills as the page scrolls.
+const ScrollProgress = ({ styles }) => {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onScroll = () => {
+      const el = document.documentElement;
+      const max = el.scrollHeight - el.clientHeight;
+      setProgress(max > 0 ? Math.min(el.scrollTop / max, 1) : 0);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+  return (
+    <Box sx={styles.scrollProgressTrack} aria-hidden="true">
+      <Box
+        sx={{ ...styles.scrollProgressBar, transform: `scaleX(${progress})` }}
+      />
+    </Box>
+  );
+};
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -98,9 +126,10 @@ const LandingPage = () => {
 
   return (
     <Box sx={styles.pageContainer}>
+      <PageBackground isDarkMode={isDarkMode} />
+      <ScrollProgress styles={styles} />
       <Box sx={styles.heroSection}>
-        <Box sx={styles.heroGlowOne} />
-        <Box sx={styles.heroGlowTwo} />
+        <Box sx={styles.heroScrim} aria-hidden="true" />
         <Container maxWidth="lg" sx={styles.heroContainer}>
           <Grid container spacing={{ xs: 4, md: 8 }} alignItems="center">
             <Grid item xs={12} md={6}>
@@ -116,7 +145,10 @@ const LandingPage = () => {
                 sx={styles.heroTitle}
                 {...getRevealProps(1)}
               >
-                Welcome to Moodify
+                Welcome to{" "}
+                <Box component="span" sx={styles.heroTitleAccent}>
+                  Moodify
+                </Box>
               </Typography>
               <Typography
                 variant="h6"
@@ -315,25 +347,25 @@ const LandingPage = () => {
           >
             Trusted by creative teams and wellness leaders
           </Typography>
-          <Grid container spacing={2}>
-            {partners.map((partner, index) => (
-              <Grid
-                item
-                xs={6}
-                sm={4}
-                md={2}
-                key={partner}
-                {...getRevealProps((index % 3) + 1)}
-              >
-                <Box sx={styles.logoCard}>{partner}</Box>
-              </Grid>
-            ))}
-          </Grid>
         </Container>
+        <Box sx={styles.marqueeWrap} {...getRevealProps(2)}>
+          <Box sx={styles.marqueeTrack}>
+            {[...partners, ...partners].map((partner, index) => (
+              <Box key={`${partner}-${index}`} sx={styles.marqueeItem}>
+                {partner}
+              </Box>
+            ))}
+          </Box>
+        </Box>
       </Box>
 
       <Box sx={styles.metricsSection}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              By the numbers
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -536,6 +568,11 @@ const LandingPage = () => {
 
       <Box sx={styles.sectionAlt}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              Capabilities
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -589,6 +626,11 @@ const LandingPage = () => {
 
       <Box sx={styles.section}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              The experience
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -634,6 +676,11 @@ const LandingPage = () => {
 
       <Box sx={styles.sectionAlt}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              How it works
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -682,6 +729,11 @@ const LandingPage = () => {
 
       <Box sx={styles.section}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              Real results
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -731,6 +783,11 @@ const LandingPage = () => {
 
       <Box sx={styles.sectionAlt}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              Use cases
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -780,6 +837,11 @@ const LandingPage = () => {
 
       <Box sx={styles.section}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              Playlists
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -963,6 +1025,11 @@ const LandingPage = () => {
 
       <Box sx={styles.sectionAlt}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              Testimonials
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -1014,8 +1081,67 @@ const LandingPage = () => {
         </Container>
       </Box>
 
+      <Box sx={styles.section}>
+        <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              Emotions
+            </Box>
+          </Box>
+          <Typography
+            variant="h4"
+            sx={styles.sectionTitle}
+            {...getRevealProps(1)}
+          >
+            Emotions Moodify understands
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={styles.sectionSubtitle}
+            {...getRevealProps(2)}
+          >
+            However you feel, there is a soundtrack for it. Here is how Moodify
+            maps your mood to the right music.
+          </Typography>
+          <Grid container spacing={3}>
+            {emotions.map((item, index) => {
+              const MoodIcon = item.icon;
+              return (
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  md={3}
+                  key={item.mood}
+                  {...getRevealProps((index % 3) + 1)}
+                >
+                  <Card sx={styles.useCaseCard}>
+                    <CardContent>
+                      <Box sx={styles.iconBadge}>
+                        <MoodIcon fontSize="small" />
+                      </Box>
+                      <Typography variant="subtitle1" sx={styles.panelTitle}>
+                        {item.mood}
+                      </Typography>
+                      <Typography variant="body2" sx={styles.statCaption}>
+                        {item.vibe}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Container>
+      </Box>
+
       <Box sx={styles.sectionAlt}>
         <Container maxWidth="lg">
+          <Box sx={styles.eyebrowCenter} {...getRevealProps(1)}>
+            <Box component="span" sx={styles.sectionEyebrow}>
+              FAQ
+            </Box>
+          </Box>
           <Typography
             variant="h4"
             sx={styles.sectionTitle}
@@ -1384,9 +1510,8 @@ const signalMetrics = [
 
 const features = [
   {
-    title: "Emotion-Based Recommendations",
-    description:
-      "Receive playlists tailored to your emotional state in real time.",
+    title: "Mood-Matched Music",
+    description: "Get playlists tailored to your emotional state in real time.",
     icon: AutoAwesome,
   },
   {
@@ -1705,44 +1830,27 @@ const testimonials = [
   },
 ];
 
-// eslint-disable-next-line no-unused-vars
-const pricing = [
+const emotions = [
   {
-    title: "Starter",
-    price: "Free",
-    description: "Personal mood playlists and daily check-ins.",
-    features: [
-      "Mood-based playlists",
-      "Text input and journaling",
-      "Saved mood journeys",
-    ],
-    cta: "Start free",
+    mood: "Happy",
+    vibe: "Upbeat pop and feel-good anthems",
+    icon: EmojiEvents,
   },
   {
-    title: "Pro",
-    price: "$12 / month",
-    description: "Advanced personalization and insights.",
-    features: [
-      "Voice and camera input",
-      "Mood analytics dashboard",
-      "Cross-device continuity",
-      "Custom focus routines",
-    ],
-    cta: "Upgrade to Pro",
-    highlight: true,
+    mood: "Calm",
+    vibe: "Ambient, lo-fi and soft acoustics",
+    icon: SelfImprovement,
   },
+  { mood: "Energetic", vibe: "High-tempo electronic and dance", icon: Bolt },
+  { mood: "Focused", vibe: "Instrumental deep-focus beats", icon: Headphones },
+  { mood: "Sad", vibe: "Mellow ballads and slow tracks", icon: Nightlight },
   {
-    title: "Teams",
-    price: "$24 / user",
-    description: "Shared moods, admin controls, and collaboration.",
-    features: [
-      "Team playlists",
-      "Shared focus blocks",
-      "Priority onboarding",
-      "Admin visibility",
-    ],
-    cta: "Contact sales",
+    mood: "Confident",
+    vibe: "Bold rock and strong vocals",
+    icon: FitnessCenter,
   },
+  { mood: "Relaxed", vibe: "Chillhop and warm jazz", icon: LocalCafe },
+  { mood: "Romantic", vibe: "Smooth R&B and dreamy indie", icon: Favorite },
 ];
 
 const faqs = [
@@ -1787,23 +1895,161 @@ const getStyles = (isDarkMode) => {
     subtext: isDarkMode ? "#b5bfce" : "#4b5563",
     accent: "#ff4d4d",
     accentAlt: "#2bb3b1",
+    accentThree: "#7c5cff",
     border: isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)",
     heroGradient: isDarkMode
       ? "linear-gradient(140deg, #121520 0%, #1a1f2b 45%, #302027 100%)"
       : "linear-gradient(140deg, #fff5f4 0%, #ffe9de 45%, #e8fbf9 100%)",
     accentSoft: isDarkMode ? "rgba(255,77,77,0.18)" : "rgba(255,77,77,0.12)",
+    brandGradient:
+      "linear-gradient(120deg, #ff4d4d 0%, #7c5cff 52%, #2bb3b1 100%)",
   };
+
+  // Shared premium card recipe — glass surface, gradient accent hairline on
+  // top, soft layered shadow, smooth spring-like lift on hover. Spread into
+  // every card so the whole page shares one consistent, modern language.
+  const cardSurface = isDarkMode
+    ? "rgba(25,29,38,0.72)"
+    : "rgba(255,255,255,0.82)";
+  const cardShadow = isDarkMode
+    ? "0 18px 40px rgba(0,0,0,0.28)"
+    : "0 18px 40px rgba(15,23,42,0.08)";
+  const cardShadowHover = isDarkMode
+    ? "0 30px 64px rgba(0,0,0,0.5)"
+    : "0 28px 56px rgba(255,77,77,0.16)";
+  const cardBase = {
+    position: "relative",
+    height: "100%",
+    borderRadius: "20px",
+    backgroundColor: cardSurface,
+    backdropFilter: "blur(14px)",
+    WebkitBackdropFilter: "blur(14px)",
+    border: `1px solid ${palette.border}`,
+    boxShadow: cardShadow,
+    overflow: "hidden",
+    transition:
+      "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease, border-color 0.4s ease",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: "3px",
+      background: palette.brandGradient,
+      opacity: 0,
+      transition: "opacity 0.4s ease",
+    },
+    "&:hover": {
+      transform: "translateY(-8px)",
+      boxShadow: cardShadowHover,
+      borderColor: isDarkMode ? "rgba(255,77,77,0.45)" : "rgba(255,77,77,0.35)",
+    },
+    "&:hover::before": {
+      opacity: 1,
+    },
+  };
+
+  // Translucent frosted veil for alternating sections — lets the living page
+  // background (aurora + 3D) glow through while keeping text readable.
+  const auroraAlt = isDarkMode
+    ? "rgba(13,15,20,0.58)"
+    : "rgba(255,250,247,0.55)";
 
   return {
     palette,
+    cardBase,
+    scrollProgressTrack: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: "3px",
+      zIndex: 1300,
+      pointerEvents: "none",
+      background: "transparent",
+    },
+    scrollProgressBar: {
+      height: "100%",
+      transformOrigin: "0 0",
+      background: palette.brandGradient,
+      boxShadow: "0 0 12px rgba(255,77,77,0.6)",
+    },
+    sectionEyebrow: {
+      display: "inline-block",
+      letterSpacing: "0.28em",
+      fontWeight: 700,
+      fontSize: "0.72rem",
+      textTransform: "uppercase",
+      padding: "6px 14px",
+      borderRadius: "999px",
+      color: palette.accent,
+      backgroundColor: palette.accentSoft,
+      border: `1px solid ${palette.border}`,
+      marginBottom: "16px",
+    },
+    eyebrowCenter: {
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: "0px",
+    },
+    gradientText: {
+      background: palette.brandGradient,
+      WebkitBackgroundClip: "text",
+      backgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      color: "transparent",
+    },
+    marqueeWrap: {
+      position: "relative",
+      overflow: "hidden",
+      width: "100%",
+      maskImage:
+        "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
+      WebkitMaskImage:
+        "linear-gradient(to right, transparent, #000 8%, #000 92%, transparent)",
+    },
+    marqueeTrack: {
+      display: "flex",
+      width: "max-content",
+      gap: "16px",
+      animation: "moodifyMarquee 32s linear infinite",
+      "@media (prefers-reduced-motion: reduce)": {
+        animation: "none",
+        flexWrap: "wrap",
+        justifyContent: "center",
+      },
+      "&:hover": {
+        animationPlayState: "paused",
+      },
+    },
+    marqueeItem: {
+      flex: "0 0 auto",
+      minWidth: "180px",
+      padding: "16px 22px",
+      borderRadius: "14px",
+      textAlign: "center",
+      backgroundColor: cardSurface,
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+      border: `1px solid ${palette.border}`,
+      fontWeight: 600,
+      color: palette.text,
+    },
     pageContainer: {
       minHeight: "100vh",
-      backgroundColor: palette.bg,
+      backgroundColor: "transparent",
       color: palette.text,
-      transition: "background-color 0.3s ease",
+      transition: "color 0.3s ease",
       fontFamily: "'Poppins', sans-serif !important",
       "& *": {
         fontFamily: "'Poppins', sans-serif !important",
+      },
+      // Long words (URLs, "Recommendations", etc.) wrap inside cards instead
+      // of overflowing on narrow viewports.
+      "& .MuiTypography-root": {
+        overflowWrap: "break-word",
+        hyphens: "auto",
       },
       "& .MuiTypography-root, & .MuiButton-root, & .MuiChip-root, & .MuiAccordionSummary-root, & .MuiAccordionDetails-root, & .MuiCard-root, & .MuiCardContent-root, & .MuiAvatar-root":
         {
@@ -1815,17 +2061,41 @@ const getStyles = (isDarkMode) => {
       minHeight: "100vh",
       display: "flex",
       alignItems: "flex-start",
-      background: palette.heroGradient,
+      background: "transparent",
       overflow: "hidden",
       padding: { xs: "56px 0 48px", md: "72px 0 64px" },
     },
     heroContainer: {
       position: "relative",
-      zIndex: 1,
+      zIndex: 3,
       paddingTop: { xs: "8px", md: "12px" },
+    },
+    heroCanvas: {
+      position: "absolute",
+      inset: 0,
+      zIndex: 1,
+      pointerEvents: "none",
+    },
+    heroScrim: {
+      position: "absolute",
+      inset: 0,
+      zIndex: 2,
+      pointerEvents: "none",
+      background: {
+        // Mobile: text stacks full-width over the orb — use a top-to-bottom
+        // veil so copy stays legible, then fade into the next section.
+        xs: isDarkMode
+          ? "linear-gradient(to bottom, rgba(15,17,21,0.6) 0%, rgba(15,17,21,0.24) 44%, rgba(15,17,21,0) 72%, rgba(15,17,21,0.95) 100%)"
+          : "linear-gradient(to bottom, rgba(247,244,241,0.66) 0%, rgba(247,244,241,0.3) 44%, rgba(247,244,241,0) 72%, rgba(247,244,241,0.96) 100%)",
+        // Desktop: copy lives on the left, orb on the right — scrim the left.
+        md: isDarkMode
+          ? "linear-gradient(90deg, rgba(15,17,21,0.78) 0%, rgba(15,17,21,0.35) 34%, rgba(15,17,21,0) 58%), linear-gradient(to bottom, rgba(15,17,21,0) 62%, rgba(15,17,21,0.95) 100%)"
+          : "linear-gradient(90deg, rgba(247,244,241,0.82) 0%, rgba(247,244,241,0.4) 34%, rgba(247,244,241,0) 58%), linear-gradient(to bottom, rgba(247,244,241,0) 62%, rgba(247,244,241,0.96) 100%)",
+      },
     },
     heroGlowOne: {
       position: "absolute",
+      zIndex: 0,
       width: "420px",
       height: "420px",
       borderRadius: "50%",
@@ -1837,6 +2107,7 @@ const getStyles = (isDarkMode) => {
     },
     heroGlowTwo: {
       position: "absolute",
+      zIndex: 0,
       width: "360px",
       height: "360px",
       borderRadius: "50%",
@@ -1853,10 +2124,19 @@ const getStyles = (isDarkMode) => {
       marginBottom: "4px",
     },
     heroTitle: {
-      fontWeight: 600,
-      fontSize: { xs: "2.6rem", md: "3.4rem" },
-      marginBottom: "6px",
+      fontWeight: 800,
+      fontSize: { xs: "2.8rem", sm: "3.2rem", md: "4rem" },
+      lineHeight: 1.05,
+      letterSpacing: "-0.02em",
+      marginBottom: "10px",
       color: palette.text,
+    },
+    heroTitleAccent: {
+      background: palette.brandGradient,
+      WebkitBackgroundClip: "text",
+      backgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      color: "transparent",
     },
     heroSubtitle: {
       fontSize: { xs: "1.1rem", md: "1.25rem" },
@@ -1865,8 +2145,9 @@ const getStyles = (isDarkMode) => {
     },
     heroBody: {
       color: palette.subtext,
-      marginBottom: "10px",
+      marginBottom: "32px",
       maxWidth: "540px",
+      lineHeight: 1.7,
     },
     heroButtons: {
       marginBottom: "8px",
@@ -1874,23 +2155,38 @@ const getStyles = (isDarkMode) => {
     primaryButton: {
       textTransform: "none",
       fontWeight: 600,
-      padding: "12px 26px",
-      backgroundColor: palette.accent,
-      boxShadow: "0 18px 35px rgba(255,77,77,0.25)",
+      padding: "12px 28px",
+      borderRadius: "12px",
+      color: "#fff",
+      background: palette.brandGradient,
+      backgroundSize: "180% 180%",
+      boxShadow: "0 18px 38px rgba(255,77,77,0.32)",
+      transition:
+        "transform 0.25s ease, box-shadow 0.25s ease, background-position 0.6s ease",
       "&:hover": {
-        backgroundColor: "#ff3333",
+        backgroundPosition: "100% 0%",
+        transform: "translateY(-2px)",
+        boxShadow: "0 22px 46px rgba(124,92,255,0.36)",
       },
     },
     secondaryButton: {
       textTransform: "none",
       fontWeight: 600,
       padding: "12px 26px",
+      borderRadius: "12px",
       borderColor: palette.accent,
       color: palette.accent,
-      backgroundColor: palette.surface,
+      backgroundColor: isDarkMode
+        ? "rgba(25,29,38,0.5)"
+        : "rgba(255,255,255,0.6)",
+      backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
+      transition:
+        "transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease",
       "&:hover": {
         borderColor: "#ff3333",
         backgroundColor: palette.accentSoft,
+        transform: "translateY(-2px)",
       },
     },
     ghostButton: {
@@ -1934,26 +2230,37 @@ const getStyles = (isDarkMode) => {
       marginTop: "0px",
     },
     heroHighlightCard: {
-      padding: "12px",
-      borderRadius: "12px",
-      backgroundColor: palette.surface,
+      padding: "14px",
+      borderRadius: "14px",
+      backgroundColor: cardSurface,
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
       border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+      transition:
+        "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
       "&:hover": {
         transform: "translateY(-4px)",
+        borderColor: isDarkMode ? "rgba(255,77,77,0.4)" : "rgba(255,77,77,0.3)",
         boxShadow: isDarkMode
-          ? "0 12px 24px rgba(0,0,0,0.35)"
-          : "0 12px 24px rgba(15,23,42,0.12)",
+          ? "0 16px 30px rgba(0,0,0,0.4)"
+          : "0 16px 30px rgba(15,23,42,0.14)",
       },
     },
     heroPanel: {
-      backgroundColor: palette.surface,
+      position: "relative",
+      backgroundColor: isDarkMode
+        ? "rgba(25,29,38,0.66)"
+        : "rgba(255,255,255,0.62)",
+      backdropFilter: "blur(20px) saturate(140%)",
+      WebkitBackdropFilter: "blur(20px) saturate(140%)",
       borderRadius: "20px",
       padding: "28px",
-      border: `1px solid ${palette.border}`,
+      border: isDarkMode
+        ? "1px solid rgba(255,255,255,0.12)"
+        : "1px solid rgba(255,255,255,0.6)",
       boxShadow: isDarkMode
-        ? "0 24px 60px rgba(0,0,0,0.4)"
-        : "0 24px 60px rgba(15,23,42,0.15)",
+        ? "0 24px 60px rgba(0,0,0,0.45)"
+        : "0 24px 60px rgba(15,23,42,0.18)",
     },
     heroPanelHeader: {
       marginBottom: "20px",
@@ -2008,12 +2315,16 @@ const getStyles = (isDarkMode) => {
     },
     sectionAlt: {
       padding: { xs: "70px 0", md: "100px 0" },
-      backgroundColor: palette.surfaceAlt,
+      background: auroraAlt,
+      backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
     },
     sectionTitle: {
       textAlign: "center",
-      fontWeight: 600,
-      fontSize: { xs: "2rem", md: "2.4rem" },
+      fontWeight: 800,
+      fontSize: { xs: "2.1rem", md: "2.7rem" },
+      lineHeight: 1.12,
+      letterSpacing: "-0.015em",
       marginBottom: "12px",
       color: palette.text,
     },
@@ -2022,10 +2333,13 @@ const getStyles = (isDarkMode) => {
       maxWidth: "640px",
       margin: "0 auto 36px",
       color: palette.subtext,
+      fontSize: { xs: "1rem", md: "1.05rem" },
     },
     sectionTitleLeft: {
-      fontWeight: 600,
-      fontSize: { xs: "2rem", md: "2.4rem" },
+      fontWeight: 800,
+      fontSize: { xs: "2.1rem", md: "2.7rem" },
+      lineHeight: 1.12,
+      letterSpacing: "-0.015em",
       marginBottom: "16px",
       color: palette.text,
     },
@@ -2034,17 +2348,8 @@ const getStyles = (isDarkMode) => {
       color: palette.subtext,
     },
     statsCard: {
-      padding: "20px",
-      borderRadius: "16px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 16px 30px rgba(0,0,0,0.35)"
-          : "0 16px 30px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
+      padding: "22px",
     },
     statsValue: {
       fontWeight: 700,
@@ -2085,23 +2390,12 @@ const getStyles = (isDarkMode) => {
     },
     metricsSection: {
       padding: { xs: "70px 0", md: "100px 0" },
-      backgroundColor: palette.surfaceAlt,
+      background: auroraAlt,
+      backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
     },
     megaStatCard: {
-      height: "100%",
-      borderRadius: "20px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      boxShadow: isDarkMode
-        ? "0 20px 40px rgba(0,0,0,0.25)"
-        : "0 20px 40px rgba(15,23,42,0.12)",
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 24px 48px rgba(0,0,0,0.35)"
-          : "0 24px 48px rgba(15,23,42,0.18)",
-      },
+      ...cardBase,
     },
     megaStatValue: {
       fontWeight: 700,
@@ -2110,27 +2404,15 @@ const getStyles = (isDarkMode) => {
       marginBottom: "8px",
     },
     featureCard: {
-      height: "100%",
-      borderRadius: "18px",
+      ...cardBase,
       padding: "8px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      boxShadow: isDarkMode
-        ? "0 20px 40px rgba(0,0,0,0.25)"
-        : "0 20px 40px rgba(15,23,42,0.1)",
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 22px 44px rgba(0,0,0,0.35)"
-          : "0 22px 44px rgba(15,23,42,0.16)",
-      },
     },
     featureHeader: {
       display: "flex",
       alignItems: "center",
-      gap: "12px",
-      marginBottom: "12px",
+      gap: "14px",
+      marginBottom: "14px",
+      "& > :first-of-type": { marginBottom: 0 },
     },
     featureTitle: {
       fontWeight: 600,
@@ -2140,40 +2422,23 @@ const getStyles = (isDarkMode) => {
       color: palette.subtext,
     },
     iconBadge: {
-      width: 34,
-      height: 34,
-      borderRadius: "10px",
+      width: 42,
+      height: 42,
+      borderRadius: "12px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: palette.accentSoft,
-      color: palette.accent,
+      flexShrink: 0,
+      marginBottom: "16px",
+      background: palette.brandGradient,
+      color: "#fff",
+      boxShadow: "0 8px 18px rgba(255,77,77,0.28)",
     },
     pillarCard: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 18px 32px rgba(0,0,0,0.35)"
-          : "0 18px 32px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
     },
     stepCard: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 18px 32px rgba(0,0,0,0.35)"
-          : "0 18px 32px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
     },
     stepIcon: {
       width: 36,
@@ -2188,14 +2453,18 @@ const getStyles = (isDarkMode) => {
     },
     signalHighlight: {
       display: "flex",
-      gap: "12px",
+      gap: "14px",
       alignItems: "flex-start",
       padding: "12px 0",
+      "& > :first-of-type": { marginBottom: 0 },
     },
     signalCard: {
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
+      borderRadius: "20px",
+      backgroundColor: cardSurface,
+      backdropFilter: "blur(14px)",
+      WebkitBackdropFilter: "blur(14px)",
       border: `1px solid ${palette.border}`,
+      boxShadow: cardShadow,
     },
     signalProgress: {
       height: "8px",
@@ -2206,30 +2475,10 @@ const getStyles = (isDarkMode) => {
       },
     },
     useCaseCard: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 18px 32px rgba(0,0,0,0.35)"
-          : "0 18px 32px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
     },
     journeyCard: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 18px 32px rgba(0,0,0,0.35)"
-          : "0 18px 32px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
     },
     journeyLabel: {
       color: palette.accentAlt,
@@ -2241,28 +2490,23 @@ const getStyles = (isDarkMode) => {
       fontWeight: 500,
     },
     integrationCard: {
-      height: "100%",
-      borderRadius: "14px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-4px)",
-        boxShadow: isDarkMode
-          ? "0 14px 26px rgba(0,0,0,0.35)"
-          : "0 14px 26px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
+      borderRadius: "16px",
     },
     enginePoint: {
       display: "flex",
-      gap: "12px",
+      gap: "14px",
       alignItems: "flex-start",
       padding: "12px 0",
+      "& > :first-of-type": { marginBottom: 0 },
     },
     moodCard: {
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
+      borderRadius: "20px",
+      backgroundColor: cardSurface,
+      backdropFilter: "blur(14px)",
+      WebkitBackdropFilter: "blur(14px)",
       border: `1px solid ${palette.border}`,
+      boxShadow: cardShadow,
     },
     moodProgress: {
       height: "8px",
@@ -2273,20 +2517,7 @@ const getStyles = (isDarkMode) => {
       },
     },
     outcomeCard: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      boxShadow: isDarkMode
-        ? "0 18px 32px rgba(0,0,0,0.25)"
-        : "0 18px 32px rgba(15,23,42,0.12)",
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 18px 32px rgba(0,0,0,0.35)"
-          : "0 18px 32px rgba(15,23,42,0.16)",
-      },
+      ...cardBase,
     },
     outcomeValue: {
       fontWeight: 700,
@@ -2295,9 +2526,12 @@ const getStyles = (isDarkMode) => {
       marginBottom: "10px",
     },
     trustCard: {
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
+      borderRadius: "20px",
+      backgroundColor: cardSurface,
+      backdropFilter: "blur(14px)",
+      WebkitBackdropFilter: "blur(14px)",
       border: `1px solid ${palette.border}`,
+      boxShadow: cardShadow,
     },
     trustItem: {
       display: "flex",
@@ -2309,17 +2543,7 @@ const getStyles = (isDarkMode) => {
       border: `1px solid ${palette.border}`,
     },
     testimonialCard: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 18px 32px rgba(0,0,0,0.35)"
-          : "0 18px 32px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
     },
     testimonialAvatar: {
       backgroundColor: palette.accentSoft,
@@ -2331,28 +2555,20 @@ const getStyles = (isDarkMode) => {
       color: palette.subtext,
     },
     planCard: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
-      border: `1px solid ${palette.border}`,
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: isDarkMode
-          ? "0 18px 32px rgba(0,0,0,0.35)"
-          : "0 18px 32px rgba(15,23,42,0.12)",
-      },
+      ...cardBase,
+      padding: "8px",
     },
     planCardHighlight: {
-      height: "100%",
-      borderRadius: "18px",
-      backgroundColor: palette.surface,
+      ...cardBase,
+      padding: "8px",
       border: `1px solid ${palette.accent}`,
-      boxShadow: "0 18px 40px rgba(255,77,77,0.2)",
-      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-      "&:hover": {
-        transform: "translateY(-6px)",
-        boxShadow: "0 22px 44px rgba(255,77,77,0.3)",
+      boxShadow: isDarkMode
+        ? "0 24px 50px rgba(255,77,77,0.28)"
+        : "0 24px 50px rgba(255,77,77,0.22)",
+      "&::before": {
+        ...cardBase["&::before"],
+        opacity: 1,
+        height: "4px",
       },
     },
     planChip: {
@@ -2373,11 +2589,22 @@ const getStyles = (isDarkMode) => {
     },
     faqCard: {
       borderRadius: "16px",
-      backgroundColor: palette.surface,
+      backgroundColor: cardSurface,
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
       border: `1px solid ${palette.border}`,
       boxShadow: "none",
+      transition: "border-color 0.3s ease, box-shadow 0.3s ease",
       "&:before": {
         display: "none",
+      },
+      "&:hover": {
+        borderColor: isDarkMode
+          ? "rgba(255,77,77,0.35)"
+          : "rgba(255,77,77,0.28)",
+        boxShadow: isDarkMode
+          ? "0 12px 28px rgba(0,0,0,0.3)"
+          : "0 12px 28px rgba(15,23,42,0.08)",
       },
     },
     faqSummary: {
@@ -2399,15 +2626,28 @@ const getStyles = (isDarkMode) => {
       lineHeight: 1.6,
     },
     ctaSection: {
-      padding: { xs: "80px 0", md: "110px 0" },
+      position: "relative",
+      overflow: "hidden",
+      padding: { xs: "90px 0", md: "130px 0" },
       textAlign: "center",
       background: isDarkMode
-        ? "linear-gradient(135deg, #1a1f2b 0%, #2a1d22 100%)"
-        : "linear-gradient(135deg, #ffe6e0 0%, #e9fbf9 100%)",
+        ? "linear-gradient(135deg, rgba(26,31,43,0.62) 0%, rgba(42,29,34,0.62) 100%)"
+        : "linear-gradient(135deg, rgba(255,230,224,0.6) 0%, rgba(233,251,249,0.6) 100%)",
+      backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
+    },
+    ctaCanvas: {
+      position: "absolute",
+      inset: 0,
+      zIndex: 0,
+      opacity: 0.55,
+      pointerEvents: "none",
     },
     ctaTitle: {
-      fontWeight: 600,
-      fontSize: { xs: "2rem", md: "2.6rem" },
+      fontWeight: 800,
+      fontSize: { xs: "2.2rem", md: "2.9rem" },
+      lineHeight: 1.1,
+      letterSpacing: "-0.015em",
       marginBottom: "16px",
       color: palette.text,
     },

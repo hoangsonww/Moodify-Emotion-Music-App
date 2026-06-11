@@ -183,7 +183,7 @@ const styles = {
       "linear-gradient(135deg, #ff4d4d 0%, #ff6b6b 45%, #ff8a5b 100%)",
     padding: { xs: "20px 14px 16px", sm: "32px 32px 20px" },
     fontFamily: "Poppins, sans-serif",
-    marginTop: "20px",
+    marginTop: 0,
     width: "100%",
     maxWidth: "100vw",
     boxSizing: "border-box",

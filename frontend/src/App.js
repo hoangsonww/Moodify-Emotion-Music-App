@@ -1,10 +1,11 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useRef } from "react";
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   useLocation,
 } from "react-router-dom";
+import { SwitchTransition, CSSTransition } from "react-transition-group";
 import Navbar from "./components/Navbar";
 import RequireAuth from "./components/RequireAuth";
 import RedirectIfAuthed from "./components/RedirectIfAuthed";
@@ -30,14 +31,6 @@ import "./styles/styles.css";
 installAuthInterceptor();
 
 function App() {
-  const { isDarkMode } = useContext(DarkModeContext);
-
-  // Change the background color of the root div based on dark mode
-  useEffect(() => {
-    const root = document.getElementById("root");
-    root.style.backgroundColor = isDarkMode ? "#121212" : "#f5f5f5"; // Dark mode and light mode colors
-  }, [isDarkMode]);
-
   return (
     <Router>
       <AppLayout />
@@ -47,86 +40,123 @@ function App() {
 
 function AppLayout() {
   const location = useLocation();
+  const { isDarkMode } = useContext(DarkModeContext);
   const hideNavbar = location.pathname === "/";
+  const nodeRef = useRef(null);
+
+  // Landing renders its own full-page background, so #root stays transparent
+  // there; every other route gets the solid theme background.
+  useEffect(() => {
+    const root = document.getElementById("root");
+    if (!root) return;
+    root.style.backgroundColor =
+      location.pathname === "/"
+        ? "transparent"
+        : isDarkMode
+          ? "#121212"
+          : "#f5f5f5";
+  }, [location.pathname, isDarkMode]);
+
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const timeout = reduceMotion ? 0 : { enter: 480, exit: 300 };
 
   return (
     <>
       {!hideNavbar && <Navbar />}
-      <Routes>
-        {/* Public routes -- landing, auth, legal. Auth pages bounce a
+      <SwitchTransition mode="out-in">
+        <CSSTransition
+          key={location.pathname}
+          nodeRef={nodeRef}
+          timeout={timeout}
+          classNames="page"
+          appear
+          unmountOnExit
+        >
+          <div ref={nodeRef} className="page-anim">
+            <Routes location={location}>
+              {/* Public routes -- landing, auth, legal. Auth pages bounce a
             signed-in user back to /home so they never see the form. */}
-        <Route path="/" element={<LandingPage />} />
-        <Route
-          path="/login"
-          element={
-            <RedirectIfAuthed>
-              <Login />
-            </RedirectIfAuthed>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <RedirectIfAuthed>
-              <Register />
-            </RedirectIfAuthed>
-          }
-        />
-        <Route
-          path="/forgot-password"
-          element={
-            <RedirectIfAuthed>
-              <ForgotPassword />
-            </RedirectIfAuthed>
-          }
-        />
-        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route
+                path="/login"
+                element={
+                  <RedirectIfAuthed>
+                    <Login />
+                  </RedirectIfAuthed>
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  <RedirectIfAuthed>
+                    <Register />
+                  </RedirectIfAuthed>
+                }
+              />
+              <Route
+                path="/forgot-password"
+                element={
+                  <RedirectIfAuthed>
+                    <ForgotPassword />
+                  </RedirectIfAuthed>
+                }
+              />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route
+                path="/terms-of-service"
+                element={<TermsOfServicePage />}
+              />
 
-        {/* Gated feature routes -- redirect to /login when signed out. */}
-        <Route
-          path="/home"
-          element={
-            <RequireAuth>
-              <HomePage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <RequireAuth>
-              <ProfilePage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/passkeys"
-          element={
-            <RequireAuth>
-              <PasskeysPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/results"
-          element={
-            <RequireAuth>
-              <ResultsPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/recommendations"
-          element={
-            <RequireAuth>
-              <RecommendationsPage />
-            </RequireAuth>
-          }
-        />
+              {/* Gated feature routes -- redirect to /login when signed out. */}
+              <Route
+                path="/home"
+                element={
+                  <RequireAuth>
+                    <HomePage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <RequireAuth>
+                    <ProfilePage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/passkeys"
+                element={
+                  <RequireAuth>
+                    <PasskeysPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/results"
+                element={
+                  <RequireAuth>
+                    <ResultsPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/recommendations"
+                element={
+                  <RequireAuth>
+                    <RecommendationsPage />
+                  </RequireAuth>
+                }
+              />
 
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </div>
+        </CSSTransition>
+      </SwitchTransition>
       <Footer />
     </>
   );
