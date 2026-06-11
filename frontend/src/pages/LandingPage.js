@@ -142,7 +142,6 @@ const LandingPage = () => {
               </Typography>
               <Typography
                 variant="h3"
-                component="h1"
                 sx={styles.heroTitle}
                 {...getRevealProps(1)}
               >
