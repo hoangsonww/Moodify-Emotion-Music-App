@@ -28,6 +28,9 @@ are also used to visualize emotion trends and model performance. Users open reco
   <img src="https://img.shields.io/badge/MUI-6.1-007FFF?style=for-the-badge&logo=mui&logoColor=white" alt="Material UI" />
   <img src="https://img.shields.io/badge/Emotion-CSS--in--JS-D26AC2?style=for-the-badge&logo=emotion&logoColor=white" alt="Emotion" />
   <img src="https://img.shields.io/badge/React_Router-6-CA4245?style=for-the-badge&logo=react-router&logoColor=white" alt="React Router" />
+  <img src="https://img.shields.io/badge/Three.js-r166-000000?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Three.js" />
+  <img src="https://img.shields.io/badge/React_Three_Fiber-R3F-000000?style=for-the-badge&logo=reactos&logoColor=61DAFB" alt="React Three Fiber" />
+  <img src="https://img.shields.io/badge/WebGL-990000?style=for-the-badge&logo=webgl&logoColor=white" alt="WebGL" />
   <img src="https://img.shields.io/badge/Axios-1.7-5A29E4?style=for-the-badge&logo=axios&logoColor=white" alt="Axios" />
   <img src="https://img.shields.io/badge/Webpack-CRA-8DD6F9?style=for-the-badge&logo=webpack&logoColor=black" alt="Webpack" />
   <img src="https://img.shields.io/badge/Babel-F9DC3E?style=for-the-badge&logo=babel&logoColor=black" alt="Babel" />
@@ -451,6 +454,8 @@ Here is the list of technologies used in the Moodify project:
 <h2 id="-user-interface">🖼️ User Interface</h2>
 
 ### Landing Page
+
+Polished with WebGL + Three.js + React Three Fiber 3D components for a wonderful & appealing user experience!
 
 <p align="center">
   <img src="images/landingpage.png" alt="Landing Page" width="100%" style="border-radius: 10px">
