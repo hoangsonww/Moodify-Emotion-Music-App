@@ -1,0 +1,854 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProfilePage snapshot matches the rendered markup once the profile loads 1`] = `
+<DocumentFragment>
+  <div
+    style="padding: 0px; font-family: Poppins;"
+  >
+    <div
+      class="MuiBox-root css-9yqx9l"
+    >
+      <div
+        class="MuiBox-root css-so5mn8"
+      >
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-sxtdlk-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiBox-root css-1ofo8nu"
+          />
+          <div
+            class="MuiBox-root css-jy0co"
+          />
+          <div
+            class="MuiBox-root css-1skl395"
+          >
+            <div
+              class="MuiAvatar-root MuiAvatar-circular MuiAvatar-colorDefault css-9temqf-MuiAvatar-root"
+            >
+              T
+            </div>
+            <div
+              class="MuiBox-root css-1fjtzvx"
+            >
+              <span
+                class="MuiTypography-root MuiTypography-overline css-1m101xo-MuiTypography-root"
+              >
+                Your profile
+              </span>
+              <h5
+                class="MuiTypography-root MuiTypography-h5 css-1wfw7tb-MuiTypography-root"
+              >
+                Welcome, testuser!
+              </h5>
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-59vmsd-MuiTypography-root"
+              >
+                Your moods, your music, your history - all in one place.
+              </p>
+            </div>
+          </div>
+          <div
+            class="MuiBox-root css-z3u1o7"
+          >
+            <div
+              class="MuiBox-root css-194ztwn"
+            >
+              <div
+                class="MuiBox-root css-14swv7n"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="MoodOutlinedIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2M12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5m-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11m3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1xhmi63"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-gtjzv8-MuiTypography-root"
+                >
+                  2
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-f9z5ed-MuiTypography-root"
+                >
+                  Moods logged
+                </p>
+              </div>
+            </div>
+            <div
+              class="MuiBox-root css-194ztwn"
+            >
+              <div
+                class="MuiBox-root css-1jm9qu8"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="LibraryMusicIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 5h-3v5.5c0 1.38-1.12 2.5-2.5 2.5S10 13.88 10 12.5s1.12-2.5 2.5-2.5c.57 0 1.08.19 1.5.51V5h4zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1xhmi63"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-gtjzv8-MuiTypography-root"
+                >
+                  1
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-f9z5ed-MuiTypography-root"
+                >
+                  Saved tracks
+                </p>
+              </div>
+            </div>
+            <div
+              class="MuiBox-root css-194ztwn"
+            >
+              <div
+                class="MuiBox-root css-t6cy8b"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="HistoryToggleOffIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m15.1 19.37 1 1.74c-.96.44-2.01.73-3.1.84v-2.02c.74-.09 1.44-.28 2.1-.56M4.07 13H2.05c.11 1.1.4 2.14.84 3.1l1.74-1c-.28-.66-.47-1.36-.56-2.1M15.1 4.63l1-1.74c-.96-.44-2-.73-3.1-.84v2.02c.74.09 1.44.28 2.1.56M19.93 11h2.02c-.11-1.1-.4-2.14-.84-3.1l-1.74 1c.28.66.47 1.36.56 2.1M8.9 19.37l-1 1.74c.96.44 2.01.73 3.1.84v-2.02c-.74-.09-1.44-.28-2.1-.56M11 4.07V2.05c-1.1.11-2.14.4-3.1.84l1 1.74c.66-.28 1.36-.47 2.1-.56m7.36 3.1 1.74-1.01c-.63-.87-1.4-1.64-2.27-2.27l-1.01 1.74c.59.45 1.1.96 1.54 1.54M4.63 8.9l-1.74-1c-.44.96-.73 2-.84 3.1h2.02c.09-.74.28-1.44.56-2.1m15.3 4.1c-.09.74-.28 1.44-.56 2.1l1.74 1c.44-.96.73-2.01.84-3.1zm-3.1 5.36 1.01 1.74c.87-.63 1.64-1.4 2.27-2.27l-1.74-1.01c-.45.59-.96 1.1-1.54 1.54M7.17 5.64l-1-1.75c-.88.64-1.64 1.4-2.27 2.28l1.74 1.01c.44-.59.95-1.1 1.53-1.54M5.64 16.83l-1.74 1c.63.87 1.4 1.64 2.27 2.27l1.01-1.74c-.59-.44-1.1-.95-1.54-1.53M13 7h-2v5.41l4.29 4.29 1.41-1.41-3.7-3.7z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1xhmi63"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-gtjzv8-MuiTypography-root"
+                >
+                  0
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-f9z5ed-MuiTypography-root"
+                >
+                  Listened
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-far3oq-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-vxo2m1-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-wu5alo"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                data-testid="MoodOutlinedIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2M12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8m3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5m-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11m3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5"
+                />
+              </svg>
+            </div>
+            <div
+              class="MuiStack-root css-1u5acgj-MuiStack-root"
+            >
+              <div
+                class="MuiBox-root css-0"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1e2jq1i-MuiTypography-root"
+                >
+                  Your mood history
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1531mqi-MuiTypography-root"
+                >
+                  Tap any mood to remix recommendations from it.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiBox-root css-1ofrux8"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary css-1dfov5y-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-d8i980-MuiButton-startIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="PlaylistRemoveIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M14 10H3v2h11zm0-4H3v2h11zM3 16h7v-2H3zm11.41 6L17 19.41 19.59 22 21 20.59 18.41 18 21 15.41 19.59 14 17 16.59 14.41 14 13 15.41 15.59 18 13 20.59z"
+                  />
+                </svg>
+              </span>
+              Clear all
+            </button>
+          </div>
+          <div
+            class="MuiBox-root css-zefc5s"
+          >
+            <div
+              class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-1vnpmml-MuiButtonBase-root-MuiChip-root"
+              role="button"
+              tabindex="0"
+            >
+              <span
+                class="MuiChip-label MuiChip-labelMedium css-1dybbl5-MuiChip-label"
+              >
+                <span
+                  style="display: inline-flex; align-items: center; gap: 6px;"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    😢
+                  </span>
+                  <span>
+                    Sad
+                  </span>
+                </span>
+              </span>
+            </div>
+            <div
+              class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-1vnpmml-MuiButtonBase-root-MuiChip-root"
+              role="button"
+              tabindex="0"
+            >
+              <span
+                class="MuiChip-label MuiChip-labelMedium css-1dybbl5-MuiChip-label"
+              >
+                <span
+                  style="display: inline-flex; align-items: center; gap: 6px;"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    😊
+                  </span>
+                  <span>
+                    Happy
+                  </span>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-far3oq-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-vxo2m1-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-wu5alo"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                data-testid="LibraryMusicIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 5h-3v5.5c0 1.38-1.12 2.5-2.5 2.5S10 13.88 10 12.5s1.12-2.5 2.5-2.5c.57 0 1.08.19 1.5.51V5h4zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4z"
+                />
+              </svg>
+            </div>
+            <div
+              class="MuiStack-root css-1u5acgj-MuiStack-root"
+            >
+              <div
+                class="MuiBox-root css-0"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1e2jq1i-MuiTypography-root"
+                >
+                  Your saved recommendations
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1531mqi-MuiTypography-root"
+                >
+                  Tracks you got after analyzing a mood.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiBox-root css-1ofrux8"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary css-1dfov5y-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeSmall css-d8i980-MuiButton-startIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="PlaylistRemoveIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M14 10H3v2h11zm0-4H3v2h11zM3 16h7v-2H3zm11.41 6L17 19.41 19.59 22 21 20.59 18.41 18 21 15.41 19.59 14 17 16.59 14.41 14 13 15.41 15.59 18 13 20.59z"
+                  />
+                </svg>
+              </span>
+              Clear all
+            </button>
+          </div>
+          <div
+            class="MuiStack-root css-1367e45-MuiStack-root"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1wdii42-MuiFormControl-root-MuiTextField-root"
+            >
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedStart css-ot336b-MuiInputBase-root-MuiOutlinedInput-root"
+              >
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeSmall css-1nowbqt-MuiInputAdornment-root"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="notranslate"
+                  >
+                    ​
+                  </span>
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-5n28uf-MuiSvgIcon-root"
+                    data-testid="SearchIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
+                    />
+                  </svg>
+                </div>
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedStart css-1q55ijt-MuiInputBase-input-MuiOutlinedInput-input"
+                  id=":r6:"
+                  placeholder="Search saved tracks…"
+                  type="text"
+                  value=""
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-18p5xg2-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-1nf2c5d-MuiNotchedOutlined-root"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="notranslate"
+                    >
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1wgmpx9-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              <span
+                class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                  data-testid="SortIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M3 18h6v-2H3zM3 6v2h18V6zm0 7h12v-2H3z"
+                  />
+                </svg>
+              </span>
+              Recommended
+            </button>
+          </div>
+          <div
+            class="MuiStack-root css-10kbc59-MuiStack-root"
+          >
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-1tysxq0-MuiPaper-root"
+              style="--Paper-shadow: none;"
+            >
+              <div
+                class="MuiBox-root css-ruapjk"
+              >
+                <img
+                  alt=""
+                  class="MuiBox-root css-1ezzyga"
+                  src="img.jpg"
+                />
+              </div>
+              <div
+                class="MuiBox-root css-1fjtzvx"
+              >
+                <div
+                  class="MuiStack-root css-1crizmf-MuiStack-root"
+                >
+                  <div
+                    class="MuiBox-root css-1xhmi63"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 MuiTypography-noWrap css-1q9sdi1-MuiTypography-root"
+                      title="Song X"
+                    >
+                      Song X
+                    </p>
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 MuiTypography-noWrap css-167cnc-MuiTypography-root"
+                      title="Artist X"
+                    >
+                      Artist X
+                    </p>
+                  </div>
+                  <a
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-pm6a6e-MuiButtonBase-root-MuiButton-root"
+                    href="https://spotify.com/x"
+                    rel="noreferrer"
+                    tabindex="0"
+                    target="_blank"
+                  >
+                    <span
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-18yka4h-MuiSvgIcon-root"
+                        data-testid="OpenInNewIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
+                        />
+                      </svg>
+                    </span>
+                    Open in Deezer
+                  </a>
+                </div>
+                <div
+                  class="MuiStack-root css-842fkd-MuiStack-root"
+                >
+                  <button
+                    aria-label="Play preview"
+                    class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-1o3o526-MuiButtonBase-root-MuiIconButton-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
+                      data-testid="PlayArrowIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M8 5v14l11-7z"
+                      />
+                    </svg>
+                  </button>
+                  <div
+                    class="MuiBox-root css-1fjtzvx"
+                  >
+                    <span
+                      class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeMedium css-1a5l3n6-MuiSlider-root"
+                    >
+                      <span
+                        class="MuiSlider-rail css-r64h58-MuiSlider-rail"
+                      />
+                      <span
+                        class="MuiSlider-track css-xvk2i-MuiSlider-track"
+                        style="left: 0%; width: 0%;"
+                      />
+                      <span
+                        class="MuiSlider-thumb MuiSlider-thumbSizeMedium MuiSlider-thumbColorPrimary MuiSlider-thumb MuiSlider-thumbSizeMedium MuiSlider-thumbColorPrimary css-1xcmt9q-MuiSlider-thumb"
+                        data-index="0"
+                        style="left: 0%;"
+                      >
+                        <input
+                          aria-label="Track position"
+                          aria-orientation="horizontal"
+                          aria-valuemax="30"
+                          aria-valuemin="0"
+                          aria-valuenow="0"
+                          data-index="0"
+                          max="30"
+                          min="0"
+                          step="0.1"
+                          style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
+                          type="range"
+                          value="0"
+                        />
+                      </span>
+                    </span>
+                    <div
+                      class="MuiStack-root css-1reqwst-MuiStack-root"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1yvpcae-MuiTypography-root"
+                      >
+                        0:00
+                      </p>
+                      <div
+                        class="MuiStack-root css-1k60byz-MuiStack-root"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1k1l0w1-MuiSvgIcon-root"
+                          data-testid="VolumeUpIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M3 9v6h4l5 5V4L7 9zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77"
+                          />
+                        </svg>
+                        <p
+                          class="MuiTypography-root MuiTypography-body1 css-1yvpcae-MuiTypography-root"
+                        >
+                          0:30
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-13i121l-MuiTypography-root"
+          >
+            Showing 1 of 1
+          </p>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-far3oq-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-vxo2m1-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-wu5alo"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                data-testid="HistoryToggleOffIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="m15.1 19.37 1 1.74c-.96.44-2.01.73-3.1.84v-2.02c.74-.09 1.44-.28 2.1-.56M4.07 13H2.05c.11 1.1.4 2.14.84 3.1l1.74-1c-.28-.66-.47-1.36-.56-2.1M15.1 4.63l1-1.74c-.96-.44-2-.73-3.1-.84v2.02c.74.09 1.44.28 2.1.56M19.93 11h2.02c-.11-1.1-.4-2.14-.84-3.1l-1.74 1c.28.66.47 1.36.56 2.1M8.9 19.37l-1 1.74c.96.44 2.01.73 3.1.84v-2.02c-.74-.09-1.44-.28-2.1-.56M11 4.07V2.05c-1.1.11-2.14.4-3.1.84l1 1.74c.66-.28 1.36-.47 2.1-.56m7.36 3.1 1.74-1.01c-.63-.87-1.4-1.64-2.27-2.27l-1.01 1.74c.59.45 1.1.96 1.54 1.54M4.63 8.9l-1.74-1c-.44.96-.73 2-.84 3.1h2.02c.09-.74.28-1.44.56-2.1m15.3 4.1c-.09.74-.28 1.44-.56 2.1l1.74 1c.44-.96.73-2.01.84-3.1zm-3.1 5.36 1.01 1.74c.87-.63 1.64-1.4 2.27-2.27l-1.74-1.01c-.45.59-.96 1.1-1.54 1.54M7.17 5.64l-1-1.75c-.88.64-1.64 1.4-2.27 2.28l1.74 1.01c.44-.59.95-1.1 1.53-1.54M5.64 16.83l-1.74 1c.63.87 1.4 1.64 2.27 2.27l1.01-1.74c-.59-.44-1.1-.95-1.54-1.53M13 7h-2v5.41l4.29 4.29 1.41-1.41-3.7-3.7z"
+                />
+              </svg>
+            </div>
+            <div
+              class="MuiStack-root css-1u5acgj-MuiStack-root"
+            >
+              <div
+                class="MuiBox-root css-0"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1e2jq1i-MuiTypography-root"
+                >
+                  Tracks you've opened
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1531mqi-MuiTypography-root"
+                >
+                  Stored as plain strings, freshest at the bottom.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiBox-root css-1vz9m4w"
+          >
+            <div
+              class="MuiBox-root css-17b5uzm"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1pbxnsj-MuiSvgIcon-root"
+                data-testid="HistoryToggleOffIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="m15.1 19.37 1 1.74c-.96.44-2.01.73-3.1.84v-2.02c.74-.09 1.44-.28 2.1-.56M4.07 13H2.05c.11 1.1.4 2.14.84 3.1l1.74-1c-.28-.66-.47-1.36-.56-2.1M15.1 4.63l1-1.74c-.96-.44-2-.73-3.1-.84v2.02c.74.09 1.44.28 2.1.56M19.93 11h2.02c-.11-1.1-.4-2.14-.84-3.1l-1.74 1c.28.66.47 1.36.56 2.1M8.9 19.37l-1 1.74c.96.44 2.01.73 3.1.84v-2.02c-.74-.09-1.44-.28-2.1-.56M11 4.07V2.05c-1.1.11-2.14.4-3.1.84l1 1.74c.66-.28 1.36-.47 2.1-.56m7.36 3.1 1.74-1.01c-.63-.87-1.4-1.64-2.27-2.27l-1.01 1.74c.59.45 1.1.96 1.54 1.54M4.63 8.9l-1.74-1c-.44.96-.73 2-.84 3.1h2.02c.09-.74.28-1.44.56-2.1m15.3 4.1c-.09.74-.28 1.44-.56 2.1l1.74 1c.44-.96.73-2.01.84-3.1zm-3.1 5.36 1.01 1.74c.87-.63 1.64-1.4 2.27-2.27l-1.74-1.01c-.45.59-.96 1.1-1.54 1.54M7.17 5.64l-1-1.75c-.88.64-1.64 1.4-2.27 2.28l1.74 1.01c.44-.59.95-1.1 1.53-1.54M5.64 16.83l-1.74 1c.63.87 1.4 1.64 2.27 2.27l1.01-1.74c-.59-.44-1.1-.95-1.54-1.53M13 7h-2v5.41l4.29 4.29 1.41-1.41-3.7-3.7z"
+                />
+              </svg>
+            </div>
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-s2dg2c-MuiTypography-root"
+            >
+              Nothing here yet
+            </p>
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ym2ag4-MuiTypography-root"
+            >
+              Open a track from your Results page and we'll log it.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-far3oq-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-vxo2m1-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-wu5alo"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                data-testid="SettingsIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6"
+                />
+              </svg>
+            </div>
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Settings
+            </h6>
+          </div>
+          <div
+            class="MuiStack-root css-10kbc59-MuiStack-root"
+          >
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-af13ts-MuiPaper-root"
+              style="--Paper-shadow: none;"
+            >
+              <div
+                class="MuiBox-root css-1556e10"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="AccountCircleIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6m0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1rr4qq7"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ytur5i-MuiTypography-root"
+                >
+                  Change username
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ym2ag4-MuiTypography-root"
+                >
+                  @testuser
+                </p>
+              </div>
+            </div>
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-af13ts-MuiPaper-root"
+              style="--Paper-shadow: none;"
+            >
+              <div
+                class="MuiBox-root css-1556e10"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="EmailIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2m0 4-8 5-8-5V6l8 5 8-5z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1rr4qq7"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ytur5i-MuiTypography-root"
+                >
+                  Update email
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ym2ag4-MuiTypography-root"
+                >
+                  test@example.com
+                </p>
+              </div>
+            </div>
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-af13ts-MuiPaper-root"
+              style="--Paper-shadow: none;"
+            >
+              <div
+                class="MuiBox-root css-1556e10"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="KeyIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M21 10h-8.35C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H13l2 2 2-2 2 2 4-4.04zM7 15c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1rr4qq7"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ytur5i-MuiTypography-root"
+                >
+                  Change password
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ym2ag4-MuiTypography-root"
+                >
+                  Pick something memorable (8+ chars).
+                </p>
+              </div>
+            </div>
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-af13ts-MuiPaper-root"
+              style="--Paper-shadow: none;"
+            >
+              <div
+                class="MuiBox-root css-1556e10"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="LogoutIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="m17 7-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1rr4qq7"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ytur5i-MuiTypography-root"
+                >
+                  Sign out
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ym2ag4-MuiTypography-root"
+                >
+                  End this session on this device.
+                </p>
+              </div>
+            </div>
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-7vlv6r-MuiPaper-root"
+              style="--Paper-shadow: none;"
+            >
+              <div
+                class="MuiBox-root css-1bfvb3x"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                  data-testid="DeleteIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiBox-root css-1rr4qq7"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1tmwmc9-MuiTypography-root"
+                >
+                  Delete account
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ym2ag4-MuiTypography-root"
+                >
+                  Permanently remove your account + all history.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

@@ -1,0 +1,455 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TermsOfServicePage snapshot matches the rendered markup 1`] = `
+<DocumentFragment>
+  <div
+    class="MuiBox-root css-12xscni"
+  >
+    <div
+      class="MuiBox-root css-p1ey8d"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-sxtdlk-MuiPaper-root"
+        style="--Paper-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);"
+      >
+        <div
+          class="MuiBox-root css-1ofo8nu"
+        />
+        <div
+          class="MuiBox-root css-jy0co"
+        />
+        <div
+          class="MuiStack-root css-1nm05g8-MuiStack-root"
+        >
+          <div
+            class="MuiBox-root css-nqbrid"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-m4bq6r-MuiSvgIcon-root"
+              data-testid="GavelIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="m5.2494 8.0688 2.83-2.8269 14.1343 14.15-2.83 2.8269zm4.2363-4.2415 2.828-2.8289 5.6577 5.656-2.828 2.8289zM.9989 12.3147l2.8284-2.8285 5.6569 5.6569-2.8285 2.8284zM1 21h12v2H1z"
+              />
+            </svg>
+          </div>
+          <div
+            class="MuiBox-root css-0"
+          >
+            <span
+              class="MuiTypography-root MuiTypography-overline css-1uh078x-MuiTypography-root"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ahupxw-MuiSvgIcon-root"
+                data-testid="PolicyOutlinedIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5zm7 10c0 1.85-.51 3.65-1.38 5.21l-1.45-1.45c1.29-1.94 1.07-4.58-.64-6.29-1.95-1.95-5.12-1.95-7.07 0s-1.95 5.12 0 7.07c1.71 1.71 4.35 1.92 6.29.64l1.72 1.72c-1.19 1.42-2.73 2.51-4.47 3.04-4.02-1.25-7-5.42-7-9.94V6.3l7-3.11 7 3.11zm-7 4c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3"
+                />
+              </svg>
+              Legal · Terms
+            </span>
+            <h1
+              class="MuiTypography-root MuiTypography-h3 css-5i1p05-MuiTypography-root"
+            >
+              Terms of Service
+            </h1>
+            <div
+              class="MuiStack-root css-1cy7lme-MuiStack-root"
+            >
+              <div
+                class="MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-filledDefault css-1lhanss-MuiChip-root"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiChip-icon MuiChip-iconMedium MuiChip-iconColorDefault css-18yka4h-MuiSvgIcon-root"
+                  data-testid="ScheduleIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2M12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8"
+                  />
+                  <path
+                    d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"
+                  />
+                </svg>
+                <span
+                  class="MuiChip-label MuiChip-labelMedium css-1dybbl5-MuiChip-label"
+                >
+                  Last updated: June 15, 2024
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-1pmq41s-MuiTypography-root"
+        >
+          Welcome to Moodify. By using our application you agree to these Terms of Service. Please read them carefully - they set out what you can expect from us and what we ask of you.
+        </p>
+      </div>
+      <div
+        class="MuiBox-root css-yd8sa2"
+      >
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              01
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Acceptance of Terms
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              By creating an account or otherwise using Moodify, you agree to be bound by these terms. If you don't agree, please stop using the service.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              02
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Using the Service
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <ul>
+              <li>
+                Be at least 13 years old. Users under 18 should have a parent or guardian's consent.
+              </li>
+              <li>
+                Provide accurate registration information and keep your credentials confidential.
+              </li>
+              <li>
+                Use the service for personal, non-commercial purposes unless we agree in writing otherwise.
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              03
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Acceptable Use
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              You agree 
+              <strong>
+                not
+              </strong>
+               to:
+            </p>
+            <ul>
+              <li>
+                Attempt to bypass authentication, rate limits, or other technical protections.
+              </li>
+              <li>
+                Submit illegal, abusive, or infringing content through any of the mood-detection inputs.
+              </li>
+              <li>
+                Scrape, mirror, or otherwise reuse the service to power a competing product.
+              </li>
+              <li>
+                Probe the inference endpoints with adversarial payloads designed to incur compute cost.
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              04
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Recommendations & Third-Party Services
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              Music recommendations are powered by 
+              <a
+                href="https://deezer.com"
+                rel="noreferrer"
+                target="_blank"
+              >
+                Deezer
+              </a>
+              's free, public Search API. Tapping a track opens it in Deezer's web player. Deezer's own terms apply to playback; Moodify is not responsible for content or availability on that side.
+            </p>
+            <p>
+              Mood detection is performed by self-trained machine-learning models. Results are best-effort and should not be used for medical, psychiatric, or any high-stakes decisions.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              05
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Your Content
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              Text, audio, and image inputs you submit are processed in-memory by our inference service and are 
+              <strong>
+                not retained
+              </strong>
+               after the response is built. The detected mood and the resulting recommendations are stored against your account so the app can personalize over time; you can wipe them at any time from your Profile.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              06
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Service Availability
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              The Django API runs on Vercel and the inference service runs on Modal with scale-to-zero. Cold starts may add up to a couple of seconds to the first request after idle. We don't guarantee an uptime SLA on the free deploy.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              07
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Termination
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              You can delete your account at any time from Profile → Settings → "Delete account". We may suspend or terminate accounts that violate these terms or that abuse the inference endpoints in a way that puts the service at risk.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              08
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Disclaimer of Warranties
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              Moodify is provided "as is" without warranties of any kind. We make no guarantees about the accuracy of mood detection, availability of any specific track, or fitness for a particular purpose.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              09
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Limitation of Liability
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              To the maximum extent permitted by law, Moodify and its maintainer are not liable for any indirect, incidental, consequential, or punitive damages arising out of your use of the service.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              10
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Changes to these Terms
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              We may update these terms occasionally. Continued use after a change constitutes acceptance of the new terms; material changes will be announced in the app.
+            </p>
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-raxp3a-MuiPaper-root"
+          style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+        >
+          <div
+            class="MuiStack-root css-i4mxch-MuiStack-root"
+          >
+            <div
+              class="MuiBox-root css-i3jovp"
+            >
+              11
+            </div>
+            <h2
+              class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+            >
+              Contact
+            </h2>
+          </div>
+          <div
+            class="MuiBox-root css-2l2e9r"
+          >
+            <p>
+              Questions about these terms? 
+              <a
+                href="mailto:hoangson091104@gmail.com"
+              >
+                hoangson091104@gmail.com
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 css-1bl76u5-MuiPaper-root"
+        style="--Paper-shadow: none;"
+      >
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-vzgp1-MuiTypography-root"
+        >
+          Questions about this agreement? Reach out at 
+          <a
+            class="MuiBox-root css-1feb05w"
+            href="mailto:hoangson091104@gmail.com"
+          >
+            hoangson091104@gmail.com
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

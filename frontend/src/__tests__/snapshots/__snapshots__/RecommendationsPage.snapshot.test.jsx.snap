@@ -1,0 +1,293 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RecommendationsPage snapshot matches the rendered markup 1`] = `
+<DocumentFragment>
+  <div
+    class="MuiBox-root css-ubu49k"
+  >
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation6 css-bf5ajv-MuiPaper-root"
+      style="--Paper-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);"
+    >
+      <div
+        class="MuiBox-root css-1ofo8nu"
+      />
+      <div
+        class="MuiBox-root css-jy0co"
+      />
+      <div
+        class="MuiStack-root css-1nm05g8-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-nqbrid"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-m4bq6r-MuiSvgIcon-root"
+            data-testid="LibraryMusicIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 5h-3v5.5c0 1.38-1.12 2.5-2.5 2.5S10 13.88 10 12.5s1.12-2.5 2.5-2.5c.57 0 1.08.19 1.5.51V5h4zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4z"
+            />
+          </svg>
+        </div>
+        <div
+          class="MuiBox-root css-0"
+        >
+          <span
+            class="MuiTypography-root MuiTypography-overline css-1uh078x-MuiTypography-root"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ahupxw-MuiSvgIcon-root"
+              data-testid="AutoAwesomeIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="m19 9 1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25z"
+              />
+            </svg>
+            Sample playlist
+          </span>
+          <h1
+            class="MuiTypography-root MuiTypography-h4 css-i2pu9f-MuiTypography-root"
+          >
+            Music Recommendations
+          </h1>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-1gl7at6-MuiTypography-root"
+          >
+            Here are some music recommendations based on your mood: a preview of what every Results page looks like once you've analysed a mood.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiBox-root css-18yqtgc"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-1y4j80u-MuiPaper-root"
+        style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+      >
+        <div
+          class="MuiBox-root css-qt4gs9"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-146ixql-MuiSvgIcon-root"
+            data-testid="MusicNoteIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3z"
+            />
+          </svg>
+          <div
+            class="MuiBox-root css-1t4w4pt"
+          >
+            #1
+          </div>
+        </div>
+        <div
+          class="MuiBox-root css-k6j81b"
+        >
+          <h3
+            class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+          >
+            Track 1
+          </h3>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-y46tc8-MuiTypography-root"
+          >
+            Artist: Artist 1
+          </p>
+          <audio
+            controls=""
+            style="width: 100%; height: 32px; margin-bottom: 12px;"
+          >
+            <source
+              src="track1.mp3"
+              type="audio/mpeg"
+            />
+            Your browser does not support the audio element.
+          </audio>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1qyf1zk-MuiButtonBase-root-MuiButton-root"
+            href="https://www.deezer.com"
+            rel="noreferrer"
+            tabindex="0"
+            target="_blank"
+          >
+            Listen on Deezer
+            <span
+              class="MuiButton-icon MuiButton-endIcon MuiButton-iconSizeMedium css-1gulhci-MuiButton-endIcon"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6dq5bp-MuiSvgIcon-root"
+                data-testid="OpenInNewIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
+                />
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-1y4j80u-MuiPaper-root"
+        style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+      >
+        <div
+          class="MuiBox-root css-qt4gs9"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-146ixql-MuiSvgIcon-root"
+            data-testid="MusicNoteIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3z"
+            />
+          </svg>
+          <div
+            class="MuiBox-root css-1t4w4pt"
+          >
+            #2
+          </div>
+        </div>
+        <div
+          class="MuiBox-root css-k6j81b"
+        >
+          <h3
+            class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+          >
+            Track 2
+          </h3>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-y46tc8-MuiTypography-root"
+          >
+            Artist: Artist 2
+          </p>
+          <audio
+            controls=""
+            style="width: 100%; height: 32px; margin-bottom: 12px;"
+          >
+            <source
+              src="track2.mp3"
+              type="audio/mpeg"
+            />
+            Your browser does not support the audio element.
+          </audio>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1qyf1zk-MuiButtonBase-root-MuiButton-root"
+            href="https://www.deezer.com"
+            rel="noreferrer"
+            tabindex="0"
+            target="_blank"
+          >
+            Listen on Deezer
+            <span
+              class="MuiButton-icon MuiButton-endIcon MuiButton-iconSizeMedium css-1gulhci-MuiButton-endIcon"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6dq5bp-MuiSvgIcon-root"
+                data-testid="OpenInNewIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
+                />
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation3 css-1y4j80u-MuiPaper-root"
+        style="--Paper-shadow: 0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12);"
+      >
+        <div
+          class="MuiBox-root css-qt4gs9"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-146ixql-MuiSvgIcon-root"
+            data-testid="MusicNoteIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3z"
+            />
+          </svg>
+          <div
+            class="MuiBox-root css-1t4w4pt"
+          >
+            #3
+          </div>
+        </div>
+        <div
+          class="MuiBox-root css-k6j81b"
+        >
+          <h3
+            class="MuiTypography-root MuiTypography-h6 css-6usma-MuiTypography-root"
+          >
+            Track 3
+          </h3>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-y46tc8-MuiTypography-root"
+          >
+            Artist: Artist 3
+          </p>
+          <audio
+            controls=""
+            style="width: 100%; height: 32px; margin-bottom: 12px;"
+          >
+            <source
+              src="track3.mp3"
+              type="audio/mpeg"
+            />
+            Your browser does not support the audio element.
+          </audio>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary css-1qyf1zk-MuiButtonBase-root-MuiButton-root"
+            href="https://www.deezer.com"
+            rel="noreferrer"
+            tabindex="0"
+            target="_blank"
+          >
+            Listen on Deezer
+            <span
+              class="MuiButton-icon MuiButton-endIcon MuiButton-iconSizeMedium css-1gulhci-MuiButton-endIcon"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6dq5bp-MuiSvgIcon-root"
+                data-testid="OpenInNewIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"
+                />
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
