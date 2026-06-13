@@ -36,6 +36,15 @@ jest.mock("../../services/passkeys", () => ({
 
 import PasskeysPage from "../../pages/PasskeysPage";
 
+// The rename dialog uses autoFocus; jsdom applies focus inconsistently across
+// environments, so neutralize it to keep the snapshot stable everywhere.
+beforeAll(() => {
+  jest.spyOn(HTMLElement.prototype, "focus").mockImplementation(() => {});
+});
+afterAll(() => {
+  HTMLElement.prototype.focus.mockRestore();
+});
+
 describe("PasskeysPage snapshot", () => {
   it("matches the rendered markup once the passkey list loads", async () => {
     const { asFragment } = render(

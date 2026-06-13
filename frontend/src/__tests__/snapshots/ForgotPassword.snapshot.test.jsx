@@ -22,6 +22,16 @@ jest.mock("../../components/Toast", () => ({
 
 import ForgotPassword from "../../pages/ForgotPassword";
 
+// The first field uses autoFocus, which toggles MUI's focus classes. jsdom
+// honors autoFocus inconsistently across environments (it focuses locally but
+// not in CI), so neutralize focus to keep the snapshot stable everywhere.
+beforeAll(() => {
+  jest.spyOn(HTMLElement.prototype, "focus").mockImplementation(() => {});
+});
+afterAll(() => {
+  HTMLElement.prototype.focus.mockRestore();
+});
+
 describe("ForgotPassword snapshot", () => {
   it("matches the rendered markup", () => {
     const { asFragment } = render(

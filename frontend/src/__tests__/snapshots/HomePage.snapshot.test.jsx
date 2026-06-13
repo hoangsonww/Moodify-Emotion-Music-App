@@ -33,10 +33,14 @@ beforeAll(() => {
       return new RealDate(FIXED_ISO).getTime();
     }
   };
+  // autoFocus toggles MUI focus classes and jsdom applies it inconsistently
+  // across environments; neutralize focus to keep the snapshot stable.
+  jest.spyOn(HTMLElement.prototype, "focus").mockImplementation(() => {});
 });
 
 afterAll(() => {
   global.Date = RealDate;
+  HTMLElement.prototype.focus.mockRestore();
 });
 
 describe("HomePage snapshot", () => {
