@@ -1322,6 +1322,22 @@ npm test:coverage
 
 This will run all the tests in the frontend directory and generate a coverage report. Ensure that all tests pass before deploying the frontend application.
 
+#### **Snapshot Tests**
+
+Every screen in the app is covered by a **snapshot test** under `frontend/src/__tests__/snapshots/` (one file per screen: Landing, Home, Profile, Results, Recommendations, Not Found, Forgot Password, Passkeys, Privacy Policy, and Terms of Service). Each renders the screen inside the providers it needs (dark-mode context, router, toast) and asserts the rendered markup with `toMatchSnapshot()`, so unintended UI changes surface in the diff. The committed baselines live in the adjacent `__snapshots__/` directory.
+
+```bash
+cd frontend
+
+# Run only the snapshot suite
+npm test -- src/__tests__/snapshots
+
+# Update the snapshots after an intentional UI change
+npm test -- -u
+```
+
+After a deliberate UI change, run `npm test -- -u` to refresh the baselines, then commit the updated `.snap` files alongside your change.
+
 <h2 id="-kubernetes">☸️ Kubernetes</h2>
 
 We also added Kubernetes deployment files for the backend and frontend services. You can deploy the services on a Kubernetes cluster using the provided YAML files.
