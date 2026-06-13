@@ -495,6 +495,29 @@ npm start
 
 This will start the React application at `http://localhost:3000`. If this port is in use, you may be prompted to use a different port.
 
+### Testing
+
+The frontend uses **Jest** with **React Testing Library**. Tests live under `src/**/__tests__/` and include a full set of **snapshot tests** for every screen in `src/__tests__/snapshots/` (one file per screen — Landing, Home, Profile, Results, Recommendations, Not Found, Forgot Password, Passkeys, Privacy Policy, Terms of Service). Each snapshot test renders the page inside its providers and asserts the rendered markup with `toMatchSnapshot()`, so any unintended UI change shows up as a snapshot diff. Baselines are committed under the adjacent `__snapshots__/` directories.
+
+```bash
+# Run the full test suite
+npm test
+
+# Watch mode (re-runs on file changes)
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+
+# Run only the snapshot suite
+npm test -- src/__tests__/snapshots
+
+# Update snapshots after an intentional UI change
+npm test -- -u
+```
+
+When you change a screen on purpose, update its snapshot with `npm test -- -u` and commit the refreshed `.snap` file with your change.
+
 ### Contributing
 
 Contributions are welcome! Feel free to fork the repository and submit a pull request.
