@@ -13,6 +13,12 @@ beforeAll(() => {
     constructor(...args) {
       super(...(args.length ? args : [FIXED_ISO]));
     }
+    // Pin the displayed date so it's independent of the host timezone and
+    // locale (the calendar date of FIXED_ISO would otherwise roll over in
+    // far-east timezones, and the format would vary by locale).
+    toLocaleDateString() {
+      return "June 15, 2024";
+    }
     static now() {
       return new RealDate(FIXED_ISO).getTime();
     }

@@ -20,14 +20,20 @@ jest.mock("../../components/Toast", () => ({
 import HomePage from "../../pages/HomePage";
 
 // HomePage greets the user based on the current hour ("Good morning/..."), so
-// freeze "now" to keep the snapshot stable across runs.
+// freeze "now" to keep the snapshot stable across runs. getHours() is
+// host-local, so it's pinned to a fixed value too — otherwise the greeting
+// differs between a local machine and CI's UTC runner.
 const RealDate = Date;
 const FIXED_ISO = "2024-06-15T12:00:00.000Z";
+const FIXED_HOUR = 9; // -> "Good morning", independent of the host timezone
 
 beforeAll(() => {
   global.Date = class extends RealDate {
     constructor(...args) {
       super(...(args.length ? args : [FIXED_ISO]));
+    }
+    getHours() {
+      return FIXED_HOUR;
     }
     static now() {
       return new RealDate(FIXED_ISO).getTime();
