@@ -197,20 +197,25 @@ body.light-mode a {
 
 /* Route page transitions: each page slides up into view on arrival and slides
    down out of view on departure (SwitchTransition mode="out-in"). */
-.page-anim {
-  will-change: transform, opacity;
-}
+/* NOTE: `will-change` is applied ONLY during the active transition phases, not
+   on the resting `.page-anim`. A persistent `will-change: transform` creates a
+   stacking context even when no transform is set, which traps position:fixed
+   descendants (e.g. the loading overlay) below MUI modals that portal to
+   <body>. Keeping it scoped to the animating frames lets fixed descendants
+   compete at the document level once the page is at rest. */
 
 .page-enter,
 .page-appear {
   opacity: 0;
   transform: translateY(30px);
+  will-change: transform, opacity;
 }
 
 .page-enter-active,
 .page-appear-active {
   opacity: 1;
   transform: translateY(0);
+  will-change: transform, opacity;
   transition:
     opacity 0.48s ease,
     transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
@@ -230,6 +235,7 @@ body.light-mode a {
 .page-exit-active {
   opacity: 0;
   transform: translateY(30px);
+  will-change: transform, opacity;
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
