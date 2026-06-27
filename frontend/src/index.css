@@ -30,21 +30,24 @@ body {
   word-break: break-word;
 }
 
-/* `overflow-wrap`/`word-break` above are inherited properties, so they
-   cascade into MUI's outlined-input <legend> -- the element whose width
-   cuts the gap (notch) in the outline border around a floating label.
-   With character-level breaking inherited, the legend's measured text
-   width collapses and the notch comes out too narrow, so the border
-   draws straight through any label long enough to overflow it
-   ("Username or email", "Name this passkey (optional)", ...). Reset the
-   breaking on the label and the notch legend so the gap always reserves
-   the full label width. Public MUI class names, stable across v5. */
-.MuiInputLabel-root,
-.MuiOutlinedInput-notchedOutline legend,
-.MuiOutlinedInput-notchedOutline legend > span {
-  white-space: nowrap;
-  word-break: normal;
-  overflow-wrap: normal;
+/* Outlined-input notch sizing fix (affects every long MUI label app-wide,
+   e.g. "Username or email", "Name this passkey (optional)").
+
+   MUI cuts the gap in the outline using a hidden <legend> whose text is
+   rendered at `font-size: 0.75em` -- i.e. 0.75 of the INPUT ROOT's font
+   size. The floating label, meanwhile, is the theme default 1rem (16px)
+   shrunk via `transform: scale(0.75)`; our fields set a custom input font
+   size (14-15px) through InputProps but never set one on the label. Result:
+   the shrunk label is 16*0.75 = 12px wide while the notch only reserves
+   14*0.75 = 10.5px, so the border draws through any label long enough to
+   expose the difference.
+
+   Pin the legend to an absolute 0.75rem so the notch always matches the
+   1rem label's shrunk width, independent of the input's own font size. A
+   class-targeted selector beats MUI's emotion rule on the bare <legend>, so
+   no !important is needed. */
+.MuiOutlinedInput-notchedOutline legend {
+  font-size: 0.75rem;
 }
 
 /* Media + iframes should never exceed their container. */
