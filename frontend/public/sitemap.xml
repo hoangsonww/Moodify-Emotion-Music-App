@@ -10,7 +10,7 @@
     <!-- Landing -->
     <url>
         <loc>https://moodify-app.vercel.app/</loc>
-        <lastmod>2026-05-23</lastmod>
+        <lastmod>2026-06-29</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
         <xhtml:link rel="alternate" hreflang="en" href="https://moodify-app.vercel.app/" />
@@ -25,19 +25,19 @@
     <!-- Auth surface (publicly indexable so it ranks on brand searches) -->
     <url>
         <loc>https://moodify-app.vercel.app/login</loc>
-        <lastmod>2026-05-23</lastmod>
+        <lastmod>2026-06-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://moodify-app.vercel.app/register</loc>
-        <lastmod>2026-05-23</lastmod>
+        <lastmod>2026-06-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
         <loc>https://moodify-app.vercel.app/forgot-password</loc>
-        <lastmod>2026-05-23</lastmod>
+        <lastmod>2026-06-29</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
     </url>
@@ -45,13 +45,13 @@
     <!-- Legal -->
     <url>
         <loc>https://moodify-app.vercel.app/privacy-policy</loc>
-        <lastmod>2026-05-23</lastmod>
+        <lastmod>2026-06-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
         <loc>https://moodify-app.vercel.app/terms-of-service</loc>
-        <lastmod>2026-05-23</lastmod>
+        <lastmod>2026-06-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>

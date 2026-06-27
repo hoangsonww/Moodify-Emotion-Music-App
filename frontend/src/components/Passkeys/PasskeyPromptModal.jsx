@@ -120,7 +120,7 @@ const PasskeyPromptModal = ({ open, accessToken, onSkip, onCreated }) => {
         </Box>
 
         <TextField
-          label="Name this passkey (optional)"
+          label="Name this passkey"
           placeholder="e.g. My iPhone"
           value={name}
           onChange={(e) => setName(e.target.value)}
