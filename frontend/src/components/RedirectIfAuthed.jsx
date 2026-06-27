@@ -5,12 +5,14 @@
 // Same AUTH_EVENT / storage subscriptions as RequireAuth keep the gate
 // in sync without polling.
 
-import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { AUTH_EVENT, isAuthenticated } from "../services/auth";
 
 export default function RedirectIfAuthed({ children, to = "/home" }) {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [authed, setAuthed] = useState(() => isAuthenticated());
 
   useEffect(() => {
@@ -23,8 +25,15 @@ export default function RedirectIfAuthed({ children, to = "/home" }) {
     };
   }, []);
 
-  if (authed) {
-    return <Navigate to={to} replace />;
-  }
+  // Imperative one-shot redirect (see RequireAuth for why): a declarative
+  // `<Navigate replace>` re-fires on every render and, during a page
+  // transition, floods history.replaceState() until Safari throws.
+  useEffect(() => {
+    if (authed && location.pathname !== to) {
+      navigate(to, { replace: true });
+    }
+  }, [authed, location, navigate, to]);
+
+  if (authed) return null;
   return children;
 }

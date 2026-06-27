@@ -7,13 +7,14 @@
 // attempted location in router state -- Login can read that and bounce
 // the user back after a successful sign-in.
 
-import React, { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { AUTH_EVENT, isAuthenticated } from "../services/auth";
 
 export default function RequireAuth({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [authed, setAuthed] = useState(() => isAuthenticated());
 
   useEffect(() => {
@@ -26,8 +27,21 @@ export default function RequireAuth({ children }) {
     };
   }, []);
 
-  if (!authed) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
+  // Redirect imperatively, exactly once per auth/route change. The old
+  // declarative `<Navigate replace>` re-ran its navigation on EVERY render
+  // (its effect has no deps); while a page transition keeps this guard
+  // mounted and re-rendering, that became a history.replaceState() storm --
+  // Safari throws `SecurityError: ... more than 100 times per 10 seconds`
+  // and the screen goes black on logout. Gating on pathname stops the
+  // post-redirect re-run from firing again.
+  useEffect(() => {
+    if (!authed && location.pathname !== "/login") {
+      navigate("/login", { replace: true, state: { from: location } });
+    }
+  }, [authed, location, navigate]);
+
+  // Render nothing while unauthenticated so there's no live <Navigate> (or
+  // protected children) re-rendering behind the redirect.
+  if (!authed) return null;
   return children;
 }
