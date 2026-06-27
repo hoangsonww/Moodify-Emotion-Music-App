@@ -1,7 +1,13 @@
 """End-to-end tests for the authentication endpoints (users app)."""
 
+from unittest import mock
+
+import pytest
+from pymongo.errors import PyMongoError
+
 from api.models import UserProfile
 from users.documents import User
+from users import views as users_views
 
 
 class TestRegister:
@@ -58,6 +64,100 @@ class TestLogin:
             "/users/login/", {"username": "ghost", "password": "password123"}, format="json"
         )
         assert resp.status_code == 401
+
+    def test_login_with_email_succeeds(self, api_client, make_user):
+        # Users routinely type their email into the "Username" field; login
+        # accepts either, so the email must work with the right password.
+        make_user(username="bob", password="password123", email="bob@example.com")
+        resp = api_client.post(
+            "/users/login/",
+            {"username": "bob@example.com", "password": "password123"},
+            format="json",
+        )
+        assert resp.status_code == 200
+        assert "access" in resp.data and "refresh" in resp.data
+
+    def test_login_with_email_is_case_insensitive(self, api_client, make_user):
+        make_user(username="bob", password="password123", email="bob@example.com")
+        resp = api_client.post(
+            "/users/login/",
+            {"username": "BOB@Example.com", "password": "password123"},
+            format="json",
+        )
+        assert resp.status_code == 200
+
+    def test_login_with_email_wrong_password_rejected(self, api_client, make_user):
+        make_user(username="bob", password="password123", email="bob@example.com")
+        resp = api_client.post(
+            "/users/login/",
+            {"username": "bob@example.com", "password": "nope"},
+            format="json",
+        )
+        assert resp.status_code == 401
+
+    def test_cold_db_returns_503_not_401(self, api_client, make_user):
+        # A persistent connection failure must NOT be reported as bad
+        # credentials -- it gets its own 503 so the client can retry and the
+        # user isn't told their (correct) password is wrong.
+        make_user(username="bob", password="password123")
+        with mock.patch.object(
+            User, "objects", side_effect=PyMongoError("cold cluster")
+        ):
+            resp = api_client.post(
+                "/users/login/",
+                {"username": "bob", "password": "password123"},
+                format="json",
+            )
+        assert resp.status_code == 503
+
+    def test_cold_db_then_warm_succeeds(self, api_client, make_user):
+        # The first lookup raises (cold connection); the retry succeeds once
+        # the connection is warm, so the user's single sign-in click works.
+        make_user(username="bob", password="password123")
+        real_objects = User.objects
+        calls = {"n": 0}
+
+        def flaky(*args, **kwargs):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise PyMongoError("server selection timed out")
+            return real_objects(*args, **kwargs)
+
+        with mock.patch.object(users_views, "_DB_READ_BACKOFF_SECONDS", 0), \
+                mock.patch.object(User, "objects", side_effect=flaky):
+            resp = api_client.post(
+                "/users/login/",
+                {"username": "bob", "password": "password123"},
+                format="json",
+            )
+        assert resp.status_code == 200
+        assert "access" in resp.data
+        assert calls["n"] == 2  # failed once, retried once, succeeded
+
+
+class TestReadWithRetry:
+    def test_returns_first_success_without_retrying(self):
+        fn = mock.Mock(return_value="ok")
+        assert users_views._read_with_retry(fn, backoff=0) == "ok"
+        assert fn.call_count == 1
+
+    def test_retries_transient_then_succeeds(self):
+        fn = mock.Mock(side_effect=[PyMongoError("a"), PyMongoError("b"), "ok"])
+        assert users_views._read_with_retry(fn, attempts=3, backoff=0) == "ok"
+        assert fn.call_count == 3
+
+    def test_reraises_after_exhausting_attempts(self):
+        fn = mock.Mock(side_effect=PyMongoError("down"))
+        with pytest.raises(PyMongoError):
+            users_views._read_with_retry(fn, attempts=2, backoff=0)
+        assert fn.call_count == 2
+
+    def test_empty_result_is_not_an_error(self):
+        # A query that matches nothing returns None on the first try -- it is
+        # NOT retried (no exception), so a genuine wrong username stays fast.
+        fn = mock.Mock(return_value=None)
+        assert users_views._read_with_retry(fn, backoff=0) is None
+        assert fn.call_count == 1
 
 
 class TestTokenRefresh:
