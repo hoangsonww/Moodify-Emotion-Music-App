@@ -10,9 +10,19 @@ export const DarkModeProvider = ({ children }) => {
     localStorage.getItem("darkMode") === "true",
   );
 
-  // Effect to sync with localStorage when state changes
+  // Sync to localStorage AND drive the global theme classes on <body>.
+  // styles.css defines `body.dark-mode` / `body.light-mode` rules (page
+  // background, default text, raw button/input/link colours, scrollbars),
+  // but nothing was ever applying those classes -- so toggling the switch
+  // only re-coloured the React components that read this context inline and
+  // left the body-level theming stuck until a reload. Toggling the class
+  // here (on mount and on every change) recolours the whole app the instant
+  // the switch flips.
   useEffect(() => {
     localStorage.setItem("darkMode", isDarkMode);
+    const body = document.body;
+    body.classList.toggle("dark-mode", isDarkMode);
+    body.classList.toggle("light-mode", !isDarkMode);
   }, [isDarkMode]);
 
   // Function to toggle dark mode
