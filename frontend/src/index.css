@@ -30,6 +30,23 @@ body {
   word-break: break-word;
 }
 
+/* `overflow-wrap`/`word-break` above are inherited properties, so they
+   cascade into MUI's outlined-input <legend> -- the element whose width
+   cuts the gap (notch) in the outline border around a floating label.
+   With character-level breaking inherited, the legend's measured text
+   width collapses and the notch comes out too narrow, so the border
+   draws straight through any label long enough to overflow it
+   ("Username or email", "Name this passkey (optional)", ...). Reset the
+   breaking on the label and the notch legend so the gap always reserves
+   the full label width. Public MUI class names, stable across v5. */
+.MuiInputLabel-root,
+.MuiOutlinedInput-notchedOutline legend,
+.MuiOutlinedInput-notchedOutline legend > span {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
 /* Media + iframes should never exceed their container. */
 img,
 svg,
