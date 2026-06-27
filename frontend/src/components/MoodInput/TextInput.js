@@ -5,7 +5,7 @@ const TextInput = () => {
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <TextField
         id="text-input"
-        label={"Enter Text\u00a0"}
+        label={"Enter Text\u00a0\u00a0"}
         variant="outlined"
         fullWidth
       />
