@@ -88,6 +88,37 @@ describe("<MoodFeedbackWidget />", () => {
     expect(await screen.findByText(/Thanks/i)).toBeInTheDocument();
   });
 
+  it("shows a loading spinner while the confirmation is in flight", async () => {
+    let resolveSend;
+    sendMoodFeedback.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSend = resolve;
+      }),
+    );
+    render(<MoodFeedbackWidget predicted="joy" inputType="text" />);
+    fireEvent.click(screen.getByRole("button", { name: /^Yes$/ }));
+    // Request is pending -> a progress indicator is visible.
+    expect(await screen.findByRole("progressbar")).toBeInTheDocument();
+    resolveSend(true);
+    expect(await screen.findByText(/Thanks/i)).toBeInTheDocument();
+  });
+
+  it("shows a saving spinner while a correction is in flight", async () => {
+    let resolveSend;
+    sendMoodFeedback.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSend = resolve;
+      }),
+    );
+    render(<MoodFeedbackWidget predicted="joy" inputType="text" />);
+    fireEvent.click(screen.getByRole("button", { name: /No, it was/ }));
+    fireEvent.click(screen.getByText(/^Love$/));
+    expect(await screen.findByRole("progressbar")).toBeInTheDocument();
+    expect(screen.getByText(/Saving your feedback/i)).toBeInTheDocument();
+    resolveSend(true);
+    expect(await screen.findByText(/Thanks/i)).toBeInTheDocument();
+  });
+
   it("Skip collapses the widget without sending", () => {
     render(<MoodFeedbackWidget predicted="joy" inputType="text" />);
     fireEvent.click(screen.getByLabelText(/Skip feedback/i));

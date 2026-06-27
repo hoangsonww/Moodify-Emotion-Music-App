@@ -19,6 +19,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   IconButton,
   Stack,
   Tooltip,
@@ -202,7 +203,17 @@ export default function MoodFeedbackWidget({
               size="small"
               variant="contained"
               disableElevation
-              startIcon={<CheckCircleOutlineIcon />}
+              startIcon={
+                busy ? (
+                  <CircularProgress
+                    size={15}
+                    thickness={5}
+                    sx={{ color: "#fff" }}
+                  />
+                ) : (
+                  <CheckCircleOutlineIcon />
+                )
+              }
               onClick={onConfirm}
               disabled={busy}
               sx={{
@@ -266,17 +277,30 @@ export default function MoodFeedbackWidget({
 
       {stage === "choose" && (
         <Box>
-          <Typography
-            sx={{
-              fontFamily: "Poppins",
-              fontSize: 13,
-              fontWeight: 500,
-              color: subText,
-              mb: 1,
-            }}
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.75}
+            sx={{ mb: 1 }}
           >
-            Pick what you actually felt:
-          </Typography>
+            <Typography
+              sx={{
+                fontFamily: "Poppins",
+                fontSize: 13,
+                fontWeight: 500,
+                color: subText,
+              }}
+            >
+              {busy ? "Saving your feedback…" : "Pick what you actually felt:"}
+            </Typography>
+            {busy && (
+              <CircularProgress
+                size={14}
+                thickness={5}
+                sx={{ color: subText }}
+              />
+            )}
+          </Stack>
           <Stack direction="row" flexWrap="wrap" gap={0.75}>
             {CANONICAL_EMOTIONS.filter((e) => e !== predicted).map((label) => (
               <Chip
