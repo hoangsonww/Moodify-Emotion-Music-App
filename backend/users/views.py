@@ -6,11 +6,13 @@ Authentication is JWT-only, backed by the mongoengine ``User`` document
 
 import logging
 import re
+import time
 
 import jwt
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from mongoengine.errors import NotUniqueError, ValidationError
+from pymongo.errors import PyMongoError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -35,6 +37,49 @@ from .tokens import decode_token, issue_tokens
 logger = logging.getLogger(__name__)
 
 MIN_PASSWORD_LENGTH = 8
+
+# How many times to (re)run a Mongo read that hit a transient connection
+# error, and the base back-off between tries. The backend is deployed on a
+# tier that spins down when idle; the *first* query after a wake-up (or
+# after a paused Atlas cluster resumes) can blow the driver's
+# server-selection budget and raise a PyMongoError. A couple of quick
+# retries usually warm the connection within the same request, so the
+# user's first sign-in click succeeds instead of bouncing with a
+# misleading "Invalid credentials" / 500. See `_read_with_retry`.
+_DB_READ_ATTEMPTS = 3
+_DB_READ_BACKOFF_SECONDS = 0.4
+
+
+def _read_with_retry(query_fn, *, attempts=_DB_READ_ATTEMPTS,
+                     backoff=_DB_READ_BACKOFF_SECONDS):
+    """Run a Mongo read callable, retrying only transient connection errors.
+
+    ``query_fn`` is invoked with no arguments and its result returned. A
+    ``PyMongoError`` (server-selection timeout, auto-reconnect, network
+    blip -- all symptoms of a cold connection) triggers a short back-off
+    and another attempt. The final failure is re-raised so the caller can
+    map it to a 503 rather than letting it surface as a 500 or, worse, be
+    misread as bad credentials. A query that simply matches nothing is NOT
+    an error and returns normally on the first try.
+    """
+    last_exc = None
+    for attempt in range(attempts):
+        try:
+            return query_fn()
+        except PyMongoError as exc:  # noqa: PERF203 -- retry loop is the point
+            last_exc = exc
+            logger.warning(
+                "Transient Mongo read failure (attempt %d/%d): %s",
+                attempt + 1, attempts, exc,
+            )
+            if attempt < attempts - 1:
+                time.sleep(backoff * (attempt + 1))
+    raise last_exc
+
+
+_DB_WARMING_RESPONSE = {
+    "error": "Service is waking up. Please try again in a moment.",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -334,7 +379,17 @@ def login(request):
     username = (request.data.get("username") or "").strip()
     password = request.data.get("password") or ""
 
-    user = User.objects(username=username).first()
+    # A cold connection raises here rather than returning a (spurious) None,
+    # so retry the lookup before concluding anything about the credentials.
+    # Only a genuine connection failure reaches the except branch -- map it
+    # to 503 so the client can retry and the user never sees a cold start
+    # disguised as a wrong password.
+    try:
+        user = _read_with_retry(lambda: User.objects(username=username).first())
+    except PyMongoError:
+        logger.error("login: Mongo unavailable after retries", exc_info=True)
+        return Response(_DB_WARMING_RESPONSE, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
     if user is None or not user.is_active or not user.check_password(password):
         return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -374,10 +429,16 @@ def token_refresh(request):
     if claims.get("type") != "refresh":
         return Response({"error": "Not a refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
 
+    # A malformed subject id is a real 401; a cold-connection error is not --
+    # retry then surface 503 so a transient blip doesn't log the user out
+    # (the client's auth interceptor treats a failed refresh as logout).
     try:
-        user = User.objects(id=claims.get("sub")).first()
+        user = _read_with_retry(lambda: User.objects(id=claims.get("sub")).first())
     except ValidationError:
         user = None
+    except PyMongoError:
+        logger.error("token_refresh: Mongo unavailable after retries", exc_info=True)
+        return Response(_DB_WARMING_RESPONSE, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     if user is None or not user.is_active:
         return Response({"error": "User not found or inactive."}, status=status.HTTP_401_UNAUTHORIZED)
 

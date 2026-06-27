@@ -31,6 +31,43 @@ import {
   PasskeyError,
 } from "../../services/passkeys";
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// A login failure is "transient" when there's no HTTP response (network
+// error / client timeout) or the server returns 5xx -- including the 503
+// the backend now emits while a cold Mongo connection warms up. A 4xx
+// (401 bad credentials, 400 bad request) is a definitive answer and is
+// never retried.
+const isTransientError = (error) => {
+  const status = error?.response?.status;
+  if (status == null) return true; // no response -> network / timeout
+  return status >= 500;
+};
+
+// The backend can spin down when idle; the first sign-in after a wake-up
+// may bounce before the DB connection is warm. Retry the request a couple
+// of times on transient failures so the user's single click succeeds
+// instead of forcing them to mash "Sign in" again. `onRetry` lets the UI
+// surface a "waking up" hint before the wait.
+const LOGIN_RETRY_ATTEMPTS = 3;
+const LOGIN_RETRY_DELAY_MS = 1500;
+
+const postLoginWithRetry = async (credentials, { onRetry } = {}) => {
+  let lastError;
+  for (let attempt = 0; attempt < LOGIN_RETRY_ATTEMPTS; attempt++) {
+    try {
+      return await axios.post(`${API_URL}/users/login/`, credentials);
+    } catch (error) {
+      lastError = error;
+      const hasNext = attempt < LOGIN_RETRY_ATTEMPTS - 1;
+      if (!isTransientError(error) || !hasNext) throw error;
+      if (onRetry) onRetry(attempt + 1);
+      await sleep(LOGIN_RETRY_DELAY_MS);
+    }
+  }
+  throw lastError;
+};
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -55,11 +92,19 @@ const Login = () => {
       return;
     }
     setLoading(true);
+    let warmingNotified = false;
     try {
-      const response = await axios.post(`${API_URL}/users/login/`, {
-        username,
-        password,
-      });
+      const response = await postLoginWithRetry(
+        { username, password },
+        {
+          onRetry: () => {
+            // Only nudge the user once, no matter how many retries run.
+            if (warmingNotified) return;
+            warmingNotified = true;
+            toast.info("Waking up our servers - hang tight…");
+          },
+        },
+      );
       const { access, refresh } = response.data;
       if (access) {
         setTokens(access, refresh);
