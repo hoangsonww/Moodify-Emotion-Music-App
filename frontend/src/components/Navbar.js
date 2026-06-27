@@ -98,9 +98,10 @@ const Navbar = () => {
     navigate(path);
   };
 
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.requireAuth || isLoggedIn,
-  ).map((item) => {
+  // The /results tab shows "Results" only when the user actually landed on
+  // a generated result; otherwise it stays "Explore". Shared by the desktop
+  // nav and the mobile drawer.
+  const applyResultsLabel = (item) => {
     if (item.path !== "/results" || !item.resultsLabel) return item;
     const arrivedFromAnalysis =
       location.pathname === "/results" &&
@@ -109,16 +110,27 @@ const Navbar = () => {
       ...item,
       label: arrivedFromAnalysis ? item.resultsLabel : item.label,
     };
-  });
+  };
 
-  // The mobile drawer lists Passkeys inline (the desktop nav hides it behind
-  // the Account dropdown). Only meaningful when signed in.
+  // Desktop nav hides auth-only tabs when signed out (they'd be dead links
+  // beside a visible "Sign in" button).
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requireAuth || isLoggedIn,
+  ).map(applyResultsLabel);
+
+  // The mobile drawer always lists the primary destinations, even when the
+  // user is signed out: those routes are already gated by RequireAuth (a tap
+  // simply routes to /login), so showing them is a discoverable entry point
+  // rather than a dead end. This intentionally differs from the desktop nav,
+  // which hides auth-only tabs. Passkeys stays signed-in only -- it's
+  // meaningless without an account, and it lives behind the Account dropdown
+  // on desktop.
   const drawerItems = isLoggedIn
     ? [
-        ...visibleItems,
+        ...NAV_ITEMS.map(applyResultsLabel),
         { label: "Passkeys", path: "/passkeys", icon: FingerprintIcon },
       ]
-    : visibleItems;
+    : NAV_ITEMS.map(applyResultsLabel);
 
   // ---- desktop button ----
   const NavButton = ({ item }) => {

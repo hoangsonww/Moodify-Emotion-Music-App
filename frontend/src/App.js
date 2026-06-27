@@ -42,7 +42,21 @@ function AppLayout() {
   const location = useLocation();
   const { isDarkMode } = useContext(DarkModeContext);
   const hideNavbar = location.pathname === "/";
-  const nodeRef = useRef(null);
+
+  // One CSSTransition node ref PER route key. Sharing a single ref across
+  // the SwitchTransition children is the documented footgun here: on logout
+  // the auth-change event makes the still-mounted (exiting) page render a
+  // live <Navigate>, which re-fires on every re-render during the 300ms
+  // exit. Those re-renders reassign a shared ref mid-transition, so the
+  // entering page's `page-enter-active` class lands on the wrong node and
+  // the new page is stuck at opacity:0 -- a blank/gray screen until reload.
+  // Per-path refs keep the exiting and entering nodes isolated.
+  const nodeRefs = useRef(new Map());
+  let nodeRef = nodeRefs.current.get(location.pathname);
+  if (!nodeRef) {
+    nodeRef = React.createRef();
+    nodeRefs.current.set(location.pathname, nodeRef);
+  }
 
   // Landing renders its own full-page background, so #root stays transparent
   // there; every other route gets the solid theme background.
