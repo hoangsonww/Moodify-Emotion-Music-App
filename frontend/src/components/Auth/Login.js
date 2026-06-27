@@ -186,7 +186,7 @@ const Login = () => {
           </Typography>
 
           <TextField
-            label="Username or email"
+            label={"Username or email\u00a0"}
             variant="outlined"
             fullWidth
             value={username}
@@ -207,7 +207,7 @@ const Login = () => {
           />
 
           <TextField
-            label="Password"
+            label={"Password\u00a0"}
             type={showPassword ? "text" : "password"}
             variant="outlined"
             fullWidth
