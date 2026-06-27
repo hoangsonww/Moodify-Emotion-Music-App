@@ -419,8 +419,11 @@ const PasskeysPage = () => {
             inputProps={{ maxLength: PASSKEY_NAME_MAX }}
             disabled={busy}
             sx={{ mt: 1 }}
-            InputProps={{ style: styles.inputText }}
-            InputLabelProps={{ style: styles.inputLabel }}
+            // notched + shrink kept in lockstep so the outline's legend gap is
+            // always cut -- the placeholder floats the label, and without
+            // notched the border draws straight through the floated label.
+            InputProps={{ notched: true, style: styles.inputText }}
+            InputLabelProps={{ shrink: true, style: styles.inputLabel }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -473,8 +476,10 @@ const PasskeysPage = () => {
             inputProps={{ maxLength: PASSKEY_NAME_MAX }}
             disabled={busy}
             sx={{ mt: 1 }}
-            InputProps={{ style: styles.inputText }}
-            InputLabelProps={{ style: styles.inputLabel }}
+            // notched + shrink kept in lockstep so the outline's legend gap is
+            // always cut and the border never strikes through the label.
+            InputProps={{ notched: true, style: styles.inputText }}
+            InputLabelProps={{ shrink: true, style: styles.inputLabel }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>

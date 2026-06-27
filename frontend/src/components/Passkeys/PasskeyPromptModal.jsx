@@ -129,8 +129,12 @@ const PasskeyPromptModal = ({ open, accessToken, onSkip, onCreated }) => {
           disabled={busy}
           inputProps={{ maxLength: 60 }}
           sx={styles.field}
-          InputProps={{ style: styles.inputText }}
-          InputLabelProps={{ style: styles.inputLabel }}
+          // notched + shrink kept in lockstep so the outline's legend gap is
+          // always cut. The field carries a placeholder, which floats the
+          // label up; without forcing notched the outline draws a solid line
+          // straight through the floated label text.
+          InputProps={{ notched: true, style: styles.inputText }}
+          InputLabelProps={{ shrink: true, style: styles.inputLabel }}
         />
 
         <Button
