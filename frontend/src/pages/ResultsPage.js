@@ -230,6 +230,13 @@ const ResultsPage = () => {
   const [selectedMarket, setSelectedMarket] = useState("");
   const [moodHistory, setMoodHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  // True until the on-mount personalisation pass settles. Without it, a
+  // first paint with an empty track list (refetch path, a refresh that
+  // dropped location.state, etc.) briefly hits the "No tracks yet" empty
+  // state before `loading` flips -- a jarring flash before the skeletons.
+  // Gate the empty state on this so it only shows once we've actually
+  // finished trying to load.
+  const [initializing, setInitializing] = useState(true);
   const [sortKey, setSortKey] = useState("recommended");
   const [visible, setVisible] = useState(PAGE);
   const [query, setQuery] = useState("");
@@ -286,11 +293,11 @@ const ResultsPage = () => {
 
   // Personalise the initial list with the user's mood history.
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
     let cancelled = false;
     (async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
         const profile = await axios.get(`${API_URL}/users/user/profile/`);
         const history = Array.isArray(profile.data?.mood_history)
           ? profile.data.mood_history
@@ -312,7 +319,12 @@ const ResultsPage = () => {
       } catch (err) {
         console.error("Error personalising recommendations:", err);
       } finally {
-        if (!cancelled) setLoading(false);
+        // Settle on every exit path (no token, empty history, success,
+        // error) so the empty state is never shown before we've tried.
+        if (!cancelled) {
+          setLoading(false);
+          setInitializing(false);
+        }
       }
     })();
     return () => {
@@ -658,7 +670,7 @@ const ResultsPage = () => {
           sx={{ mb: 1.5 }}
         >
           <Typography sx={styles.sectionTitle}>
-            {loading && shownTracks.length === 0
+            {(loading || initializing) && shownTracks.length === 0
               ? "Finding your tracks…"
               : query.trim()
                 ? `${sortedTracks.length} match${sortedTracks.length === 1 ? "" : "es"} for "${query.trim()}"`
@@ -671,7 +683,7 @@ const ResultsPage = () => {
           )}
         </Stack>
 
-        {loading && shownTracks.length === 0 ? (
+        {(loading || initializing) && shownTracks.length === 0 ? (
           <Stack spacing={1.5}>
             {[0, 1, 2, 3, 4].map((i) => (
               <Skeleton

@@ -150,7 +150,7 @@ const Register = () => {
           </Typography>
 
           <TextField
-            label="Username"
+            label={"Username\u00a0\u00a0"}
             variant="outlined"
             fullWidth
             value={username}
@@ -170,7 +170,7 @@ const Register = () => {
           />
 
           <TextField
-            label="Email"
+            label={"Email\u00a0\u00a0"}
             type="email"
             variant="outlined"
             fullWidth
@@ -193,7 +193,7 @@ const Register = () => {
           />
 
           <TextField
-            label="Password"
+            label={"Password\u00a0\u00a0"}
             type={showPassword ? "text" : "password"}
             variant="outlined"
             fullWidth
@@ -234,7 +234,7 @@ const Register = () => {
           />
 
           <TextField
-            label="Confirm password"
+            label={"Confirm password\u00a0\u00a0"}
             type={showConfirmPassword ? "text" : "password"}
             variant="outlined"
             fullWidth

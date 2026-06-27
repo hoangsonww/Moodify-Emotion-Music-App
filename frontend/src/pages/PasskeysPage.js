@@ -406,7 +406,7 @@ const PasskeysPage = () => {
           <TextField
             autoFocus
             fullWidth
-            label="Passkey name"
+            label={"Passkey name\u00a0\u00a0"}
             placeholder="e.g. My MacBook"
             value={addName}
             onChange={(e) => setAddName(e.target.value)}
@@ -464,7 +464,7 @@ const PasskeysPage = () => {
           <TextField
             autoFocus
             fullWidth
-            label="Passkey name"
+            label={"Passkey name\u00a0\u00a0"}
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
             onKeyDown={(e) => {

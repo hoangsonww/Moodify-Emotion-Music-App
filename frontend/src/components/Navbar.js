@@ -85,11 +85,15 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    logout();
-    setIsLoggedIn(false);
+    // Close menus first, then redirect with replace so there's a single
+    // history entry. With the route already at /login, the RequireAuth
+    // guard on the page we just left sees pathname === "/login" and skips
+    // its own redirect -- no duplicate navigation, no replaceState loop.
     setShowMenu(false);
     setAccountAnchor(null);
-    navigate("/login");
+    logout();
+    setIsLoggedIn(false);
+    navigate("/login", { replace: true });
   };
 
   const goto = (path) => {

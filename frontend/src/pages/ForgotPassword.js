@@ -154,7 +154,7 @@ const ForgotPassword = () => {
           {step === 1 ? (
             <>
               <TextField
-                label="Username"
+                label={"Username\u00a0\u00a0"}
                 variant="outlined"
                 fullWidth
                 value={username}
@@ -176,7 +176,7 @@ const ForgotPassword = () => {
                 InputLabelProps={{ style: styles.inputLabel }}
               />
               <TextField
-                label="Email"
+                label={"Email\u00a0\u00a0"}
                 type="email"
                 variant="outlined"
                 fullWidth
@@ -214,7 +214,7 @@ const ForgotPassword = () => {
           ) : (
             <>
               <TextField
-                label="New password"
+                label={"New password\u00a0\u00a0"}
                 type={showNewPassword ? "text" : "password"}
                 variant="outlined"
                 fullWidth
@@ -249,7 +249,7 @@ const ForgotPassword = () => {
                 InputLabelProps={{ style: styles.inputLabel }}
               />
               <TextField
-                label="Confirm new password"
+                label={"Confirm new password\u00a0\u00a0"}
                 type={showConfirmPassword ? "text" : "password"}
                 variant="outlined"
                 fullWidth

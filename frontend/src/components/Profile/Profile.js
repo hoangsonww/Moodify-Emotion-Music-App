@@ -979,7 +979,7 @@ const ProfilePage = () => {
           <TextField
             autoFocus
             fullWidth
-            label="Username"
+            label={"Username\u00a0\u00a0"}
             value={usernameValue}
             onChange={(e) => setUsernameValue(e.target.value)}
             inputProps={{ maxLength: 30, autoCapitalize: "none" }}
@@ -1022,7 +1022,7 @@ const ProfilePage = () => {
           <TextField
             autoFocus
             fullWidth
-            label="Email"
+            label={"Email\u00a0\u00a0"}
             type="email"
             value={emailValue}
             onChange={(e) => setEmailValue(e.target.value)}
@@ -1065,7 +1065,7 @@ const ProfilePage = () => {
           <TextField
             autoFocus
             fullWidth
-            label="New password"
+            label={"New password\u00a0\u00a0"}
             type={showPw ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -1089,7 +1089,7 @@ const ProfilePage = () => {
           />
           <TextField
             fullWidth
-            label="Confirm password"
+            label={"Confirm password\u00a0\u00a0"}
             type={showPw ? "text" : "password"}
             value={confirmPw}
             onChange={(e) => setConfirmPw(e.target.value)}
