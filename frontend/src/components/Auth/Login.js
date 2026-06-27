@@ -88,7 +88,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      toast.warning("Please fill in both your username and password.");
+      toast.warning("Please fill in both your username or email and password.");
       return;
     }
     setLoading(true);
@@ -186,7 +186,7 @@ const Login = () => {
           </Typography>
 
           <TextField
-            label="Username"
+            label="Username or email"
             variant="outlined"
             fullWidth
             value={username}

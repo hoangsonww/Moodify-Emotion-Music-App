@@ -65,6 +65,36 @@ class TestLogin:
         )
         assert resp.status_code == 401
 
+    def test_login_with_email_succeeds(self, api_client, make_user):
+        # Users routinely type their email into the "Username" field; login
+        # accepts either, so the email must work with the right password.
+        make_user(username="bob", password="password123", email="bob@example.com")
+        resp = api_client.post(
+            "/users/login/",
+            {"username": "bob@example.com", "password": "password123"},
+            format="json",
+        )
+        assert resp.status_code == 200
+        assert "access" in resp.data and "refresh" in resp.data
+
+    def test_login_with_email_is_case_insensitive(self, api_client, make_user):
+        make_user(username="bob", password="password123", email="bob@example.com")
+        resp = api_client.post(
+            "/users/login/",
+            {"username": "BOB@Example.com", "password": "password123"},
+            format="json",
+        )
+        assert resp.status_code == 200
+
+    def test_login_with_email_wrong_password_rejected(self, api_client, make_user):
+        make_user(username="bob", password="password123", email="bob@example.com")
+        resp = api_client.post(
+            "/users/login/",
+            {"username": "bob@example.com", "password": "nope"},
+            format="json",
+        )
+        assert resp.status_code == 401
+
     def test_cold_db_returns_503_not_401(self, api_client, make_user):
         # A persistent connection failure must NOT be reported as bad
         # credentials -- it gets its own 503 so the client can retry and the

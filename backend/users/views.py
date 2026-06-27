@@ -375,9 +375,24 @@ def register(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
-    """Authenticate a user and return an access/refresh token pair."""
-    username = (request.data.get("username") or "").strip()
+    """Authenticate a user and return an access/refresh token pair.
+
+    The credential field accepts **either** the username or the email
+    address. Users routinely type their email into a field labelled
+    "Username", so matching only on username turned a valid login into a
+    misleading 401. We look up by username first (the primary handle) and
+    fall back to a case-insensitive email match.
+    """
+    identifier = (request.data.get("username") or "").strip()
     password = request.data.get("password") or ""
+
+    def _find_user():
+        user = User.objects(username=identifier).first()
+        # Only attempt the email branch when the input looks like an email,
+        # so a plain username never triggers a needless second query.
+        if user is None and "@" in identifier:
+            user = User.objects(email__iexact=identifier).first()
+        return user
 
     # A cold connection raises here rather than returning a (spurious) None,
     # so retry the lookup before concluding anything about the credentials.
@@ -385,7 +400,7 @@ def login(request):
     # to 503 so the client can retry and the user never sees a cold start
     # disguised as a wrong password.
     try:
-        user = _read_with_retry(lambda: User.objects(username=username).first())
+        user = _read_with_retry(_find_user)
     except PyMongoError:
         logger.error("login: Mongo unavailable after retries", exc_info=True)
         return Response(_DB_WARMING_RESPONSE, status=status.HTTP_503_SERVICE_UNAVAILABLE)
