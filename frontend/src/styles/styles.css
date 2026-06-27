@@ -147,12 +147,18 @@ body.dark-mode textarea:focus {
   animation: fadeIn 1s ease-in-out;
 }
 
-/* Dark mode link colors */
-body.dark-mode a {
+/* Theme link colors for plain content anchors only.
+   `:not([class*="Mui"])` excludes MUI-styled anchors (Link, Button,
+   IconButton render <a>). Those carry their own colour via an emotion
+   class, but `body.<mode> a` (specificity 0,1,2) outranks that emotion
+   class (0,1,0) -- so without the exclusion these rules repaint every MUI
+   link the brand red, making e.g. the footer links unreadable on the red
+   gradient. */
+body.dark-mode a:not([class*="Mui"]) {
   color: #ff6666;
 }
 
-body.light-mode a {
+body.light-mode a:not([class*="Mui"]) {
   color: #ff4d4d;
 }
 
