@@ -360,40 +360,49 @@ def feedback(request):
             session_id=cleaned["session_id"],
         )
         _bump_calibration(username, cleaned["predicted"], cleaned["actual"])
-    elif cleaned["signal"] == "clear":
-        # Un-vote: find the vote being retracted BEFORE recording the clear
-        # (the lookup ignores the clear we're about to write), persist the
-        # clear so the button state stays in sync, then reverse that vote's
-        # contribution to the posterior so the model stays in sync too.
+    elif cleaned["signal"] == "open_deezer":
+        # Implicit, purely additive positive signal -- never a vote, so no
+        # reconciliation: every open is its own soft-positive event.
+        feedback_store.insert_track_feedback(
+            username=username,
+            track_id=cleaned["track_id"],
+            signal="open_deezer",
+            context_emotion=cleaned["context_emotion"],
+        )
+        _update_taste_profile(
+            username,
+            track=cleaned["track"],
+            signal="open_deezer",
+            context_emotion=cleaned["context_emotion"],
+        )
+    else:
+        # "Set vote" semantics for like / unlike / clear: a track's CURRENT
+        # vote is the only thing that should contribute to the posterior.
+        # Look up the prior vote BEFORE recording this event, then reconcile:
+        # revert the prior contribution and apply the new one. This keeps the
+        # posterior correct when the user switches like<->unlike directly (no
+        # double-counting) or clears a vote, and stays idempotent if the same
+        # vote is sent twice.
+        signal = cleaned["signal"]
+        track = cleaned["track"]
+        context_emotion = cleaned["context_emotion"]
         prior = feedback_store.query_track_feedback(
             username, [cleaned["track_id"]]
         ).get(cleaned["track_id"])
         feedback_store.insert_track_feedback(
             username=username,
             track_id=cleaned["track_id"],
-            signal="clear",
-            context_emotion=cleaned["context_emotion"],
+            signal=signal,
+            context_emotion=context_emotion,
         )
-        if prior in ("like", "unlike"):
+        if prior in ("like", "unlike") and prior != signal:
             _revert_taste_profile(
-                username,
-                track=cleaned["track"],
-                signal=prior,
-                context_emotion=cleaned["context_emotion"],
+                username, track=track, signal=prior, context_emotion=context_emotion
             )
-    else:
-        feedback_store.insert_track_feedback(
-            username=username,
-            track_id=cleaned["track_id"],
-            signal=cleaned["signal"],
-            context_emotion=cleaned["context_emotion"],
-        )
-        _update_taste_profile(
-            username,
-            track=cleaned["track"],
-            signal=cleaned["signal"],
-            context_emotion=cleaned["context_emotion"],
-        )
+        if signal in ("like", "unlike") and signal != prior:
+            _update_taste_profile(
+                username, track=track, signal=signal, context_emotion=context_emotion
+            )
 
     return Response(
         {"message": "Feedback recorded."},

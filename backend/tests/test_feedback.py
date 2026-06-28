@@ -473,3 +473,41 @@ class TestClearSignal:
         assert any(e["meta"]["signal"] == "clear" for e in fake_store["track"].events)
         prof = UserProfile.objects(username=auth_client.user.username).first()
         assert prof.taste_profile.get("events") == 0
+
+    def test_switch_like_to_unlike_reverts_then_applies(
+        self, auth_client, fake_store, monkeypatch
+    ):
+        track = {
+            "name": "Song",
+            "artist": "Artist",
+            "external_url": "https://www.deezer.com/track/1",
+            "popularity": 50,
+            "duration_ms": 200000,
+            "release_date": "2020-01-01",
+        }
+        # Like first -> alpha bumped, one event.
+        auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "like", "track": track},
+            format="json",
+        )
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile["events"] == 1
+        assert any(a > bandit.PRIOR_ALPHA for a in prof.taste_profile["alpha"])
+
+        # Switch directly to unlike: the prior like is reverted and the
+        # unlike applied -> no double-count. alpha returns to the prior,
+        # beta is now bumped, and the event count stays at one (the single
+        # current vote), not two.
+        monkeypatch.setattr(
+            feedback_store, "query_track_feedback", lambda u, ids: {"deezer:1": "like"}
+        )
+        auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "unlike", "track": track},
+            format="json",
+        )
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile["events"] == 1
+        assert all(a == bandit.PRIOR_ALPHA for a in prof.taste_profile["alpha"])
+        assert any(b > bandit.PRIOR_BETA for b in prof.taste_profile["beta"])
