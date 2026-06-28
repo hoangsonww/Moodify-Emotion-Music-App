@@ -204,11 +204,19 @@ const LandingPage = () => {
                 {heroHighlights.map((item, index) => {
                   const HighlightIcon = item.icon;
                   return (
-                    <Grid item xs={12} sm={4} key={item.label}>
-                      <Box
-                        sx={styles.heroHighlightCard}
-                        {...getRevealProps((index % 3) + 1)}
-                      >
+                    <Grid
+                      item
+                      xs={12}
+                      sm={4}
+                      key={item.label}
+                      {...getRevealProps((index % 3) + 1)}
+                    >
+                      {/* Reveal lives on the Grid item, not the card: the
+                          card has its own `transition` (hover lift) which
+                          would override `.reveal`'s opacity/transform
+                          transition and kill the fade-in the other sections
+                          have. */}
+                      <Box sx={styles.heroHighlightCard}>
                         <Box sx={styles.iconBadge}>
                           <HighlightIcon fontSize="small" />
                         </Box>
