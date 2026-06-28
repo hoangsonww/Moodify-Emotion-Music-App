@@ -331,15 +331,17 @@ For your information, the front-end's production (deployment) branch is `fronten
 
 The Moodify project aims to provide the following features:
 
-- 🎯 **Online reinforcement learning** — every user trains their own playlist ranker in real time. A "Was this right?" widget records per-user mood corrections, and 👍 / 👎 / open-in-Deezer signals feed a **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** that re-ranks every subsequent recommendation list. Mood-calibration map kicks in after 3 same-direction corrections; bandit kicks in after 20 logged signals. New and anonymous users see the rule-based pipeline unchanged.
+- 🎯 **Online reinforcement learning** — every user trains their own playlist ranker in real time. A "Was this right?" widget records per-user mood corrections, and 👍 / 👎 / open-in-Deezer signals feed a **Thompson-Sampling contextual bandit over a Beta-Bernoulli posterior** that re-ranks every subsequent recommendation list. The 👍 / 👎 votes on each track **persist across reloads** (restored from the backend) and can be **toggled off** to un-vote, which reverses the vote's contribution to the posterior. Mood-calibration map kicks in after 3 same-direction corrections; the bandit re-rank kicks in once a user has ≥ 20 logged feedback events. New and anonymous users see the rule-based pipeline unchanged.
 - 🔐 **Passwordless sign-in with passkeys (WebAuthn / FIDO2)** — users enroll multiple passkeys (Face ID, Touch ID, Windows Hello, Android screen lock, or a hardware security key) and sign in without a password. Passkeys are managed on a dedicated **Account → Passkeys** page (add, rename, delete), a styled prompt offers setup right after sign-up, and a verified assertion mints the same JWT pair as password login. See [Passkeys (WebAuthn)](#passkeys-webauthn).
-- User registration and login functionality.
+- User registration and login functionality — sign in with **either username or email** (case-insensitive).
 - Input analysis through text, speech, and facial expressions.
 - Real-time music recommendations based on emotion detection.
+- Persistent 👍 / 👎 feedback on recommended tracks that survives reloads and can be un-voted.
+- Instant dark / light theme toggle.
 - Visualization of emotion detection results and user history.
 - Data analytics scripts for emotion trends and model performance.
 - AI/ML models for text, speech, and facial emotion detection.
-- User profile management and customization.
+- User profile management and customization — "Tracks you've opened" renders full rich cards (cover art + preview player), backed by listening history stored as full track records.
 - Mobile app version for seamless user experience.
 - Progressive Web App (PWA) features for offline support.
 - Admin panel for managing users, recommendations, and data analytics.
@@ -350,10 +352,10 @@ The Moodify project aims to provide the following features:
 | Layer | What it does | Where |
 |---|---|---|
 | L1 — per-user mood calibration | Persistent `{predicted: {actual: count}}` map on `UserProfile`. After ≥ 3 same-direction corrections, the text-emotion view rewrites the predicted label for that user only. Anonymous callers unaffected. | `backend/api/calibration.py`, applied in `api/views.py:text_emotion` |
-| L2 — disagreement / signal log | Two MongoDB time-series collections, `mood_feedback` and `track_feedback`, capture every `POST /api/feedback/` event for analysis and future LoRA fine-tunes. | `backend/api/feedback_store.py` |
-| L3 — Thompson-Sampling bandit re-rank | Beta-Bernoulli posterior over a fixed 22-dim feature vector (emotion×6, decade×7, duration×4, popularity-quintile×5). 👍 → +1 α, 👎 → +1 β, open-in-Deezer → +0.5 α. Re-orders the candidate list returned by the EWMA + Markov base scorer; can never inject, drop, or invent tracks. | `backend/api/bandit.py` + `backend/api/track_features.py`, applied in `api/views.py:music_recommendation` |
+| L2 — disagreement / signal log | Two MongoDB time-series collections, `mood_feedback` and `track_feedback`, capture every `POST /api/feedback/` event for analysis and future LoRA fine-tunes. Track signals are `like` / `unlike` / `open_deezer` / `clear`; `GET /api/feedback/tracks/` reads back the caller's current like/dislike state so the UI restores votes after a reload. | `backend/api/feedback_store.py`, `backend/api/feedback_views.py` |
+| L3 — Thompson-Sampling bandit re-rank | Beta-Bernoulli posterior over a fixed 22-dim feature vector (emotion×6, decade×7, duration×4, popularity-quintile×5). 👍 → +1 α, 👎 → +1 β, open-in-Deezer → +0.5 α; toggling a vote off (`clear`) reverses its prior contribution. Re-orders the candidate list returned by the EWMA + Markov base scorer; can never inject, drop, or invent tracks. | `backend/api/bandit.py` + `backend/api/track_features.py`, applied in `api/views.py:music_recommendation` |
 
-All three layers are user-scoped and authentication-gated. The feedback endpoint is `POST /api/feedback/` and accepts both `{kind: "mood", ...}` and `{kind: "track", ...}` payloads (see `backend/openapi.yaml`).
+All three layers are user-scoped and authentication-gated. The feedback intake endpoint is `POST /api/feedback/` and accepts both `{kind: "mood", ...}` and `{kind: "track", ...}` payloads; `GET /api/feedback/tracks/?ids=...` reads back the caller's like/dislike state for a set of track ids (see `backend/openapi.yaml`).
 
 ## Passkeys (WebAuthn)
 
@@ -822,7 +824,7 @@ Finally, set up the frontend to interact with the backend.
 | HTTP Method | Endpoint                                                         | Description                                     |
 |-------------|------------------------------------------------------------------|-------------------------------------------------|
 | `POST`      | `/users/register/`                                               | Register a new user                             |
-| `POST`      | `/users/login/`                                                  | Login a user and obtain a JWT token             |
+| `POST`      | `/users/login/`                                                  | Login (username **or** email) and obtain a JWT  |
 | `GET`       | `/users/user/profile/`                                           | Retrieve the authenticated user's profile       |
 | `PUT`       | `/users/user/profile/update/`                                    | Update the authenticated user's profile         |
 | `DELETE`    | `/users/user/profile/delete/`                                    | Delete the authenticated user's profile         |
@@ -842,6 +844,13 @@ Finally, set up the frontend to interact with the backend.
 | `POST`      | `/users/verify-username-email/`                                  | Verify if a username and email are valid        |
 | `POST`      | `/users/reset-password/`                                         | Reset a user's password                         |
 | `GET`       | `/users/verify-token/`                                           | Verify a user's token                           |
+
+> **Sign in with username or email.** `/users/login/` accepts either the
+> username or the email address (case-insensitive) in the credential
+> field. When the backend has scaled to zero and its first database read
+> hits a cold connection, login retries the lookup and returns a "waking
+> up" **503** (which the client auto-retries) instead of a misleading
+> "Invalid credentials" 401.
 
 ### **Passkey Endpoints (WebAuthn / FIDO2)**
 
@@ -870,6 +879,18 @@ Every ceremony is two calls — `begin` returns server options + an opaque `flow
 > service directly with the user's JWT — see
 > [`modal_inference/README.md`](modal_inference/README.md) for the
 > direct-upload contract.
+
+### **Feedback / RL Endpoints**
+
+| HTTP Method | Endpoint                 | Auth   | Description                                                                      |
+|-------------|--------------------------|--------|---------------------------------------------------------------------------------|
+| `POST`      | `/api/feedback/`         | Bearer | Submit a mood correction (`kind=mood`) or a track signal (`kind=track`)          |
+| `GET`       | `/api/feedback/tracks/`  | Bearer | Read back the caller's like/dislike state for a set of track ids (`?ids=...`)    |
+
+> Track signals are `like` / `unlike` / `open_deezer` / `clear`. Casting,
+> switching, or clearing a vote reconciles the Thompson-Sampling bandit
+> posterior; `GET /api/feedback/tracks/` lets the UI restore vote state
+> after a reload.
 
 ### **Observability Endpoints**
 

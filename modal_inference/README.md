@@ -305,11 +305,11 @@ flowchart TD
 
 ## Reinforcement-learning personalization (Thompson Sampling bandit)
 
-Moodify learns from every user interaction. Each 👍 / 👎 / open-in-Deezer
-tap on a track card becomes training signal that **personalises the
-ranking of every subsequent recommendation list for that user
-specifically** — no global re-train, no cohort buckets, no nightly
-batch. The mechanism is a **Thompson-Sampling contextual bandit over a
+Moodify learns from every user interaction. Each 👍 / 👎 (toggleable, and
+reversible via an un-vote) / open-in-Deezer tap on a track card becomes
+training signal that **personalises the ranking of every subsequent
+recommendation list for that user specifically** — no global re-train, no
+cohort buckets, no nightly batch. The mechanism is a **Thompson-Sampling contextual bandit over a
 Beta-Bernoulli posterior**, and the wire-up is:
 
 ```mermaid
@@ -356,6 +356,18 @@ flowchart LR
   contextual-bandit Thompson trick.
 * **Reward weights:** `like → +1 α`, `unlike → +1 β`, `open_deezer →
   +0.5 α`. The update touches every active feature for the track.
+* **Set-vote semantics & un-vote (`clear`):** a track's *current* vote is
+  the only thing that contributes to the posterior. Switching 👍↔👎 reverts
+  the prior vote (against the exact feature vector stored on the original
+  event) before applying the new one — no double-counting; toggling a vote
+  off sends a `clear` that reverts the prior vote and records the un-vote;
+  re-sending the same vote is idempotent. `open_deezer` is an implicit,
+  additive signal — never a vote, never reverted. Reverts are clamped at the
+  `Beta(1, 1)` prior and `events ≥ 0`, so the posterior can never drift
+  below its starting point.
+* **Persisted vote state:** `GET /api/feedback/tracks/?ids=<…>` returns the
+  caller's current 👍 / 👎 per track (trailing `clear` ⇒ none), so the
+  Results UI restores button state across reloads, re-sorts, and refetches.
 * **Identity-when-cold:** with `events < 20` (or zero, the anonymous
   case) the bandit returns the input order unchanged. New users and
   anonymous Modal traffic are therefore **unaffected**.

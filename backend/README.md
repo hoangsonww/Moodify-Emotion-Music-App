@@ -163,12 +163,12 @@ sequenceDiagram
     participant Mongo as MongoDB Atlas
     participant Modal as Modal inference
 
-    C->>V: POST /users/login/ {username, password}
+    C->>V: POST /users/login/ {username|email, password}
     V->>DRF: dispatch
     DRF->>View: users.views.login(request)
-    View->>Mongo: User.objects(username=...).first()
+    View->>Mongo: User by username, else email (retry if cold)
     Mongo-->>View: User doc
-    View-->>C: 200 {access, refresh}
+    View-->>C: 200 {access, refresh} (or 503 if still cold)
 
     Note over C,View: -- protected call --
 
@@ -232,7 +232,7 @@ erDiagram
         ObjectId _id
         string username "FK by value"
         list~string~ mood_history "append-only"
-        list~string~ listening_history "append-only"
+        list listening_history "track dicts; legacy strings"
         list~dict~ recommendations "rich track objects"
         dict mood_calibration "RL: {predicted: {actual: count}}"
         dict taste_profile "RL: {alpha[22], beta[22], events}"
@@ -245,7 +245,7 @@ erDiagram
 | `users` | `users/documents.py` | Auth-bearing; replaces `django.contrib.auth.models.User`. Password hashing reuses `django.contrib.auth.hashers` (pure functions). |
 | `user_profile` | `api/models.py` | Re-exported from `users/models.py` so both apps share one definition. Owns the two RL fields below. |
 | `mood_feedback` | `api/feedback_store.py` | Mongo time-series; one row per mood correction. Lazy-created. 365-day TTL. |
-| `track_feedback` | `api/feedback_store.py` | Mongo time-series; one row per 👍 / 👎 / open-in-Deezer signal. Lazy-created. 365-day TTL. |
+| `track_feedback` | `api/feedback_store.py` | Mongo time-series; one row per 👍 / 👎 / open-in-Deezer / clear (un-vote) signal. Lazy-created. 365-day TTL. |
 | `webauthn_credentials` | `users/documents.py` | One row per enrolled passkey (many per user, keyed by `user_id`). Stores the COSE public key + signature counter; never any private key. |
 | `webauthn_challenges` | `users/documents.py` | Short-lived, single-use ceremony challenges referenced by an opaque `flowId`. Deleted on `complete`; expired rows are swept opportunistically. |
 
@@ -257,9 +257,10 @@ erDiagram
 
 ```mermaid
 flowchart TD
-    A["POST /users/login/<br/>{username, password}"] --> V{"verify"}
+    A["POST /users/login/<br/>{username | email, password}"] --> V{"verify"}
     V -- "ok" --> M["mint access (7d) + refresh (14d)"]
-    V -- "fail" --> R1["401"]
+    V -- "bad creds" --> R1["401"]
+    V -- "Mongo cold/unreachable<br/>(after retries)" --> R3["503 (waking up)"]
     M --> Tok["{access, refresh}"]
 
     Tok --> Use["Subsequent requests:<br/>Authorization: Bearer <access>"]
@@ -274,8 +275,20 @@ flowchart TD
     style OK fill:#34d399,stroke:#fff,color:#fff
     style R1 fill:#ef4444,stroke:#fff,color:#fff
     style R2 fill:#ef4444,stroke:#fff,color:#fff
+    style R3 fill:#f59e0b,stroke:#fff,color:#fff
 ```
 
+- **Username _or_ email login.** The credential field on `POST /users/login/`
+  accepts either: the lookup matches by username first, then falls back to a
+  case-insensitive email match when the input contains `@`. (Users routinely
+  type their email into a field labelled "Username", which used to bounce as a
+  misleading 401.)
+- **Cold-start resilience.** This tier spins down when idle, so the first Mongo
+  read after a wake-up can blow the driver's server-selection budget. Login and
+  token-refresh retry a transient connection error internally; if it still
+  fails they return **503** ("service is waking up") rather than a misleading
+  401, so a cold start is never mistaken for a wrong password and a transient
+  blip never logs the client out.
 - **HS256 JWTs** signed with `JWT_SIGNING_KEY` — the same key the Modal
   inference service uses to verify them. Django signs; Modal verifies.
 - **Custom auth class** (`users/authentication.py`) replaces
@@ -442,8 +455,8 @@ For the matching Modal-side design, see
 | Method | Path | Auth | Body | Effect |
 |---|---|---|---|---|
 | `POST` | `/users/register/` | none | `{username, email, password}` | Creates `User` + empty `UserProfile`. |
-| `POST` | `/users/login/` | none | `{username, password}` | Returns `{access, refresh}`. |
-| `POST` | `/users/token/refresh/` | none | `{refresh}` | Returns a fresh access token. |
+| `POST` | `/users/login/` | none | `{username, password}` | `username` accepts the **username or email**. Returns `{access, refresh}`; **503** if Mongo is still cold after internal retries. |
+| `POST` | `/users/token/refresh/` | none | `{refresh}` | Returns a fresh access token. **503** if Mongo is still cold after internal retries. |
 | `GET`  | `/users/validate_token/` | bearer | — | 200 if the access token is valid. |
 | `POST` | `/users/verify-username-email/` | none | `{username, email}` | First step of forgot-password (proves identity). |
 | `POST` | `/users/reset-password/` | none | `{username, new_password}` | Second step; resets password. |
@@ -481,11 +494,24 @@ Each ceremony is two calls; `begin` returns `{options, flowId}`, `complete` post
 | `GET`  | `/api/metrics/`              | service token | —                                  | Aggregated p50/p95/p99, error rate, throughput per endpoint. See [§ SRE metrics](#sre-metrics). |
 | `POST` | `/api/text_emotion/`         | optional JWT  | `{text}`                           | Proxies to Modal `/text_emotion`. **If the caller is authenticated**, applies the per-user mood-calibration map (`api/calibration.py`) and may rewrite the predicted label; a `calibrated_from` field is added to the response in that case. |
 | `POST` | `/api/music_recommendation/` | optional JWT  | `{emotion, market?, history?, genre?}` | Proxies to Modal `/music_recommendation`. **If the caller is authenticated and warm** (≥ 20 feedback events), re-ranks the result list via the Thompson-Sampling bandit (`api/bandit.py`). Anonymous / cold callers see the base order. |
-| `POST` | `/api/feedback/`             | JWT required  | `{kind: "mood" \| "track", ...}`   | Unified RL feedback intake. Mood payloads append to `mood_feedback` and bump `UserProfile.mood_calibration[predicted][actual]`. Track payloads append to `track_feedback` and (when the optional `track` dict is supplied) update `UserProfile.taste_profile` via `bandit.update_posterior`. Returns 202 on success. |
+| `POST` | `/api/feedback/`             | JWT required  | `{kind: "mood" \| "track", ...}`   | Unified RL feedback intake. Mood payloads append to `mood_feedback` and bump `UserProfile.mood_calibration[predicted][actual]`. Track payloads (`signal` ∈ `like` / `unlike` / `open_deezer` / `clear`) append to `track_feedback` and, when the optional `track` dict is supplied, update `UserProfile.taste_profile` with **set-vote semantics** (see below). Returns 202 on success. |
+| `GET`  | `/api/feedback/tracks/`      | JWT required  | `?ids=<id1,id2,...>`               | Read-back of the caller's **current explicit vote** per track, so the UI can restore like/dislike button state after a reload. Returns `{"feedback": {track_id: "like" \| "unlike"}}`. A track whose latest vote is `clear` is omitted; the implicit `open_deezer` signal is never reported. Batch capped at **200** ids. |
 
 Authenticated browser / mobile clients hit the Django paths above so the
 RL layer can act; anonymous callers and large media uploads (speech, facial)
 go straight to Modal as before.
+
+**Set-vote semantics (track feedback).** A track's _current_ vote is the only
+thing that contributes to the bandit posterior. Before recording a new
+`like` / `unlike`, the endpoint looks up the prior vote (and the exact feature
+vector it was applied with), then reconciles: switching like ↔ unlike reverts
+the prior contribution and applies the new one (no double-count); re-sending
+the same vote is idempotent; `clear` retracts a prior like/unlike — it is
+persisted (so the button state survives a reload) **and** reverses that vote's
+exact contribution to the posterior (`bandit.revert_posterior`, which subtracts
+the stored vector and is clamped at the Beta(1,1) prior floor with `events ≥ 0`).
+`open_deezer` is a purely additive implicit positive signal — never a vote, so
+it is never reverted.
 
 ### Docs
 

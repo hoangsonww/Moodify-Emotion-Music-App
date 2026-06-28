@@ -164,7 +164,9 @@
             "EWMA + Markov personalization",
             "Thompson Sampling contextual bandit re-ranker",
             "Per-user mood-detection calibration map",
-            "Online reinforcement learning from 👍 / 👎 / open-in-Deezer signals"
+            "Online reinforcement learning from 👍 / 👎 / un-vote / open-in-Deezer signals",
+            "Persisted like / dislike state across reloads",
+            "Sign in with username or email"
           ],
           "aggregateRating": {
             "@type": "AggregateRating",
@@ -606,7 +608,7 @@
                 <div class="overview-card">
                     <div class="card-icon">&#127921;</div>
                     <h3>Learns your taste - with real RL</h3>
-                    <p>Every 👍, 👎, and open-in-Deezer trains <strong>your</strong> playlist ranker. A Thompson Sampling contextual bandit re-orders the list in real time; a per-user calibration map even corrects mis-classified emotions. New &amp; anonymous users see the rule-based pipeline untouched.</p>
+                    <p>Every 👍, 👎 (and un-vote), plus open-in-Deezer, trains <strong>your</strong> playlist ranker - and your like/dislike state persists across reloads. A Thompson Sampling contextual bandit re-orders the list once you cross 20 events; a per-user calibration map even corrects mis-classified emotions. New &amp; anonymous users see the rule-based pipeline untouched.</p>
                 </div>
                 <div class="overview-card">
                     <div class="card-icon">&#127881;</div>
@@ -677,12 +679,13 @@
                 <div class="feature-card">
                     <div class="feature-icon">&#127919;</div>
                     <h3>Reinforcement Learning Loop</h3>
-                    <p><strong>Thompson Sampling contextual bandit</strong> over a Beta-Bernoulli posterior. Every 👍 / 👎 / open-in-Deezer tap updates a 22-dim posterior (emotion &times; decade &times; duration &times; popularity-quintile) that re-ranks the next recommendation list. Cold-start safe: anonymous + new users see the base order until they cross 20 logged events.</p>
+                    <p><strong>Thompson Sampling contextual bandit</strong> over a Beta-Bernoulli posterior. Every 👍 / 👎 / un-vote (clear) / open-in-Deezer tap updates a 22-dim posterior (emotion &times; decade &times; duration &times; popularity-quintile) that re-ranks the next list once you cross 20 logged events. Votes use set-semantics - a like &harr; dislike switch or a clear reconciles cleanly with no double-count - and your like/dislike buttons restore their state after a reload via <code class="mf-code-inline">GET /api/feedback/tracks/</code>.</p>
                     <div class="feature-tags">
                         <span class="tag">Thompson Sampling</span>
                         <span class="tag">Beta-Bernoulli</span>
                         <span class="tag">Contextual Bandit</span>
                         <span class="tag">Online RL</span>
+                        <span class="tag">Persisted votes</span>
                     </div>
                 </div>
                 <div class="feature-card">
@@ -708,9 +711,10 @@
                 <div class="feature-card">
                     <div class="feature-icon">&#128100;</div>
                     <h3>User Management</h3>
-                    <p>JWT auth (HS256, 7d access + 14d refresh), Mongo-backed profile, append-only mood + listening history, saved recommendations with rich track objects.</p>
+                    <p>JWT auth (HS256, 7d access + 14d refresh) - sign in with <strong>username or email</strong>. Mongo-backed profile, append-only mood history, a <code class="mf-code-inline">listening_history</code> of full track dicts (rich profile cards), and saved recommendations with rich track objects.</p>
                     <div class="feature-tags">
                         <span class="tag">JWT</span>
+                        <span class="tag">Username or Email</span>
                         <span class="tag">MongoDB</span>
                         <span class="tag">mongoengine</span>
                     </div>
@@ -1079,7 +1083,7 @@
                 <div class="architecture-description">
                     <h3>Security &amp; privacy summary</h3>
                     <ul>
-                        <li><strong>JWT -</strong> the same <code class="mf-code-inline">JWT_SIGNING_KEY</code> signs on Django and verifies on Modal. End-user tokens are 7d access + 14d refresh; silent refresh is wired into the React client.</li>
+                        <li><strong>JWT -</strong> the same <code class="mf-code-inline">JWT_SIGNING_KEY</code> signs on Django and verifies on Modal. End-user tokens are 7d access + 14d refresh; silent refresh is wired into the React client. Login accepts a <strong>username or email</strong>, and a cold backend returns <code class="mf-code-inline">503</code> "waking up" (the client auto-retries) instead of a misleading <code class="mf-code-inline">401</code>.</li>
                         <li><strong>Passkeys (WebAuthn / FIDO2) -</strong> optional passwordless sign-in. Many passkeys per user; verification via py_webauthn; single-use, expiring challenges; signature-counter clone detection; login never discloses whether an account exists. A verified assertion yields the same JWT pair as a password login.</li>
                         <li><strong>Service token -</strong> <code class="mf-code-inline">MODAL_SERVICE_TOKEN</code> is a shared constant for the Django&rarr;Modal proxy path; bypasses the Modal rate limiter (DRF throttles that side).</li>
                         <li><strong>No CSRF surface -</strong> auth lives in the header; <code class="mf-code-inline">CsrfViewMiddleware</code> is intentionally removed.</li>
@@ -1708,18 +1712,19 @@
         </div>
         <div class="mf-faq">
           <details><summary>What makes Moodify different?</summary><p>Most music apps ask you to pick a genre or playlist. Moodify reads your mood three different ways (text, voice, face) and tunes the music to fit - no scrolling, no decision fatigue, no manual searching.</p></details>
-          <details><summary>Do I need an account?</summary><p>Yes - an account keeps your mood history and saved tracks with you across visits and devices. Sign-up takes about 10 seconds: username, email, password. That's it.</p></details>
+          <details><summary>Do I need an account?</summary><p>Yes - an account keeps your mood history and saved tracks with you across visits and devices. Sign-up takes about 10 seconds: username, email, password. That's it. When you sign back in, you can use <strong>either your username or your email</strong> in the sign-in field.</p></details>
           <details><summary>Can I sign in without a password?</summary><p>Yes - Moodify supports <strong>passkeys</strong>. Right after sign-up (or anytime from <em>Account &rarr; Passkeys</em>) you can add a passkey and then sign in with Face ID, your fingerprint, Windows Hello, or a hardware security key - no password to type. You can add several (phone, laptop, security key), rename or remove them, and your password keeps working as a fallback.</p></details>
           <details><summary>How does it figure out my mood?</summary><p>Three ways - pick whichever you feel like. <strong>Type</strong> a few words about how you feel. <strong>Record</strong> a few seconds of your voice. <strong>Snap</strong> a quick selfie. Moodify reads any of those and finds music that matches.</p></details>
           <details><summary>Do you keep my photos or voice recordings?</summary><p>No. Your photo or voice clip is used once to figure out the mood, then thrown away. Only the mood label itself ("happy", "calm", etc.) is kept so your history works. Nothing about your face or voice is stored.</p></details>
           <details><summary>Where does the music come from?</summary><p>Deezer. Every recommendation links straight to a streamable track on Deezer with a 30-second preview built in. Tap any track to open it on Deezer and listen.</p></details>
           <details><summary>Can I pick a genre too?</summary><p>Yes. You can bias the recommendations toward 19 different genres (lo-fi, EDM, k-pop, classical, hip-hop, etc.) and 17 different country markets if you want the catalog to feel local.</p></details>
-          <details><summary>Why is the first request a little slow?</summary><p>Moodify's inference container hibernates when nobody is using it. The first request after a quiet stretch takes about 1-2 seconds to wake the server up. Every request after that is fast.</p></details>
+          <details><summary>Why is the first request a little slow?</summary><p>Moodify's inference container hibernates when nobody is using it. The first request after a quiet stretch takes about 1-2 seconds to wake the server up. Every request after that is fast. If the backend is still warming when you sign in, it answers with a short "waking up" response and the app retries automatically - so a cold start never looks like a wrong password.</p></details>
           <details><summary>How accurate is the mood detection?</summary><p>Around 84-92% across the three modes on our test data. It works best on clear input: a normal-length sentence, a few seconds of audible voice, or a well-lit selfie facing the camera.</p></details>
           <details><summary>Does it work on my phone?</summary><p>Yes - Moodify runs in any modern mobile browser, and there's a native iOS + Android app built with Expo. The mobile app uses the phone's camera and microphone directly.</p></details>
           <details><summary>Does it work offline?</summary><p>No. The recommendation and mood-detection happen on a server, so an internet connection is required. The app itself opens fast, but you need to be online to get a playlist.</p></details>
           <details><summary>Can I delete my account?</summary><p>Yes - any time. The profile page has a Delete Account button. Your account, mood history, and saved recommendations are removed immediately.</p></details>
-          <details><summary>What if Moodify gets my mood wrong?</summary><p>It happens occasionally. Try a different mode (text vs voice vs face), or use the genre filter to push the playlist in the direction you actually want. The more you use Moodify, the better your personal blend gets.</p></details>
+          <details><summary>What if Moodify gets my mood wrong?</summary><p>It happens occasionally. Try a different mode (text vs voice vs face), or use the genre filter to push the playlist in the direction you actually want. You can also 👍 / 👎 individual tracks (or un-vote to undo) - those ratings stick across reloads and quietly retrain your personal ranker. The more you use Moodify, the better your personal blend gets.</p></details>
+          <details><summary>Do my track likes and dislikes stick?</summary><p>Yes. Liking or disliking a track is saved to your account, so when you reload or come back later the buttons show exactly how you voted. Tapping the same button again un-votes (clears it). Once you've logged about 20 ratings, Moodify starts re-ordering future playlists to match what you actually like.</p></details>
           <details><summary>Who built this?</summary><p>Son Nguyen (<a href="https://github.com/hoangsonww" target="_blank" rel="noopener">@hoangsonww</a>). Solo project, MIT-licensed, code is fully open on <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App" target="_blank" rel="noopener">GitHub</a>.</p></details>
           <details><summary>I found a bug / want a feature.</summary><p>Open an issue on <a href="https://github.com/hoangsonww/Moodify-Emotion-Music-App/issues" target="_blank" rel="noopener">GitHub</a> or email <a href="mailto:hoangson091104@gmail.com">hoangson091104@gmail.com</a>. Pull requests welcome.</p></details>
         </div>

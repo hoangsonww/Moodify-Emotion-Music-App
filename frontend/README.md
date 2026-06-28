@@ -322,7 +322,7 @@ sequenceDiagram
 
 ## Features
 
-- User registration and login functionality.
+- User registration and login functionality — **sign in with your username _or_ email** (case-insensitive). A cold-started backend returns a "waking up" notice and the client auto-retries, so a slow first request never shows a false "invalid credentials".
 - **Passwordless sign-in with passkeys (WebAuthn / FIDO2).** Sign in with Face ID, Touch ID, Windows Hello, or a security key. Users can:
   - Enroll **multiple passkeys** and manage them on a dedicated **Account → Passkeys** page (add, rename, delete) — reached from the navbar **Account** dropdown that replaces the lone Log Out button when signed in.
   - Get a styled, on-brand **set-up prompt right after sign-up** (never a browser `alert`).
@@ -333,6 +333,9 @@ sequenceDiagram
   - Facial expression input (via webcam or file upload).
 - Retrieve user profile information.
 - Access mood history and music recommendations.
+- **Reinforcement-learning feedback on recommendations** — 👍 / 👎 each track to tune your personal ranking. Votes **persist across reloads** (restored from the backend), can be **toggled off** (un-vote), and feed the Thompson-sampling bandit once you have enough history.
+- **Rich listening history** — "Tracks you've opened" on the Profile page renders full cards (cover art + 30-second preview player + Deezer link), matching saved recommendations.
+- **Instant dark / light theme** — the toggle recolors the entire app immediately, no reload.
 - Minimalistic and clean UI with Material UI components.
 - Responsive design suitable for both desktop and mobile devices.
 
