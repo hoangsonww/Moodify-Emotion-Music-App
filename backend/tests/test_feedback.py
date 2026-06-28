@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from api import feedback_store
+from api import bandit, feedback_store, track_features
 from api.models import UserProfile
 
 
@@ -326,3 +326,219 @@ class TestCalibrationResilience:
         )
         assert resp.status_code == 202
         assert len(fake_store["mood"].events) == 1
+
+
+class _FakeAggCollection:
+    """Captures the aggregate pipeline and returns canned rows."""
+
+    def __init__(self, rows):
+        self._rows = rows
+        self.pipelines: list = []
+
+    def aggregate(self, pipeline):
+        self.pipelines.append(pipeline)
+        return iter(self._rows)
+
+
+class TestTrackFeedbackQuery:
+    def test_maps_latest_signal_per_track(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "like"},
+            {"_id": "deezer:2", "signal": "unlike"},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        out = feedback_store.query_track_feedback("alice", ["deezer:1", "deezer:2"])
+        assert out == {"deezer:1": "like", "deezer:2": "unlike"}
+        # Queries explicit votes + clear (never open_deezer).
+        match = coll.pipelines[0][0]["$match"]
+        assert set(match["meta.signal"]["$in"]) == {"like", "unlike", "clear"}
+
+    def test_latest_clear_is_omitted(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "like"},
+            {"_id": "deezer:2", "signal": "clear"},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        out = feedback_store.query_track_feedback("alice", ["deezer:1", "deezer:2"])
+        # A trailing clear means no active vote -> track omitted.
+        assert out == {"deezer:1": "like"}
+
+    def test_empty_ids_short_circuits(self, monkeypatch):
+        def boom(_k):
+            raise AssertionError("should not touch the collection")
+
+        monkeypatch.setattr(feedback_store, "_get_collection", boom)
+        assert feedback_store.query_track_feedback("alice", []) == {}
+
+    def test_failure_returns_empty(self, monkeypatch):
+        def boom(_k):
+            raise RuntimeError("mongo down")
+
+        monkeypatch.setattr(feedback_store, "_get_collection", boom)
+        assert feedback_store.query_track_feedback("alice", ["deezer:1"]) == {}
+
+
+class TestTrackFeedbackStateEndpoint:
+    URL = "/api/feedback/tracks/"
+
+    def test_anonymous_rejected(self, api_client):
+        resp = api_client.get(f"{self.URL}?ids=deezer:1")
+        assert resp.status_code in (401, 403)
+
+    def test_returns_state_for_ids(self, auth_client, monkeypatch):
+        captured = {}
+
+        def fake_query(username, ids):
+            captured["username"] = username
+            captured["ids"] = list(ids)
+            return {"deezer:1": "like"}
+
+        monkeypatch.setattr(feedback_store, "query_track_feedback", fake_query)
+        resp = auth_client.get(f"{self.URL}?ids=deezer:1,deezer:2")
+        assert resp.status_code == 200
+        assert resp.data["feedback"] == {"deezer:1": "like"}
+        assert captured["ids"] == ["deezer:1", "deezer:2"]
+        assert captured["username"] == auth_client.user.username
+
+    def test_no_ids_returns_empty_without_querying(self, auth_client, monkeypatch):
+        def boom(*_a, **_k):
+            raise AssertionError("should not query when no ids")
+
+        monkeypatch.setattr(feedback_store, "query_track_feedback", boom)
+        resp = auth_client.get(self.URL)
+        assert resp.status_code == 200
+        assert resp.data["feedback"] == {}
+
+
+class TestRevertPosterior:
+    def test_like_then_revert_returns_to_prior(self):
+        feats = [1.0] * track_features.FEATURE_DIM
+        after_like = bandit.update_posterior(None, feats, "like")
+        assert after_like["events"] == 1
+        assert any(a > bandit.PRIOR_ALPHA for a in after_like["alpha"])
+
+        reverted = bandit.revert_posterior(after_like, feats, "like")
+        assert reverted["events"] == 0
+        assert all(a == bandit.PRIOR_ALPHA for a in reverted["alpha"])
+
+    def test_revert_clamps_at_floor_and_zero(self):
+        feats = [1.0] * track_features.FEATURE_DIM
+        # Revert with no prior application must not go below the prior /
+        # negative events.
+        reverted = bandit.revert_posterior(None, feats, "unlike")
+        assert reverted["events"] == 0
+        assert all(b == bandit.PRIOR_BETA for b in reverted["beta"])
+
+    def test_open_deezer_is_not_revertable(self):
+        feats = [1.0] * track_features.FEATURE_DIM
+        before = bandit.update_posterior(None, feats, "like")
+        same = bandit.revert_posterior(before, feats, "open_deezer")
+        assert same == before
+
+
+class TestClearSignal:
+    def test_clear_records_event_and_reverts_posterior(
+        self, auth_client, fake_store, monkeypatch
+    ):
+        track = {
+            "name": "Song",
+            "artist": "Artist",
+            "external_url": "https://www.deezer.com/track/1",
+            "popularity": 50,
+            "duration_ms": 200000,
+            "release_date": "2020-01-01",
+        }
+        # Like first -> one event on the posterior.
+        r1 = auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "like", "track": track},
+            format="json",
+        )
+        assert r1.status_code == 202
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile.get("events") == 1
+
+        # Clear -> the prior vote is looked up (with its stored feature
+        # vector), the clear event is persisted, and the posterior is
+        # reverted back to zero events.
+        feats = track_features.featurize(track, context_emotion=None)
+        monkeypatch.setattr(
+            feedback_store,
+            "get_active_vote",
+            lambda u, tid: {"signal": "like", "features": feats},
+        )
+        r2 = auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "clear", "track": track},
+            format="json",
+        )
+        assert r2.status_code == 202
+        # The clear event was persisted (button state stays in sync).
+        assert any(e["meta"]["signal"] == "clear" for e in fake_store["track"].events)
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile.get("events") == 0
+
+    def test_switch_like_to_unlike_reverts_then_applies(
+        self, auth_client, fake_store, monkeypatch
+    ):
+        track = {
+            "name": "Song",
+            "artist": "Artist",
+            "external_url": "https://www.deezer.com/track/1",
+            "popularity": 50,
+            "duration_ms": 200000,
+            "release_date": "2020-01-01",
+        }
+        # Like first -> alpha bumped, one event.
+        auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "like", "track": track},
+            format="json",
+        )
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile["events"] == 1
+        assert any(a > bandit.PRIOR_ALPHA for a in prof.taste_profile["alpha"])
+
+        # Switch directly to unlike: the prior like is reverted (against its
+        # stored feature vector) and the unlike applied -> no double-count.
+        # alpha returns to the prior, beta is now bumped, and the event count
+        # stays at one (the single current vote), not two.
+        feats = track_features.featurize(track, context_emotion=None)
+        monkeypatch.setattr(
+            feedback_store,
+            "get_active_vote",
+            lambda u, tid: {"signal": "like", "features": feats},
+        )
+        auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "unlike", "track": track},
+            format="json",
+        )
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile["events"] == 1
+        assert all(a == bandit.PRIOR_ALPHA for a in prof.taste_profile["alpha"])
+        assert any(b > bandit.PRIOR_BETA for b in prof.taste_profile["beta"])
+
+
+class TestGetActiveVote:
+    def test_returns_signal_and_features(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "like", "features": [1.0, 2.0]},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        out = feedback_store.get_active_vote("alice", "deezer:1")
+        assert out == {"signal": "like", "features": [1.0, 2.0]}
+        # Uses the seq tiebreaker so same-ts events order deterministically.
+        assert coll.pipelines[0][1]["$sort"] == {"ts": 1, "seq": 1}
+
+    def test_trailing_clear_is_none(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "clear", "features": None},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        assert feedback_store.get_active_vote("alice", "deezer:1") is None
+
+    def test_no_rows_is_none(self, monkeypatch):
+        coll = _FakeAggCollection([])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        assert feedback_store.get_active_vote("alice", "deezer:1") is None

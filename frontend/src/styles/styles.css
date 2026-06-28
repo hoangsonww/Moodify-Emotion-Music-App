@@ -57,8 +57,14 @@ body.dark-mode button:active {
   background-color: #ff6666 !important;
 }
 
-input,
-textarea {
+/* These element-level input rules are for plain/native inputs only.
+   `:not([class*="Mui"])` keeps them off MUI's inner <input>/<textarea>,
+   which manage their own colours via the theme. Without the exclusion the
+   `body.dark-mode input { background-color:#333 }` rule painted the inner
+   field of every MUI input a different shade than its outlined container
+   (visible app-wide once the dark-mode body class is applied). */
+input:not([class*="Mui"]),
+textarea:not([class*="Mui"]) {
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 10px;
@@ -66,20 +72,20 @@ textarea {
   transition: border-color 0.3s ease;
 }
 
-input:focus,
-textarea:focus {
+input:not([class*="Mui"]):focus,
+textarea:not([class*="Mui"]):focus {
   border-color: #ff4d4d;
 }
 
-body.dark-mode input,
-body.dark-mode textarea {
+body.dark-mode input:not([class*="Mui"]),
+body.dark-mode textarea:not([class*="Mui"]) {
   background-color: #333;
   color: white;
   border-color: #666;
 }
 
-body.dark-mode input:focus,
-body.dark-mode textarea:focus {
+body.dark-mode input:not([class*="Mui"]):focus,
+body.dark-mode textarea:not([class*="Mui"]):focus {
   border-color: #ff6666;
 }
 

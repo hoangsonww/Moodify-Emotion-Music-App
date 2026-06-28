@@ -81,7 +81,7 @@ exports[`ProfilePage snapshot matches the rendered markup once the profile loads
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-f9z5ed-MuiTypography-root"
                 >
-                  Moods logged
+                  Mood Detections
                 </p>
               </div>
             </div>
@@ -195,7 +195,7 @@ exports[`ProfilePage snapshot matches the rendered markup once the profile loads
             </div>
           </div>
           <div
-            class="MuiBox-root css-1ofrux8"
+            class="MuiBox-root css-1rzs3rn"
           >
             <button
               class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary css-1dfov5y-MuiButtonBase-root-MuiButton-root"
@@ -311,7 +311,7 @@ exports[`ProfilePage snapshot matches the rendered markup once the profile loads
             </div>
           </div>
           <div
-            class="MuiBox-root css-1ofrux8"
+            class="MuiBox-root css-1rzs3rn"
           >
             <button
               class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-colorPrimary css-1dfov5y-MuiButtonBase-root-MuiButton-root"
@@ -609,7 +609,7 @@ exports[`ProfilePage snapshot matches the rendered markup once the profile loads
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-1531mqi-MuiTypography-root"
                 >
-                  Stored as plain strings, freshest at the bottom.
+                  Songs you've played or opened, newest first.
                 </p>
               </div>
             </div>

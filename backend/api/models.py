@@ -29,7 +29,11 @@ class UserProfile(Document):
     # legacy duplicates linger in the user_profile collection.
     username = StringField(required=True)
     mood_history = ListField(StringField())
-    listening_history = ListField(StringField())
+    # Untyped list: newer entries are full track dicts (name, artist,
+    # image_url, preview_url, external_url, popularity) so the profile can
+    # render rich cards; legacy entries are plain "Name - Artist" strings.
+    # A typed ListField(StringField()) would reject the dict appends.
+    listening_history = ListField()
     recommendations = ListField(DictField())
     created_at = DateTimeField(default=datetime.utcnow)
 

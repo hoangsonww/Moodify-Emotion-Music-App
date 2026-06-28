@@ -11,7 +11,6 @@ import {
   Menu,
   MenuItem,
   Paper,
-  Skeleton,
   Stack,
   TextField,
   Tooltip,
@@ -62,7 +61,11 @@ import TrackPlayer from "../components/TrackPlayer";
 import MoodFeedbackWidget from "../components/MoodFeedbackWidget";
 import { API_URL } from "../config";
 import { logTrackOpen } from "../services/listening";
-import { sendTrackFeedback } from "../services/feedback";
+import {
+  sendTrackFeedback,
+  getTrackFeedbackState,
+  deriveTrackId,
+} from "../services/feedback";
 import { getRecommendations } from "../services/recommend";
 
 // User-facing genre catalog. The token sent to the recommender goes
@@ -248,11 +251,32 @@ const ResultsPage = () => {
   const [moodAnchor, setMoodAnchor] = useState(null);
   const [genreAnchor, setGenreAnchor] = useState(null);
 
+  // Persisted like/dislike: { trackId: "like" | "unlike" }. Hydrated from
+  // the backend whenever the track set changes so a thumbs-up survives
+  // reloads / re-sorts and reflects the user's real history.
+  const [voteMap, setVoteMap] = useState({});
+
   // Reset the load-more counter every time the user narrows the list, so
   // a fresh query doesn't dump a tiny filtered set inside a 12-row window.
   useEffect(() => {
     setVisible(PAGE);
   }, [query]);
+
+  // Hydrate persisted like/dislike state whenever the track set changes
+  // (initial load, mood/market/genre refetch, shuffle). Merges so a vote
+  // the user just cast in this session isn't clobbered by a re-fetch.
+  useEffect(() => {
+    let cancelled = false;
+    if (!tracks || tracks.length === 0) return undefined;
+    getTrackFeedbackState(tracks).then((map) => {
+      if (!cancelled && map && Object.keys(map).length) {
+        setVoteMap((prev) => ({ ...map, ...prev }));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [tracks]);
 
   const palette = useMemo(() => paletteFor(selectedMood), [selectedMood]);
   const filteredTracks = useMemo(() => {
@@ -472,7 +496,7 @@ const ResultsPage = () => {
             fullWidth
             variant="outlined"
             size="small"
-            disabled={loading}
+            disabled={loading || initializing}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -515,21 +539,21 @@ const ResultsPage = () => {
               label={sortLabel}
               onClick={(e) => setSortAnchor(e.currentTarget)}
               isDark={isDarkMode}
-              disabled={loading}
+              disabled={loading || initializing}
             />
             <Pill
               icon={<Language fontSize="small" />}
               label={marketLabel}
               onClick={(e) => setMarketAnchor(e.currentTarget)}
               isDark={isDarkMode}
-              disabled={loading}
+              disabled={loading || initializing}
             />
             <Pill
               icon={<MusicNote fontSize="small" />}
               label={`Mood: ${palette.label}`}
               onClick={(e) => setMoodAnchor(e.currentTarget)}
               isDark={isDarkMode}
-              disabled={loading}
+              disabled={loading || initializing}
             />
             <Pill
               icon={
@@ -540,7 +564,7 @@ const ResultsPage = () => {
               }
               label={genreLabel}
               onClick={(e) => setGenreAnchor(e.currentTarget)}
-              disabled={loading}
+              disabled={loading || initializing}
               isDark={isDarkMode}
             />
             <Button
@@ -552,7 +576,7 @@ const ResultsPage = () => {
                 )
               }
               onClick={onShuffle}
-              disabled={loading}
+              disabled={loading || initializing}
               sx={styles.shuffleBtn}
             >
               {loading ? "Shuffling…" : "Shuffle"}
@@ -663,36 +687,61 @@ const ResultsPage = () => {
 
       {/* Tracks ----------------------------------------------------------- */}
       <Box sx={styles.listWrap}>
-        <Stack
-          direction="row"
-          alignItems="baseline"
-          justifyContent="space-between"
-          sx={{ mb: 1.5 }}
-        >
-          <Typography sx={styles.sectionTitle}>
-            {(loading || initializing) && shownTracks.length === 0
-              ? "Finding your tracks…"
-              : query.trim()
+        {/* Header hidden during the loading-empty state -- the centered
+            spinner below already says "Finding your tracks…". */}
+        {!((loading || initializing) && shownTracks.length === 0) && (
+          <Stack
+            direction="row"
+            alignItems="baseline"
+            justifyContent="space-between"
+            sx={{ mb: 1.5 }}
+          >
+            <Typography sx={styles.sectionTitle}>
+              {query.trim()
                 ? `${sortedTracks.length} match${sortedTracks.length === 1 ? "" : "es"} for "${query.trim()}"`
                 : `${sortedTracks.length} tracks for you`}
-          </Typography>
-          {sortedTracks.length > 0 && (
-            <Typography sx={styles.sectionMeta}>
-              Showing {shownTracks.length} of {sortedTracks.length}
             </Typography>
-          )}
-        </Stack>
+            {sortedTracks.length > 0 && (
+              <Typography sx={styles.sectionMeta}>
+                Showing {shownTracks.length} of {sortedTracks.length}
+              </Typography>
+            )}
+          </Stack>
+        )}
 
         {(loading || initializing) && shownTracks.length === 0 ? (
-          <Stack spacing={1.5}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <Skeleton
-                key={i}
-                variant="rounded"
-                height={88}
-                sx={{ borderRadius: "14px" }}
-              />
-            ))}
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            spacing={2}
+            sx={{ py: { xs: 6, sm: 9 }, textAlign: "center" }}
+          >
+            <CircularProgress sx={{ color: "#ff4d4d" }} />
+            <Box>
+              <Typography
+                sx={{
+                  fontFamily: "Poppins",
+                  fontWeight: 800,
+                  fontSize: 16,
+                  color: isDarkMode ? "#f6f6f8" : "#1a1a1a",
+                }}
+              >
+                Finding your tracks…
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: "Poppins",
+                  fontSize: 13,
+                  color: isDarkMode ? "#a4a4b3" : "#6f6f7a",
+                  mt: 0.75,
+                  mx: "auto",
+                  maxWidth: 380,
+                }}
+              >
+                Tuning a playlist to your mood. The first load can take a few
+                seconds while our servers warm up.
+              </Typography>
+            </Box>
           </Stack>
         ) : sortedTracks.length === 0 ? (
           <EmptyResults isDark={isDarkMode} onShuffle={onShuffle} />
@@ -707,6 +756,13 @@ const ResultsPage = () => {
                 palette={palette}
                 onTrackOpen={onTrackOpen}
                 contextEmotion={String(selectedMood || "neutral").toLowerCase()}
+                initialVote={voteMap[deriveTrackId(track)] || null}
+                onVoteChange={(signal) =>
+                  setVoteMap((prev) => ({
+                    ...prev,
+                    [deriveTrackId(track)]: signal,
+                  }))
+                }
               />
             ))}
           </Stack>
@@ -734,7 +790,7 @@ const ResultsPage = () => {
               fullWidth
               startIcon={<Refresh />}
               onClick={onShuffle}
-              disabled={loading}
+              disabled={loading || initializing}
               sx={styles.ghostBtn}
             >
               Shuffle recommendations
@@ -810,12 +866,17 @@ function TrackRow({
   palette,
   onTrackOpen,
   contextEmotion,
+  initialVote = null,
+  onVoteChange,
 }) {
   const pop = track.popularity || 0;
-  // Per-row vote: null until the user clicks, then "like" or "unlike".
-  // Repeated clicks toggle off (sends nothing new, the local state just
-  // resets visually so the user can correct an accidental tap).
-  const [vote, setVote] = useState(null);
+  // Per-row vote: seeded from the persisted state, then "like" or "unlike".
+  // Repeated clicks toggle off. `initialVote` arrives async (after the
+  // feedback fetch), so sync it in when it changes.
+  const [vote, setVote] = useState(initialVote);
+  useEffect(() => {
+    setVote(initialVote);
+  }, [initialVote]);
 
   const reportOpen = () => {
     if (onTrackOpen) onTrackOpen(track);
@@ -830,12 +891,17 @@ function TrackRow({
   };
 
   const onVote = (signal) => {
-    // Tap-the-active-vote-to-unset toggle.
+    // Tap-the-active-vote-to-unset toggle. Record a "clear" so the un-vote
+    // persists (button stays empty after reload) and the backend reverses
+    // the vote's contribution to the bandit posterior.
     if (vote === signal) {
       setVote(null);
+      if (onVoteChange) onVoteChange(null);
+      sendTrackFeedback({ track, signal: "clear", contextEmotion });
       return;
     }
     setVote(signal);
+    if (onVoteChange) onVoteChange(signal);
     sendTrackFeedback({ track, signal, contextEmotion });
   };
   return (

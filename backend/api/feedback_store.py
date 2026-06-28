@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -39,7 +40,10 @@ TRACK_KIND = "track"
 # Allowed values, enforced both here (defence in depth for a direct
 # store call) and at the endpoint validator.
 INPUT_TYPES = frozenset({"text", "speech", "facial"})
-TRACK_SIGNALS = frozenset({"like", "unlike", "open_deezer"})
+# "clear" retracts a previous like/unlike: it records the un-vote so the
+# button state stays in sync after a reload, and triggers a posterior
+# reversal on the read side. It is NOT a learning signal of its own.
+TRACK_SIGNALS = frozenset({"like", "unlike", "open_deezer", "clear"})
 
 _lock = threading.Lock()
 _mood_collection = None  # type: ignore[var-annotated]
@@ -169,23 +173,105 @@ def insert_track_feedback(
     track_id: str,
     signal: str,
     context_emotion: Optional[str] = None,
+    features: Optional[list] = None,
 ) -> None:
-    """Insert one track-feedback event. Never raises."""
+    """Insert one track-feedback event. Never raises.
+
+    ``features`` is the exact feature vector the bandit applied for a
+    like/unlike, stored so a later revert (un-vote / switch) subtracts the
+    same quantity regardless of how the track or context looks at revert
+    time. ``seq`` is a high-resolution monotonic tiebreaker because the
+    time-series ``ts`` is only millisecond-precision -- two rapid taps on
+    the same track could otherwise share a ``ts`` and make "latest vote"
+    ambiguous.
+    """
     try:
         coll = _get_collection(TRACK_KIND)
         if coll is None:
             return
         coll.insert_one({
             "ts": datetime.now(timezone.utc),
+            "seq": time.time_ns(),
             "meta": {
                 "username": username,
                 "signal": signal,
                 "context_emotion": context_emotion,
             },
             "track_id": track_id,
+            "features": list(features) if features is not None else None,
         })
     except Exception:  # noqa: BLE001
         logger.warning("track feedback insert failed (silently skipping)")
+
+
+def get_active_vote(username: str, track_id: str) -> Optional[dict]:
+    """Return the user's current vote for one track, or ``None``.
+
+    The current vote is the latest of like / unlike / clear (ties broken by
+    ``seq``). A trailing ``clear`` means no active vote -> ``None``.
+    Otherwise returns ``{"signal": ..., "features": [...] | None}`` so the
+    caller can reverse exactly what was applied. Never raises.
+    """
+    try:
+        coll = _get_collection(TRACK_KIND)
+        if coll is None:
+            return None
+        cursor = coll.aggregate([
+            {"$match": {
+                "meta.username": username,
+                "meta.signal": {"$in": ["like", "unlike", "clear"]},
+                "track_id": str(track_id),
+            }},
+            {"$sort": {"ts": 1, "seq": 1}},
+            {"$group": {
+                "_id": "$track_id",
+                "signal": {"$last": "$meta.signal"},
+                "features": {"$last": "$features"},
+            }},
+        ])
+        row = next(iter(cursor), None)
+        if not row or row.get("signal") not in ("like", "unlike"):
+            return None
+        return {"signal": row["signal"], "features": row.get("features")}
+    except Exception:  # noqa: BLE001
+        logger.warning("active vote lookup failed (silently skipping)")
+        return None
+
+
+def query_track_feedback(username: str, track_ids) -> dict:
+    """Return ``{track_id: "like" | "unlike"}`` for the user's current vote.
+
+    The current vote is the user's latest of like / unlike / clear for each
+    track. A trailing ``clear`` (the un-vote) means there is NO active vote,
+    so that track is omitted. The implicit ``open_deezer`` signal is never
+    considered. ``track_ids`` is an iterable of the ids currently on screen.
+    Never raises; returns ``{}`` on any failure (feedback is best-effort).
+    """
+    out: dict = {}
+    try:
+        ids = [str(t) for t in (track_ids or []) if t]
+        if not ids:
+            return out
+        coll = _get_collection(TRACK_KIND)
+        if coll is None:
+            return out
+        cursor = coll.aggregate([
+            {"$match": {
+                "meta.username": username,
+                "meta.signal": {"$in": ["like", "unlike", "clear"]},
+                "track_id": {"$in": ids},
+            }},
+            {"$sort": {"ts": 1, "seq": 1}},
+            {"$group": {"_id": "$track_id", "signal": {"$last": "$meta.signal"}}},
+        ])
+        for row in cursor:
+            sig = row.get("signal")
+            # A trailing "clear" means the vote was retracted -> no state.
+            if sig in ("like", "unlike"):
+                out[row["_id"]] = sig
+    except Exception:  # noqa: BLE001
+        logger.warning("track feedback query failed (silently skipping)")
+    return out
 
 
 def reset_for_tests() -> None:

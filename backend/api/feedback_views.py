@@ -229,46 +229,55 @@ def _bump_calibration(username: str, predicted: str, actual: str) -> None:
         )
 
 
-def _update_taste_profile(
-    username: str,
-    *,
-    track: dict | None,
-    signal: str,
-    context_emotion: str | None,
-) -> None:
-    """Apply one feedback signal to the user's Beta-Bernoulli posterior.
-
-    No-op when the caller omitted the ``track`` field -- without it we
-    can't extract the feature vector and the bandit cannot learn from
-    the event. The raw event is still persisted upstream so we don't
-    lose the signal entirely.
-
-    Never raises.
-    """
+def _featurize(track: dict | None, context_emotion: str | None):
+    """Feature vector for a track, or None if missing/unfeaturizable."""
     if track is None:
-        return
+        return None
     try:
-        features = track_features.featurize(track, context_emotion=context_emotion)
+        return track_features.featurize(track, context_emotion=context_emotion)
     except Exception:  # noqa: BLE001
-        logger.warning(
-            "feature extraction failed for user=%s -- skipping bandit update",
-            username,
-        )
-        return
+        logger.warning("feature extraction failed -- skipping bandit op")
+        return None
 
+
+def _apply_posterior(username: str, features, signal: str) -> None:
+    """Add ``signal``'s contribution (``features``) to the user's posterior."""
+    if not features:
+        return
     try:
         profile = UserProfile.objects(username=username).first()
         if profile is None:
             return
-        updated = bandit.update_posterior(
+        profile.taste_profile = bandit.update_posterior(
             profile.taste_profile or {}, features, signal
         )
-        profile.taste_profile = updated
         profile.save()
     except Exception:  # noqa: BLE001
         logger.warning(
-            "taste_profile update failed for user=%s (silently skipping)",
-            username,
+            "taste_profile update failed for user=%s (silently skipping)", username
+        )
+
+
+def _revert_posterior(username: str, features, signal: str) -> None:
+    """Subtract a previously-applied vote (``features``/``signal``).
+
+    ``features`` is the EXACT vector stored when the vote was cast, so the
+    reversal cancels it precisely regardless of how the track or the context
+    emotion look at revert time.
+    """
+    if not features:
+        return
+    try:
+        profile = UserProfile.objects(username=username).first()
+        if profile is None:
+            return
+        profile.taste_profile = bandit.revert_posterior(
+            profile.taste_profile or {}, features, signal
+        )
+        profile.save()
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "taste_profile revert failed for user=%s (silently skipping)", username
         )
 
 
@@ -321,21 +330,81 @@ def feedback(request):
             session_id=cleaned["session_id"],
         )
         _bump_calibration(username, cleaned["predicted"], cleaned["actual"])
-    else:
+    elif cleaned["signal"] == "open_deezer":
+        # Implicit, purely additive positive signal -- never a vote, so no
+        # reconciliation: every open is its own soft-positive event.
         feedback_store.insert_track_feedback(
             username=username,
             track_id=cleaned["track_id"],
-            signal=cleaned["signal"],
+            signal="open_deezer",
             context_emotion=cleaned["context_emotion"],
         )
-        _update_taste_profile(
+        _apply_posterior(
             username,
-            track=cleaned["track"],
-            signal=cleaned["signal"],
-            context_emotion=cleaned["context_emotion"],
+            _featurize(cleaned["track"], cleaned["context_emotion"]),
+            "open_deezer",
         )
+    else:
+        # "Set vote" semantics for like / unlike / clear: a track's CURRENT
+        # vote is the only thing that contributes to the posterior. Look up
+        # the prior vote (and the exact feature vector it was applied with)
+        # BEFORE recording this event, then reconcile: revert the prior
+        # contribution against its stored vector and apply the new one. This
+        # keeps the posterior correct across a like<->unlike switch (no
+        # double-count), a clear (net zero), a cross-mood re-vote (the
+        # original emotion axis is reverted, not the current one), and stays
+        # idempotent if the same vote is re-sent.
+        signal = cleaned["signal"]
+        prior = feedback_store.get_active_vote(username, cleaned["track_id"])
+        prior_signal = prior["signal"] if prior else None
+
+        new_features = (
+            _featurize(cleaned["track"], cleaned["context_emotion"])
+            if signal in ("like", "unlike")
+            else None
+        )
+        feedback_store.insert_track_feedback(
+            username=username,
+            track_id=cleaned["track_id"],
+            signal=signal,
+            context_emotion=cleaned["context_emotion"],
+            features=new_features,
+        )
+        if prior_signal in ("like", "unlike") and prior_signal != signal:
+            _revert_posterior(username, prior.get("features"), prior_signal)
+        if signal in ("like", "unlike") and signal != prior_signal:
+            _apply_posterior(username, new_features, signal)
 
     return Response(
         {"message": "Feedback recorded."},
         status=status.HTTP_202_ACCEPTED,
     )
+
+
+@swagger_auto_schema(
+    method="get",
+    tags=[Tags.INFERENCE],
+    operation_summary="Read the user's like/dislike state for tracks",
+    operation_description=(
+        "Returns the signed-in user's latest explicit vote for each track id "
+        "in the comma-separated `ids` query param, so the UI can restore the "
+        "like/dislike button state after a reload. Implicit `open_deezer` "
+        "signals are excluded."
+    ),
+    responses={
+        200: ok_message("Map of track_id -> 'like' | 'unlike'.", "{}"),
+        401: RESP_401,
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def track_feedback_state(request):
+    """Return ``{feedback: {track_id: 'like'|'unlike'}}`` for the caller."""
+    raw = request.query_params.get("ids", "") or ""
+    # Cap the batch so a crafted query can't issue an unbounded $in.
+    track_ids = [t for t in (s.strip() for s in raw.split(",")) if t][:200]
+    username = getattr(request.user, "username", None)
+    if not username or not track_ids:
+        return Response({"feedback": {}})
+    fb = feedback_store.query_track_feedback(username, track_ids)
+    return Response({"feedback": fb})

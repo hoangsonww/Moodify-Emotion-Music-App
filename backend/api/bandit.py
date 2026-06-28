@@ -138,6 +138,43 @@ def update_posterior(
     return _write_posterior(alpha, beta, events + 1)
 
 
+def revert_posterior(
+    taste_profile: dict | None,
+    features: Sequence[float],
+    signal: str,
+) -> dict:
+    """Undo a previously-applied like/unlike, keeping the posterior in sync.
+
+    Subtracts exactly what :func:`update_posterior` added for ``signal`` and
+    decrements the event count, clamping pseudo-counts at the prior floor and
+    events at 0 so a double-revert (or drift) can never push the posterior
+    below its starting point. Does not mutate the input. ``open_deezer`` is
+    not a retractable vote, so only like/unlike are honoured.
+    """
+    if signal not in ("like", "unlike"):
+        return taste_profile or _write_posterior(*_empty_arrays(), events=0)
+
+    if len(features) != tf.FEATURE_DIM:
+        logger.warning(
+            "revert_posterior: feature dim mismatch (got %d expected %d) -- skipping",
+            len(features), tf.FEATURE_DIM,
+        )
+        return taste_profile or _write_posterior(*_empty_arrays(), events=0)
+
+    alpha, beta, events = _read_posterior(taste_profile)
+    w = WEIGHTS[signal]
+
+    for i, f in enumerate(features):
+        if f == 0:
+            continue
+        if signal == "unlike":
+            beta[i] = max(PRIOR_BETA, beta[i] - w * f)
+        else:
+            alpha[i] = max(PRIOR_ALPHA, alpha[i] - w * f)
+
+    return _write_posterior(alpha, beta, max(0, events - 1))
+
+
 # ---------------------------------------------------------------------------
 # Re-ranker -- called by /api/music_recommendation/ on every fetch
 # ---------------------------------------------------------------------------
