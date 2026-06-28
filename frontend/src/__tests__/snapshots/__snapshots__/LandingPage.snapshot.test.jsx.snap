@@ -116,11 +116,11 @@ exports[`LandingPage snapshot matches the rendered markup 1`] = `
               class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-1akpnp7-MuiGrid-root"
             >
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-4 css-wg4xta-MuiGrid-root"
+                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-4 reveal reveal-delay-1 css-wg4xta-MuiGrid-root is-visible"
+                data-reveal="true"
               >
                 <div
-                  class="reveal reveal-delay-1 MuiBox-root css-11uya56 is-visible"
-                  data-reveal="true"
+                  class="MuiBox-root css-11uya56"
                 >
                   <div
                     class="MuiBox-root css-k400sw"
@@ -150,11 +150,11 @@ exports[`LandingPage snapshot matches the rendered markup 1`] = `
                 </div>
               </div>
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-4 css-wg4xta-MuiGrid-root"
+                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-4 reveal reveal-delay-2 css-wg4xta-MuiGrid-root is-visible"
+                data-reveal="true"
               >
                 <div
-                  class="reveal reveal-delay-2 MuiBox-root css-11uya56 is-visible"
-                  data-reveal="true"
+                  class="MuiBox-root css-11uya56"
                 >
                   <div
                     class="MuiBox-root css-k400sw"
@@ -184,11 +184,11 @@ exports[`LandingPage snapshot matches the rendered markup 1`] = `
                 </div>
               </div>
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-4 css-wg4xta-MuiGrid-root"
+                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-4 reveal reveal-delay-3 css-wg4xta-MuiGrid-root is-visible"
+                data-reveal="true"
               >
                 <div
-                  class="reveal reveal-delay-3 MuiBox-root css-11uya56 is-visible"
-                  data-reveal="true"
+                  class="MuiBox-root css-11uya56"
                 >
                   <div
                     class="MuiBox-root css-k400sw"
