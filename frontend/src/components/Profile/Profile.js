@@ -15,6 +15,7 @@ import {
   Menu,
   MenuItem,
   Paper,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -452,8 +453,14 @@ const ProfilePage = () => {
   // ------------ render ------------
   return (
     <Box sx={styles.container}>
-      {/* Full-screen loading overlay */}
-      {isLoading && (
+      {/* Initial load: show a skeleton of the page shell instead of a flat
+          gray overlay, so the layout is recognisable while data arrives. */}
+      {isLoading && !userData && <ProfileSkeleton styles={styles} />}
+
+      {/* In-page action (e.g. remixing recommendations from a mood) keeps
+          the full-screen overlay -- it carries a status message and the
+          page is about to navigate away. */}
+      {isLoading && userData && (
         <Box sx={styles.loadingOverlay}>
           <CircularProgress sx={{ color: "#ff4d4d" }} />
           <Typography variant="h6" sx={styles.loadingTitle}>
@@ -1154,6 +1161,78 @@ const ProfilePage = () => {
 };
 
 // ---------- small subcomponents ----------
+
+// Loading placeholder that mirrors the profile shell (hero card + a couple
+// of content sections) so the page keeps its shape while data loads,
+// instead of flashing a flat gray overlay.
+function ProfileSkeleton({ styles }) {
+  return (
+    <Box sx={styles.shell}>
+      <Paper elevation={6} sx={styles.heroCard}>
+        <Box sx={styles.heroBody}>
+          <Skeleton
+            variant="circular"
+            width={72}
+            height={72}
+            sx={{ bgcolor: "rgba(255,255,255,0.18)", flexShrink: 0 }}
+          />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Skeleton
+              width={90}
+              height={14}
+              sx={{ bgcolor: "rgba(255,255,255,0.18)" }}
+            />
+            <Skeleton
+              width="55%"
+              height={34}
+              sx={{ bgcolor: "rgba(255,255,255,0.22)" }}
+            />
+            <Skeleton
+              width="80%"
+              height={18}
+              sx={{ bgcolor: "rgba(255,255,255,0.18)" }}
+            />
+          </Box>
+        </Box>
+        <Box sx={styles.statsRow}>
+          {[0, 1, 2].map((i) => (
+            <Skeleton
+              key={i}
+              variant="rounded"
+              height={76}
+              sx={{ borderRadius: "14px", bgcolor: "rgba(255,255,255,0.16)" }}
+            />
+          ))}
+        </Box>
+      </Paper>
+
+      {[0, 1].map((s) => (
+        <Paper key={s} elevation={3} sx={styles.section}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1.5}
+            sx={{ mb: 2 }}
+          >
+            <Skeleton variant="rounded" width={40} height={40} />
+            <Skeleton width={200} height={26} />
+          </Stack>
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            {Array.from({ length: 6 }).map((_, j) => (
+              <Skeleton
+                key={j}
+                variant="rounded"
+                width={96}
+                height={34}
+                sx={{ borderRadius: "999px" }}
+              />
+            ))}
+          </Stack>
+        </Paper>
+      ))}
+    </Box>
+  );
+}
 
 function Stat({ icon, label, value, tint }) {
   return (
