@@ -687,25 +687,27 @@ const ResultsPage = () => {
 
       {/* Tracks ----------------------------------------------------------- */}
       <Box sx={styles.listWrap}>
-        <Stack
-          direction="row"
-          alignItems="baseline"
-          justifyContent="space-between"
-          sx={{ mb: 1.5 }}
-        >
-          <Typography sx={styles.sectionTitle}>
-            {(loading || initializing) && shownTracks.length === 0
-              ? "Finding your tracks…"
-              : query.trim()
+        {/* Header hidden during the loading-empty state -- the centered
+            spinner below already says "Finding your tracks…". */}
+        {!((loading || initializing) && shownTracks.length === 0) && (
+          <Stack
+            direction="row"
+            alignItems="baseline"
+            justifyContent="space-between"
+            sx={{ mb: 1.5 }}
+          >
+            <Typography sx={styles.sectionTitle}>
+              {query.trim()
                 ? `${sortedTracks.length} match${sortedTracks.length === 1 ? "" : "es"} for "${query.trim()}"`
                 : `${sortedTracks.length} tracks for you`}
-          </Typography>
-          {sortedTracks.length > 0 && (
-            <Typography sx={styles.sectionMeta}>
-              Showing {shownTracks.length} of {sortedTracks.length}
             </Typography>
-          )}
-        </Stack>
+            {sortedTracks.length > 0 && (
+              <Typography sx={styles.sectionMeta}>
+                Showing {shownTracks.length} of {sortedTracks.length}
+              </Typography>
+            )}
+          </Stack>
+        )}
 
         {(loading || initializing) && shownTracks.length === 0 ? (
           <Stack
