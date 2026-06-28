@@ -77,6 +77,18 @@ function AppLayout() {
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const timeout = reduceMotion ? 0 : { enter: 480, exit: 300 };
 
+  // Reset scroll to the top as the new page begins entering. With the
+  // out-in transition the old page fades out at its scroll position, then
+  // the incoming page mounts here at the top and fades in -- so navigating
+  // (e.g. Home -> Privacy Policy) never drops the user mid-page, and the
+  // existing fade/slide provides the smoothness rather than a jarring
+  // mid-scroll jump. Tied to the keyed CSSTransition (location.pathname),
+  // so in-page hash/anchor links are left alone.
+  const scrollToTopOnEnter = () => {
+    if (typeof window === "undefined") return;
+    window.scrollTo(0, 0);
+  };
+
   return (
     <div className="app-shell">
       {!hideNavbar && <Navbar />}
@@ -93,6 +105,7 @@ function AppLayout() {
             classNames="page"
             appear
             unmountOnExit
+            onEnter={scrollToTopOnEnter}
           >
             <div ref={nodeRef} className="page-anim">
               <Routes location={location}>
