@@ -78,101 +78,107 @@ function AppLayout() {
   const timeout = reduceMotion ? 0 : { enter: 480, exit: 300 };
 
   return (
-    <>
+    <div className="app-shell">
       {!hideNavbar && <Navbar />}
-      <SwitchTransition mode="out-in">
-        <CSSTransition
-          key={location.pathname}
-          nodeRef={nodeRef}
-          timeout={timeout}
-          classNames="page"
-          appear
-          unmountOnExit
-        >
-          <div ref={nodeRef} className="page-anim">
-            <Routes location={location}>
-              {/* Public routes -- landing, auth, legal. Auth pages bounce a
+      {/* `app-main` flex-grows to fill the viewport so the footer always
+          sits at the bottom -- even mid-load when the routed page hasn't
+          rendered any height yet. Previously an empty/short page let the
+          footer ride up to just under the navbar while content loaded. */}
+      <div className="app-main">
+        <SwitchTransition mode="out-in">
+          <CSSTransition
+            key={location.pathname}
+            nodeRef={nodeRef}
+            timeout={timeout}
+            classNames="page"
+            appear
+            unmountOnExit
+          >
+            <div ref={nodeRef} className="page-anim">
+              <Routes location={location}>
+                {/* Public routes -- landing, auth, legal. Auth pages bounce a
             signed-in user back to /home so they never see the form. */}
-              <Route path="/" element={<LandingPage />} />
-              <Route
-                path="/login"
-                element={
-                  <RedirectIfAuthed>
-                    <Login />
-                  </RedirectIfAuthed>
-                }
-              />
-              <Route
-                path="/register"
-                element={
-                  <RedirectIfAuthed>
-                    <Register />
-                  </RedirectIfAuthed>
-                }
-              />
-              <Route
-                path="/forgot-password"
-                element={
-                  <RedirectIfAuthed>
-                    <ForgotPassword />
-                  </RedirectIfAuthed>
-                }
-              />
-              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-              <Route
-                path="/terms-of-service"
-                element={<TermsOfServicePage />}
-              />
+                <Route path="/" element={<LandingPage />} />
+                <Route
+                  path="/login"
+                  element={
+                    <RedirectIfAuthed>
+                      <Login />
+                    </RedirectIfAuthed>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <RedirectIfAuthed>
+                      <Register />
+                    </RedirectIfAuthed>
+                  }
+                />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <RedirectIfAuthed>
+                      <ForgotPassword />
+                    </RedirectIfAuthed>
+                  }
+                />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route
+                  path="/terms-of-service"
+                  element={<TermsOfServicePage />}
+                />
 
-              {/* Gated feature routes -- redirect to /login when signed out. */}
-              <Route
-                path="/home"
-                element={
-                  <RequireAuth>
-                    <HomePage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <RequireAuth>
-                    <ProfilePage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/passkeys"
-                element={
-                  <RequireAuth>
-                    <PasskeysPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/results"
-                element={
-                  <RequireAuth>
-                    <ResultsPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/recommendations"
-                element={
-                  <RequireAuth>
-                    <RecommendationsPage />
-                  </RequireAuth>
-                }
-              />
+                {/* Gated feature routes -- redirect to /login when signed out. */}
+                <Route
+                  path="/home"
+                  element={
+                    <RequireAuth>
+                      <HomePage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <RequireAuth>
+                      <ProfilePage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/passkeys"
+                  element={
+                    <RequireAuth>
+                      <PasskeysPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/results"
+                  element={
+                    <RequireAuth>
+                      <ResultsPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/recommendations"
+                  element={
+                    <RequireAuth>
+                      <RecommendationsPage />
+                    </RequireAuth>
+                  }
+                />
 
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </div>
-        </CSSTransition>
-      </SwitchTransition>
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </div>
+          </CSSTransition>
+        </SwitchTransition>
+      </div>
       <Footer />
-    </>
+    </div>
   );
 }
 
