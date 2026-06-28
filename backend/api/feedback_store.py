@@ -188,6 +188,38 @@ def insert_track_feedback(
         logger.warning("track feedback insert failed (silently skipping)")
 
 
+def query_track_feedback(username: str, track_ids) -> dict:
+    """Return ``{track_id: "like" | "unlike"}`` for the user's latest vote.
+
+    Only explicit votes are reported -- the implicit ``open_deezer`` signal
+    is excluded so it never lights up a like button. ``track_ids`` is an
+    iterable of the ids currently on screen. Never raises; returns ``{}`` on
+    any failure (feedback is best-effort).
+    """
+    out: dict = {}
+    try:
+        ids = [str(t) for t in (track_ids or []) if t]
+        if not ids:
+            return out
+        coll = _get_collection(TRACK_KIND)
+        if coll is None:
+            return out
+        cursor = coll.aggregate([
+            {"$match": {
+                "meta.username": username,
+                "meta.signal": {"$in": ["like", "unlike"]},
+                "track_id": {"$in": ids},
+            }},
+            {"$sort": {"ts": 1}},
+            {"$group": {"_id": "$track_id", "signal": {"$last": "$meta.signal"}}},
+        ])
+        for row in cursor:
+            out[row["_id"]] = row["signal"]
+    except Exception:  # noqa: BLE001
+        logger.warning("track feedback query failed (silently skipping)")
+    return out
+
+
 def reset_for_tests() -> None:
     """Drop cached collection handles so the next call re-initialises."""
     global _mood_collection, _track_collection

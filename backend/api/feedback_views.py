@@ -339,3 +339,32 @@ def feedback(request):
         {"message": "Feedback recorded."},
         status=status.HTTP_202_ACCEPTED,
     )
+
+
+@swagger_auto_schema(
+    method="get",
+    tags=[Tags.INFERENCE],
+    operation_summary="Read the user's like/dislike state for tracks",
+    operation_description=(
+        "Returns the signed-in user's latest explicit vote for each track id "
+        "in the comma-separated `ids` query param, so the UI can restore the "
+        "like/dislike button state after a reload. Implicit `open_deezer` "
+        "signals are excluded."
+    ),
+    responses={
+        200: ok_message("Map of track_id -> 'like' | 'unlike'.", "{}"),
+        401: RESP_401,
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def track_feedback_state(request):
+    """Return ``{feedback: {track_id: 'like'|'unlike'}}`` for the caller."""
+    raw = request.query_params.get("ids", "") or ""
+    # Cap the batch so a crafted query can't issue an unbounded $in.
+    track_ids = [t for t in (s.strip() for s in raw.split(",")) if t][:200]
+    username = getattr(request.user, "username", None)
+    if not username or not track_ids:
+        return Response({"feedback": {}})
+    fb = feedback_store.query_track_feedback(username, track_ids)
+    return Response({"feedback": fb})

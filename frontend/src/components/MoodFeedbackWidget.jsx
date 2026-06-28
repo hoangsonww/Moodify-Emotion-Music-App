@@ -64,6 +64,9 @@ export default function MoodFeedbackWidget({
 }) {
   const [stage, setStage] = useState("ask"); // ask | choose | done
   const [busy, setBusy] = useState(false);
+  // Skip (the X) hides the widget outright -- no "Thanks" terminal state,
+  // because skipping is not feedback. Re-arms on a new detection below.
+  const [dismissed, setDismissed] = useState(false);
 
   // Re-arm the prompt whenever the predicted label changes -- a fresh
   // detection (or a user-driven mood switch on the results page) is a
@@ -71,12 +74,14 @@ export default function MoodFeedbackWidget({
   useEffect(() => {
     setStage("ask");
     setBusy(false);
+    setDismissed(false);
   }, [predicted, sessionId]);
 
   // Authentication gate: the feedback endpoint requires a JWT. Anonymous
   // users would just get a 401, so don't even show the prompt.
   if (!isAuthenticated()) return null;
   if (!predicted) return null;
+  if (dismissed) return null;
 
   const onConfirm = async () => {
     if (busy) return;
@@ -256,10 +261,10 @@ export default function MoodFeedbackWidget({
             >
               No, it was…
             </Button>
-            <Tooltip title="Skip">
+            <Tooltip title="Dismiss">
               <IconButton
                 size="small"
-                onClick={() => setStage("done")}
+                onClick={() => setDismissed(true)}
                 sx={{
                   color: subText,
                   width: 30,

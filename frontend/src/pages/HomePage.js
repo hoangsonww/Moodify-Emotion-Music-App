@@ -374,6 +374,10 @@ const HomePage = () => {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState(null);
+  // False until the profile fetch settles. While false the hero stat
+  // bubbles show a spinner instead of a placeholder 0, so they never flash
+  // an incorrect zero before the real counts arrive.
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const token = localStorage.getItem("token");
   const { isDarkMode } = useContext(DarkModeContext);
@@ -398,6 +402,8 @@ const HomePage = () => {
         setUserData({ ...userProfile, id: userId });
       } catch (error) {
         console.error("Error fetching user data:", error);
+      } finally {
+        setProfileLoaded(true);
       }
     };
 
@@ -405,6 +411,7 @@ const HomePage = () => {
       fetchUserData();
     } else {
       console.error("No token available.");
+      setProfileLoaded(true);
     }
   }, [token]);
 
@@ -881,15 +888,19 @@ const HomePage = () => {
   // detections in a row) collapse into a single chip. Cap at 6 to
   // match the original visual budget.
   const recentMoods = uniqRecent(userData?.mood_history).slice(0, 6);
-  const recommendationsCount = Array.isArray(userData?.recommendations)
-    ? userData.recommendations.length
-    : 0;
-  const listeningCount = Array.isArray(userData?.listening_history)
-    ? userData.listening_history.length
-    : 0;
-  const moodsLoggedCount = Array.isArray(userData?.mood_history)
-    ? userData.mood_history.length
-    : 0;
+  // null while the profile is still loading -> StatBubble shows a spinner.
+  // Only resolve to a number (incl. a genuine 0) once the fetch has settled,
+  // so the bubbles never flash an incorrect 0 on first paint.
+  const countOf = (arr) => (Array.isArray(arr) ? arr.length : 0);
+  const recommendationsCount = profileLoaded
+    ? countOf(userData?.recommendations)
+    : null;
+  const listeningCount = profileLoaded
+    ? countOf(userData?.listening_history)
+    : null;
+  const moodsLoggedCount = profileLoaded
+    ? countOf(userData?.mood_history)
+    : null;
   const activeMode =
     MODE_CARDS.find((m) => m.key === activeTab) || MODE_CARDS[0];
   const ActiveIcon = activeMode.icon;
@@ -2163,19 +2174,27 @@ function StatBubble({ icon, label, value, tint, isDark }) {
         {icon}
       </Box>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 0 }}>
-        <Typography
-          sx={{
-            fontFamily: "Poppins",
-            fontWeight: 900,
-            fontSize: 16,
-            lineHeight: 0.95,
-            color: isDark ? "#f6f6f8" : "#1a1a1a",
-            mt: "-2px",
-            mb: 0,
-          }}
-        >
-          {value}
-        </Typography>
+        {value === null ? (
+          <CircularProgress
+            size={15}
+            thickness={5}
+            sx={{ color: tint, my: "1px" }}
+          />
+        ) : (
+          <Typography
+            sx={{
+              fontFamily: "Poppins",
+              fontWeight: 900,
+              fontSize: 16,
+              lineHeight: 0.95,
+              color: isDark ? "#f6f6f8" : "#1a1a1a",
+              mt: "-2px",
+              mb: 0,
+            }}
+          >
+            {value}
+          </Typography>
+        )}
         <Typography
           sx={{
             fontFamily: "Poppins",

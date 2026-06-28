@@ -184,3 +184,30 @@ export function deriveTrackId(track) {
   if (!name) return null;
   return `name:${name}::${artist}`;
 }
+
+/**
+ * Fetch the signed-in user's latest like/dislike for a set of tracks, so the
+ * UI can restore button state after a reload.
+ *
+ * @param {Array<object>} tracks -- track dicts to look up.
+ * @returns {Promise<Object<string,"like"|"unlike">>} map keyed by the same
+ *   track_id `deriveTrackId` produces. Empty object for anon users, no
+ *   tracks, or any failure (never throws -- feedback is best-effort).
+ */
+export async function getTrackFeedbackState(tracks) {
+  const headers = authHeaders();
+  if (!headers || !Array.isArray(tracks) || tracks.length === 0) return {};
+
+  const ids = Array.from(new Set(tracks.map(deriveTrackId).filter(Boolean)));
+  if (!ids.length) return {};
+
+  try {
+    const res = await axios.get(`${API_URL}/api/feedback/tracks/`, {
+      headers,
+      params: { ids: ids.join(",") },
+    });
+    return res.data?.feedback || {};
+  } catch {
+    return {};
+  }
+}

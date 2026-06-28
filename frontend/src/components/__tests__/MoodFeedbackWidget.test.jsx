@@ -119,10 +119,15 @@ describe("<MoodFeedbackWidget />", () => {
     expect(await screen.findByText(/Thanks/i)).toBeInTheDocument();
   });
 
-  it("Skip collapses the widget without sending", () => {
-    render(<MoodFeedbackWidget predicted="joy" inputType="text" />);
+  it("X dismisses the widget entirely (no Thanks, no send)", () => {
+    const { container } = render(
+      <MoodFeedbackWidget predicted="joy" inputType="text" />,
+    );
     fireEvent.click(screen.getByLabelText(/Skip feedback/i));
-    expect(screen.getByText(/Thanks/i)).toBeInTheDocument();
+    // Dismiss removes the widget outright -- it must NOT fall into the
+    // "Thanks" terminal state (skipping is not feedback).
+    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByText(/Thanks/i)).not.toBeInTheDocument();
     expect(sendMoodFeedback).not.toHaveBeenCalled();
   });
 });

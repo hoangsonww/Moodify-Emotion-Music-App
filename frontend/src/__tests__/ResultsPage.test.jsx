@@ -161,8 +161,15 @@ describe("<ResultsPage />", () => {
 
   it("re-fetches a personalized list on mount when the user has mood history", async () => {
     window.localStorage.setItem("token", "token123");
-    axios.get.mockResolvedValueOnce({
-      data: { id: "u1", mood_history: ["sad", "calm", "sad"] },
+    // The page now issues two GETs: the profile (personalisation) and the
+    // track-feedback state. Route by URL so order doesn't matter.
+    axios.get.mockImplementation((url) => {
+      if (String(url).includes("/users/user/profile")) {
+        return Promise.resolve({
+          data: { id: "u1", mood_history: ["sad", "calm", "sad"] },
+        });
+      }
+      return Promise.resolve({ data: { feedback: {} } });
     });
     axios.post.mockResolvedValueOnce({
       data: {

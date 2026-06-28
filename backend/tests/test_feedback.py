@@ -326,3 +326,75 @@ class TestCalibrationResilience:
         )
         assert resp.status_code == 202
         assert len(fake_store["mood"].events) == 1
+
+
+class _FakeAggCollection:
+    """Captures the aggregate pipeline and returns canned rows."""
+
+    def __init__(self, rows):
+        self._rows = rows
+        self.pipelines: list = []
+
+    def aggregate(self, pipeline):
+        self.pipelines.append(pipeline)
+        return iter(self._rows)
+
+
+class TestTrackFeedbackQuery:
+    def test_maps_latest_signal_per_track(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "like"},
+            {"_id": "deezer:2", "signal": "unlike"},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        out = feedback_store.query_track_feedback("alice", ["deezer:1", "deezer:2"])
+        assert out == {"deezer:1": "like", "deezer:2": "unlike"}
+        # Only explicit votes are queried -- never open_deezer.
+        match = coll.pipelines[0][0]["$match"]
+        assert set(match["meta.signal"]["$in"]) == {"like", "unlike"}
+
+    def test_empty_ids_short_circuits(self, monkeypatch):
+        def boom(_k):
+            raise AssertionError("should not touch the collection")
+
+        monkeypatch.setattr(feedback_store, "_get_collection", boom)
+        assert feedback_store.query_track_feedback("alice", []) == {}
+
+    def test_failure_returns_empty(self, monkeypatch):
+        def boom(_k):
+            raise RuntimeError("mongo down")
+
+        monkeypatch.setattr(feedback_store, "_get_collection", boom)
+        assert feedback_store.query_track_feedback("alice", ["deezer:1"]) == {}
+
+
+class TestTrackFeedbackStateEndpoint:
+    URL = "/api/feedback/tracks/"
+
+    def test_anonymous_rejected(self, api_client):
+        resp = api_client.get(f"{self.URL}?ids=deezer:1")
+        assert resp.status_code in (401, 403)
+
+    def test_returns_state_for_ids(self, auth_client, monkeypatch):
+        captured = {}
+
+        def fake_query(username, ids):
+            captured["username"] = username
+            captured["ids"] = list(ids)
+            return {"deezer:1": "like"}
+
+        monkeypatch.setattr(feedback_store, "query_track_feedback", fake_query)
+        resp = auth_client.get(f"{self.URL}?ids=deezer:1,deezer:2")
+        assert resp.status_code == 200
+        assert resp.data["feedback"] == {"deezer:1": "like"}
+        assert captured["ids"] == ["deezer:1", "deezer:2"]
+        assert captured["username"] == auth_client.user.username
+
+    def test_no_ids_returns_empty_without_querying(self, auth_client, monkeypatch):
+        def boom(*_a, **_k):
+            raise AssertionError("should not query when no ids")
+
+        monkeypatch.setattr(feedback_store, "query_track_feedback", boom)
+        resp = auth_client.get(self.URL)
+        assert resp.status_code == 200
+        assert resp.data["feedback"] == {}

@@ -16,9 +16,20 @@ function key(profileId, track) {
   return `${profileId}::${name}::${artist}`;
 }
 
+// Persist the full track shape (not just "Name - Artist") so the profile's
+// "Tracks you've opened" list can render the same rich card -- cover art,
+// preview player, Deezer link -- as saved recommendations. Older rows that
+// are plain strings are still handled on read.
 function entryFor(track) {
   if (!track || !track.name) return null;
-  return track.artist ? `${track.name} - ${track.artist}` : track.name;
+  return {
+    name: track.name,
+    artist: track.artist || "",
+    image_url: track.image_url || "",
+    preview_url: track.preview_url || "",
+    external_url: track.external_url || track.url || "",
+    popularity: track.popularity || 0,
+  };
 }
 
 /**

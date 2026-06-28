@@ -443,10 +443,17 @@ const ProfilePage = () => {
     () => userData?.listening_history || [],
     [userData?.listening_history],
   );
-  // Deduped, newest-first view of the listening log. Stat card still
-  // reads ``listening.length`` for the raw total.
+  // Deduped, newest-first view of the listening log, normalised to track
+  // objects so each row renders the same rich card as saved recommendations
+  // (cover art, preview player, Deezer link). Legacy string rows are parsed
+  // back into a minimal track. Stat card still reads ``listening.length``
+  // for the raw total.
   const recentListening = useMemo(
-    () => uniqRecent(listening, (entry) => String(entry || "")),
+    () =>
+      uniqRecent(
+        listening.map(normalizeListenEntry).filter(Boolean),
+        (t) => `${t.name}::${t.artist}`,
+      ),
     [listening],
   );
 
@@ -518,7 +525,7 @@ const ProfilePage = () => {
             <Box sx={styles.statsRow}>
               <Stat
                 icon={<MoodOutlined />}
-                label="Moods logged"
+                label="Mood Detections"
                 value={moods.length}
                 tint="#ff4d4d"
               />
@@ -877,7 +884,7 @@ const ProfilePage = () => {
               </Box>
               <SectionTitle
                 text="Tracks you've opened"
-                hint="Stored as plain strings, freshest at the bottom."
+                hint="Songs you've played or opened, newest first."
               />
             </Stack>
             {listening.length > 0 && (
@@ -901,10 +908,10 @@ const ProfilePage = () => {
               />
             ) : (
               <Stack spacing={1.5}>
-                {recentListening.map((entry, i) => (
-                  <ListenRow
-                    key={`${entry}-${i}`}
-                    entry={entry}
+                {recentListening.map((track, i) => (
+                  <TrackRow
+                    key={`${track.name}::${track.artist}-${i}`}
+                    rec={track}
                     isDark={isDarkMode}
                     profileId={userData?.id}
                   />
@@ -1545,138 +1552,43 @@ function TrackRow({ rec, isDark, profileId }) {
   );
 }
 
-// Listening-history entries are stored as plain "Name - Artist" strings
-// because the backend was sized for analytics, not metadata. Parse the
-// string back into a track-shaped object so we can render it in the same
-// rich card style as the saved-recommendations list above, and open a
-// Deezer search for the entry on click.
-function ListenRow({ entry, isDark, profileId }) {
-  const [g1, , g3] = PROFILE_TRACK_PALETTE;
+// A listening-history entry is either a full track dict (newer rows, with
+// cover art / preview / Deezer url) or a legacy "Name - Artist" string.
+// Normalise both into a track object so the list renders the same rich card
+// (TrackRow) as saved recommendations. Legacy rows have no cover/preview, so
+// they fall back to a Deezer search link and TrackRow's placeholder art.
+function normalizeListenEntry(entry) {
+  if (entry && typeof entry === "object") {
+    const name = entry.name || "Untitled";
+    const artist = entry.artist || "";
+    const query = artist ? `${name} ${artist}` : name;
+    return {
+      name,
+      artist,
+      image_url: entry.image_url || "",
+      preview_url: entry.preview_url || "",
+      external_url:
+        entry.external_url ||
+        entry.url ||
+        `https://www.deezer.com/search/${encodeURIComponent(query)}`,
+      popularity: entry.popularity || 0,
+    };
+  }
   const text = String(entry || "").trim();
-  // The reverse split tolerates names containing the em-dash separator.
+  if (!text) return null;
+  // Reverse split tolerates names containing the " - " separator.
   const splitIdx = text.lastIndexOf(" - ");
-  const name = splitIdx > 0 ? text.slice(0, splitIdx) : text || "Untitled";
+  const name = (splitIdx > 0 ? text.slice(0, splitIdx) : text) || "Untitled";
   const artist = splitIdx > 0 ? text.slice(splitIdx + 3) : "";
   const query = artist ? `${name} ${artist}` : name;
-  const externalUrl = `https://www.deezer.com/search/${encodeURIComponent(query)}`;
-  const track = { name, artist, external_url: externalUrl };
-  const reportOpen = () => {
-    if (profileId) logTrackOpen(profileId, track);
+  return {
+    name,
+    artist,
+    image_url: "",
+    preview_url: "",
+    external_url: `https://www.deezer.com/search/${encodeURIComponent(query)}`,
+    popularity: 0,
   };
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", sm: "row" },
-        alignItems: { xs: "stretch", sm: "center" },
-        gap: 1.75,
-        padding: 1.5,
-        borderRadius: "16px",
-        border: `1px solid ${isDark ? "#2a2a2a" : "#eeeeee"}`,
-        background: isDark ? "#191919" : "#fff",
-        transition:
-          "transform .2s ease, box-shadow .2s ease, border-color .15s ease",
-        "&:hover": {
-          transform: "translateY(-2px)",
-          boxShadow: "0 14px 30px rgba(255,77,77,0.18)",
-          borderColor: "rgba(255,77,77,0.4)",
-        },
-      }}
-    >
-      <Box
-        sx={{
-          width: { xs: "100%", sm: 76 },
-          height: { xs: 120, sm: 76 },
-          borderRadius: "12px",
-          background: `linear-gradient(135deg, ${g1}, ${g3})`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          position: "relative",
-        }}
-      >
-        <HistoryToggleOff sx={{ color: "#fff", fontSize: 30 }} />
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="flex-start"
-          justifyContent="space-between"
-        >
-          <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography
-              title={name}
-              noWrap
-              sx={{
-                fontFamily: "Poppins",
-                fontWeight: 800,
-                fontSize: 15,
-                color: isDark ? "#fff" : "#1a1a1a",
-              }}
-            >
-              {name}
-            </Typography>
-            {artist ? (
-              <Typography
-                title={artist}
-                noWrap
-                sx={{
-                  fontFamily: "Poppins",
-                  fontSize: 13,
-                  color: isDark ? "#bbb" : "#666",
-                }}
-              >
-                {artist}
-              </Typography>
-            ) : (
-              <Typography
-                sx={{
-                  fontFamily: "Poppins",
-                  fontSize: 12,
-                  color: isDark ? "#777" : "#aaa",
-                  fontStyle: "italic",
-                }}
-              >
-                Logged from your activity
-              </Typography>
-            )}
-          </Box>
-          <Button
-            component="a"
-            href={externalUrl}
-            target="_blank"
-            rel="noreferrer"
-            onClick={reportOpen}
-            startIcon={<OpenInNew sx={{ fontSize: 14 }} />}
-            sx={{
-              fontFamily: "Poppins",
-              fontWeight: 700,
-              textTransform: "none",
-              borderRadius: "999px",
-              px: 1.5,
-              py: 0.5,
-              fontSize: 12,
-              color: "#fff",
-              background: "linear-gradient(135deg, #ff4d4d 0%, #ff7a59 100%)",
-              boxShadow: "0 6px 14px rgba(255,77,77,0.32)",
-              flexShrink: 0,
-              transition: "transform .15s ease, filter .15s ease",
-              "&:hover": {
-                background: "linear-gradient(135deg, #ff5e5e 0%, #ff8a6b 100%)",
-                filter: "brightness(1.05)",
-                transform: "translateY(-1px)",
-              },
-            }}
-          >
-            Open in Deezer
-          </Button>
-        </Stack>
-      </Box>
-    </Paper>
-  );
 }
 
 function SettingRow({ icon, title, sub, onClick, danger }) {
@@ -1896,10 +1808,17 @@ const getStyles = (isDark) => ({
       : "0 12px 30px rgba(255,77,77,0.06)",
   },
   cornerAction: {
-    position: "absolute",
+    // Absolute top-right on tablet+, but a normal right-aligned row on
+    // phones -- absolute positioning let "Clear all" overlap the section
+    // title/hint once they wrapped on narrow screens.
+    position: { xs: "static", sm: "absolute" },
     top: 12,
     right: 12,
     zIndex: 2,
+    display: "flex",
+    justifyContent: "flex-end",
+    mt: { xs: -0.5, sm: 0 },
+    mb: { xs: 1, sm: 0 },
   },
   sectionIcon: {
     width: 36,
