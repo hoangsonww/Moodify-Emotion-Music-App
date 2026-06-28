@@ -229,73 +229,44 @@ def _bump_calibration(username: str, predicted: str, actual: str) -> None:
         )
 
 
-def _update_taste_profile(
-    username: str,
-    *,
-    track: dict | None,
-    signal: str,
-    context_emotion: str | None,
-) -> None:
-    """Apply one feedback signal to the user's Beta-Bernoulli posterior.
-
-    No-op when the caller omitted the ``track`` field -- without it we
-    can't extract the feature vector and the bandit cannot learn from
-    the event. The raw event is still persisted upstream so we don't
-    lose the signal entirely.
-
-    Never raises.
-    """
+def _featurize(track: dict | None, context_emotion: str | None):
+    """Feature vector for a track, or None if missing/unfeaturizable."""
     if track is None:
-        return
+        return None
     try:
-        features = track_features.featurize(track, context_emotion=context_emotion)
+        return track_features.featurize(track, context_emotion=context_emotion)
     except Exception:  # noqa: BLE001
-        logger.warning(
-            "feature extraction failed for user=%s -- skipping bandit update",
-            username,
-        )
-        return
+        logger.warning("feature extraction failed -- skipping bandit op")
+        return None
 
+
+def _apply_posterior(username: str, features, signal: str) -> None:
+    """Add ``signal``'s contribution (``features``) to the user's posterior."""
+    if not features:
+        return
     try:
         profile = UserProfile.objects(username=username).first()
         if profile is None:
             return
-        updated = bandit.update_posterior(
+        profile.taste_profile = bandit.update_posterior(
             profile.taste_profile or {}, features, signal
         )
-        profile.taste_profile = updated
         profile.save()
     except Exception:  # noqa: BLE001
         logger.warning(
-            "taste_profile update failed for user=%s (silently skipping)",
-            username,
+            "taste_profile update failed for user=%s (silently skipping)", username
         )
 
 
-def _revert_taste_profile(
-    username: str,
-    *,
-    track: dict | None,
-    signal: str,
-    context_emotion: str | None,
-) -> None:
-    """Undo a previously-applied like/unlike on the user's posterior.
+def _revert_posterior(username: str, features, signal: str) -> None:
+    """Subtract a previously-applied vote (``features``/``signal``).
 
-    Mirror of :func:`_update_taste_profile` for the un-vote path. No-op when
-    the ``track`` dict is missing (can't reproduce the feature vector to
-    subtract). Never raises.
+    ``features`` is the EXACT vector stored when the vote was cast, so the
+    reversal cancels it precisely regardless of how the track or the context
+    emotion look at revert time.
     """
-    if track is None:
+    if not features:
         return
-    try:
-        features = track_features.featurize(track, context_emotion=context_emotion)
-    except Exception:  # noqa: BLE001
-        logger.warning(
-            "feature extraction failed for user=%s -- skipping bandit revert",
-            username,
-        )
-        return
-
     try:
         profile = UserProfile.objects(username=username).first()
         if profile is None:
@@ -306,8 +277,7 @@ def _revert_taste_profile(
         profile.save()
     except Exception:  # noqa: BLE001
         logger.warning(
-            "taste_profile revert failed for user=%s (silently skipping)",
-            username,
+            "taste_profile revert failed for user=%s (silently skipping)", username
         )
 
 
@@ -369,40 +339,41 @@ def feedback(request):
             signal="open_deezer",
             context_emotion=cleaned["context_emotion"],
         )
-        _update_taste_profile(
+        _apply_posterior(
             username,
-            track=cleaned["track"],
-            signal="open_deezer",
-            context_emotion=cleaned["context_emotion"],
+            _featurize(cleaned["track"], cleaned["context_emotion"]),
+            "open_deezer",
         )
     else:
         # "Set vote" semantics for like / unlike / clear: a track's CURRENT
-        # vote is the only thing that should contribute to the posterior.
-        # Look up the prior vote BEFORE recording this event, then reconcile:
-        # revert the prior contribution and apply the new one. This keeps the
-        # posterior correct when the user switches like<->unlike directly (no
-        # double-counting) or clears a vote, and stays idempotent if the same
-        # vote is sent twice.
+        # vote is the only thing that contributes to the posterior. Look up
+        # the prior vote (and the exact feature vector it was applied with)
+        # BEFORE recording this event, then reconcile: revert the prior
+        # contribution against its stored vector and apply the new one. This
+        # keeps the posterior correct across a like<->unlike switch (no
+        # double-count), a clear (net zero), a cross-mood re-vote (the
+        # original emotion axis is reverted, not the current one), and stays
+        # idempotent if the same vote is re-sent.
         signal = cleaned["signal"]
-        track = cleaned["track"]
-        context_emotion = cleaned["context_emotion"]
-        prior = feedback_store.query_track_feedback(
-            username, [cleaned["track_id"]]
-        ).get(cleaned["track_id"])
+        prior = feedback_store.get_active_vote(username, cleaned["track_id"])
+        prior_signal = prior["signal"] if prior else None
+
+        new_features = (
+            _featurize(cleaned["track"], cleaned["context_emotion"])
+            if signal in ("like", "unlike")
+            else None
+        )
         feedback_store.insert_track_feedback(
             username=username,
             track_id=cleaned["track_id"],
             signal=signal,
-            context_emotion=context_emotion,
+            context_emotion=cleaned["context_emotion"],
+            features=new_features,
         )
-        if prior in ("like", "unlike") and prior != signal:
-            _revert_taste_profile(
-                username, track=track, signal=prior, context_emotion=context_emotion
-            )
-        if signal in ("like", "unlike") and signal != prior:
-            _update_taste_profile(
-                username, track=track, signal=signal, context_emotion=context_emotion
-            )
+        if prior_signal in ("like", "unlike") and prior_signal != signal:
+            _revert_posterior(username, prior.get("features"), prior_signal)
+        if signal in ("like", "unlike") and signal != prior_signal:
+            _apply_posterior(username, new_features, signal)
 
     return Response(
         {"message": "Feedback recorded."},

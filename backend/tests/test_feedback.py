@@ -458,10 +458,14 @@ class TestClearSignal:
         prof = UserProfile.objects(username=auth_client.user.username).first()
         assert prof.taste_profile.get("events") == 1
 
-        # Clear -> the prior vote is looked up as "like", the clear event is
-        # persisted, and the posterior is reverted back to zero events.
+        # Clear -> the prior vote is looked up (with its stored feature
+        # vector), the clear event is persisted, and the posterior is
+        # reverted back to zero events.
+        feats = track_features.featurize(track, context_emotion=None)
         monkeypatch.setattr(
-            feedback_store, "query_track_feedback", lambda u, ids: {"deezer:1": "like"}
+            feedback_store,
+            "get_active_vote",
+            lambda u, tid: {"signal": "like", "features": feats},
         )
         r2 = auth_client.post(
             URL,
@@ -495,12 +499,15 @@ class TestClearSignal:
         assert prof.taste_profile["events"] == 1
         assert any(a > bandit.PRIOR_ALPHA for a in prof.taste_profile["alpha"])
 
-        # Switch directly to unlike: the prior like is reverted and the
-        # unlike applied -> no double-count. alpha returns to the prior,
-        # beta is now bumped, and the event count stays at one (the single
-        # current vote), not two.
+        # Switch directly to unlike: the prior like is reverted (against its
+        # stored feature vector) and the unlike applied -> no double-count.
+        # alpha returns to the prior, beta is now bumped, and the event count
+        # stays at one (the single current vote), not two.
+        feats = track_features.featurize(track, context_emotion=None)
         monkeypatch.setattr(
-            feedback_store, "query_track_feedback", lambda u, ids: {"deezer:1": "like"}
+            feedback_store,
+            "get_active_vote",
+            lambda u, tid: {"signal": "like", "features": feats},
         )
         auth_client.post(
             URL,
@@ -511,3 +518,27 @@ class TestClearSignal:
         assert prof.taste_profile["events"] == 1
         assert all(a == bandit.PRIOR_ALPHA for a in prof.taste_profile["alpha"])
         assert any(b > bandit.PRIOR_BETA for b in prof.taste_profile["beta"])
+
+
+class TestGetActiveVote:
+    def test_returns_signal_and_features(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "like", "features": [1.0, 2.0]},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        out = feedback_store.get_active_vote("alice", "deezer:1")
+        assert out == {"signal": "like", "features": [1.0, 2.0]}
+        # Uses the seq tiebreaker so same-ts events order deterministically.
+        assert coll.pipelines[0][1]["$sort"] == {"ts": 1, "seq": 1}
+
+    def test_trailing_clear_is_none(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "clear", "features": None},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        assert feedback_store.get_active_vote("alice", "deezer:1") is None
+
+    def test_no_rows_is_none(self, monkeypatch):
+        coll = _FakeAggCollection([])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        assert feedback_store.get_active_vote("alice", "deezer:1") is None
