@@ -201,6 +201,28 @@ body.light-mode a:not([class*="Mui"]) {
   }
 }
 
+/* Sticky-footer scaffold: the shell is a full-viewport flex column, the
+   main area grows to absorb all spare height, so the footer is always
+   pinned to the bottom -- including while a route is still loading and the
+   page has rendered no height yet (previously the footer rode up under the
+   navbar mid-load). */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main .page-anim {
+  flex: 1 0 auto;
+}
+
 /* Route page transitions: each page slides up into view on arrival and slides
    down out of view on departure (SwitchTransition mode="out-in"). */
 /* NOTE: `will-change` is applied ONLY during the active transition phases, not
