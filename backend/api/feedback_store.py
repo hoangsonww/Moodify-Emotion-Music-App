@@ -39,7 +39,10 @@ TRACK_KIND = "track"
 # Allowed values, enforced both here (defence in depth for a direct
 # store call) and at the endpoint validator.
 INPUT_TYPES = frozenset({"text", "speech", "facial"})
-TRACK_SIGNALS = frozenset({"like", "unlike", "open_deezer"})
+# "clear" retracts a previous like/unlike: it records the un-vote so the
+# button state stays in sync after a reload, and triggers a posterior
+# reversal on the read side. It is NOT a learning signal of its own.
+TRACK_SIGNALS = frozenset({"like", "unlike", "open_deezer", "clear"})
 
 _lock = threading.Lock()
 _mood_collection = None  # type: ignore[var-annotated]
@@ -189,12 +192,13 @@ def insert_track_feedback(
 
 
 def query_track_feedback(username: str, track_ids) -> dict:
-    """Return ``{track_id: "like" | "unlike"}`` for the user's latest vote.
+    """Return ``{track_id: "like" | "unlike"}`` for the user's current vote.
 
-    Only explicit votes are reported -- the implicit ``open_deezer`` signal
-    is excluded so it never lights up a like button. ``track_ids`` is an
-    iterable of the ids currently on screen. Never raises; returns ``{}`` on
-    any failure (feedback is best-effort).
+    The current vote is the user's latest of like / unlike / clear for each
+    track. A trailing ``clear`` (the un-vote) means there is NO active vote,
+    so that track is omitted. The implicit ``open_deezer`` signal is never
+    considered. ``track_ids`` is an iterable of the ids currently on screen.
+    Never raises; returns ``{}`` on any failure (feedback is best-effort).
     """
     out: dict = {}
     try:
@@ -207,14 +211,17 @@ def query_track_feedback(username: str, track_ids) -> dict:
         cursor = coll.aggregate([
             {"$match": {
                 "meta.username": username,
-                "meta.signal": {"$in": ["like", "unlike"]},
+                "meta.signal": {"$in": ["like", "unlike", "clear"]},
                 "track_id": {"$in": ids},
             }},
             {"$sort": {"ts": 1}},
             {"$group": {"_id": "$track_id", "signal": {"$last": "$meta.signal"}}},
         ])
         for row in cursor:
-            out[row["_id"]] = row["signal"]
+            sig = row.get("signal")
+            # A trailing "clear" means the vote was retracted -> no state.
+            if sig in ("like", "unlike"):
+                out[row["_id"]] = sig
     except Exception:  # noqa: BLE001
         logger.warning("track feedback query failed (silently skipping)")
     return out

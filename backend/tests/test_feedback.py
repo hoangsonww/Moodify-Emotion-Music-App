@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from api import feedback_store
+from api import bandit, feedback_store, track_features
 from api.models import UserProfile
 
 
@@ -349,9 +349,19 @@ class TestTrackFeedbackQuery:
         monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
         out = feedback_store.query_track_feedback("alice", ["deezer:1", "deezer:2"])
         assert out == {"deezer:1": "like", "deezer:2": "unlike"}
-        # Only explicit votes are queried -- never open_deezer.
+        # Queries explicit votes + clear (never open_deezer).
         match = coll.pipelines[0][0]["$match"]
-        assert set(match["meta.signal"]["$in"]) == {"like", "unlike"}
+        assert set(match["meta.signal"]["$in"]) == {"like", "unlike", "clear"}
+
+    def test_latest_clear_is_omitted(self, monkeypatch):
+        coll = _FakeAggCollection([
+            {"_id": "deezer:1", "signal": "like"},
+            {"_id": "deezer:2", "signal": "clear"},
+        ])
+        monkeypatch.setattr(feedback_store, "_get_collection", lambda _k: coll)
+        out = feedback_store.query_track_feedback("alice", ["deezer:1", "deezer:2"])
+        # A trailing clear means no active vote -> track omitted.
+        assert out == {"deezer:1": "like"}
 
     def test_empty_ids_short_circuits(self, monkeypatch):
         def boom(_k):
@@ -398,3 +408,68 @@ class TestTrackFeedbackStateEndpoint:
         resp = auth_client.get(self.URL)
         assert resp.status_code == 200
         assert resp.data["feedback"] == {}
+
+
+class TestRevertPosterior:
+    def test_like_then_revert_returns_to_prior(self):
+        feats = [1.0] * track_features.FEATURE_DIM
+        after_like = bandit.update_posterior(None, feats, "like")
+        assert after_like["events"] == 1
+        assert any(a > bandit.PRIOR_ALPHA for a in after_like["alpha"])
+
+        reverted = bandit.revert_posterior(after_like, feats, "like")
+        assert reverted["events"] == 0
+        assert all(a == bandit.PRIOR_ALPHA for a in reverted["alpha"])
+
+    def test_revert_clamps_at_floor_and_zero(self):
+        feats = [1.0] * track_features.FEATURE_DIM
+        # Revert with no prior application must not go below the prior /
+        # negative events.
+        reverted = bandit.revert_posterior(None, feats, "unlike")
+        assert reverted["events"] == 0
+        assert all(b == bandit.PRIOR_BETA for b in reverted["beta"])
+
+    def test_open_deezer_is_not_revertable(self):
+        feats = [1.0] * track_features.FEATURE_DIM
+        before = bandit.update_posterior(None, feats, "like")
+        same = bandit.revert_posterior(before, feats, "open_deezer")
+        assert same == before
+
+
+class TestClearSignal:
+    def test_clear_records_event_and_reverts_posterior(
+        self, auth_client, fake_store, monkeypatch
+    ):
+        track = {
+            "name": "Song",
+            "artist": "Artist",
+            "external_url": "https://www.deezer.com/track/1",
+            "popularity": 50,
+            "duration_ms": 200000,
+            "release_date": "2020-01-01",
+        }
+        # Like first -> one event on the posterior.
+        r1 = auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "like", "track": track},
+            format="json",
+        )
+        assert r1.status_code == 202
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile.get("events") == 1
+
+        # Clear -> the prior vote is looked up as "like", the clear event is
+        # persisted, and the posterior is reverted back to zero events.
+        monkeypatch.setattr(
+            feedback_store, "query_track_feedback", lambda u, ids: {"deezer:1": "like"}
+        )
+        r2 = auth_client.post(
+            URL,
+            {"kind": "track", "track_id": "deezer:1", "signal": "clear", "track": track},
+            format="json",
+        )
+        assert r2.status_code == 202
+        # The clear event was persisted (button state stays in sync).
+        assert any(e["meta"]["signal"] == "clear" for e in fake_store["track"].events)
+        prof = UserProfile.objects(username=auth_client.user.username).first()
+        assert prof.taste_profile.get("events") == 0

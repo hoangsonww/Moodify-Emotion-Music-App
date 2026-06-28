@@ -889,10 +889,13 @@ function TrackRow({
   };
 
   const onVote = (signal) => {
-    // Tap-the-active-vote-to-unset toggle.
+    // Tap-the-active-vote-to-unset toggle. Record a "clear" so the un-vote
+    // persists (button stays empty after reload) and the backend reverses
+    // the vote's contribution to the bandit posterior.
     if (vote === signal) {
       setVote(null);
       if (onVoteChange) onVoteChange(null);
+      sendTrackFeedback({ track, signal: "clear", contextEmotion });
       return;
     }
     setVote(signal);

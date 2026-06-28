@@ -272,6 +272,45 @@ def _update_taste_profile(
         )
 
 
+def _revert_taste_profile(
+    username: str,
+    *,
+    track: dict | None,
+    signal: str,
+    context_emotion: str | None,
+) -> None:
+    """Undo a previously-applied like/unlike on the user's posterior.
+
+    Mirror of :func:`_update_taste_profile` for the un-vote path. No-op when
+    the ``track`` dict is missing (can't reproduce the feature vector to
+    subtract). Never raises.
+    """
+    if track is None:
+        return
+    try:
+        features = track_features.featurize(track, context_emotion=context_emotion)
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "feature extraction failed for user=%s -- skipping bandit revert",
+            username,
+        )
+        return
+
+    try:
+        profile = UserProfile.objects(username=username).first()
+        if profile is None:
+            return
+        profile.taste_profile = bandit.revert_posterior(
+            profile.taste_profile or {}, features, signal
+        )
+        profile.save()
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "taste_profile revert failed for user=%s (silently skipping)",
+            username,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Endpoint
 # ---------------------------------------------------------------------------
@@ -321,6 +360,27 @@ def feedback(request):
             session_id=cleaned["session_id"],
         )
         _bump_calibration(username, cleaned["predicted"], cleaned["actual"])
+    elif cleaned["signal"] == "clear":
+        # Un-vote: find the vote being retracted BEFORE recording the clear
+        # (the lookup ignores the clear we're about to write), persist the
+        # clear so the button state stays in sync, then reverse that vote's
+        # contribution to the posterior so the model stays in sync too.
+        prior = feedback_store.query_track_feedback(
+            username, [cleaned["track_id"]]
+        ).get(cleaned["track_id"])
+        feedback_store.insert_track_feedback(
+            username=username,
+            track_id=cleaned["track_id"],
+            signal="clear",
+            context_emotion=cleaned["context_emotion"],
+        )
+        if prior in ("like", "unlike"):
+            _revert_taste_profile(
+                username,
+                track=cleaned["track"],
+                signal=prior,
+                context_emotion=cleaned["context_emotion"],
+            )
     else:
         feedback_store.insert_track_feedback(
             username=username,

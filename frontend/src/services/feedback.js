@@ -62,8 +62,9 @@ export function normalizeEmotion(value) {
 export const INPUT_TYPES = ["text", "speech", "facial"];
 
 // What the backend recognises as a per-track signal. Keep in lockstep
-// with feedback_store.TRACK_SIGNALS.
-export const TRACK_SIGNALS = ["like", "unlike", "open_deezer"];
+// with feedback_store.TRACK_SIGNALS. "clear" retracts a prior like/unlike
+// (persists the un-vote + reverses its posterior contribution).
+export const TRACK_SIGNALS = ["like", "unlike", "open_deezer", "clear"];
 
 function authHeaders() {
   const token = getToken();
