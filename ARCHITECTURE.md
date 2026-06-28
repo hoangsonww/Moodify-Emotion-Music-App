@@ -373,13 +373,17 @@ Two surfaces share one HTTP endpoint and one persistence pattern:
 
 ```mermaid
 flowchart LR
-    User -->|"👍 / 👎 / Open in Deezer"| FE[Frontend TrackCard]
+    User -->|"👍 / 👎 / un-vote / Open in Deezer"| FE[Frontend TrackCard]
     User -->|"Was this right? ✓ / ✗ → love"| FW[MoodFeedbackWidget]
     FE & FW -->|POST /api/feedback/| FB[feedback_views.feedback]
     FB --> TS1[(mood_feedback<br/>TS collection)]
     FB --> TS2[(track_feedback<br/>TS collection)]
     FB --> UP1[UserProfile.mood_calibration]
     FB --> UP2[UserProfile.taste_profile]
+
+    FE -->|"GET /api/feedback/tracks/?ids=..."| RB[feedback_views.track_feedback_state]
+    TS2 -.->|current vote per id| RB
+    RB -->|"{feedback: {id: like|unlike}}"| FE
 
     Caller -->|POST /api/text_emotion/| TE[text_emotion view]
     TE --> Modal1[Modal BERT]
@@ -400,17 +404,18 @@ flowchart LR
 
 | Module | Role |
 |---|---|
-| `backend/api/feedback_views.py` | `POST /api/feedback/` — strict validator for `kind ∈ {mood, track}`, JWT-required, returns 202. |
-| `backend/api/feedback_store.py` | Lazy-init two MongoDB time-series collections (`mood_feedback`, `track_feedback`). 365-day TTL. Never raises (telemetry must not break a write path). |
+| `backend/api/feedback_views.py` | `POST /api/feedback/` — strict validator for `kind ∈ {mood, track}`, JWT-required, returns 202. Also serves `GET /api/feedback/tracks/?ids=...` — the read-back of the caller's current like/unlike vote per track id (implicit `open_deezer` excluded), so the UI can restore button state after a reload. |
+| `backend/api/feedback_store.py` | Lazy-init two MongoDB time-series collections (`mood_feedback`, `track_feedback`). 365-day TTL. Never raises (telemetry must not break a write path). Track events carry the exact applied feature vector and a high-resolution `seq` tiebreaker; `get_active_vote` / `query_track_feedback` resolve a track's *current* vote (latest of like / unlike / clear, ties broken by `seq`; a trailing `clear` means no active vote). |
 | `backend/api/calibration.py` | Pure function `apply_calibration(predicted, map)` — rewrites the predicted label when the dominant correction has crossed the threshold (default 3, ties = no change). |
 | `backend/api/track_features.py` | Fixed 22-dim feature extractor: emotion one-hot, decade, duration bucket, list-relative popularity quintile. Layout is forward-compatible (padding on shorter stored vectors) but never reorderable. |
-| `backend/api/bandit.py` | Thompson Sampling over a Beta-Bernoulli posterior. `update_posterior(profile, features, signal)` for writes; `rerank(tracks, taste_profile, context_emotion)` for reads. Identity-when-cold (`events < 20`). |
+| `backend/api/bandit.py` | Thompson Sampling over a Beta-Bernoulli posterior. `update_posterior(profile, features, signal)` for writes; `revert_posterior(profile, features, signal)` to undo a previously-applied vote (clamps pseudo-counts at the prior floor and events at ≥ 0); `rerank(tracks, taste_profile, context_emotion)` for reads. Identity-when-cold (`events < 20`). |
 
 Design constraints honoured:
 
 - **Augmentation, not replacement.** The bandit can only reorder the EWMA + Markov base list — never inject, drop, or invent tracks. Bounded blast radius.
 - **Stateless inference service.** All RL state lives in Mongo and is applied in Django after the Modal proxy returns; Modal stays identity-free and continues to accept the shared service token.
 - **Per-user posterior.** No cross-user influence, no global leaderboard signals. Feedback gaming caps at one Beta unit per active feature per event.
+- **Set-vote reconciliation.** A track's CURRENT vote is the only thing that contributes to its Beta-Bernoulli posterior. Track signals are `like` / `unlike` / `open_deezer` / `clear`. On every like/unlike/clear the endpoint looks up the prior vote first, reverts that prior contribution against the **exact feature vector it was stored with**, then applies the new one — so a like↔unlike switch reverts-then-applies (no double-count), a `clear` (un-vote) nets to zero, and re-sending the same vote is idempotent. Storing the applied vector on the event makes the revert cancel precisely even when the track or context emotion has drifted; the high-resolution `seq` breaks `ts` ties so "latest vote" is deterministic. `open_deezer` is an implicit, purely additive positive — never a vote, never reconciled.
 - **Anonymous callers unchanged.** `_profile_for_request` returns `None` for anonymous traffic; both views short-circuit before touching the calibration map / bandit.
 
 ### AI/ML Architecture
@@ -496,7 +501,7 @@ erDiagram
         ObjectId _id PK
         string username UK "Unique username"
         string email UK "Unique email"
-        string password_hash "Bcrypt hashed"
+        string password_hash "PBKDF2 hashed"
         datetime created_at
         datetime updated_at
         string profile_picture_url
@@ -614,8 +619,10 @@ erDiagram
 
     TRACK_FEEDBACK {
         datetime ts PK "Time-series timeField"
-        json meta "username, signal, context_emotion"
+        long seq "time_ns() tiebreaker for latest vote"
+        json meta "username, signal (like|unlike|open_deezer|clear), context_emotion"
         string track_id "Stable per-track key"
+        array features "Exact vector applied for this vote (null for open_deezer/clear)"
     }
 
     MOOD_CALIBRATION {
@@ -630,6 +637,8 @@ erDiagram
 ```
 
 **RL collections** are Mongo *time-series* collections (`mood_feedback`, `track_feedback`) with a 365-day TTL — old samples drop automatically without a cron. The `MOOD_CALIBRATION` and `TASTE_PROFILE` rows live inside the existing `UserProfile` document as `DictField`s (schemaless, no migration needed) and are read on every authenticated text-emotion / music-recommendation request to apply the personalisation layer. See `backend/api/feedback_store.py` and `backend/api/models.py:UserProfile`.
+
+**As deployed**, `LISTENING_HISTORY` is stored as full track dicts (the same shape the recommender returns), not the granular per-field columns the long-term model above shows; legacy `"Name - Artist"` string entries are still read back for older accounts. The `track_feedback` event also carries the exact applied `features` vector and a `seq` tiebreaker (see the `TRACK_FEEDBACK` entity).
 
 ### Data Flow
 
@@ -762,7 +771,7 @@ sequenceDiagram
     DB-->>BE: User Data
 
     alt Valid Credentials
-        BE->>BE: Verify Password (Bcrypt)
+        BE->>BE: Verify Password (PBKDF2)
         BE->>JWT: Generate Tokens
         JWT-->>BE: Access Token (15min)<br/>Refresh Token (7days)
         BE->>RD: Store Session
@@ -795,6 +804,8 @@ sequenceDiagram
         FE->>BE: Retry Original Request
     end
 ```
+
+Login robustness notes (as deployed): the credential field on `POST /users/login` accepts **either** the username or the email address — a username lookup runs first, falling back to a case-insensitive email match when the input contains `@` — because users routinely type their email into a field labelled "Username". And because the backend spins down when idle, the first Mongo read after a wake-up can blow the driver's server-selection budget; that read is retried a few times and, if it still fails, mapped to **503** ("service waking up") rather than surfacing as a misleading **401**, so a cold start is never mistaken for bad credentials.
 
 ### Passkey Authentication (WebAuthn / FIDO2)
 
