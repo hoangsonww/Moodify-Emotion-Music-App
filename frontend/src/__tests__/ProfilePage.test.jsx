@@ -57,8 +57,8 @@ describe("<ProfilePage />", () => {
       </DarkModeContext.Provider>,
     );
 
-    // Loading indicator
-    expect(screen.getByText(/Loading\.\.\./i)).toBeInTheDocument();
+    // Initial load shows a skeleton of the page shell (not a flat overlay).
+    expect(document.querySelector(".MuiSkeleton-root")).toBeInTheDocument();
 
     // Wait for data load - username appears inside the hero welcome line.
     expect(await screen.findByText(/Welcome, testuser!/i)).toBeInTheDocument();
