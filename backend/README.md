@@ -594,6 +594,11 @@ in your Vercel project's Environment Variables for production.
 | `METRICS_TTL_DAYS` | no | Native TTL for raw metric events. Default `30`. |
 | `ADMIN_METRICS_TOKEN` | no | Bearer token that unlocks `GET /api/metrics/`. Falls back to `MODAL_SERVICE_TOKEN` so a single secret unlocks both `/metrics` surfaces. |
 | `CACHE_REDIS_URL` | no | If set, use Redis (e.g. Upstash) instead of LocMem cache |
+| `SENTRY_DSN` | no | Enable Sentry error + performance monitoring. Empty ⇒ SDK never initialises (local/CI stay offline). DSN from the `unc-a4/moodify-app` project. |
+| `SENTRY_ENVIRONMENT` | no | Deploy-stage label on events. Default `production` (or `development` when `DEBUG=True`). |
+| `SENTRY_RELEASE` | no | Release/version tag for regression tracking. Auto-detected from git if unset. |
+| `SENTRY_TRACES_SAMPLE_RATE` | no | Fraction (0.0–1.0) of requests traced for performance. Default `0.1`. |
+| `SENTRY_SEND_PII` | no | Attach user id / IP / cookies to events. Default `False` (privacy-preserving). |
 
 ---
 
