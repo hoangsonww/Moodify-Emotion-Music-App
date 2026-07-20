@@ -99,6 +99,9 @@ are also used to visualize emotion trends and model performance. Users open reco
   <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins" />
   <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" />
 
+  <!-- Observability / monitoring -->
+  <img src="https://img.shields.io/badge/Sentry-362D59?style=for-the-badge&logo=sentry&logoColor=white" alt="Sentry" />
+
   <!-- Hosting -->
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
   <img src="https://img.shields.io/badge/Modal-7B68EE?style=for-the-badge&logo=modal&logoColor=white" alt="Modal" />
@@ -908,6 +911,15 @@ container restarts and scale-to-zero. See
 [`modal_inference/README.md#sre-metrics`](modal_inference/README.md#sre-metrics)
 and [`backend/README.md#sre-metrics`](backend/README.md#sre-metrics)
 for the full design (schema, resilience model, cost math).
+
+Alongside the aggregated `/metrics` surface, **Sentry** provides opt-in
+error tracking and performance tracing for the two user-facing tiers — the
+React frontend (`@sentry/react`) and the Django API (`sentry-sdk[django]`).
+Both initialise only when a DSN is set (`REACT_APP_SENTRY_DSN` /
+`SENTRY_DSN`), so local dev and CI stay offline; in production they stream
+unhandled exceptions plus a sampled slice of traces to the
+[`unc-a4/moodify-app`](https://unc-a4.sentry.io/settings/projects/moodify-app/)
+project.
 
 ### **Admin Interface Endpoints**
 

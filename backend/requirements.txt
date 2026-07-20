@@ -34,3 +34,9 @@ python-dotenv==1.0.1
 whitenoise==6.7.0
 gunicorn==23.0.0
 tzdata==2024.2
+
+# --- Error monitoring (Sentry) ---
+# The [django] extra auto-enables DjangoIntegration -- the only wiring is a
+# single sentry_sdk.init() in settings.py, which no-ops unless SENTRY_DSN is
+# set, so local dev and CI never phone home.
+sentry-sdk[django]==2.66.0

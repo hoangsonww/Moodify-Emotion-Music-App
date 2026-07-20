@@ -23,6 +23,7 @@
     "@mui/material": "^6.1.1",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
+    "@sentry/react": "^10.66.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
     "jwt-decode": "^4.0.0",

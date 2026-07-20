@@ -23,6 +23,32 @@ ALLOWED_HOSTS = [h.strip() for h in config("ALLOWED_HOSTS", default="*").split("
 # service verifies them with the same key. Keep it in sync across both.
 JWT_SIGNING_KEY = config("JWT_SIGNING_KEY", default=SECRET_KEY)
 
+# --- Error monitoring (Sentry) --------------------------------------------
+# Streams unhandled exceptions + a sampled slice of performance traces to
+# Sentry (project: unc-a4/moodify-app). Entirely opt-in: with no SENTRY_DSN
+# the SDK never initializes, so local dev and CI stay fully offline. The
+# [django] extra auto-wires request/exception capture -- no middleware edits.
+_SENTRY_DSN = config("SENTRY_DSN", default="")
+if _SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=_SENTRY_DSN,
+        # Label events by deploy stage; falls back to DEBUG when unset.
+        environment=config(
+            "SENTRY_ENVIRONMENT",
+            default="development" if DEBUG else "production",
+        ),
+        # Git SHA / version tag for regression tracking (auto-detected if unset).
+        release=config("SENTRY_RELEASE", default=None),
+        # Fraction of requests captured as performance transactions. 10% keeps
+        # trace volume (and quota) sane under real traffic; raise for debugging.
+        traces_sample_rate=config("SENTRY_TRACES_SAMPLE_RATE", default=0.1, cast=float),
+        # Do NOT attach user id / IP / cookies unless explicitly opted in --
+        # this API handles auth material, so default to privacy-preserving.
+        send_default_pii=config("SENTRY_SEND_PII", default=False, cast=bool),
+    )
+
 # --- MongoDB (the only datastore) -----------------------------------------
 # connect() is lazy -- it does not open a socket until the first query.
 # maxPoolSize is kept small: on a serverless host each instance keeps its

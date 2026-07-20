@@ -62,6 +62,9 @@ Required envs for the **frontend** Vercel project (CRA build-time):
 
 * `REACT_APP_API_URL` → `https://moodify-backend-api.vercel.app`
 * `REACT_APP_MODAL_API_URL` → Modal service URL printed by `modal deploy`
+* _Optional:_ `REACT_APP_SENTRY_DSN` (+ `REACT_APP_SENTRY_ENVIRONMENT`,
+  `REACT_APP_SENTRY_TRACES_SAMPLE_RATE`) to turn on Sentry monitoring. Leave
+  unset to disable.
 
 Required envs for the **backend** Vercel project:
 
@@ -74,6 +77,10 @@ Required envs for the **backend** Vercel project:
   `WEBAUTHN_RP_NAME` (default `Moodify`), `WEBAUTHN_CHALLENGE_TTL_SECONDS`
   (default `300`). Defaults target `localhost` for local dev. If these don't
   match the domain the browser is on, passkey ceremonies fail in the browser.
+* **Sentry (optional):** `SENTRY_DSN` enables error + performance monitoring;
+  leave unset to disable. Tune with `SENTRY_ENVIRONMENT`, `SENTRY_RELEASE`,
+  `SENTRY_TRACES_SAMPLE_RATE` (default `0.1`), and `SENTRY_SEND_PII`
+  (default `False`).
 
 Required envs for the **mobile** Expo app (set via `eas env:create` or
 in `mobile/.env`):

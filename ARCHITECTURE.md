@@ -1293,6 +1293,17 @@ long-term observability target. The **current production deployment**
 on Vercel + Modal + Atlas runs a simpler, free-tier-only pipeline
 that backs the live `/metrics` endpoints on both services.
 
+Alongside that `/metrics` pipeline, **Sentry** provides opt-in error
+tracking and performance tracing for the two user-facing tiers — the React
+frontend (`@sentry/react`, initialised in `frontend/src/index.js`) and the
+Django API (`sentry-sdk[django]`, initialised in `backend/backend/settings.py`).
+Both initialise only when a DSN is present (`REACT_APP_SENTRY_DSN` /
+`SENTRY_DSN`), so local dev and CI stay offline; in production they stream
+unhandled exceptions plus a sampled slice of traces (default 10%) to the
+`unc-a4/moodify-app` project. The frontend also wraps the app in a Sentry
+`ErrorBoundary` so React render failures surface a fallback instead of a
+blank screen. PII (user id / IP / cookies) is **not** attached by default.
+
 #### Pipeline
 
 ```mermaid

@@ -488,6 +488,14 @@ sequenceDiagram
    Environment Variables panel (Production / Preview / Development) and
    redeploy - `frontend/src/config.js` reads them at build time.
 
+   Optionally, enable **Sentry** error + performance monitoring by also
+   setting `REACT_APP_SENTRY_DSN` (from the `unc-a4/moodify-app` project).
+   Leave it empty to disable — `frontend/src/index.js` only initialises the
+   SDK when a DSN is present, so local dev and CI builds send nothing.
+   `REACT_APP_SENTRY_ENVIRONMENT` and `REACT_APP_SENTRY_TRACES_SAMPLE_RATE`
+   (default `0.1`) tune the stage label and trace sampling. Only the public
+   DSN belongs in the client build.
+
 ### Running the Application
 
 To start the development server, run the following command:
